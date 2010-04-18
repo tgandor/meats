@@ -5,6 +5,10 @@
 #include <m_ctype.h>
 #include <m_string.h>	
 
+#ifndef _MSC_VER
+#  define __declspec(anything)
+#endif
+
 /*
  -- The SQL script for installation:
 
