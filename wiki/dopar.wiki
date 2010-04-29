@@ -1,0 +1,51 @@
+#summary Running jobs in parallel with `dopar`
+
+= Introduction =
+
+I just added another crude tool - the dopar process launcher. It was born out of a question: "why have I paid so much for my Turion X2 processor and get no benefit of it?".
+
+I publish it, as it already saved me more time than I needed to write it.
+
+= Details =
+
+Some command line programs, which are very useful, like ImageMagick's `mogrify`, may not take advantage of current multicore processor capabilities. It can be overcome, by running multiple consoles and running lengthy tasks separately, but it's better for humans to concentrate on one activity and having it completed faster than doing the parallelism in one's head.
+
+That's why I wrote `dopar` - put it somewhere in the `PATH` (or rename it to dopar.py, or run it with `python dopar`, then put the command and options to be executed, then a triple slash `///`, and finally a list of files (use wild-cards, but only if the shell expands them before passing them to the script).
+
+The list will be cut in two halves and passed to two identical commands run as sub-processes. This will, roughly speaking, almost`*` halve the waiting time. The only cost is typing 8 characters more (5 for `dopar` and 3 for `///`, not counting spaces).
+
+`*` - because the _halves_ may be of different lengths (by 1) and because specific tasks may take a bit different time.
+ 
+== Usage example ==
+Try it out by:
+
+{{{
+dopar echo /// {1..11}
+}}}
+
+This might produce something like: 
+{{{
+1 2 3 4 5
+batch 1 finished
+6 7 8 9 10 11
+batch 2 finished
+}}}
+
+Another example: 
+
+{{{
+dopar mogrify -verbose -resize 1024x768 -verbose /// *.jpg
+}}}
+
+This will run a resize of all JPG images in the current directory. The messages printed by both processes will appear mixed together.
+
+
+== Possible uses ==
+
+The ideas are only limited by one's imagination, but in particular it can be useful to speed up some command line activities:
+  * image processing: ImageMagick, raw to jpg
+  * media compression: lame, oggenc etc.
+  * perl one-liners for processing multiple files
+  * compressing files separately
+
+Also, many other areas.
