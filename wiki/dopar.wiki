@@ -6,6 +6,23 @@ I just added another crude tool - the dopar process launcher. It was born out of
 
 I publish it, as it already saved me more time than I needed to write it.
 
+= Obtaining = 
+
+You can check out the program by:
+
+{{{
+svn checkout http://meats.googlecode.com/svn/trunk/dopar
+}}} 
+
+Or download it from here:
+http://meats.googlecode.com/files/dopar-0.1.py
+
+Then put it into some executable directory, rename to `dopar` or `dopar.py` as You prefer it, and enjoy running jobs in two processes.
+
+= Future roadmap =
+
+I plan to add support for more processors - 3, 4 or `getenv("NUMBER_OF_PROCESSORS")` - don't worry that it's a Windows environment variable... I think You should know, how to set it under Linux. But this feature is still not released, so for now we have just 2 processes. However remember - even when we have more processors to utilize, we still need as many tasks as can be divided between them.
+
 = Details =
 
 Some command line programs, which are very useful, like ImageMagick's `mogrify`, may not take advantage of current multicore processor capabilities. It can be overcome, by running multiple consoles and running lengthy tasks separately, but it's better for humans to concentrate on one activity and having it completed faster than doing the parallelism in one's head.
