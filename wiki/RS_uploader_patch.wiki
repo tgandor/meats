@@ -1,0 +1,23 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+The famous file hosting service:
+http://rapidshare.com/
+offers a handy tool for Perl users:
+http://images.rapidshare.com/software/rsapi.pl
+
+Download that one, apply my patch (the rights to that script are with RS, but they encourage to "Have fun experimenting with this script" (before-last line), by which I also understand applying my patch ;)
+
+Here is the patch:
+http://meats.googlecode.com/files/rsapi.pl.patch
+
+= Details =
+
+I am no "JAPH", acutally I cannot understand anything, that I have not written myself in this mysterious language. However, I managed to do a little change in that provided script.
+
+By the way, they have released another script which works very differently:
+
+http://images.rapidshare.com/software/rsapiresume.pl
+
+Maybe I should think about patching that one to... Never seen it work so far.
