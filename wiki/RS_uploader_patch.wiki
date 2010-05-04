@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary A patch for one of rapidshare's original automatic uploaders: %, elapsed and ETA
 
 = Introduction =
 
