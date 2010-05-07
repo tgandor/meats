@@ -13,9 +13,10 @@ You can check out the program by:
 {{{
 svn checkout http://meats.googlecode.com/svn/trunk/dopar
 }}} 
+Then You can symlink to the working copy from some executable directory: then You'll be able to update it by updating the SVN working copy (recommended).
 
 Or download it from here:
-http://meats.googlecode.com/files/dopar-0.1.py
+http://meats.googlecode.com/files/dopar-0.2.py
 
 Then put it into some executable directory, rename to `dopar` or `dopar.py` as You prefer it, and enjoy running jobs in two processes.
 
