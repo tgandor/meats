@@ -26,12 +26,15 @@ print command+files[:half]
 print command+files[half:]
 """
 
+p2 = subprocess.Popen(command+files[half:])
 if len(files[:half]):
     p1 = subprocess.Popen(command+files[:half])
-p2 = subprocess.Popen(command+files[half:])
+else:
+    p1 = p2
 
 p1.wait()
 print 'batch 1 finished'
-p2.wait()
-print 'batch 2 finished'
+if p1 <> p2:
+    p2.wait()
+    print 'batch 2 finished'
 
