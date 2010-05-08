@@ -14,5 +14,5 @@ def getBytes(line):
 
 if __name__ == '__main__':
     inlines = sys.stdin.readlines()
-    print "".join(sorted(inlines, key=getBytes))
+    sys.stdout.write("".join(sorted(inlines, key=getBytes)))
 
