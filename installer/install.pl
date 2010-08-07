@@ -6,13 +6,24 @@ use File::Find;
 
 $\ = "\n";
 
-print "Scanning executable paths...";
 
-for(split $Config::Config{path_sep}, $ENV{PATH} ) {
-    print if -w $_;
-    print "Read Only: $_" if ! -w $_;
+sub get_bin {
+  print "Scanning executable paths...";
+  for(split $Config::Config{path_sep}, $ENV{PATH} ) {
+      return $_ if -w $_;
+      print "Read Only: $_" if ! -w $_;
+  }
 }
 
+my $bindir = &get_bin;
+print "Taret directory is: $bindir";
+
+my @installs = qw(
+../otofotki/otofotki.sh
+../unwinzip/unwinzip.pl
+);
+
+map { print; copy($_, $bindir); chmod 0755, "$bindir/$_"; } @installs;
 
 __END__
 
