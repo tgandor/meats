@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 
 # This is a oneliner to print the creation date in a mov file
 # developed with python -c ;)

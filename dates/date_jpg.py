@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 
 # This looks for the image date embedded in jpeg header
 # 
