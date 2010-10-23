@@ -10,7 +10,7 @@ except:
     source = sys.stdin
 
 # catch lines with trailing //-comments
-line = re.compile("([\t ]*)([^ \t].*)(// ?)(.*)([\r\n]*)")
+line = re.compile("([\t ]*)([^ \t].*)(// ?)([^\r\n]*)([\r\n]*)")
 
 # move to preceding line
 for l in source.readlines():
