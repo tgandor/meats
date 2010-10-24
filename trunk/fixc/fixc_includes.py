@@ -14,7 +14,8 @@ import sys
 import re
 
 data = [
-    ['stdio.h', ['fflush', 'stdin', 'getchar']]
+    ['stdio.h', ['fflush', 'stdin', 'getchar']],
+    ['stdlib.h', ['system']]
 ]
 
 def fix_includes(bulk):
@@ -32,5 +33,7 @@ if len(sys.argv) < 2:
 else:
     for f in sys.argv[1:]:
         contents = open(f).read()
-        open(f+'~', 'w').write(contents)
-        open(f, 'w').write(fix_includes(contents))
+        new = fix_includes(contents)
+        if new <> contents:
+            open(f+'~', 'w').write(contents)
+            open(f, 'w').write(fix_includes(contents))
