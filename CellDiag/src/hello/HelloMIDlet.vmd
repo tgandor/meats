@@ -43,6 +43,7 @@
                         <Property name="instanceName" typeID="Pjava.lang.String" value="VstringItem"/>
                         <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
                         <Property name="label" typeID="Pjava.lang.String" value="VFree Memory:"/>
+                        <Property name="layout" typeID="Pint" value="V256"/>
                         <Property name="itemCommandListener" typeID="C#ItemCommandListener" value="R17"/>
                         <Property name="text" typeID="Pjava.lang.String" value="UformatBytes(Runtime.getRuntime().freeMemory())"/>
                     </Component>
@@ -55,19 +56,19 @@
                             <Property name="mobileDevice" typeID="C#MobileDevice" value="R2"/>
                         </Component>
                     </Component>
-                    <Component componentID="22" typeID="Cjavax.microedition.lcdui.StringItem">
-                        <Property name="instanceName" typeID="Pjava.lang.String" value="VstringItem1"/>
-                        <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
-                        <Property name="label" typeID="Pjava.lang.String" value="VTotal Memory:"/>
-                        <Property name="itemCommandListener" typeID="C#ItemCommandListener" value="R17"/>
-                        <Property name="text" typeID="Pjava.lang.String" value="UHelloMIDlet.formatBytes(Runtime.getRuntime().totalMemory())"/>
-                    </Component>
                     <Component componentID="23" typeID="Cjavax.microedition.lcdui.StringItem">
                         <Property name="instanceName" typeID="Pjava.lang.String" value="VstringItem2"/>
                         <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
                         <Property name="label" typeID="Pjava.lang.String" value="VUsed Memory:"/>
                         <Property name="itemCommandListener" typeID="C#ItemCommandListener" value="R17"/>
                         <Property name="text" typeID="Pjava.lang.String" value="UformatBytes(&#10;  Runtime.getRuntime().totalMemory()&#10;  - Runtime.getRuntime().freeMemory()&#10;)"/>
+                    </Component>
+                    <Component componentID="22" typeID="Cjavax.microedition.lcdui.StringItem">
+                        <Property name="instanceName" typeID="Pjava.lang.String" value="VstringItem1"/>
+                        <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
+                        <Property name="label" typeID="Pjava.lang.String" value="VTotal Memory:"/>
+                        <Property name="itemCommandListener" typeID="C#ItemCommandListener" value="R17"/>
+                        <Property name="text" typeID="Pjava.lang.String" value="UHelloMIDlet.formatBytes(Runtime.getRuntime().totalMemory())"/>
                     </Component>
                     <Component componentID="24" typeID="Cjavax.microedition.lcdui.StringItem">
                         <Property name="instanceName" typeID="Pjava.lang.String" value="VstringItem3"/>
