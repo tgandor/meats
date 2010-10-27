@@ -19,7 +19,7 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
      * @return a string of the form N B, N/1024.0 KB
      */
     private static String formatBytes(long bytes) {
-        return "" + bytes + " B,\n"
+        return "\n" + bytes + " B, "
                 + bytes/1024 + "." + bytes*10/1024%10 + " KB";
     }
 
@@ -30,7 +30,7 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
      * @return a string of the format "%.2f %%"
      */
     private static String percentage(long part, long total) {
-        return "" + part * 100 / total + "."
+        return "\n" + part * 100 / total + "."
                 + part * 1000 / total % 10
                 + part * 10000 / total % 10 + " %";
     }
@@ -41,8 +41,8 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
     private Command exitCommand;
     private Form form;
     private StringItem stringItem;
-    private StringItem stringItem1;
     private StringItem stringItem2;
+    private StringItem stringItem1;
     private StringItem stringItem3;
     //</editor-fold>//GEN-END:|fields|0|
 
@@ -166,7 +166,8 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
     public StringItem getStringItem() {
         if (stringItem == null) {//GEN-END:|16-getter|0|16-preInit
             // write pre-init user code here
-            stringItem = new StringItem("Free Memory:", formatBytes(Runtime.getRuntime().freeMemory()));//GEN-LINE:|16-getter|1|16-postInit
+            stringItem = new StringItem("Free Memory:", formatBytes(Runtime.getRuntime().freeMemory()));//GEN-BEGIN:|16-getter|1|16-postInit
+            stringItem.setLayout(ImageItem.LAYOUT_DEFAULT | ImageItem.LAYOUT_NEWLINE_BEFORE);//GEN-END:|16-getter|1|16-postInit
             // write post-init user code here
         }//GEN-BEGIN:|16-getter|2|
         return stringItem;
