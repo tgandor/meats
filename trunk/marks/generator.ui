@@ -1,0 +1,293 @@
+<ui version="4.0" >
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>587</width>
+    <height>283</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <widget class="QLabel" name="label" >
+   <property name="geometry" >
+    <rect>
+     <x>9</x>
+     <y>9</y>
+     <width>56</width>
+     <height>42</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Temat:</string>
+   </property>
+   <property name="buddy" >
+    <cstring>temat</cstring>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="temat" >
+   <property name="geometry" >
+    <rect>
+     <x>71</x>
+     <y>20</y>
+     <width>133</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4" >
+   <property name="geometry" >
+    <rect>
+     <x>230</x>
+     <y>10</y>
+     <width>51</width>
+     <height>42</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Student:</string>
+   </property>
+   <property name="buddy" >
+    <cstring>student</cstring>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="radioButton" >
+   <property name="geometry" >
+    <rect>
+     <x>522</x>
+     <y>9</y>
+     <width>56</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>JwUM</string>
+   </property>
+   <property name="checked" >
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="radioButton_2" >
+   <property name="geometry" >
+    <rect>
+     <x>522</x>
+     <y>33</y>
+     <width>56</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>JaPitI</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2" >
+   <property name="geometry" >
+    <rect>
+     <x>9</x>
+     <y>57</y>
+     <width>126</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Raport</string>
+   </property>
+   <property name="buddy" >
+    <cstring>raport</cstring>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3" >
+   <property name="geometry" >
+    <rect>
+     <x>200</x>
+     <y>60</y>
+     <width>57</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Spóźnienie:</string>
+   </property>
+   <property name="buddy" >
+    <cstring>spozn</cstring>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spozn" >
+   <property name="geometry" >
+    <rect>
+     <x>273</x>
+     <y>57</y>
+     <width>56</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="maximum" >
+    <number>10</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_6" >
+   <property name="geometry" >
+    <rect>
+     <x>380</x>
+     <y>60</y>
+     <width>56</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Punkty</string>
+   </property>
+   <property name="buddy" >
+    <cstring>punkty</cstring>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="punkty" >
+   <property name="geometry" >
+    <rect>
+     <x>430</x>
+     <y>60</y>
+     <width>57</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="maximum" >
+    <number>10</number>
+   </property>
+   <property name="value" >
+    <number>10</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5" >
+   <property name="geometry" >
+    <rect>
+     <x>9</x>
+     <y>109</y>
+     <width>56</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Opis:</string>
+   </property>
+   <property name="buddy" >
+    <cstring>ocena</cstring>
+   </property>
+  </widget>
+  <widget class="QPlainTextEdit" name="ocena" >
+   <property name="geometry" >
+    <rect>
+     <x>9</x>
+     <y>129</y>
+     <width>569</width>
+     <height>114</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QDialogButtonBox" name="buttonBox" >
+   <property name="geometry" >
+    <rect>
+     <x>9</x>
+     <y>249</y>
+     <width>444</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="orientation" >
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons" >
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="student" >
+   <property name="geometry" >
+    <rect>
+     <x>280</x>
+     <y>20</y>
+     <width>181</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="raport" >
+   <property name="geometry" >
+    <rect>
+     <x>80</x>
+     <y>60</y>
+     <width>64</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="minimum" >
+    <number>1</number>
+   </property>
+   <property name="maximum" >
+    <number>6</number>
+   </property>
+  </widget>
+  <zorder>buttonBox</zorder>
+  <zorder>radioButton</zorder>
+  <zorder>radioButton_2</zorder>
+  <zorder>temat</zorder>
+  <zorder>label</zorder>
+  <zorder>label_2</zorder>
+  <zorder>label_3</zorder>
+  <zorder>spozn</zorder>
+  <zorder>label_4</zorder>
+  <zorder>label_5</zorder>
+  <zorder>ocena</zorder>
+  <zorder>punkty</zorder>
+  <zorder>label_6</zorder>
+  <zorder>student</zorder>
+  <zorder>raport</zorder>
+ </widget>
+ <tabstops>
+  <tabstop>temat</tabstop>
+  <tabstop>student</tabstop>
+  <tabstop>radioButton</tabstop>
+  <tabstop>radioButton_2</tabstop>
+  <tabstop>raport</tabstop>
+  <tabstop>spozn</tabstop>
+  <tabstop>punkty</tabstop>
+  <tabstop>ocena</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
