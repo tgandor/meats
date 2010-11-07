@@ -1,0 +1,10 @@
+!
+! Key mappings for some laptop keyboards
+!
+
+! set Scroll Lock to Home
+keycode 78 = Home
+
+! set Pause Break to End
+keycode 127 = End
+
