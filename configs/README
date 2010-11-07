@@ -1,0 +1,12 @@
+This is a directory with config files for everyday use ;)
+Most of them should be placed in the home directory,
+but there are exceptions.
+
+Example:
+.desktop - service menu actions for Konqueror / Dolphin 
+(KDE 4)
+
+These need to go to ~/.kde/share/kde4/services
+(or maybe  ~/.kde/share/kde4/services/ServiceMenus,
+ which can be created if it doesn't exist).
+ 
