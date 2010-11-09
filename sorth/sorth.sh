@@ -1,1 +1,0 @@
-python -c 'import sys, re; tok = lambda x: re.search("^([0-9.,]+)([KMG]?)", x); cl = lambda x: float(x.replace(",",".")); sys.stdout.write("".join(sorted(sys.stdin.readlines(), key = lambda x: (cl(tok(x).group(1)) * {"K":2**10,"M":2**20,"G":2**30}[tok(x).group(2)] if len(tok(x).group(2)) else cl(tok(x).group(1)) ) if tok(x) else 0.0 ) ) )'
