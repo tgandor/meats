@@ -8,3 +8,15 @@ keycode 78 = Home
 ! set Pause Break to End
 keycode 127 = End
 
+! 'gray' plus now Tab (spreadsheets etc.)
+keycode 86 = Tab
+
+! make CapsLock another Ctrl
+clear Lock
+keycode 66 = Control_L
+add Control = Control_L
+
+! one strange key (supposed to be another backslash)
+keycode 94 = Caps_Lock
+add Lock = Caps_Lock
+
