@@ -15,7 +15,8 @@ import re
 
 data = [
     ['stdio.h', ['fflush', 'stdin', 'getchar']],
-    ['stdlib.h', ['system', 'exit']]
+    ['stdlib.h', ['system', 'exit']],
+    ['math.h', ['sqrt']]
 ]
 
 def fix_includes(bulk):
