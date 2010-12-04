@@ -20,7 +20,7 @@ __DATA__
 
 vim clisp emacs 
 
-mc kdf 
+mc kdf aptitude kdesdk-scripts
 
 numlockx
 
