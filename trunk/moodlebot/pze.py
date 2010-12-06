@@ -64,7 +64,22 @@ class MoodleBot(object):
         from os.path import split
         out_filename = ''.join((c if not c in '?/\\()&' else '_') for c in split(url)[-1])
         open(out_filename, 'w').write(self.fetch(url))
-        
+
+def get_mails(url):
+    """Retrieve user E-mails from a page (eg. grader report)."""
+    from HTMLParser import HTMLParser as HP
+    from urllib import unquote
+    from re import findall
+    get = MoodleBot().fetch
+    unesc = HP().unescape
+    retr = lambda url: unesc(get(url).decode('utf-8'))
+    user_links = sorted(set(findall('user/view[^"]+', retr(url))))
+    user_pages = [retr(l) for l in user_links]
+    emails = findall('>([\w\.]+@[\w\.]+)<', "".join(user_pages))
+    assert len(emails)==len(user_links)
+    print "; ".join(emails)
+    return zip(user_links, emails)
+
 if __name__=='__main__':
     import sys
     if len(sys.argv)==1:
