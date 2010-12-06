@@ -13,7 +13,6 @@ class MoodleBot(object):
         import ConfigParser
         import os
         from urllib2 import build_opener, HTTPCookieProcessor
-        from urllib import urlencode
         conf = ConfigParser.RawConfigParser()
         if not os.path.exists('pze.ini'):
             import getpass
@@ -42,7 +41,7 @@ class MoodleBot(object):
 
     def url(self, url):
         """Optionally stick the current url_base before the url."""
-        if url.startswith(self.url_base):
+        if url.startswith('http'):
             return url
         if url.startswith('/'):
             return self.url_base + url
@@ -51,11 +50,13 @@ class MoodleBot(object):
     def post(self, url, data):
         """Send post data to specific url."""
         if isinstance(data, dict):
+            from urllib import urlencode
             data = urlencode(data)
         return self.opener.open(self.url(url), data).read()
             
     def fetch(self, url):
         """Read a single page from the system (relative). Low  level."""
+        print self.url(url)
         return self.opener.open(self.url(url)).read()
 
     def download(self, url):
@@ -67,6 +68,8 @@ class MoodleBot(object):
 if __name__=='__main__':
     import sys
     if len(sys.argv)==1:
+        print "usage: %s url [url...]" % sys.argv[0]
+    if len(sys.argv)==2:
         sys.stdout.write(MoodleBot().fetch(sys.argv[1]))
     else:
         map(MoodleBot.download, sys.argv[1:])
