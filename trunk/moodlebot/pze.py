@@ -70,7 +70,7 @@ def get_mails(url):
     from HTMLParser import HTMLParser as HP
     from urllib import unquote
     from re import findall
-    get = MoodleBot().fetch
+    get = bot.fetch
     unesc = HP().unescape
     retr = lambda url: unesc(get(url).decode('utf-8'))
     user_links = sorted(set(findall('user/view[^"]+', retr(url))))
@@ -80,12 +80,29 @@ def get_mails(url):
     print "; ".join(emails)
     return zip(user_links, emails)
 
+def help():
+    import types
+    print """
+    Usage: %s <function> [arguments] 
+    """ % sys.argv[0]
+    print "Available functions are:"
+    g = globals() 
+    for f in g: 
+        if type(g[f])==types.FunctionType:
+            print f
+
+def dload(*args):
+    """Download global function."""
+    map(MoodleBot().download, args)
+
+def fetch(arg):
+    print MoodleBot().fetch(arg)
+    
 if __name__=='__main__':
     import sys
-    if len(sys.argv)==1:
-        print "usage: %s url [url...]" % sys.argv[0]
-    if len(sys.argv)==2:
-        sys.stdout.write(MoodleBot().fetch(sys.argv[1]))
-    else:
-        map(MoodleBot.download, sys.argv[1:])
-
+    try:
+        # commandline calling of functions
+        args = sys.argv[2:]
+        globals()[sys.argv[1]](*args)
+    except:
+        help()
