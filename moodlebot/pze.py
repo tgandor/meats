@@ -70,7 +70,7 @@ def get_mails(url):
     from HTMLParser import HTMLParser as HP
     from urllib import unquote
     from re import findall
-    get = bot.fetch
+    get = MoodleBot().fetch
     unesc = HP().unescape
     retr = lambda url: unesc(get(url).decode('utf-8'))
     user_links = sorted(set(findall('user/view[^"]+', retr(url))))
