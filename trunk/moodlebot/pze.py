@@ -1,10 +1,17 @@
 #!/usr/bin/env python
+import sys
 
 """A module with some Moodle access automatic utilities."""
 
 class MoodleBot(object):
     """A plain HTTP[s] moodle pages fetcher."""
     
+    @classmethod
+    def mockbot(cls):
+        """Forcing the bot to fetch test.html and not login."""
+        cls.__init__ = lambda self: None
+        cls.fetch = lambda self, arg: open('test.html').read()
+
     def __init__(self):
         """Workaround for fake singleton recipe: don't construct again."""
         if '_inst' in vars(self.__class__):
@@ -16,7 +23,7 @@ class MoodleBot(object):
         conf = ConfigParser.RawConfigParser()
         if not os.path.exists('pze.ini'):
             import getpass
-            print "Missing config file pze.ini"
+            print >>sys.stderr, "Missing config file pze.ini"
             url_base = raw_input('Enter base URL: ')
             username = raw_input('Enter username: ')
             password = getpass.getpass()
@@ -56,15 +63,56 @@ class MoodleBot(object):
             
     def fetch(self, url):
         """Read a single page from the system (relative). Low  level."""
-        print self.url(url)
+        print >>sys.stderr, self.url(url)
         return self.opener.open(self.url(url)).read()
 
     def download(self, url):
         """Fetch resource and save into a file."""
         from os.path import split
-        out_filename = ''.join((c if not c in '?/\\()&' else '_') for c in split(url)[-1])
+        out_filename = ''.join((c if not c in '?/\\()&' else '_')
+                               for c in split(url)[-1])
         open(out_filename, 'w').write(self.fetch(url))
 
+    def prep_rows_arg(self, arg):
+        """Handle filename (read lines) or stdin if arg is None."""
+        if arg is None:
+            rows = sys.stdin.readlines()
+            arg = 'stdin'
+        else:
+            rows = open(arg).readlines()
+        return rows, arg
+        
+    def memo_load_urls(self, arg):
+        """Retrieve fragments of pages (regexp matches) as specified in file."""
+        import re
+        rows, _ = self.prep_rows_arg(arg)
+        return dict([
+            (l, re.findall(l.split()[1], self.fetch(l.split()[0])))
+            for l in rows])
+
+    def memo_store_dict(self, arg):
+        """Create a file with current matches (pickled dict)."""
+        import cPickle
+        cPickle.dump(self.memo_load_urls(arg),
+            open(self.prep_rows_arg(arg)[1]+'.last.p', 'wb'))
+
+    def memo_load_dict(self, arg):
+        """Retrieve the stored dictionary, see memo_store_dict."""
+        import cPickle
+        arg = arg or 'stdin'
+        try:
+            return cPickle.load(open(arg+'.last.p'))
+        except IOError:
+            print >>sys.stderr, "Missing state file - run %s memorize %s" % (
+                sys.argv[0], arg)
+            raise
+
+    def memo_check_update(self, arg):
+        """Load both old and new versions, return the new matches."""
+        current = MoodleBot().memo_load_urls(arg)
+        last = MoodleBot().memo_load_dict(arg)
+        return list(set.union(*[set(current[r])-set(last[r]) for r in current]))
+        
 def get_mails(url):
     """Retrieve user E-mails from a page (eg. grader report)."""
     from HTMLParser import HTMLParser as HP
@@ -80,7 +128,9 @@ def get_mails(url):
     print "; ".join(emails)
     return zip(user_links, emails)
 
+# Careful with from ... import *, when interactive: shadows help
 def help():
+    """Print usage information and list global functions."""
     import types
     print """
     Usage: %s <function> [arguments] 
@@ -89,20 +139,71 @@ def help():
     g = globals() 
     for f in g: 
         if type(g[f])==types.FunctionType:
-            print f
+            print "%-20s %s" % (f, g[f].__doc__)
 
 def dload(*args):
     """Download global function."""
+    if args == ['-']:
+        args = sys.stdin.read().split()
     map(MoodleBot().download, args)
 
 def fetch(arg):
+    """Retreive URL and print to stdout. With newline."""
     print MoodleBot().fetch(arg)
+
+def watch(arg=None):
+    """Read urls and regexps from file (argument), watch for changes."""
+    print "\n".join(map(MoodleBot().url, MoodleBot().memo_check_update(arg)))
+
+def memorize(arg=None):
+    """Store the matches in a pickled dictionary in a file, see watch."""
+    MoodleBot().memo_store_dict(arg)
+
+def qtgui_watch(arg):
+    """Gui (system tray) version of watch."""
+    import sip
+    sip.setapi('QVariant', 2)
+    from PyQt4 import QtCore, QtGui
     
+    class Window(QtGui.QDialog):
+        def __init__(self):
+            super(Window, self).__init__()
+            trayIconMenu = QtGui.QMenu(self)
+            trayIconMenu.addAction(QtGui.QAction("&Quit", self,
+                        triggered=QtGui.qApp.quit))
+            trayIcon = QtGui.QSystemTrayIcon(self)
+            trayIcon.setContextMenu(trayIconMenu)
+            trayIconIcon = QtGui.QIcon('moobo.svg')
+            trayIcon.setIcon(trayIconIcon)
+            trayIcon.setToolTip('MoodleBot is watching')
+            trayIcon.show()
+            self.trayIcon = trayIcon
+            timer = QtCore.QTimer()
+            timer.timeout.connect(self.checks)
+            timer.start(5000)
+            self.timer = timer
+
+        def checks(self):
+            news = MoodleBot().memo_check_update(arg) 
+            if news:
+                self.trayIcon.showMessage('News found!', "\n".join(news),
+                                          msecs=60000)
+                self.timer.stop()
+            
+    app = QtGui.QApplication(sys.argv)
+    
+    if not QtGui.QSystemTrayIcon.isSystemTrayAvailable():
+        QtGui.QMessageBox.critical(None, "Systray",
+                "I couldn't detect any system tray on this system.")
+        sys.exit(1)
+        
+    window = Window()
+    sys.exit(app.exec_())
+
 if __name__=='__main__':
-    import sys
     try:
         # commandline calling of functions
         args = sys.argv[2:]
         globals()[sys.argv[1]](*args)
-    except:
+    except IndexError:
         help()
