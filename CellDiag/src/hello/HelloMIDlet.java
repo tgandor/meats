@@ -39,11 +39,17 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Fields ">//GEN-BEGIN:|fields|0|
     private Command exitCommand;
+    private Command exitCommand1;
+    private Command itemCommand;
+    private Command backCommand;
+    private Command itemCommand1;
     private Form form;
     private StringItem stringItem;
     private StringItem stringItem2;
     private StringItem stringItem1;
     private StringItem stringItem3;
+    private List list;
+    private Alert alert;
     //</editor-fold>//GEN-END:|fields|0|
 
     /**
@@ -73,7 +79,7 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
      */
     public void startMIDlet() {//GEN-END:|3-startMIDlet|0|3-preAction
         // write pre-action user code here
-        switchDisplayable(null, getForm());//GEN-LINE:|3-startMIDlet|1|3-postAction
+        switchDisplayable(null, getList());//GEN-LINE:|3-startMIDlet|1|3-postAction
         // write post-action user code here
     }//GEN-BEGIN:|3-startMIDlet|2|
     //</editor-fold>//GEN-END:|3-startMIDlet|2|
@@ -115,16 +121,35 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
      */
     public void commandAction(Command command, Displayable displayable) {//GEN-END:|7-commandAction|0|7-preCommandAction
         // write pre-action user code here
-        if (displayable == form) {//GEN-BEGIN:|7-commandAction|1|19-preAction
-            if (command == exitCommand) {//GEN-END:|7-commandAction|1|19-preAction
+        if (displayable == form) {//GEN-BEGIN:|7-commandAction|1|35-preAction
+            if (command == backCommand) {//GEN-END:|7-commandAction|1|35-preAction
                 // write pre-action user code here
-                exitMIDlet();//GEN-LINE:|7-commandAction|2|19-postAction
+                switchDisplayable(null, getList());//GEN-LINE:|7-commandAction|2|35-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|3|7-postCommandAction
-        }//GEN-END:|7-commandAction|3|7-postCommandAction
+            } else if (command == exitCommand) {//GEN-LINE:|7-commandAction|3|19-preAction
+                // write pre-action user code here
+                exitMIDlet();//GEN-LINE:|7-commandAction|4|19-postAction
+                // write post-action user code here
+            }//GEN-BEGIN:|7-commandAction|5|27-preAction
+        } else if (displayable == list) {
+            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|5|27-preAction
+                // write pre-action user code here
+                listAction();//GEN-LINE:|7-commandAction|6|27-postAction
+                // write post-action user code here
+            } else if (command == exitCommand1) {//GEN-LINE:|7-commandAction|7|30-preAction
+                // write pre-action user code here
+//GEN-LINE:|7-commandAction|8|30-postAction
+                // write post-action user code here
+            } else if (command == itemCommand1) {//GEN-LINE:|7-commandAction|9|40-preAction
+                // write pre-action user code here
+                listAction();//GEN-LINE:|7-commandAction|10|40-postAction
+                // write post-action user code here
+            }//GEN-BEGIN:|7-commandAction|11|7-postCommandAction
+        }//GEN-END:|7-commandAction|11|7-postCommandAction
         // write post-action user code here
-    }//GEN-BEGIN:|7-commandAction|4|
-    //</editor-fold>//GEN-END:|7-commandAction|4|
+    }//GEN-BEGIN:|7-commandAction|12|
+    //</editor-fold>//GEN-END:|7-commandAction|12|
+
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|18-getter|0|18-preInit
     /**
@@ -149,8 +174,9 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
     public Form getForm() {
         if (form == null) {//GEN-END:|14-getter|0|14-preInit
             // write pre-init user code here
-            form = new Form("Welcome", new Item[] { getStringItem(), getStringItem1(), getStringItem2(), getStringItem3() });//GEN-BEGIN:|14-getter|1|14-postInit
+            form = new Form("RAM available to Java", new Item[] { getStringItem1(), getStringItem(), getStringItem3(), getStringItem2() });//GEN-BEGIN:|14-getter|1|14-postInit
             form.addCommand(getExitCommand());
+            form.addCommand(getBackCommand());
             form.setCommandListener(this);//GEN-END:|14-getter|1|14-postInit
             // write post-init user code here
         }//GEN-BEGIN:|14-getter|2|
@@ -222,6 +248,135 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
         return stringItem3;
     }
     //</editor-fold>//GEN-END:|24-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand1 ">//GEN-BEGIN:|29-getter|0|29-preInit
+    /**
+     * Returns an initiliazed instance of exitCommand1 component.
+     * @return the initialized component instance
+     */
+    public Command getExitCommand1() {
+        if (exitCommand1 == null) {//GEN-END:|29-getter|0|29-preInit
+            // write pre-init user code here
+            exitCommand1 = new Command("Exit", Command.EXIT, 0);//GEN-LINE:|29-getter|1|29-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|29-getter|2|
+        return exitCommand1;
+    }
+    //</editor-fold>//GEN-END:|29-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: itemCommand ">//GEN-BEGIN:|31-getter|0|31-preInit
+    /**
+     * Returns an initiliazed instance of itemCommand component.
+     * @return the initialized component instance
+     */
+    public Command getItemCommand() {
+        if (itemCommand == null) {//GEN-END:|31-getter|0|31-preInit
+            // write pre-init user code here
+            itemCommand = new Command("Item", Command.ITEM, 0);//GEN-LINE:|31-getter|1|31-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|31-getter|2|
+        return itemCommand;
+    }
+    //</editor-fold>//GEN-END:|31-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: list ">//GEN-BEGIN:|25-getter|0|25-preInit
+    /**
+     * Returns an initiliazed instance of list component.
+     * @return the initialized component instance
+     */
+    public List getList() {
+        if (list == null) {//GEN-END:|25-getter|0|25-preInit
+            // write pre-init user code here
+            list = new List("Welcome to CellDiag", Choice.IMPLICIT);//GEN-BEGIN:|25-getter|1|25-postInit
+            list.append("Memory (RAM)", null);
+            list.append("Help", null);
+            list.append("About", null);
+            list.append("Exit", null);
+            list.addCommand(getExitCommand1());
+            list.addCommand(getItemCommand1());
+            list.setCommandListener(this);
+            list.setSelectedFlags(new boolean[] { false, false, false, false });//GEN-END:|25-getter|1|25-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|25-getter|2|
+        return list;
+    }
+    //</editor-fold>//GEN-END:|25-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Method: listAction ">//GEN-BEGIN:|25-action|0|25-preAction
+    /**
+     * Performs an action assigned to the selected list element in the list component.
+     */
+    public void listAction() {//GEN-END:|25-action|0|25-preAction
+        // enter pre-action user code here
+        String __selectedString = getList().getString(getList().getSelectedIndex());//GEN-BEGIN:|25-action|1|37-preAction
+        if (__selectedString != null) {
+            if (__selectedString.equals("Memory (RAM)")) {//GEN-END:|25-action|1|37-preAction
+                // write pre-action user code here
+                switchDisplayable(null, getForm());//GEN-LINE:|25-action|2|37-postAction
+                // write post-action user code here
+            } else if (__selectedString.equals("Help")) {//GEN-LINE:|25-action|3|42-preAction
+                // write pre-action user code here
+//GEN-LINE:|25-action|4|42-postAction
+                // write post-action user code here
+            } else if (__selectedString.equals("About")) {//GEN-LINE:|25-action|5|44-preAction
+                // write pre-action user code here
+                switchDisplayable(getAlert(), getList());//GEN-LINE:|25-action|6|44-postAction
+                // write post-action user code here
+            } else if (__selectedString.equals("Exit")) {//GEN-LINE:|25-action|7|43-preAction
+                // write pre-action user code here
+                exitMIDlet();//GEN-LINE:|25-action|8|43-postAction
+                // write post-action user code here
+            }//GEN-BEGIN:|25-action|9|25-postAction
+        }//GEN-END:|25-action|9|25-postAction
+        // enter post-action user code here
+    }//GEN-BEGIN:|25-action|10|
+    //</editor-fold>//GEN-END:|25-action|10|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: backCommand ">//GEN-BEGIN:|34-getter|0|34-preInit
+    /**
+     * Returns an initiliazed instance of backCommand component.
+     * @return the initialized component instance
+     */
+    public Command getBackCommand() {
+        if (backCommand == null) {//GEN-END:|34-getter|0|34-preInit
+            // write pre-init user code here
+            backCommand = new Command("Back", Command.BACK, 0);//GEN-LINE:|34-getter|1|34-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|34-getter|2|
+        return backCommand;
+    }
+    //</editor-fold>//GEN-END:|34-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: itemCommand1 ">//GEN-BEGIN:|39-getter|0|39-preInit
+    /**
+     * Returns an initiliazed instance of itemCommand1 component.
+     * @return the initialized component instance
+     */
+    public Command getItemCommand1() {
+        if (itemCommand1 == null) {//GEN-END:|39-getter|0|39-preInit
+            // write pre-init user code here
+            itemCommand1 = new Command("Item", Command.ITEM, 0);//GEN-LINE:|39-getter|1|39-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|39-getter|2|
+        return itemCommand1;
+    }
+    //</editor-fold>//GEN-END:|39-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alert ">//GEN-BEGIN:|46-getter|0|46-preInit
+    /**
+     * Returns an initiliazed instance of alert component.
+     * @return the initialized component instance
+     */
+    public Alert getAlert() {
+        if (alert == null) {//GEN-END:|46-getter|0|46-preInit
+            // write pre-init user code here
+            alert = new Alert("About CellDiag", "CellDiag\nJava Mobile Phone info and benchmark application.\n\nAuthor: Tomasz Gandor <tomasz.gandor@gmail.com>\n", null, null);//GEN-BEGIN:|46-getter|1|46-postInit
+            alert.setTimeout(Alert.FOREVER);//GEN-END:|46-getter|1|46-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|46-getter|2|
+        return alert;
+    }
+    //</editor-fold>//GEN-END:|46-getter|2|
 
     /**
      * Returns a display instance.
