@@ -153,7 +153,17 @@ def fetch(arg):
 
 def watch(arg=None):
     """Read urls and regexps from file (argument), watch for changes."""
-    print "\n".join(map(MoodleBot().url, MoodleBot().memo_check_update(arg)))
+    news = MoodleBot().memo_check_update(arg)
+    if news:
+        print "\n".join(map(MoodleBot().url, news))
+
+def watch_dload(arg=None):
+    """Read urls and regexps from file (argument), watch for changes."""
+    news = MoodleBot().memo_check_update(arg)
+    if news:
+        map(MoodleBot().download, news)
+    else:
+        print >>sys.stderr, 'Nothing to download'
 
 def memorize(arg=None):
     """Store the matches in a pickled dictionary in a file, see watch."""
@@ -161,34 +171,77 @@ def memorize(arg=None):
 
 def qtgui_watch(arg):
     """Gui (system tray) version of watch."""
+    # next 2 lines blindly follow examples...
     import sip
     sip.setapi('QVariant', 2)
     from PyQt4 import QtCore, QtGui
-    
+    import threading
+
+    class CheckerThread(QtCore.QThread):
+        def __init__(self, parent=None):
+            super(CheckerThread, self).__init__(parent)
+            # actual variables
+            self.lastNews = []
+            self.cancelled = False
+            self.window = parent
+            self.working = False
+            
+        def light_sleep(self, secs):
+            """Sleep shallowly to wake every second."""
+            for i in xrange(secs):
+                self.sleep(1)
+                if self.cancelled:
+                    break
+                            
+        def run(self):
+            if self.window:
+                while not self.cancelled:
+                    print >>sys.stderr, 'Running the checks...'
+                    self.working = True
+                    self.window.trayIcon.setToolTip('MoodleBot retrieves!')
+                    news = MoodleBot().memo_check_update(arg)
+                    self.window.trayIcon.setToolTip('MoodleBot watches...')
+                    self.working = False
+                    if news:
+                        self.lastNews = news
+                        self.light_sleep(600)
+                    else:
+                        self.light_sleep(6)
+                
     class Window(QtGui.QDialog):
         def __init__(self):
             super(Window, self).__init__()
+            # PyQt4 stuff
             trayIconMenu = QtGui.QMenu(self)
-            trayIconMenu.addAction(QtGui.QAction("&Quit", self,
-                        triggered=QtGui.qApp.quit))
+            trayIconMenu.addAction(
+                QtGui.QAction("&Quit", self, triggered=self.cancel))
             trayIcon = QtGui.QSystemTrayIcon(self)
             trayIcon.setContextMenu(trayIconMenu)
             trayIconIcon = QtGui.QIcon('moobo.svg')
             trayIcon.setIcon(trayIconIcon)
-            trayIcon.setToolTip('MoodleBot is watching')
+            trayIcon.setToolTip('MoodleBot is watching...')
             trayIcon.show()
             self.trayIcon = trayIcon
+            thread = CheckerThread(self)
+            thread.start()
+            self.thread = thread
             timer = QtCore.QTimer()
-            timer.timeout.connect(self.checks)
-            timer.start(5000)
+            timer.singleShot(5000, self.checks)
             self.timer = timer
 
         def checks(self):
-            news = MoodleBot().memo_check_update(arg) 
-            if news:
-                self.trayIcon.showMessage('News found!', "\n".join(news),
-                                          msecs=60000)
-                self.timer.stop()
+            if self.thread.lastNews:
+                self.trayIcon.showMessage(
+                    'News found!', "\n".join(self.thread.lastNews), msecs=60000)
+                self.timer.singleShot(120000, self.checks)
+            else:
+                self.timer.singleShot(5000, self.checks)
+            
+        def cancel(self):
+            """Stop operation. Still hangs when thread checks."""
+            self.thread.cancelled = True
+            self.thread.wait()
+            QtGui.qApp.quit()
             
     app = QtGui.QApplication(sys.argv)
     
