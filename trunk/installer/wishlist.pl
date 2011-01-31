@@ -27,6 +27,9 @@ numlockx
 subversion mercurial git-core
 
 idle python-numpy python-scipy python-matplotlib python-mpi
+python-argparse 
+python-numpy-doc python-argparse-doc python-matplotlib-doc
+python-doc
 
 eclipse 
 
@@ -34,7 +37,7 @@ mplayer mencoder
 
 p7zip-full p7zip-rar unrar rar
 
-perl-doc
+perl-doc doxygen doxygen-doc doxygen-gui graphviz
 
 openvpn openssh-server
 
