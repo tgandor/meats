@@ -22,14 +22,17 @@ def temp_graph():
     from matplotlib.pyplot import plot, show, figure, draw, axis
     from time import time, sleep
     from threading import Thread
-    window =[ [i]*30 for i in cpu_temps() ]
+    init_temps = cpu_temps()
+    window =[ [i]*30 for i in init_temps ]
     fig = figure()
     ax = fig.add_subplot(111)
     lines = [ ax.plot(win)[0] for win in window ]
-    ax.axis([0, 30, 25, 80])
+    ax.axis([0, 30,
+             min(30, min(init_temps)-10),
+             max(60, max(init_temps)+10)])
     def update():
         if update.live and fig.canvas.manager.window:
-            for i in range(3):
+            for i in xrange(len(init_temps)):
                 window[i].append(cpu_temps()[i])
                 window[i].pop(0)
                 lines[i].set_ydata(window[i])
