@@ -7,12 +7,16 @@ import subprocess
 
 def go(dta):
     cmd, arg = dta
-    cmd = cmd.replace('ARG', arg)
+    if cmd.find('ARG') <> -1:
+        cmd = cmd.replace('ARG', arg)
+    else:
+        cmd = " ".join((cmd, arg))
     output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()[0]
     return output
 
 def main():
-    p = multiprocessing.Pool()
+    num_proc = os.getenv('NUM_PROC')
+    p = multiprocessing.Pool(int(num_proc) if num_proc else None)
     print "Mapping, please wait..."
     outputs = p.map(go, [ (sys.argv[1], arg) for arg in sys.argv[2:]] )
     print "\n".join(outputs)
