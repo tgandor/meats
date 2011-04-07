@@ -18,7 +18,7 @@ kile texlive-lang-polish texlive-doc-pl
 texlive-fonts-extra
 ttf-mscorefonts-installer
 
-mc kdf aptitude apt-rdepends kdesdk-scripts fdupes
+mc kdf aptitude apt-rdepends kdesdk-scripts fdupes kdirstat
 p7zip-full p7zip-rar unrar rar
 openvpn openssh-server
 numlockx cpufrequtils
@@ -59,5 +59,5 @@ kteatime
 wine
 
 gnubik childsplay chromium-bsu tuxmath tuxpaint tuxtype
-lletters 
+lletters kdegames
 
