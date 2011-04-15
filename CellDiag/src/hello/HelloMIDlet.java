@@ -138,7 +138,7 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
                 // write post-action user code here
             } else if (command == exitCommand1) {//GEN-LINE:|7-commandAction|7|30-preAction
                 // write pre-action user code here
-//GEN-LINE:|7-commandAction|8|30-postAction
+                exitMIDlet();//GEN-LINE:|7-commandAction|8|30-postAction
                 // write post-action user code here
             } else if (command == itemCommand1) {//GEN-LINE:|7-commandAction|9|40-preAction
                 // write pre-action user code here
@@ -355,7 +355,7 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
     public Command getItemCommand1() {
         if (itemCommand1 == null) {//GEN-END:|39-getter|0|39-preInit
             // write pre-init user code here
-            itemCommand1 = new Command("Item", Command.ITEM, 0);//GEN-LINE:|39-getter|1|39-postInit
+            itemCommand1 = new Command("Choose", Command.ITEM, 0);//GEN-LINE:|39-getter|1|39-postInit
             // write post-init user code here
         }//GEN-BEGIN:|39-getter|2|
         return itemCommand1;
