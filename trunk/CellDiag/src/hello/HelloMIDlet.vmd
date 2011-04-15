@@ -57,7 +57,7 @@
                 <Component componentID="39" typeID="Cjavax.microedition.lcdui.Command">
                     <Property name="instanceName" typeID="Pjava.lang.String" value="VitemCommand1"/>
                     <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
-                    <Property name="label" typeID="Pjava.lang.String" value="VItem"/>
+                    <Property name="label" typeID="Pjava.lang.String" value="VChoose"/>
                     <Property name="type" typeID="Pint" value="V8"/>
                 </Component>
             </Component>
@@ -134,8 +134,13 @@
                         </Component>
                     </Component>
                     <Component componentID="30" typeID="C#CommandEventSource">
+                        <Property name="eventHandler" typeID="C#EventHandler" value="R48"/>
                         <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R25"/>
                         <Property name="command" typeID="Cjavax.microedition.lcdui.Command" value="R29"/>
+                        <Component componentID="48" typeID="C#ExitMidletEventHandler">
+                            <Property name="eventSource" typeID="C#EventSource" value="R30"/>
+                            <Property name="mobileDevice" typeID="C#MobileDevice" value="R2"/>
+                        </Component>
                     </Component>
                     <Component componentID="37" typeID="C#ListElementEventSource">
                         <Property name="eventHandler" typeID="C#EventHandler" value="R38"/>
@@ -143,14 +148,6 @@
                         <Component componentID="38" typeID="C#SwitchDisplayableEventHandler">
                             <Property name="eventSource" typeID="C#EventSource" value="R37"/>
                             <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R14"/>
-                        </Component>
-                    </Component>
-                    <Component componentID="40" typeID="C#CommandEventSource">
-                        <Property name="eventHandler" typeID="C#EventHandler" value="R41"/>
-                        <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R25"/>
-                        <Property name="command" typeID="Cjavax.microedition.lcdui.Command" value="R39"/>
-                        <Component componentID="41" typeID="C#ListEventHandler">
-                            <Property name="eventSource" typeID="C#EventSource" value="R40"/>
                         </Component>
                     </Component>
                     <Component componentID="42" typeID="C#ListElementEventSource">
@@ -162,6 +159,14 @@
                         <Component componentID="45" typeID="C#ExitMidletEventHandler">
                             <Property name="eventSource" typeID="C#EventSource" value="R43"/>
                             <Property name="mobileDevice" typeID="C#MobileDevice" value="R2"/>
+                        </Component>
+                    </Component>
+                    <Component componentID="40" typeID="C#CommandEventSource">
+                        <Property name="eventHandler" typeID="C#EventHandler" value="R41"/>
+                        <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R25"/>
+                        <Property name="command" typeID="Cjavax.microedition.lcdui.Command" value="R39"/>
+                        <Component componentID="41" typeID="C#ListEventHandler">
+                            <Property name="eventSource" typeID="C#EventSource" value="R40"/>
                         </Component>
                     </Component>
                     <Component componentID="44" typeID="C#ListElementEventSource">
@@ -188,9 +193,9 @@
         </Component>
     </Document>
     <FlowScene version="1">
-        <Node componentID="25" descriptorID="componentNode25" x="312" y="57"/>
-        <Node componentID="14" descriptorID="componentNode14" x="166" y="262"/>
         <Node componentID="2" descriptorID="componentNode2" x="24" y="26"/>
+        <Node componentID="14" descriptorID="componentNode14" x="166" y="262"/>
         <Node componentID="46" descriptorID="componentNode46" x="421" y="272"/>
+        <Node componentID="25" descriptorID="componentNode25" x="312" y="57"/>
     </FlowScene>
 </VisualDesign>
