@@ -5,8 +5,11 @@
 
 package com.googlecode.meats;
 
+import com.sun.midp.io.Properties;
 import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
+import org.netbeans.microedition.lcdui.SimpleTableModel;
+import org.netbeans.microedition.lcdui.TableItem;
 
 /**
  * @author olaija
@@ -43,8 +46,8 @@ public class CellDiag extends MIDlet implements CommandListener {
     private Command itemCommand;
     private Command backCommand;
     private Command itemCommand1;
-    private Command backCommand1;
     private Command exitCommand2;
+    private Command backCommand1;
     private Form ram;
     private StringItem stringItem;
     private StringItem stringItem2;
@@ -53,7 +56,9 @@ public class CellDiag extends MIDlet implements CommandListener {
     private List list;
     private Alert alert;
     private Form features;
-    private StringItem stringItem4;
+    private TableItem tableItem;
+    private Alert pimAlert;
+    private SimpleTableModel tableModel1;
     //</editor-fold>//GEN-END:|fields|0|
 
     /**
@@ -130,39 +135,32 @@ public class CellDiag extends MIDlet implements CommandListener {
                 // write pre-action user code here
                 switchDisplayable(null, getList());//GEN-LINE:|7-commandAction|2|54-postAction
                 // write post-action user code here
-            } else if (command == exitCommand2) {//GEN-LINE:|7-commandAction|3|56-preAction
-                // write pre-action user code here
-                exitMIDlet();//GEN-LINE:|7-commandAction|4|56-postAction
-                // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|5|27-preAction
+            }//GEN-BEGIN:|7-commandAction|3|27-preAction
         } else if (displayable == list) {
-            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|5|27-preAction
+            if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|3|27-preAction
                 // write pre-action user code here
-                listAction();//GEN-LINE:|7-commandAction|6|27-postAction
+                listAction();//GEN-LINE:|7-commandAction|4|27-postAction
                 // write post-action user code here
-            } else if (command == exitCommand1) {//GEN-LINE:|7-commandAction|7|30-preAction
+            } else if (command == exitCommand1) {//GEN-LINE:|7-commandAction|5|30-preAction
                 // write pre-action user code here
-                exitMIDlet();//GEN-LINE:|7-commandAction|8|30-postAction
+                exitMIDlet();//GEN-LINE:|7-commandAction|6|30-postAction
                 // write post-action user code here
-            } else if (command == itemCommand1) {//GEN-LINE:|7-commandAction|9|40-preAction
+            } else if (command == itemCommand1) {//GEN-LINE:|7-commandAction|7|40-preAction
                 // write pre-action user code here
-                listAction();//GEN-LINE:|7-commandAction|10|40-postAction
+                listAction();//GEN-LINE:|7-commandAction|8|40-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|11|35-preAction
+            }//GEN-BEGIN:|7-commandAction|9|35-preAction
         } else if (displayable == ram) {
-            if (command == backCommand) {//GEN-END:|7-commandAction|11|35-preAction
+            if (command == backCommand) {//GEN-END:|7-commandAction|9|35-preAction
                 // write pre-action user code here
-                switchDisplayable(null, getList());//GEN-LINE:|7-commandAction|12|35-postAction
+                switchDisplayable(null, getList());//GEN-LINE:|7-commandAction|10|35-postAction
                 // write post-action user code here
-            } else if (command == exitCommand) {//GEN-LINE:|7-commandAction|13|19-preAction
-                // write pre-action user code here
-                exitMIDlet();//GEN-LINE:|7-commandAction|14|19-postAction
-                // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|15|7-postCommandAction
-        }//GEN-END:|7-commandAction|15|7-postCommandAction
+            }//GEN-BEGIN:|7-commandAction|11|7-postCommandAction
+        }//GEN-END:|7-commandAction|11|7-postCommandAction
         // write post-action user code here
-    }//GEN-BEGIN:|7-commandAction|16|
-    //</editor-fold>//GEN-END:|7-commandAction|16|
+    }//GEN-BEGIN:|7-commandAction|12|35-postAction
+    //</editor-fold>//GEN-END:|7-commandAction|12|35-postAction
+
 
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|18-getter|0|18-preInit
@@ -189,7 +187,6 @@ public class CellDiag extends MIDlet implements CommandListener {
         if (ram == null) {//GEN-END:|14-getter|0|14-preInit
             // write pre-init user code here
             ram = new Form("RAM available to Java", new Item[] { getStringItem1(), getStringItem(), getStringItem3(), getStringItem2() });//GEN-BEGIN:|14-getter|1|14-postInit
-            ram.addCommand(getExitCommand());
             ram.addCommand(getBackCommand());
             ram.setCommandListener(this);//GEN-END:|14-getter|1|14-postInit
             // write post-init user code here
@@ -335,7 +332,7 @@ public class CellDiag extends MIDlet implements CommandListener {
                 // write post-action user code here
             } else if (__selectedString.equals("Help")) {//GEN-LINE:|25-action|5|42-preAction
                 // write pre-action user code here
-//GEN-LINE:|25-action|6|42-postAction
+                switchDisplayable(getPimAlert(), getList());//GEN-LINE:|25-action|6|42-postAction
                 // write post-action user code here
             } else if (__selectedString.equals("About")) {//GEN-LINE:|25-action|7|44-preAction
                 // write pre-action user code here
@@ -405,9 +402,8 @@ public class CellDiag extends MIDlet implements CommandListener {
     public Form getFeatures() {
         if (features == null) {//GEN-END:|51-getter|0|51-preInit
             // write pre-init user code here
-            features = new Form("form1", new Item[] { getStringItem4() });//GEN-BEGIN:|51-getter|1|51-postInit
+            features = new Form("features", new Item[] { getTableItem() });//GEN-BEGIN:|51-getter|1|51-postInit
             features.addCommand(getBackCommand1());
-            features.addCommand(getExitCommand2());
             features.setCommandListener(this);//GEN-END:|51-getter|1|51-postInit
             // write post-init user code here
         }//GEN-BEGIN:|51-getter|2|
@@ -415,20 +411,7 @@ public class CellDiag extends MIDlet implements CommandListener {
     }
     //</editor-fold>//GEN-END:|51-getter|2|
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: stringItem4 ">//GEN-BEGIN:|52-getter|0|52-preInit
-    /**
-     * Returns an initiliazed instance of stringItem4 component.
-     * @return the initialized component instance
-     */
-    public StringItem getStringItem4() {
-        if (stringItem4 == null) {//GEN-END:|52-getter|0|52-preInit
-            // write pre-init user code here
-            stringItem4 = new StringItem("JSR 75 - PIM api", System.getProperty("microedition.pim.version"));//GEN-LINE:|52-getter|1|52-postInit
-            // write post-init user code here
-        }//GEN-BEGIN:|52-getter|2|
-        return stringItem4;
-    }
-    //</editor-fold>//GEN-END:|52-getter|2|
+
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: backCommand1 ">//GEN-BEGIN:|53-getter|0|53-preInit
     /**
@@ -459,6 +442,56 @@ public class CellDiag extends MIDlet implements CommandListener {
         return exitCommand2;
     }
     //</editor-fold>//GEN-END:|55-getter|2|
+
+
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: pimAlert ">//GEN-BEGIN:|61-getter|0|61-preInit
+    /**
+     * Returns an initiliazed instance of pimAlert component.
+     * @return the initialized component instance
+     */
+    public Alert getPimAlert() {
+        if (pimAlert == null) {//GEN-END:|61-getter|0|61-preInit
+            // write pre-init user code here
+            pimAlert = new Alert("Pim API loaded?", (PimTest.run() ? "yes, " : "no, ") + "no further help...", null, null);//GEN-BEGIN:|61-getter|1|61-postInit
+            pimAlert.setTimeout(Alert.FOREVER);//GEN-END:|61-getter|1|61-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|61-getter|2|
+        return pimAlert;
+    }
+    //</editor-fold>//GEN-END:|61-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: tableItem ">//GEN-BEGIN:|63-getter|0|63-preInit
+    /**
+     * Returns an initiliazed instance of tableItem component.
+     * @return the initialized component instance
+     */
+    public TableItem getTableItem() {
+        if (tableItem == null) {//GEN-END:|63-getter|0|63-preInit
+            // write pre-init user code here
+            tableItem = new TableItem(getDisplay(), "System properties");//GEN-BEGIN:|63-getter|1|63-postInit
+            tableItem.setModel(new PropertiesTableModel());//GEN-END:|63-getter|1|63-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|63-getter|2|
+        return tableItem;
+    }
+    //</editor-fold>//GEN-END:|63-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: tableModel1 ">//GEN-BEGIN:|64-getter|0|64-preInit
+    /**
+     * Returns an initiliazed instance of tableModel1 component.
+     * @return the initialized component instance
+     */
+    public SimpleTableModel getTableModel1() {
+        if (tableModel1 == null) {//GEN-END:|64-getter|0|64-preInit
+            // write pre-init user code here
+            tableModel1 = new SimpleTableModel(new java.lang.String[][] {//GEN-BEGIN:|64-getter|1|64-postInit
+                new java.lang.String[] { "", "" }}, new java.lang.String[] { "Property", "Value" });//GEN-END:|64-getter|1|64-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|64-getter|2|
+        return tableModel1;
+    }
+    //</editor-fold>//GEN-END:|64-getter|2|
 
     /**
      * Returns a display instance.
