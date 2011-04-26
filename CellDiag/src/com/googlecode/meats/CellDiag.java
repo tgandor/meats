@@ -158,8 +158,8 @@ public class CellDiag extends MIDlet implements CommandListener {
             }//GEN-BEGIN:|7-commandAction|11|7-postCommandAction
         }//GEN-END:|7-commandAction|11|7-postCommandAction
         // write post-action user code here
-    }//GEN-BEGIN:|7-commandAction|12|35-postAction
-    //</editor-fold>//GEN-END:|7-commandAction|12|35-postAction
+    }//GEN-BEGIN:|7-commandAction|12|
+    //</editor-fold>//GEN-END:|7-commandAction|12|
 
 
 
