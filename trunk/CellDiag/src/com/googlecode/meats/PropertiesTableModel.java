@@ -18,10 +18,10 @@ public class PropertiesTableModel extends SimpleTableModel {
         super(new String[][]{
                     // too long:
                     // new String[]{"30", "microedition.platform", "null"},
-                    new String[]{"30", "microedition.encoding", "ISO8859_1"},
                     new String[]{"30", "microedition.configuration", "CLDC-1.0"},
                     new String[]{"30", "microedition.profiles", "null"},
                     new String[]{"37", "microedition.locale", "null"},
+                    new String[]{"30", "microedition.encoding", "ISO8859_1"},
                     // repeated
                     // new String[]{"37", "microedition.profiles", "MIDP-1.0"},
                     new String[]{"75", "microedition.io.file.FileConnection.version", "1.0"},
@@ -39,7 +39,8 @@ public class PropertiesTableModel extends SimpleTableModel {
                     // new String[]{"139", "microedition.platform", "(impl-dep)"},
                     // repeated
                     // new String[]{"139", "microedition.encoding", "ISO8859-1"},
-                    new String[]{"139", "microedition.configuration", "CLDC-1.1"},
+                    // repeated
+                    // new String[]{"139", "microedition.configuration", "CLDC-1.1"},
                     // repeated
                     // new String[]{"139", "microedition.profiles", "(impl-dep)"},
                     new String[]{"177", "microedition.smartcardslots", "(impl-dep)"},
@@ -52,13 +53,17 @@ public class PropertiesTableModel extends SimpleTableModel {
                     // repeated
                     // new String[]{"195", "microedition.profiles", "IMP-1.0"},
                     new String[]{"205", "wireless.messaging.sms.smsc", "(impl-dep)"},
-                    new String[]{"205", "wireless.messaging.mms.mmsc", "(impl-dep)"},
+                    // long value; and I don't use MMS ;)
+                    // new String[]{"205", "wireless.messaging.mms.mmsc", "(impl-dep)"},
                     new String[]{"211", "CHAPI-Version", "1.0"}
                 },
-                new String[]{"JSR", "Property", "Value"});
+                // exchanged value with JSR
+                new String[]{"Value", "Property", "JSR"});
     }
 
     public Object getValue(int col, int row) {
+        // exchanged value with JSR
+        col = 2 - col;
         if ( col == 2 )
             return System.getProperty((String)super.getValue(1, row));
         else if ( col == 1 ) {
