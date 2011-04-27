@@ -22,8 +22,7 @@ public class CellDiag extends MIDlet implements CommandListener {
      * @return a string of the form N B, N/1024.0 KB
      */
     private static String formatBytes(long bytes) {
-        return "\n" + bytes + " B, "
-                + bytes/1024 + "." + bytes*10/1024%10 + " KB";
+        return "" + bytes/1024 + "." + bytes*10/1024%10 + " KB";
     }
 
     /**
@@ -38,7 +37,16 @@ public class CellDiag extends MIDlet implements CommandListener {
                 + part * 10000 / total % 10 + " %";
     }
 
+    private void refreshMemory() {
+        long free = Runtime.getRuntime().freeMemory();
+        getFreeStringItem().setText(formatBytes(free));
+        getPercentFreeStringItem().setText(percentage(free, total));
+        getUsedStringItem().setText(formatBytes(total-free));
+    }
+
     private boolean midletPaused = false;
+
+    private long total;
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Fields ">//GEN-BEGIN:|fields|0|
     private Command exitCommand;
@@ -49,14 +57,15 @@ public class CellDiag extends MIDlet implements CommandListener {
     private Command exitCommand2;
     private Command backCommand1;
     private Form ram;
-    private StringItem stringItem;
-    private StringItem stringItem2;
+    private StringItem freeStringItem;
+    private StringItem usedStringItem;
     private StringItem stringItem1;
-    private StringItem stringItem3;
+    private StringItem percentFreeStringItem;
     private List list;
     private Alert alert;
     private Form features;
     private TableItem tableItem;
+    private StringItem stringItem4;
     private Alert pimAlert;
     private SimpleTableModel tableModel1;
     //</editor-fold>//GEN-END:|fields|0|
@@ -65,6 +74,7 @@ public class CellDiag extends MIDlet implements CommandListener {
      * The HelloMIDlet constructor.
      */
     public CellDiag() {
+        total = Runtime.getRuntime().totalMemory();
     }
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Methods ">//GEN-BEGIN:|methods|0|
@@ -145,21 +155,18 @@ public class CellDiag extends MIDlet implements CommandListener {
                 // write pre-action user code here
                 exitMIDlet();//GEN-LINE:|7-commandAction|6|30-postAction
                 // write post-action user code here
-            } else if (command == itemCommand1) {//GEN-LINE:|7-commandAction|7|40-preAction
-                // write pre-action user code here
-                listAction();//GEN-LINE:|7-commandAction|8|40-postAction
-                // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|9|35-preAction
+            }//GEN-BEGIN:|7-commandAction|7|35-preAction
         } else if (displayable == ram) {
-            if (command == backCommand) {//GEN-END:|7-commandAction|9|35-preAction
+            if (command == backCommand) {//GEN-END:|7-commandAction|7|35-preAction
                 // write pre-action user code here
-                switchDisplayable(null, getList());//GEN-LINE:|7-commandAction|10|35-postAction
+                switchDisplayable(null, getList());//GEN-LINE:|7-commandAction|8|35-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|11|7-postCommandAction
-        }//GEN-END:|7-commandAction|11|7-postCommandAction
+            }//GEN-BEGIN:|7-commandAction|9|7-postCommandAction
+        }//GEN-END:|7-commandAction|9|7-postCommandAction
         // write post-action user code here
-    }//GEN-BEGIN:|7-commandAction|12|
-    //</editor-fold>//GEN-END:|7-commandAction|12|
+    }//GEN-BEGIN:|7-commandAction|10|
+    //</editor-fold>//GEN-END:|7-commandAction|10|
+
 
 
 
@@ -186,7 +193,7 @@ public class CellDiag extends MIDlet implements CommandListener {
     public Form getRam() {
         if (ram == null) {//GEN-END:|14-getter|0|14-preInit
             // write pre-init user code here
-            ram = new Form("RAM available to Java", new Item[] { getStringItem1(), getStringItem(), getStringItem3(), getStringItem2() });//GEN-BEGIN:|14-getter|1|14-postInit
+            ram = new Form("RAM available to Java", new Item[] { getFreeStringItem(), getUsedStringItem(), getStringItem1(), getPercentFreeStringItem() });//GEN-BEGIN:|14-getter|1|14-postInit
             ram.addCommand(getBackCommand());
             ram.setCommandListener(this);//GEN-END:|14-getter|1|14-postInit
             // write post-init user code here
@@ -194,20 +201,21 @@ public class CellDiag extends MIDlet implements CommandListener {
         return ram;
     }
     //</editor-fold>//GEN-END:|14-getter|2|
+    //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: stringItem ">//GEN-BEGIN:|16-getter|0|16-preInit
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: freeStringItem ">//GEN-BEGIN:|16-getter|0|16-preInit
     /**
-     * Returns an initiliazed instance of stringItem component.
+     * Returns an initiliazed instance of freeStringItem component.
      * @return the initialized component instance
      */
-    public StringItem getStringItem() {
-        if (stringItem == null) {//GEN-END:|16-getter|0|16-preInit
+    public StringItem getFreeStringItem() {
+        if (freeStringItem == null) {//GEN-END:|16-getter|0|16-preInit
             // write pre-init user code here
-            stringItem = new StringItem("Free Memory:", formatBytes(Runtime.getRuntime().freeMemory()));//GEN-BEGIN:|16-getter|1|16-postInit
-            stringItem.setLayout(ImageItem.LAYOUT_DEFAULT | ImageItem.LAYOUT_NEWLINE_BEFORE);//GEN-END:|16-getter|1|16-postInit
+            freeStringItem = new StringItem("Free Memory:", formatBytes(Runtime.getRuntime().freeMemory()));//GEN-BEGIN:|16-getter|1|16-postInit
+            freeStringItem.setLayout(ImageItem.LAYOUT_DEFAULT | ImageItem.LAYOUT_NEWLINE_BEFORE);//GEN-END:|16-getter|1|16-postInit
             // write post-init user code here
         }//GEN-BEGIN:|16-getter|2|
-        return stringItem;
+        return freeStringItem;
     }
     //</editor-fold>//GEN-END:|16-getter|2|
 
@@ -225,38 +233,40 @@ public class CellDiag extends MIDlet implements CommandListener {
         return stringItem1;
     }
     //</editor-fold>//GEN-END:|22-getter|2|
+    //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: stringItem2 ">//GEN-BEGIN:|23-getter|0|23-preInit
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: usedStringItem ">//GEN-BEGIN:|23-getter|0|23-preInit
     /**
-     * Returns an initiliazed instance of stringItem2 component.
+     * Returns an initiliazed instance of usedStringItem component.
      * @return the initialized component instance
      */
-    public StringItem getStringItem2() {
-        if (stringItem2 == null) {//GEN-END:|23-getter|0|23-preInit
+    public StringItem getUsedStringItem() {
+        if (usedStringItem == null) {//GEN-END:|23-getter|0|23-preInit
             // write pre-init user code here
-            stringItem2 = new StringItem("Used Memory:", formatBytes(//GEN-BEGIN:|23-getter|1|23-postInit
+            usedStringItem = new StringItem("Used Memory:", formatBytes(//GEN-BEGIN:|23-getter|1|23-postInit
                     Runtime.getRuntime().totalMemory()
                     - Runtime.getRuntime().freeMemory()
                     ));//GEN-END:|23-getter|1|23-postInit
             // write post-init user code here
         }//GEN-BEGIN:|23-getter|2|
-        return stringItem2;
+        return usedStringItem;
     }
     //</editor-fold>//GEN-END:|23-getter|2|
+    //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: stringItem3 ">//GEN-BEGIN:|24-getter|0|24-preInit
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: percentFreeStringItem ">//GEN-BEGIN:|24-getter|0|24-preInit
     /**
-     * Returns an initiliazed instance of stringItem3 component.
+     * Returns an initiliazed instance of percentFreeStringItem component.
      * @return the initialized component instance
      */
-    public StringItem getStringItem3() {
-        if (stringItem3 == null) {//GEN-END:|24-getter|0|24-preInit
+    public StringItem getPercentFreeStringItem() {
+        if (percentFreeStringItem == null) {//GEN-END:|24-getter|0|24-preInit
             // write pre-init user code here
-            stringItem3 = new StringItem("Percent Free:", percentage(Runtime.getRuntime().freeMemory(),//GEN-BEGIN:|24-getter|1|24-postInit
+            percentFreeStringItem = new StringItem("Percent Free:", percentage(Runtime.getRuntime().freeMemory(),//GEN-BEGIN:|24-getter|1|24-postInit
                     Runtime.getRuntime().totalMemory()));//GEN-END:|24-getter|1|24-postInit
             // write post-init user code here
         }//GEN-BEGIN:|24-getter|2|
-        return stringItem3;
+        return percentFreeStringItem;
     }
     //</editor-fold>//GEN-END:|24-getter|2|
 
@@ -305,7 +315,6 @@ public class CellDiag extends MIDlet implements CommandListener {
             list.append("About", null);
             list.append("Exit", null);
             list.addCommand(getExitCommand1());
-            list.addCommand(getItemCommand1());
             list.setCommandListener(this);
             list.setSelectedFlags(new boolean[] { false, false, false, false, false });//GEN-END:|25-getter|1|25-postInit
             // write post-init user code here
@@ -325,7 +334,7 @@ public class CellDiag extends MIDlet implements CommandListener {
             if (__selectedString.equals("Memory (RAM)")) {//GEN-END:|25-action|1|37-preAction
                 // write pre-action user code here
                 switchDisplayable(null, getRam());//GEN-LINE:|25-action|2|37-postAction
-                // write post-action user code here
+                refreshMemory();
             } else if (__selectedString.equals("Features (JSRs)")) {//GEN-LINE:|25-action|3|49-preAction
                 // write pre-action user code here
                 switchDisplayable(null, getFeatures());//GEN-LINE:|25-action|4|49-postAction
@@ -402,7 +411,7 @@ public class CellDiag extends MIDlet implements CommandListener {
     public Form getFeatures() {
         if (features == null) {//GEN-END:|51-getter|0|51-preInit
             // write pre-init user code here
-            features = new Form("features", new Item[] { getTableItem() });//GEN-BEGIN:|51-getter|1|51-postInit
+            features = new Form("features", new Item[] { getTableItem(), getStringItem4() });//GEN-BEGIN:|51-getter|1|51-postInit
             features.addCommand(getBackCommand1());
             features.setCommandListener(this);//GEN-END:|51-getter|1|51-postInit
             // write post-init user code here
@@ -453,7 +462,7 @@ public class CellDiag extends MIDlet implements CommandListener {
     public Alert getPimAlert() {
         if (pimAlert == null) {//GEN-END:|61-getter|0|61-preInit
             // write pre-init user code here
-            pimAlert = new Alert("Pim API loaded?", (PimTest.run() ? "yes, " : "no, ") + "no further help...", null, null);//GEN-BEGIN:|61-getter|1|61-postInit
+            pimAlert = new Alert("Pim API loaded?", "no further help... sorry.", null, null);//GEN-BEGIN:|61-getter|1|61-postInit
             pimAlert.setTimeout(Alert.FOREVER);//GEN-END:|61-getter|1|61-postInit
             // write post-init user code here
         }//GEN-BEGIN:|61-getter|2|
@@ -492,6 +501,21 @@ public class CellDiag extends MIDlet implements CommandListener {
         return tableModel1;
     }
     //</editor-fold>//GEN-END:|64-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: stringItem4 ">//GEN-BEGIN:|66-getter|0|66-preInit
+    /**
+     * Returns an initiliazed instance of stringItem4 component.
+     * @return the initialized component instance
+     */
+    public StringItem getStringItem4() {
+        if (stringItem4 == null) {//GEN-END:|66-getter|0|66-preInit
+            // write pre-init user code here
+            stringItem4 = new StringItem("System platform", System.getProperty("microedition.platform"));//GEN-LINE:|66-getter|1|66-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|66-getter|2|
+        return stringItem4;
+    }
+    //</editor-fold>//GEN-END:|66-getter|2|
 
     /**
      * Returns a display instance.
