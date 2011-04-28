@@ -23,6 +23,7 @@ public class VCardImport extends MIDlet implements CommandListener {
     //<editor-fold defaultstate="collapsed" desc=" Generated Fields ">//GEN-BEGIN:|fields|0|
     private Command exitCommand;
     private Command okCommand;
+    private Command cancelCommand;
     private Form welcome;
     private StringItem stringItem;
     private FileBrowser fileBrowser;
@@ -101,24 +102,32 @@ public class VCardImport extends MIDlet implements CommandListener {
         // write pre-action user code here
         if (displayable == fileBrowser) {//GEN-BEGIN:|7-commandAction|1|24-preAction
             if (command == FileBrowser.SELECT_FILE_COMMAND) {//GEN-END:|7-commandAction|1|24-preAction
-                // write pre-action user code here
+                String candidate = new VCardParser(fileBrowser.getSelectedFileURL()).readline();
+                if ( candidate == null )
+                    getAlert().setString("EOF or IOException");
+                else
+                    getAlert().setString(candidate);
                 switchDisplayable(getAlert(), getWelcome());//GEN-LINE:|7-commandAction|2|24-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|3|19-preAction
+            } else if (command == cancelCommand) {//GEN-LINE:|7-commandAction|3|51-preAction
+                // write pre-action user code here
+                switchDisplayable(null, getWelcome());//GEN-LINE:|7-commandAction|4|51-postAction
+                // write post-action user code here
+            }//GEN-BEGIN:|7-commandAction|5|19-preAction
         } else if (displayable == welcome) {
-            if (command == exitCommand) {//GEN-END:|7-commandAction|3|19-preAction
+            if (command == exitCommand) {//GEN-END:|7-commandAction|5|19-preAction
                 // write pre-action user code here
-                exitMIDlet();//GEN-LINE:|7-commandAction|4|19-postAction
+                exitMIDlet();//GEN-LINE:|7-commandAction|6|19-postAction
                 // write post-action user code here
-            } else if (command == okCommand) {//GEN-LINE:|7-commandAction|5|29-preAction
+            } else if (command == okCommand) {//GEN-LINE:|7-commandAction|7|29-preAction
                 // write pre-action user code here
-                switchDisplayable(null, getFileBrowser());//GEN-LINE:|7-commandAction|6|29-postAction
+                switchDisplayable(null, getFileBrowser());//GEN-LINE:|7-commandAction|8|29-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|7|7-postCommandAction
-        }//GEN-END:|7-commandAction|7|7-postCommandAction
+            }//GEN-BEGIN:|7-commandAction|9|7-postCommandAction
+        }//GEN-END:|7-commandAction|9|7-postCommandAction
         // write post-action user code here
-    }//GEN-BEGIN:|7-commandAction|8|
-    //</editor-fold>//GEN-END:|7-commandAction|8|
+    }//GEN-BEGIN:|7-commandAction|10|
+    //</editor-fold>//GEN-END:|7-commandAction|10|
 
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|18-getter|0|18-preInit
@@ -195,18 +204,13 @@ public class VCardImport extends MIDlet implements CommandListener {
             fileBrowser = new FileBrowser(getDisplay());//GEN-BEGIN:|22-getter|1|22-postInit
             fileBrowser.setTitle("fileBrowser");
             fileBrowser.setCommandListener(this);
-            fileBrowser.addCommand(FileBrowser.SELECT_FILE_COMMAND);//GEN-END:|22-getter|1|22-postInit
+            fileBrowser.addCommand(FileBrowser.SELECT_FILE_COMMAND);
+            fileBrowser.addCommand(getCancelCommand());//GEN-END:|22-getter|1|22-postInit
             // write post-init user code here
         }//GEN-BEGIN:|22-getter|2|
         return fileBrowser;
     }
     //</editor-fold>//GEN-END:|22-getter|2|
-
-
-
-
-
-
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: task ">//GEN-BEGIN:|39-getter|0|39-preInit
     /**
@@ -236,13 +240,28 @@ public class VCardImport extends MIDlet implements CommandListener {
     public Alert getAlert() {
         if (alert == null) {//GEN-END:|48-getter|0|48-preInit
             // write pre-init user code here
-            alert = new Alert("Read line:", new VCardParser(fileBrowser.getSelectedFileURL()).readline(), null, null);//GEN-BEGIN:|48-getter|1|48-postInit
+            alert = new Alert("Read line:", "File is empty?", null, null);//GEN-BEGIN:|48-getter|1|48-postInit
             alert.setTimeout(Alert.FOREVER);//GEN-END:|48-getter|1|48-postInit
             // write post-init user code here
         }//GEN-BEGIN:|48-getter|2|
         return alert;
     }
     //</editor-fold>//GEN-END:|48-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cancelCommand ">//GEN-BEGIN:|50-getter|0|50-preInit
+    /**
+     * Returns an initiliazed instance of cancelCommand component.
+     * @return the initialized component instance
+     */
+    public Command getCancelCommand() {
+        if (cancelCommand == null) {//GEN-END:|50-getter|0|50-preInit
+            // write pre-init user code here
+            cancelCommand = new Command("Cancel", Command.CANCEL, 0);//GEN-LINE:|50-getter|1|50-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|50-getter|2|
+        return cancelCommand;
+    }
+    //</editor-fold>//GEN-END:|50-getter|2|
 
     /**
      * Returns a display instance.

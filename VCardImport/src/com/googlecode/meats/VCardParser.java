@@ -32,10 +32,16 @@ public class VCardParser {
                 c = (char) i;
                 if (c == '\n')
                     break;
-                sb.append(c);
+                if ( c == '\r' )
+                    sb.append("\\r");
+                else
+                    sb.append(c);
             }
         } catch (IOException ioe) {
+            return null;
         }
+        if ( i == -1 && sb.length() == 0)
+            return null;
         return sb.toString();
     }
     
