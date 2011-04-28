@@ -60,6 +60,12 @@
                     <Property name="priority" typeID="Pint" value="V0"/>
                     <Property name="ordinary" typeID="Pboolean" value="Vfalse"/>
                 </Component>
+                <Component componentID="50" typeID="Cjavax.microedition.lcdui.Command">
+                    <Property name="instanceName" typeID="Pjava.lang.String" value="VcancelCommand"/>
+                    <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
+                    <Property name="label" typeID="Pjava.lang.String" value="VCancel"/>
+                    <Property name="type" typeID="Pint" value="V3"/>
+                </Component>
             </Component>
             <Component componentID="10" typeID="C#DisplayablesCategory">
                 <Component componentID="14" typeID="Cjavax.microedition.lcdui.Form">
@@ -98,7 +104,7 @@
                 <Component componentID="22" typeID="Corg.netbeans.microedition.lcdui.pda.FileBrowser">
                     <Property name="instanceName" typeID="Pjava.lang.String" value="VfileBrowser"/>
                     <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
-                    <Property name="commands" typeID="1C#CommandEventSource" value="A1:3_R24"/>
+                    <Property name="commands" typeID="1C#CommandEventSource" value="A2:3_R243_R51"/>
                     <Property name="title" typeID="Pjava.lang.String" value="VfileBrowser"/>
                     <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
                     <Component componentID="24" typeID="C#FileBrowserOpenCommandEventSource">
@@ -111,13 +117,22 @@
                             <Property name="alert" typeID="Cjavax.microedition.lcdui.Alert" value="R48"/>
                         </Component>
                     </Component>
+                    <Component componentID="51" typeID="C#CommandEventSource">
+                        <Property name="eventHandler" typeID="C#EventHandler" value="R52"/>
+                        <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R22"/>
+                        <Property name="command" typeID="Cjavax.microedition.lcdui.Command" value="R50"/>
+                        <Component componentID="52" typeID="C#SwitchDisplayableEventHandler">
+                            <Property name="eventSource" typeID="C#EventSource" value="R51"/>
+                            <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R14"/>
+                        </Component>
+                    </Component>
                 </Component>
                 <Component componentID="48" typeID="Cjavax.microedition.lcdui.Alert">
                     <Property name="instanceName" typeID="Pjava.lang.String" value="Valert"/>
                     <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
                     <Property name="title" typeID="Pjava.lang.String" value="VRead line:"/>
                     <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
-                    <Property name="string" typeID="Pjava.lang.String" value="Unew VCardParser(fileBrowser.getSelectedFileURL()).readline()"/>
+                    <Property name="string" typeID="Pjava.lang.String" value="VFile is empty?"/>
                     <Property name="timeout" typeID="Pint" value="V-2"/>
                 </Component>
             </Component>
@@ -132,8 +147,8 @@
     </Document>
     <FlowScene version="1">
         <Node componentID="2" descriptorID="componentNode2" x="24" y="26"/>
-        <Node componentID="14" descriptorID="componentNode14" x="246" y="155"/>
         <Node componentID="22" descriptorID="componentNode22" x="421" y="27"/>
-        <Node componentID="48" descriptorID="componentNode48" x="574" y="213"/>
+        <Node componentID="48" descriptorID="componentNode48" x="534" y="213"/>
+        <Node componentID="14" descriptorID="componentNode14" x="246" y="155"/>
     </FlowScene>
 </VisualDesign>
