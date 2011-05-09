@@ -6,18 +6,25 @@
 package com.googlecode.meats;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
+import javax.microedition.pim.PIM;
+import javax.microedition.pim.Contact;
+import javax.microedition.pim.PIMException;
+
 /**
- *
+ * This class 
  * @author olaija
  */
 public class VCardParser {
     private String fileURL;
     private FileConnection fc;
+    private InputStream is;
     private Reader rr;
 
     public String readline() {
@@ -32,8 +39,10 @@ public class VCardParser {
                 c = (char) i;
                 if (c == '\n')
                     break;
+                // carrige return suppression
                 if ( c == '\r' )
-                    sb.append("\\r");
+                    continue;
+                    // sb.append("\\r");
                 else
                     sb.append(c);
             }
@@ -49,8 +58,14 @@ public class VCardParser {
         fileURL = url;
         try {
             fc = (FileConnection) Connector.open(fileURL);
-            rr = new InputStreamReader(fc.openInputStream());
+            is = fc.openInputStream();
+            rr = new InputStreamReader(is);
         } catch (IOException ex) {
         }
+    }
+
+    public Contact[] getContacts() throws PIMException, UnsupportedEncodingException {
+        PIM pim = PIM.getInstance();
+        return (Contact []) pim.fromSerialFormat(is, null);
     }
 }
