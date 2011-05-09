@@ -24,11 +24,15 @@ public class VCardImport extends MIDlet implements CommandListener {
     private Command exitCommand;
     private Command okCommand;
     private Command cancelCommand;
+    private Command itemCommand;
+    private Command okCommandDiag;
     private Form welcome;
     private StringItem stringItem;
     private FileBrowser fileBrowser;
     private Alert alert;
-    private SimpleCancellableTask task;
+    private Form formDiag;
+    private StringItem stringItem1;
+    private StringItem stringItem2;
     //</editor-fold>//GEN-END:|fields|0|
 
     /**
@@ -113,21 +117,35 @@ public class VCardImport extends MIDlet implements CommandListener {
                 // write pre-action user code here
                 switchDisplayable(null, getWelcome());//GEN-LINE:|7-commandAction|4|51-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|5|19-preAction
+            }//GEN-BEGIN:|7-commandAction|5|58-preAction
+        } else if (displayable == formDiag) {
+            if (command == okCommandDiag) {//GEN-END:|7-commandAction|5|58-preAction
+                // write pre-action user code here
+                switchDisplayable(null, getWelcome());//GEN-LINE:|7-commandAction|6|58-postAction
+                // write post-action user code here
+            }//GEN-BEGIN:|7-commandAction|7|19-preAction
         } else if (displayable == welcome) {
-            if (command == exitCommand) {//GEN-END:|7-commandAction|5|19-preAction
+            if (command == exitCommand) {//GEN-END:|7-commandAction|7|19-preAction
                 // write pre-action user code here
-                exitMIDlet();//GEN-LINE:|7-commandAction|6|19-postAction
+                exitMIDlet();//GEN-LINE:|7-commandAction|8|19-postAction
                 // write post-action user code here
-            } else if (command == okCommand) {//GEN-LINE:|7-commandAction|7|29-preAction
+            } else if (command == itemCommand) {//GEN-LINE:|7-commandAction|9|54-preAction
                 // write pre-action user code here
-                switchDisplayable(null, getFileBrowser());//GEN-LINE:|7-commandAction|8|29-postAction
+                switchDisplayable(null, getFormDiag());//GEN-LINE:|7-commandAction|10|54-postAction
+                new Thread(new StringSetter(stringItem2, new StringGetter() {
+                    public String get() {
+                        return PimDiag.getContactLists();
+                    }
+                })).start();
+            } else if (command == okCommand) {//GEN-LINE:|7-commandAction|11|29-preAction
+                // write pre-action user code here
+                switchDisplayable(null, getFileBrowser());//GEN-LINE:|7-commandAction|12|29-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|9|7-postCommandAction
-        }//GEN-END:|7-commandAction|9|7-postCommandAction
+            }//GEN-BEGIN:|7-commandAction|13|7-postCommandAction
+        }//GEN-END:|7-commandAction|13|7-postCommandAction
         // write post-action user code here
-    }//GEN-BEGIN:|7-commandAction|10|
-    //</editor-fold>//GEN-END:|7-commandAction|10|
+    }//GEN-BEGIN:|7-commandAction|14|
+    //</editor-fold>//GEN-END:|7-commandAction|14|
 
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|18-getter|0|18-preInit
@@ -156,6 +174,7 @@ public class VCardImport extends MIDlet implements CommandListener {
             welcome = new Form("Welcome", new Item[] { getStringItem() });//GEN-BEGIN:|14-getter|1|14-postInit
             welcome.addCommand(getExitCommand());
             welcome.addCommand(getOkCommand());
+            welcome.addCommand(getItemCommand());
             welcome.setCommandListener(this);//GEN-END:|14-getter|1|14-postInit
             // write post-init user code here
         }//GEN-BEGIN:|14-getter|2|
@@ -212,25 +231,7 @@ public class VCardImport extends MIDlet implements CommandListener {
     }
     //</editor-fold>//GEN-END:|22-getter|2|
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: task ">//GEN-BEGIN:|39-getter|0|39-preInit
-    /**
-     * Returns an initiliazed instance of task component.
-     * @return the initialized component instance
-     */
-    public SimpleCancellableTask getTask() {
-        if (task == null) {//GEN-END:|39-getter|0|39-preInit
-            // write pre-init user code here
-            task = new SimpleCancellableTask();//GEN-BEGIN:|39-getter|1|39-execute
-            task.setExecutable(new org.netbeans.microedition.util.Executable() {
-                public void execute() throws Exception {//GEN-END:|39-getter|1|39-execute
-                    // write task-execution user code here
-                }//GEN-BEGIN:|39-getter|2|39-postInit
-            });//GEN-END:|39-getter|2|39-postInit
-            // write post-init user code here
-        }//GEN-BEGIN:|39-getter|3|
-        return task;
-    }
-    //</editor-fold>//GEN-END:|39-getter|3|
+
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alert ">//GEN-BEGIN:|48-getter|0|48-preInit
     /**
@@ -262,6 +263,85 @@ public class VCardImport extends MIDlet implements CommandListener {
         return cancelCommand;
     }
     //</editor-fold>//GEN-END:|50-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: itemCommand ">//GEN-BEGIN:|53-getter|0|53-preInit
+    /**
+     * Returns an initiliazed instance of itemCommand component.
+     * @return the initialized component instance
+     */
+    public Command getItemCommand() {
+        if (itemCommand == null) {//GEN-END:|53-getter|0|53-preInit
+            // write pre-init user code here
+            itemCommand = new Command("Info", Command.ITEM, 0);//GEN-LINE:|53-getter|1|53-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|53-getter|2|
+        return itemCommand;
+    }
+    //</editor-fold>//GEN-END:|53-getter|2|
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: okCommandDiag ">//GEN-BEGIN:|57-getter|0|57-preInit
+    /**
+     * Returns an initiliazed instance of okCommandDiag component.
+     * @return the initialized component instance
+     */
+    public Command getOkCommandDiag() {
+        if (okCommandDiag == null) {//GEN-END:|57-getter|0|57-preInit
+            // write pre-init user code here
+            okCommandDiag = new Command("Ok", Command.OK, 0);//GEN-LINE:|57-getter|1|57-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|57-getter|2|
+        return okCommandDiag;
+    }
+    //</editor-fold>//GEN-END:|57-getter|2|
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: formDiag ">//GEN-BEGIN:|55-getter|0|55-preInit
+    /**
+     * Returns an initiliazed instance of formDiag component.
+     * @return the initialized component instance
+     */
+    public Form getFormDiag() {
+        if (formDiag == null) {//GEN-END:|55-getter|0|55-preInit
+            // write pre-init user code here
+            formDiag = new Form("PIM API diags", new Item[] { getStringItem1(), getStringItem2() });//GEN-BEGIN:|55-getter|1|55-postInit
+            formDiag.addCommand(getOkCommandDiag());
+            formDiag.setCommandListener(this);//GEN-END:|55-getter|1|55-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|55-getter|2|
+        return formDiag;
+    }
+    //</editor-fold>//GEN-END:|55-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: stringItem1 ">//GEN-BEGIN:|60-getter|0|60-preInit
+    /**
+     * Returns an initiliazed instance of stringItem1 component.
+     * @return the initialized component instance
+     */
+    public StringItem getStringItem1() {
+        if (stringItem1 == null) {//GEN-END:|60-getter|0|60-preInit
+            // write pre-init user code here
+            stringItem1 = new StringItem("Contact List Formats", PimDiag.getSerialFormats());//GEN-LINE:|60-getter|1|60-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|60-getter|2|
+        return stringItem1;
+    }
+    //</editor-fold>//GEN-END:|60-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: stringItem2 ">//GEN-BEGIN:|61-getter|0|61-preInit
+    /**
+     * Returns an initiliazed instance of stringItem2 component.
+     * @return the initialized component instance
+     */
+    public StringItem getStringItem2() {
+        if (stringItem2 == null) {//GEN-END:|61-getter|0|61-preInit
+            // write pre-init user code here
+            stringItem2 = new StringItem("Contact Lists", "wait, retrieving...");//GEN-LINE:|61-getter|1|61-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|61-getter|2|
+        return stringItem2;
+    }
+    //</editor-fold>//GEN-END:|61-getter|2|
 
     /**
      * Returns a display instance.
