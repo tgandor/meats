@@ -153,7 +153,7 @@
                     <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
                     <Property name="title" typeID="Pjava.lang.String" value="VRead line:"/>
                     <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
-                    <Property name="string" typeID="Pjava.lang.String" value="VFile is empty?"/>
+                    <Property name="string" typeID="Pjava.lang.String" value="VPlease wait - processing"/>
                     <Property name="timeout" typeID="Pint" value="V-2"/>
                 </Component>
                 <Component componentID="55" typeID="Cjavax.microedition.lcdui.Form">
@@ -172,19 +172,19 @@
                             <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R14"/>
                         </Component>
                     </Component>
+                    <Component componentID="61" typeID="Cjavax.microedition.lcdui.StringItem">
+                        <Property name="instanceName" typeID="Pjava.lang.String" value="VstringItem2"/>
+                        <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
+                        <Property name="label" typeID="Pjava.lang.String" value="VSupported fields"/>
+                        <Property name="itemCommandListener" typeID="C#ItemCommandListener" value="R17"/>
+                        <Property name="text" typeID="Pjava.lang.String" value="Vwait, retrieving..."/>
+                    </Component>
                     <Component componentID="60" typeID="Cjavax.microedition.lcdui.StringItem">
                         <Property name="instanceName" typeID="Pjava.lang.String" value="VstringItem1"/>
                         <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
                         <Property name="label" typeID="Pjava.lang.String" value="VContact List Formats"/>
                         <Property name="itemCommandListener" typeID="C#ItemCommandListener" value="R17"/>
                         <Property name="text" typeID="Pjava.lang.String" value="UPimDiag.getSerialFormats()"/>
-                    </Component>
-                    <Component componentID="61" typeID="Cjavax.microedition.lcdui.StringItem">
-                        <Property name="instanceName" typeID="Pjava.lang.String" value="VstringItem2"/>
-                        <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
-                        <Property name="label" typeID="Pjava.lang.String" value="VContact Lists"/>
-                        <Property name="itemCommandListener" typeID="C#ItemCommandListener" value="R17"/>
-                        <Property name="text" typeID="Pjava.lang.String" value="Vwait, retrieving..."/>
                     </Component>
                 </Component>
             </Component>
@@ -193,10 +193,10 @@
         </Component>
     </Document>
     <FlowScene version="1">
-        <Node componentID="22" descriptorID="componentNode22" x="451" y="50"/>
-        <Node componentID="14" descriptorID="componentNode14" x="246" y="155"/>
-        <Node componentID="55" descriptorID="componentNode55" x="56" y="284"/>
-        <Node componentID="2" descriptorID="componentNode2" x="24" y="26"/>
         <Node componentID="48" descriptorID="componentNode48" x="468" y="254"/>
+        <Node componentID="14" descriptorID="componentNode14" x="246" y="155"/>
+        <Node componentID="22" descriptorID="componentNode22" x="451" y="50"/>
+        <Node componentID="2" descriptorID="componentNode2" x="24" y="26"/>
+        <Node componentID="55" descriptorID="componentNode55" x="56" y="284"/>
     </FlowScene>
 </VisualDesign>

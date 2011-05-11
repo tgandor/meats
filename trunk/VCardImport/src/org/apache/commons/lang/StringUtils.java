@@ -19,6 +19,8 @@
 
 package org.apache.commons.lang;
 
+import java.util.Enumeration;
+
  /**
  * <p>Operations on {@link java.lang.String} that are
  * <code>null</code> safe.</p>
@@ -3204,7 +3206,7 @@ public class StringUtils {
             return EMPTY;
         }
 
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(bufSize);
 
         for (int i = startIndex; i < endIndex; i++) {
             if (i > startIndex) {
@@ -3294,7 +3296,7 @@ public class StringUtils {
                         + separator.length());
 
         // was: StrBuilder from commons
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(bufSize);
 
         for (int i = startIndex; i < endIndex; i++) {
             if (i > startIndex) {
@@ -3306,96 +3308,101 @@ public class StringUtils {
         }
         return buf.toString();
     }
-//
-//    /**
-//     * <p>Joins the elements of the provided <code>Iterator</code> into
-//     * a single String containing the provided elements.</p>
-//     *
-//     * <p>No delimiter is added before or after the list. Null objects or empty
-//     * strings within the iteration are represented by empty strings.</p>
-//     *
-//     * <p>See the examples here: {@link #join(Object[],char)}. </p>
-//     *
-//     * @param iterator  the <code>Iterator</code> of values to join together, may be null
-//     * @param separator  the separator character to use
-//     * @return the joined String, <code>null</code> if null iterator input
-//     * @since 2.0
-//     */
-//    public static String join(Iterator iterator, char separator) {
-//
-//        // handle null, zero and one elements before building a buffer
-//        if (iterator == null) {
-//            return null;
-//        }
-//        if (!iterator.hasNext()) {
-//            return EMPTY;
-//        }
-//        Object first = iterator.next();
-//        if (!iterator.hasNext()) {
-//            return ObjectUtils.toString(first);
-//        }
-//
-//        // two or more elements
-//        StrBuilder buf = new StrBuilder(256); // Java default is 16, probably too small
-//        if (first != null) {
-//            buf.append(first);
-//        }
-//
-//        while (iterator.hasNext()) {
-//            buf.append(separator);
-//            Object obj = iterator.next();
-//            if (obj != null) {
-//                buf.append(obj);
-//            }
-//        }
-//
-//        return buf.toString();
-//    }
-//
-//    /**
-//     * <p>Joins the elements of the provided <code>Iterator</code> into
-//     * a single String containing the provided elements.</p>
-//     *
-//     * <p>No delimiter is added before or after the list.
-//     * A <code>null</code> separator is the same as an empty String ("").</p>
-//     *
-//     * <p>See the examples here: {@link #join(Object[],String)}. </p>
-//     *
-//     * @param iterator  the <code>Iterator</code> of values to join together, may be null
-//     * @param separator  the separator character to use, null treated as ""
-//     * @return the joined String, <code>null</code> if null iterator input
-//     */
-//    public static String join(Iterator iterator, String separator) {
-//
-//        // handle null, zero and one elements before building a buffer
-//        if (iterator == null) {
-//            return null;
-//        }
-//        if (!iterator.hasNext()) {
-//            return EMPTY;
-//        }
-//        Object first = iterator.next();
-//        if (!iterator.hasNext()) {
-//            return ObjectUtils.toString(first);
-//        }
-//
-//        // two or more elements
-//        StrBuilder buf = new StrBuilder(256); // Java default is 16, probably too small
-//        if (first != null) {
-//            buf.append(first);
-//        }
-//
-//        while (iterator.hasNext()) {
-//            if (separator != null) {
-//                buf.append(separator);
-//            }
-//            Object obj = iterator.next();
-//            if (obj != null) {
-//                buf.append(obj);
-//            }
-//        }
-//        return buf.toString();
-//    }
+
+    /**
+     * <p>Joins the elements of the provided <code>Iterator</code> into
+     * a single String containing the provided elements.</p>
+     *
+     * <p>No delimiter is added before or after the list. Null objects or empty
+     * strings within the iteration are represented by empty strings.</p>
+     *
+     * <p>See the examples here: {@link #join(Object[],char)}. </p>
+     *
+     * @param iterator  the <code>Iterator</code> of values to join together, may be null
+     * @param separator  the separator character to use
+     * @return the joined String, <code>null</code> if null iterator input
+     * @since 2.0
+     */
+    public static String join(Enumeration iterator, char separator) {
+
+        // handle null, zero and one elements before building a buffer
+        if (iterator == null) {
+            return null;
+        }
+        // if (!iterator.hasNext()) {
+        if (!iterator.hasMoreElements()) {
+            return EMPTY;
+        }
+        // Object first = iterator.next();
+        Object first = iterator.nextElement();
+        if (!iterator.hasMoreElements()) {
+            return first.toString();
+        }
+
+        // two or more elements
+        StringBuffer buf = new StringBuffer();
+        if (first != null) {
+            buf.append(first);
+        }
+
+        while (iterator.hasMoreElements()) {
+            buf.append(separator);
+            Object obj = iterator.nextElement();
+            if (obj != null) {
+                buf.append(obj);
+            }
+        }
+
+        return buf.toString();
+    }
+
+    /**
+     * <p>Joins the elements of the provided <code>Iterator</code> into
+     * a single String containing the provided elements.</p>
+     *
+     * <p>No delimiter is added before or after the list.
+     * A <code>null</code> separator is the same as an empty String ("").</p>
+     *
+     * <p>See the examples here: {@link #join(Object[],String)}. </p>
+     *
+     * @param iterator  the <code>Iterator</code> of values to join together, may be null
+     * @param separator  the separator character to use, null treated as ""
+     * @return the joined String, <code>null</code> if null iterator input
+     */
+    // public static String join(Iterator iterator, String separator) {
+    public static String join(Enumeration iterator, String separator) {
+
+        // handle null, zero and one elements before building a buffer
+        if (iterator == null) {
+            return null;
+        }
+        // if (!iterator.hasNext()) {
+        if (!iterator.hasMoreElements()) {
+            return EMPTY;
+        }
+        // Object first = iterator.next();
+        Object first = iterator.nextElement();
+        if (!iterator.hasMoreElements()) {
+            return first.toString();
+        }
+
+        // two or more elements
+        StringBuffer buf = new StringBuffer();
+        if (first != null) {
+            buf.append(first);
+        }
+
+        while (iterator.hasMoreElements()) {
+            if (separator != null) {
+                buf.append(separator);
+            }
+            Object obj = iterator.nextElement();
+            if (obj != null) {
+                buf.append(obj);
+            }
+        }
+        return buf.toString();
+    }
 //
 //    /**
 //     * <p>Joins the elements of the provided <code>Collection</code> into
