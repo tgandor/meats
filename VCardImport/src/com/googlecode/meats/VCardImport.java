@@ -5,9 +5,11 @@
 
 package com.googlecode.meats;
 
+import java.io.UnsupportedEncodingException;
 import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
 import javax.microedition.pim.PIM;
+import javax.microedition.pim.PIMException;
 import org.netbeans.microedition.lcdui.WaitScreen;
 import org.netbeans.microedition.lcdui.pda.FileBrowser;
 import org.netbeans.microedition.lcdui.pda.PIMBrowser;
@@ -20,6 +22,8 @@ public class VCardImport extends MIDlet implements CommandListener {
 
     private boolean midletPaused = false;
 
+    private VCardParser lastParser = null;
+    
     //<editor-fold defaultstate="collapsed" desc=" Generated Fields ">//GEN-BEGIN:|fields|0|
     private Command exitCommand;
     private Command okCommand;
@@ -31,8 +35,8 @@ public class VCardImport extends MIDlet implements CommandListener {
     private FileBrowser fileBrowser;
     private Alert alert;
     private Form formDiag;
-    private StringItem stringItem1;
     private StringItem stringItem2;
+    private StringItem stringItem1;
     //</editor-fold>//GEN-END:|fields|0|
 
     /**
@@ -106,13 +110,23 @@ public class VCardImport extends MIDlet implements CommandListener {
         // write pre-action user code here
         if (displayable == fileBrowser) {//GEN-BEGIN:|7-commandAction|1|24-preAction
             if (command == FileBrowser.SELECT_FILE_COMMAND) {//GEN-END:|7-commandAction|1|24-preAction
-                String candidate = new VCardParser(fileBrowser.getSelectedFileURL()).readline();
-                if ( candidate == null )
-                    getAlert().setString("EOF or IOException");
-                else
-                    getAlert().setString(candidate);
+                getAlert().setTitle("Success?");
                 switchDisplayable(getAlert(), getWelcome());//GEN-LINE:|7-commandAction|2|24-postAction
-                // write post-action user code here
+                lastParser = new VCardParser(fileBrowser.getSelectedFileURL());
+                try {
+                    // lastParser.importContacts();
+                    lastParser.getContacts();
+                    getAlert().setTitle("Success: "+lastParser.getNumRead());
+                    // getStringItem().setText("Success: "+lastParser.getNumRead());
+                } catch (PIMException pe) {
+                    getAlert().setTitle("PIM Error");
+                    // getStringItem().setText("PIM Error occurred");
+                } catch (UnsupportedEncodingException ue) {
+                    getAlert().setTitle("Encoding Error");
+                    //getStringItem().setText("Encoding Error occurred");
+                }
+                getAlert().setString("Imported "+ lastParser.getNumImported()
+                        + " out of " + lastParser.getNumRead() + " ");
             } else if (command == cancelCommand) {//GEN-LINE:|7-commandAction|3|51-preAction
                 // write pre-action user code here
                 switchDisplayable(null, getWelcome());//GEN-LINE:|7-commandAction|4|51-postAction
@@ -134,7 +148,11 @@ public class VCardImport extends MIDlet implements CommandListener {
                 switchDisplayable(null, getFormDiag());//GEN-LINE:|7-commandAction|10|54-postAction
                 new Thread(new StringSetter(stringItem2, new StringGetter() {
                     public String get() {
-                        return PimDiag.getContactLists();
+                        try {
+                            return PimDiag.getSupportedFieldAttr();
+                        } catch (Exception ex) {
+                            return "error while retrieving!";
+                        }
                     }
                 })).start();
             } else if (command == okCommand) {//GEN-LINE:|7-commandAction|11|29-preAction
@@ -241,7 +259,7 @@ public class VCardImport extends MIDlet implements CommandListener {
     public Alert getAlert() {
         if (alert == null) {//GEN-END:|48-getter|0|48-preInit
             // write pre-init user code here
-            alert = new Alert("Read line:", "File is empty?", null, null);//GEN-BEGIN:|48-getter|1|48-postInit
+            alert = new Alert("Read line:", "Please wait - processing", null, null);//GEN-BEGIN:|48-getter|1|48-postInit
             alert.setTimeout(Alert.FOREVER);//GEN-END:|48-getter|1|48-postInit
             // write post-init user code here
         }//GEN-BEGIN:|48-getter|2|
@@ -336,7 +354,7 @@ public class VCardImport extends MIDlet implements CommandListener {
     public StringItem getStringItem2() {
         if (stringItem2 == null) {//GEN-END:|61-getter|0|61-preInit
             // write pre-init user code here
-            stringItem2 = new StringItem("Contact Lists", "wait, retrieving...");//GEN-LINE:|61-getter|1|61-postInit
+            stringItem2 = new StringItem("Supported fields", "wait, retrieving...");//GEN-LINE:|61-getter|1|61-postInit
             // write post-init user code here
         }//GEN-BEGIN:|61-getter|2|
         return stringItem2;

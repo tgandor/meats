@@ -10,11 +10,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.Enumeration;
+import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
 
 import javax.microedition.pim.PIM;
 import javax.microedition.pim.Contact;
+import javax.microedition.pim.ContactList;
 import javax.microedition.pim.PIMException;
 
 /**
@@ -26,6 +29,10 @@ public class VCardParser {
     private FileConnection fc;
     private InputStream is;
     private Reader rr;
+
+    private int numImported = 0;
+    private int numAttempted = 0;
+    private int numRead = 0;
 
     public String readline() {
         StringBuffer sb = new StringBuffer();
@@ -66,6 +73,55 @@ public class VCardParser {
 
     public Contact[] getContacts() throws PIMException, UnsupportedEncodingException {
         PIM pim = PIM.getInstance();
-        return (Contact []) pim.fromSerialFormat(is, null);
+        Vector v = new Vector();
+        try {
+            while ( true ) {
+                Contact[] portion = (Contact[]) pim.fromSerialFormat(is, null);
+                for(int i = 0; i < portion.length; ++i) {
+                    v.addElement(portion[i]);
+                    ++numRead;
+                }
+            }
+        } catch (PIMException e) {}
+        Contact[] contacts = new Contact[v.size()];
+        v.copyInto(contacts);
+        return contacts;
     }
+
+    public void importContacts() throws PIMException, UnsupportedEncodingException {
+        ContactList contacts = (ContactList) PIM.getInstance().openPIMList(PIM.CONTACT_LIST, PIM.READ_WRITE);
+        Contact[] imported = getContacts();
+        for(int i = 0; i < imported.length; ++i) {
+            ++numAttempted;
+            Contact newOne = contacts.importContact(imported[i]);
+            Enumeration duplicates = contacts.items(newOne);
+            if ( !duplicates.hasMoreElements() ) {
+                newOne.commit();
+                ++numImported;
+            }
+        }
+        contacts.close();
+    }
+
+    /**
+     * @return the numImported
+     */
+    public int getNumImported() {
+        return numImported;
+    }
+
+    /**
+     * @return the numAttempted
+     */
+    public int getNumAttempted() {
+        return numAttempted;
+    }
+
+    /**
+     * @return the numRead
+     */
+    public int getNumRead() {
+        return numRead;
+    }
+    
 }
