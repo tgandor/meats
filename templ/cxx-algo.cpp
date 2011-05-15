@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <algorithm>
+#include <numeric>
 #include <list>
 #include <deque>
 #include <iostream>
@@ -13,6 +14,12 @@
 #define OUT(x) printf("%d\n", x)
 #define FRN(ii, ll, uu) for(I ii = (ll); ii < uu; ++ii)
 #define FOR(ii, nn) FRN(ii, 0, nn)
+#define LI long long
+#define LIN(x) LI x; scanf("%lld", &x)
+#define LOUT(x) printf("%lld\n", x)
+
+// 2**62-1, won't overflow if doubled
+#define LINF 4611686018427387903LL
 
 #define PB push_back
 #define IT iterator
@@ -75,6 +82,8 @@ public:
         load(x);
     }
     
+    bn(const bn &tpl) : limbs(tpl.limbs) {}
+    
     void load(long long x) {
         limbs.clear();
         do { 
@@ -127,6 +136,25 @@ public:
             carry = temp / BNM;
             x /= BNM; ++i;
         }
+        if ( carry ) 
+            limbs.PB(carry);
+    }
+    
+    bool operator<(const bn &x) {
+        if ( limbs.size() < x.limbs.size() )
+            return true;
+        if ( limbs.size() > x.limbs.size() )
+            return false;
+        for(I n = limbs.size()-1; n>=0; --n) 
+            if ( limbs[n] != x.limbs[n] )
+                return limbs[n] < x.limbs[n];
+        return false;
+    }
+    
+    bool operator<(const LI &x) {
+        if ( x < BNM )
+            return limbs.size()==1 && limbs[0]<x;
+        return operator<(bn(x));
     }
     
     void out() {
