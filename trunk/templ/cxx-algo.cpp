@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 #include <algorithm>
 #include <numeric>
 #include <list>
@@ -17,9 +18,10 @@
 #define LI long long
 #define LIN(x) LI x; scanf("%lld", &x)
 #define LOUT(x) printf("%lld\n", x)
-
+#define GETS(s) scanf(" %s", s)
 // 2**62-1, won't overflow if doubled
 #define LINF 4611686018427387903LL
+#define BYTE unsigned char
 
 #define PB push_back
 #define IT iterator
@@ -73,6 +75,7 @@ ostream& operator<< (ostream& o, const PII (&a)[N]) {
 }
 
 ostream_iterator<int> iout(cout, " ");
+ostream_iterator<int> ioutln(cout, "\n");
 
 #define BNM 10000
 class bn {
@@ -125,6 +128,8 @@ public:
     }
     
     void add(long long x) {
+    // perhaps buggy
+    /*
         long long carry = 0;
         I i = 0;
         while ( x ) {
@@ -138,8 +143,40 @@ public:
         }
         if ( carry ) 
             limbs.PB(carry);
+      */
+        *this += bn(x);
     }
     
+    const bn& operator+=(const bn &x) {
+        LI carry = 0;
+        if ( x.limbs.size() > limbs.size() ) 
+            limbs.resize(x.limbs.size(), 0LL);
+        FOR(i, x.limbs.size()) {
+            LI temp = limbs[i]+x.limbs[i]+carry;
+            if ( i == limbs.size() ) 
+                limbs.PB(temp % BNM);
+            else
+                limbs[i] = temp % BNM;
+            carry = temp / BNM;
+        }
+        if ( carry ) {
+            if ( x.limbs.size() == limbs.size() ) 
+                limbs.PB(carry);
+            else {
+                I i = x.limbs.size();
+                while ( carry ) { 
+                    LI temp = limbs[i] + carry;
+                    if ( i == limbs.size() ) 
+                        limbs.PB(temp % BNM);
+                    else
+                        limbs[i] = temp % BNM;
+                    carry = temp / BNM;
+                }
+            }
+        }
+        return *this;
+    }
+
     bool operator<(const bn &x) {
         if ( limbs.size() < x.limbs.size() )
             return true;
@@ -165,6 +202,35 @@ public:
         }
     }
 };
+
+#define PII_ovlap(x, y) ((x).p1 <= (y).p2 && (y).p1 <= (x).p2)
+#define PII_ovlap2(pi, a, b) ((pi).p1 <= (b) && (pi).p2 >= (a))
+
+int bitnum[] = {
+0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
+1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
+1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
+2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
+1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
+2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
+2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
+3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
+1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
+2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
+2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
+3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
+2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
+3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
+3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
+4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8    
+};
+
+template <class T> 
+T gcd(T a, T b) {
+    T c = a % b;
+    while ( c ) { a = b; b = c; c = a % b; }
+    return b;
+}
 
 /// END OF BOILERPLATE ;)
 
