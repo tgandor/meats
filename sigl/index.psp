@@ -1,0 +1,17 @@
+<%
+import datetime, urllib, re 
+
+def getSigles(daynr = datetime.date.today().day):
+    url = 'http://katolik.pl/biblia/czytania/%02d.php' % daynr
+    data = urllib.urlopen(url).read()
+    data = re.search('fragm=([^\r\n]*)', data).group(1).replace('Lk', 'Łk').replace('Kpl', 'Kpł')
+    return data
+#end getSigles
+
+req.content_type = "text/plain;charset=UTF-8"
+if form.has_key('d'):
+  day = int(form.getfirst('d'))
+else:
+  day = datetime.date.today().day
+#end if
+req.write(getSigles(day))

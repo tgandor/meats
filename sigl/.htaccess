@@ -1,0 +1,11 @@
+AddHandler mod_python .psp .psp_
+PythonHandler mod_python.psp
+PythonDebug On
+
+DirectoryIndex index.psp
+
+<Files *.psp_>
+   Deny from all
+   Allow from localhost
+</Files>
+
