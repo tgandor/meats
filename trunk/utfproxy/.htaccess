@@ -1,0 +1,7 @@
+Options +ExecCGI
+AddHandler cgi-script .py 
+
+<Files *.ini>
+  Deny from all
+</Files>
+
