@@ -5,6 +5,7 @@
 
 package com.googlecode.meats;
 
+import com.googlecode.meats.mappers.IntStr;
 import java.util.Enumeration;
 import java.util.Vector;
 import javax.microedition.pim.Contact;
@@ -49,7 +50,53 @@ public class PimDiag {
             case PIMItem.INT:
                 return "INT";
             default:
-                return "strange";
+                return "?";
+        }
+    }
+    
+    private static String getFieldSymbol(int field)
+    {
+        switch(field) {
+            case Contact.ADDR:
+                return "ADDR";
+            case Contact.BIRTHDAY:
+                return "BIRTHDAY";
+            case Contact.CLASS:
+                return "CLASS";
+            case Contact.EMAIL:
+                return "EMAIL";
+            case Contact.FORMATTED_ADDR:
+                return "FORMATTED_ADDR";
+            case Contact.FORMATTED_NAME:
+                return "FORMATTED_NAME";
+            case Contact.NAME:
+                return "NAME";
+            case Contact.NICKNAME:
+                return "NICKNAME";
+            case Contact.NOTE:
+                return "NOTE";
+            case Contact.ORG:
+                return "ORG";
+            case Contact.PHOTO:
+                return "PHOTO";
+            case Contact.PHOTO_URL:
+                return "PHOTO_URL";
+            case Contact.PUBLIC_KEY:
+                return "PUBLIC_KEY";
+            case Contact.PUBLIC_KEY_STRING:
+                return "PUBLIC_KEY_STRING";
+            case Contact.REVISION:
+                return "REVISION";
+            case Contact.TEL:
+                return "TEL";
+            case Contact.TITLE:
+                return "TITLE";
+            case Contact.UID:
+                return "UID";
+            case Contact.URL:
+                return "URL";                
+            default: 
+                return "?";
         }
     }
 
@@ -64,35 +111,40 @@ public class PimDiag {
         return "\n" + StringUtils.join(lists, "\n");
     }
 
-    public static String getCategories() throws PIMException {
-        ContactList contacts = (ContactList) PIM.getInstance().openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
-        String[] categories = contacts.getCategories();
-        if (categories.length == 0)
-            return "\n(no categories)";
-        return "\n" + StringUtils.join(categories, "\n");
-    }
-
-    public static String getSupportedFields() throws PIMException {
-        ContactList contacts = (ContactList) PIM.getInstance().openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
-        int[] fields = contacts.getSupportedFields();
-        String[] labels = new String[fields.length];
-        for(int i=0; i<fields.length; ++i)
-            labels[i] = contacts.getFieldLabel(fields[i]);
-        return "\n" + StringUtils.join(labels, "\n");
+    public static String getCategories() {
+        try { 
+            ContactList contacts = (ContactList) PIM.getInstance().openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
+            String[] categories = contacts.getCategories();
+            if (categories.length == 0)
+                return "\n(no categories)";
+            return "\n" + StringUtils.join(categories, "\n");
+        }
+        catch ( PIMException pe ) {
+            return "\nerror retrieving:\n"+pe.getClass().getName()+"\n"+
+                    pe.getMessage();
+        }
     }
 
     public static String getSupportedFieldAttr() throws PIMException {
-        ContactList contacts = (ContactList) PIM.getInstance().openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
+        final ContactList contacts = (ContactList) PIM.getInstance().openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
         int[] fields = contacts.getSupportedFields();
         Vector labels = new Vector();
         for(int i=0; i<fields.length; ++i) {
-            String field = contacts.getFieldLabel(fields[i]);
             int dataType = contacts.getFieldDataType(fields[i]);
-            labels.addElement(field+" : "+getDatatypeLabel(dataType)+par(dataType));
+            labels.addElement(""+(i+1)+". "+
+                    contacts.getFieldLabel(fields[i]) + 
+                    par(fields[i]) +" : "+ 
+                    getFieldSymbol(fields[i]) + " : " +
+                    getDatatypeLabel(dataType)+par(dataType));
 
             int[] attrs = contacts.getSupportedAttributes(fields[i]);
-            for(int j=1; j<attrs.length; ++j)
-                labels.addElement("atr:" + contacts.getAttributeLabel(attrs[j]) + par(attrs[j]));
+            if ( attrs.length > 1 )
+                labels.addElement("Attributes: " + StringUtils.join(Mapper.map(attrs, new IntStr() {
+                public String map(int val) {
+                    return contacts.getAttributeLabel(val) + par(val);
+                }
+            }), ", "));
+            
 
             if ( dataType == PIMItem.STRING_ARRAY )
             {
