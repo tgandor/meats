@@ -173,6 +173,12 @@
             <equals arg1="${deployment.number}" arg2="" trim="true"/>
         </condition>
         <fail if="application.version.invalid" message="Property deployment.number must not be empty and must contain version in format %d.%d.%d!"/>
+        <condition property="sign.jar.trigger" value="true">
+            <and>
+                <isset property="cdc-platform.trigger"/>
+                <istrue value="${sign.enabled}"/>
+            </and>
+        </condition>
     </target>
     <!--ricoh-init-->
     <target name="ricoh-pre-init" if="cdc-platform.trigger">
@@ -575,9 +581,10 @@
     <target name="do-extra-libs" if="extra.classpath">
         <property name="dist.lib.dir" value="${dist.dir}/lib"/>
         <mkdir dir="${dist.lib.dir}"/>
-        <copypath destdir="${dist.lib.dir}" path="${extra.classpath}">
+        <copy todir="${dist.lib.dir}">
+            <path path="${extra.classpath}"/>
             <flattenmapper/>
-        </copypath>
+        </copy>
     </target>
     <!--nokiaS80-manifest-->
     <target name="nokiaS80-prepare-j9" if="nokiaS80-platform.trigger">
@@ -675,6 +682,9 @@
     <!--update-jad-->
     <target name="update-jad" if="cldc-platform.trigger">
         <nb-jad jadfile="${dist.dir}/${dist.jad}" jarfile="${dist.dir}/${dist.jar}" url="${dist.jar}" sign="${sign.enabled}" keystore="${sign.keystore}" keystorepassword="${sign.keystore.password}" alias="${sign.alias}" aliaspassword="${sign.alias.password}" encoding="UTF-8"/>
+    </target>
+    <target name="sign-jar" if="sign.jar.trigger">
+        <signjar jar="${dist.dir}/${dist.jar}" alias="${sign.alias}" keystore="${sign.keystore}" storepass="${sign.keystore.password}" keypass="${sign.alias.password}"/>
     </target>
     <!--ricoh-init-dalp-->
     <target name="ricoh-init-dalp" if="ricoh-platform.trigger">
@@ -782,7 +792,7 @@
     <!--jar-->
     <target name="pre-jar"/>
     <target name="post-jar"/>
-    <target name="jar" depends="preverify,pre-jar,set-password,create-jad,do-extra-libs,nokiaS80-create-manifest,jad-jsr211-properties,semc-build-j9,do-jar,nsicom-create-manifest,do-jar-no-manifest,update-jad,ricoh-build-dalp,savaje-build-jnlp,post-jar" description="Build jar and application descriptor."/>
+    <target name="jar" depends="preverify,pre-jar,set-password,create-jad,do-extra-libs,nokiaS80-create-manifest,jad-jsr211-properties,semc-build-j9,do-jar,nsicom-create-manifest,do-jar-no-manifest,update-jad,sign-jar,ricoh-build-dalp,savaje-build-jnlp,post-jar" description="Build jar and application descriptor."/>
     <!--override-jad-->
     <target name="override-jad" if="override.jarurl.trigger">
         <property name="deployment.jarurl" value="${dist.jar}"/>
@@ -998,6 +1008,11 @@
     <!--cdc-hi-run-->
     <target name="-pre-cdc-hi-run" if="cdc-hi-platform.trigger"/>
     <target name="-cdc-hi-run" if="cdc-hi-platform.trigger">
+        <fail message="Main class is not set!">
+            <condition>
+                <equals arg1="${main.class}" arg2=""/>
+            </condition>
+        </fail>
         <exec executable="${platform.home}/bin/emulator">
             <arg value="-cp"/>
             <arg value="${basedir}/${dist.dir}/${dist.jar}"/>
@@ -1191,6 +1206,11 @@
     <target name="cldc-debug-run" if="cldc-platform.trigger" depends="-pre-cldc-debug-run, -cldc-debug-run, -post-cldc-debug-run"/>
     <target name="-pre-cdc-hi-debug-run" if="cdc-hi-platform.trigger"/>
     <target name="-cdc-hi-debug-run" depends="init,jar" if="cdc-hi-platform.trigger">
+        <fail message="Main class is not set!">
+            <condition>
+                <equals arg1="${main.class}" arg2=""/>
+            </condition>
+        </fail>
         <echo> Starting emulator with port number ${active.debug.port} </echo>
         <exec executable="${platform.home}/bin/emulator">
             <arg value="-cp"/>
