@@ -20,6 +20,39 @@ import org.apache.commons.lang.StringUtils;
  */
 public class PimDiag {
 
+    public static int valueFormat = 0;
+
+    private static String par(int n)
+    {
+        switch(valueFormat)
+        {
+            case 0:
+                return " ("+n+")";
+            default:
+                return "";
+        }
+    }
+
+    private static String getDatatypeLabel(int datatype)
+    {
+        switch(datatype) {
+            case PIMItem.DATE:
+                return "DATE";
+            case PIMItem.STRING:
+                return "STRING";
+            case PIMItem.STRING_ARRAY:
+                return "STRING_ARRAY";
+            case PIMItem.BOOLEAN:
+                return "BOOLEAN";
+            case PIMItem.BINARY:
+                return "BINARY";
+            case PIMItem.INT:
+                return "INT";
+            default:
+                return "strange";
+        }
+    }
+
     public static String getSerialFormats() {
         PIM pim = PIM.getInstance();
         String[] formats = pim.supportedSerialFormats(PIM.CONTACT_LIST);
@@ -54,11 +87,19 @@ public class PimDiag {
         Vector labels = new Vector();
         for(int i=0; i<fields.length; ++i) {
             String field = contacts.getFieldLabel(fields[i]);
+            int dataType = contacts.getFieldDataType(fields[i]);
+            labels.addElement(field+" : "+getDatatypeLabel(dataType)+par(dataType));
+
             int[] attrs = contacts.getSupportedAttributes(fields[i]);
-            if ( attrs.length == 0 )
-                labels.addElement(field);
-            for(int j=0; j<attrs.length; ++j)
-                labels.addElement(field + "." + contacts.getAttributeLabel(attrs[j]));
+            for(int j=1; j<attrs.length; ++j)
+                labels.addElement("atr:" + contacts.getAttributeLabel(attrs[j]) + par(attrs[j]));
+
+            if ( dataType == PIMItem.STRING_ARRAY )
+            {
+                int[] elements = contacts.getSupportedArrayElements(fields[i]);
+                for(int j=0; j<elements.length; ++j)
+                    labels.addElement("["+j+"] " + contacts.getArrayElementLabel(fields[i], elements[j]));
+            }
         }
         return "\n" + StringUtils.join(labels.elements(), '\n');
     }
