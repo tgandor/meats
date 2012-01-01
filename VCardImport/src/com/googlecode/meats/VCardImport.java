@@ -37,6 +37,7 @@ public class VCardImport extends MIDlet implements CommandListener {
     private Form formDiag;
     private StringItem stringItem2;
     private StringItem stringItem1;
+    private StringItem stringItem3;
     //</editor-fold>//GEN-END:|fields|0|
 
     /**
@@ -146,12 +147,23 @@ public class VCardImport extends MIDlet implements CommandListener {
             } else if (command == itemCommand) {//GEN-LINE:|7-commandAction|9|54-preAction
                 // write pre-action user code here
                 switchDisplayable(null, getFormDiag());//GEN-LINE:|7-commandAction|10|54-postAction
+                try {
+                    stringItem3.setText(PimDiag.getCategories());
+                }
+                catch ( Exception ex) {
+                    stringItem3.setText("\nerror while retrieving:\n" +
+                            ex.getClass().getName()+":\n"+
+                            ex.getMessage());
+                }
                 new Thread(new StringSetter(stringItem2, new StringGetter() {
                     public String get() {
                         try {
                             return PimDiag.getSupportedFieldAttr();
                         } catch (Exception ex) {
-                            return "error while retrieving!";
+                            return "\nerror while retrieving!\n" +
+                                    ex.getClass().toString() + "\n" +
+                                    ex.getMessage();
+
                         }
                     }
                 })).start();
@@ -322,7 +334,7 @@ public class VCardImport extends MIDlet implements CommandListener {
     public Form getFormDiag() {
         if (formDiag == null) {//GEN-END:|55-getter|0|55-preInit
             // write pre-init user code here
-            formDiag = new Form("PIM API diags", new Item[] { getStringItem1(), getStringItem2() });//GEN-BEGIN:|55-getter|1|55-postInit
+            formDiag = new Form("PIM API diags", new Item[] { getStringItem1(), getStringItem3(), getStringItem2() });//GEN-BEGIN:|55-getter|1|55-postInit
             formDiag.addCommand(getOkCommandDiag());
             formDiag.setCommandListener(this);//GEN-END:|55-getter|1|55-postInit
             // write post-init user code here
@@ -360,6 +372,21 @@ public class VCardImport extends MIDlet implements CommandListener {
         return stringItem2;
     }
     //</editor-fold>//GEN-END:|61-getter|2|
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: stringItem3 ">//GEN-BEGIN:|62-getter|0|62-preInit
+    /**
+     * Returns an initiliazed instance of stringItem3 component.
+     * @return the initialized component instance
+     */
+    public StringItem getStringItem3() {
+        if (stringItem3 == null) {//GEN-END:|62-getter|0|62-preInit
+            // write pre-init user code here
+            stringItem3 = new StringItem("Contact categories", "wait, retrieving...");//GEN-LINE:|62-getter|1|62-postInit
+            // write post-init user code here
+        }//GEN-BEGIN:|62-getter|2|
+        return stringItem3;
+    }
+    //</editor-fold>//GEN-END:|62-getter|2|
 
     /**
      * Returns a display instance.
