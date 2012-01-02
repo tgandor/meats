@@ -31,15 +31,19 @@ private Command okCommand;
 private Command cancelCommand;
 private Command itemCommand;
 private Command okCommandDiag;
+private Command exitCommand1;
+private Command backCommand;
 private Form welcome;
 private StringItem stringItem;
 private FileBrowser fileBrowser;
 private Alert alert;
 private Form formDiag;
+private StringItem stringItem4;
 private StringItem stringItem3;
 private StringItem stringItem2;
 private StringItem stringItem1;
-private StringItem stringItem4;
+private List mainMenu;
+private PIMBrowser pimBrowser;
 //</editor-fold>//GEN-END:|fields|0|
 
     /**
@@ -69,7 +73,7 @@ private void initialize () {//GEN-END:|0-initialize|0|0-preInitialize
  */
 public void startMIDlet () {//GEN-END:|3-startMIDlet|0|3-preAction
         // write pre-action user code here
-switchDisplayable (null, getWelcome ());//GEN-LINE:|3-startMIDlet|1|3-postAction
+switchDisplayable (null, getMainMenu ());//GEN-LINE:|3-startMIDlet|1|3-postAction
         // write post-action user code here
 }//GEN-BEGIN:|3-startMIDlet|2|
 //</editor-fold>//GEN-END:|3-startMIDlet|2|
@@ -114,7 +118,7 @@ public void commandAction (Command command, Displayable displayable) {//GEN-END:
 if (displayable == fileBrowser) {//GEN-BEGIN:|7-commandAction|1|24-preAction
 if (command == FileBrowser.SELECT_FILE_COMMAND) {//GEN-END:|7-commandAction|1|24-preAction
                 getAlert().setTitle("Success?");
-switchDisplayable (getAlert (), getWelcome ());//GEN-LINE:|7-commandAction|2|24-postAction
+switchDisplayable (getAlert (), getMainMenu ());//GEN-LINE:|7-commandAction|2|24-postAction
                 lastParser = new VCardParser(fileBrowser.getSelectedFileURL());
                 try {
                     // lastParser.importContacts();
@@ -132,52 +136,41 @@ switchDisplayable (getAlert (), getWelcome ());//GEN-LINE:|7-commandAction|2|24-
                         + " out of " + lastParser.getNumRead() + " ");
 } else if (command == cancelCommand) {//GEN-LINE:|7-commandAction|3|51-preAction
                 // write pre-action user code here
-switchDisplayable (null, getWelcome ());//GEN-LINE:|7-commandAction|4|51-postAction
+switchDisplayable (null, getMainMenu ());//GEN-LINE:|7-commandAction|4|51-postAction
                 // write post-action user code here
 }//GEN-BEGIN:|7-commandAction|5|58-preAction
 } else if (displayable == formDiag) {
 if (command == okCommandDiag) {//GEN-END:|7-commandAction|5|58-preAction
                 // write pre-action user code here
-switchDisplayable (null, getWelcome ());//GEN-LINE:|7-commandAction|6|58-postAction
+switchDisplayable (null, getMainMenu ());//GEN-LINE:|7-commandAction|6|58-postAction
                 // write post-action user code here
-}//GEN-BEGIN:|7-commandAction|7|19-preAction
+}//GEN-BEGIN:|7-commandAction|7|66-preAction
+} else if (displayable == mainMenu) {
+if (command == List.SELECT_COMMAND) {//GEN-END:|7-commandAction|7|66-preAction
+ // write pre-action user code here
+mainMenuAction ();//GEN-LINE:|7-commandAction|8|66-postAction
+ // write post-action user code here
+} else if (command == exitCommand1) {//GEN-LINE:|7-commandAction|9|69-preAction
+ // write pre-action user code here
+exitMIDlet ();//GEN-LINE:|7-commandAction|10|69-postAction
+ // write post-action user code here
+}//GEN-BEGIN:|7-commandAction|11|71-preAction
+} else if (displayable == pimBrowser) {
+if (command == PIMBrowser.SELECT_PIM_ITEM) {//GEN-END:|7-commandAction|11|71-preAction
+ // write pre-action user code here
+switchDisplayable (null, getMainMenu ());//GEN-LINE:|7-commandAction|12|71-postAction
+ // write post-action user code here
+}//GEN-BEGIN:|7-commandAction|13|83-preAction
 } else if (displayable == welcome) {
-if (command == exitCommand) {//GEN-END:|7-commandAction|7|19-preAction
-                // write pre-action user code here
-exitMIDlet ();//GEN-LINE:|7-commandAction|8|19-postAction
-                // write post-action user code here
-} else if (command == itemCommand) {//GEN-LINE:|7-commandAction|9|54-preAction
-                // write pre-action user code here
-switchDisplayable (null, getFormDiag ());//GEN-LINE:|7-commandAction|10|54-postAction
-                try {
-                    stringItem3.setText(PimDiag.getCategories());
-                }
-                catch ( Exception ex) {
-                    stringItem3.setText("\nerror while retrieving:\n" +
-                            ex.getClass().getName()+":\n"+
-                            ex.getMessage());
-                }
-                new Thread(new StringSetter(stringItem2, new StringGetter() {
-                    public String get() {
-                        try {
-                            return PimDiag.getSupportedFieldAttr();
-                        } catch (Exception ex) {
-                            return "\nerror while retrieving!\n" +
-                                    ex.getClass().toString() + "\n" +
-                                    ex.getMessage();
-
-                        }
-                    }
-                })).start();
-} else if (command == okCommand) {//GEN-LINE:|7-commandAction|11|29-preAction
-                // write pre-action user code here
-switchDisplayable (null, getFileBrowser ());//GEN-LINE:|7-commandAction|12|29-postAction
-                // write post-action user code here
-}//GEN-BEGIN:|7-commandAction|13|7-postCommandAction
-}//GEN-END:|7-commandAction|13|7-postCommandAction
+if (command == backCommand) {//GEN-END:|7-commandAction|13|83-preAction
+ // write pre-action user code here
+switchDisplayable (null, getMainMenu ());//GEN-LINE:|7-commandAction|14|83-postAction
+ // write post-action user code here
+}//GEN-BEGIN:|7-commandAction|15|7-postCommandAction
+}//GEN-END:|7-commandAction|15|7-postCommandAction
         // write post-action user code here
-}//GEN-BEGIN:|7-commandAction|14|
-//</editor-fold>//GEN-END:|7-commandAction|14|
+}//GEN-BEGIN:|7-commandAction|16|
+//</editor-fold>//GEN-END:|7-commandAction|16|
 
 
 //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|18-getter|0|18-preInit
@@ -204,9 +197,7 @@ public Form getWelcome () {
 if (welcome == null) {//GEN-END:|14-getter|0|14-preInit
             // write pre-init user code here
 welcome = new Form ("Welcome", new Item[] { getStringItem () });//GEN-BEGIN:|14-getter|1|14-postInit
-welcome.addCommand (getExitCommand ());
-welcome.addCommand (getOkCommand ());
-welcome.addCommand (getItemCommand ());
+welcome.addCommand (getBackCommand ());
 welcome.setCommandListener (this);//GEN-END:|14-getter|1|14-postInit
             // write post-init user code here
 }//GEN-BEGIN:|14-getter|2|
@@ -404,6 +395,112 @@ stringItem4 = new StringItem ("Contact Lists", PimDiag.getContactLists());//GEN-
 return stringItem4;
 }
 //</editor-fold>//GEN-END:|63-getter|2|
+
+//<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand1 ">//GEN-BEGIN:|68-getter|0|68-preInit
+/**
+ * Returns an initiliazed instance of exitCommand1 component.
+ * @return the initialized component instance
+ */
+public Command getExitCommand1 () {
+if (exitCommand1 == null) {//GEN-END:|68-getter|0|68-preInit
+ // write pre-init user code here
+exitCommand1 = new Command ("Exit", Command.EXIT, 0);//GEN-LINE:|68-getter|1|68-postInit
+ // write post-init user code here
+}//GEN-BEGIN:|68-getter|2|
+return exitCommand1;
+}
+//</editor-fold>//GEN-END:|68-getter|2|
+
+//<editor-fold defaultstate="collapsed" desc=" Generated Getter: backCommand ">//GEN-BEGIN:|82-getter|0|82-preInit
+/**
+ * Returns an initiliazed instance of backCommand component.
+ * @return the initialized component instance
+ */
+public Command getBackCommand () {
+if (backCommand == null) {//GEN-END:|82-getter|0|82-preInit
+ // write pre-init user code here
+backCommand = new Command ("Back", Command.BACK, 0);//GEN-LINE:|82-getter|1|82-postInit
+ // write post-init user code here
+}//GEN-BEGIN:|82-getter|2|
+return backCommand;
+}
+//</editor-fold>//GEN-END:|82-getter|2|
+
+//<editor-fold defaultstate="collapsed" desc=" Generated Getter: mainMenu ">//GEN-BEGIN:|64-getter|0|64-preInit
+/**
+ * Returns an initiliazed instance of mainMenu component.
+ * @return the initialized component instance
+ */
+public List getMainMenu () {
+if (mainMenu == null) {//GEN-END:|64-getter|0|64-preInit
+ // write pre-init user code here
+mainMenu = new List ("Menu", Choice.IMPLICIT);//GEN-BEGIN:|64-getter|1|64-postInit
+mainMenu.append ("Browse", null);
+mainMenu.append ("Open", null);
+mainMenu.append ("Export", null);
+mainMenu.append ("Help", null);
+mainMenu.append ("Info", null);
+mainMenu.addCommand (getExitCommand1 ());
+mainMenu.setCommandListener (this);
+mainMenu.setFitPolicy (Choice.TEXT_WRAP_DEFAULT);
+mainMenu.setSelectedFlags (new boolean[] { false, false, false, false, false });//GEN-END:|64-getter|1|64-postInit
+ // write post-init user code here
+}//GEN-BEGIN:|64-getter|2|
+return mainMenu;
+}
+//</editor-fold>//GEN-END:|64-getter|2|
+
+//<editor-fold defaultstate="collapsed" desc=" Generated Method: mainMenuAction ">//GEN-BEGIN:|64-action|0|64-preAction
+/**
+ * Performs an action assigned to the selected list element in the mainMenu component.
+ */
+public void mainMenuAction () {//GEN-END:|64-action|0|64-preAction
+ // enter pre-action user code here
+String __selectedString = getMainMenu ().getString (getMainMenu ().getSelectedIndex ());//GEN-BEGIN:|64-action|1|72-preAction
+if (__selectedString != null) {
+if (__selectedString.equals ("Browse")) {//GEN-END:|64-action|1|72-preAction
+ // write pre-action user code here
+switchDisplayable (null, getPimBrowser ());//GEN-LINE:|64-action|2|72-postAction
+ // write post-action user code here
+} else if (__selectedString.equals ("Open")) {//GEN-LINE:|64-action|3|73-preAction
+ // write pre-action user code here
+switchDisplayable (null, getFileBrowser ());//GEN-LINE:|64-action|4|73-postAction
+ // write post-action user code here
+} else if (__selectedString.equals ("Export")) {//GEN-LINE:|64-action|5|74-preAction
+ // write pre-action user code here
+//GEN-LINE:|64-action|6|74-postAction
+ // write post-action user code here
+} else if (__selectedString.equals ("Help")) {//GEN-LINE:|64-action|7|75-preAction
+ // write pre-action user code here
+switchDisplayable (null, getWelcome ());//GEN-LINE:|64-action|8|75-postAction
+ // write post-action user code here
+} else if (__selectedString.equals ("Info")) {//GEN-LINE:|64-action|9|76-preAction
+ // write pre-action user code here
+switchDisplayable (null, getFormDiag ());//GEN-LINE:|64-action|10|76-postAction
+ // write post-action user code here
+}//GEN-BEGIN:|64-action|11|64-postAction
+}//GEN-END:|64-action|11|64-postAction
+ // enter post-action user code here
+}//GEN-BEGIN:|64-action|12|
+//</editor-fold>//GEN-END:|64-action|12|
+
+//<editor-fold defaultstate="collapsed" desc=" Generated Getter: pimBrowser ">//GEN-BEGIN:|70-getter|0|70-preInit
+/**
+ * Returns an initiliazed instance of pimBrowser component.
+ * @return the initialized component instance
+ */
+public PIMBrowser getPimBrowser () {
+if (pimBrowser == null) {//GEN-END:|70-getter|0|70-preInit
+ // write pre-init user code here
+pimBrowser = new PIMBrowser (getDisplay (), PIM.CONTACT_LIST);//GEN-BEGIN:|70-getter|1|70-postInit
+pimBrowser.setTitle ("pimBrowser");
+pimBrowser.addCommand (PIMBrowser.SELECT_PIM_ITEM);
+pimBrowser.setCommandListener (this);//GEN-END:|70-getter|1|70-postInit
+ // write post-init user code here
+}//GEN-BEGIN:|70-getter|2|
+return pimBrowser;
+}
+//</editor-fold>//GEN-END:|70-getter|2|
 
     /**
      * Returns a display instance.
