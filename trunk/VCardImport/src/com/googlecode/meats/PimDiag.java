@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.googlecode.meats;
 
 import com.googlecode.meats.mappers.IntStr;
@@ -125,7 +120,7 @@ public class PimDiag {
         }
     }
 
-    public static String getSupportedFieldAttr() throws PIMException {
+    private static String getSupportedFieldAttr(boolean details) throws PIMException {
         final ContactList contacts = (ContactList) PIM.getInstance().openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
         int[] fields = contacts.getSupportedFields();
         ArrayUtils.sort(fields);
@@ -139,15 +134,17 @@ public class PimDiag {
             
             int[] attrs = contacts.getSupportedAttributes(fields[i]);
             ArrayUtils.sort(attrs);
-            if ( attrs.length > 1 )
+            if ( details && attrs.length > 1 )
                 labels.addElement("Attribs: " + StringUtils.join(Mapper.map(attrs, new IntStr() {
                 public String map(int val) {
+                    if ( val == PIMItem.ATTR_NONE )
+                        return "";
                     return contacts.getAttributeLabel(val) + par(val);
                 }
             }), ", "));
             
 
-            if ( dataType == PIMItem.STRING_ARRAY )
+            if ( details && dataType == PIMItem.STRING_ARRAY )
             {
                 int[] elements = contacts.getSupportedArrayElements(fields[i]);
                 for(int j=0; j<elements.length; ++j)
@@ -157,10 +154,10 @@ public class PimDiag {
         return "\n" + StringUtils.join(labels.elements(), '\n');
     }
 
-    public static String getSupportedFields()
+    public static String getSupportedFields(boolean details)
     {
         try {
-            return getSupportedFieldAttr();
+            return getSupportedFieldAttr(details);
         } catch (PIMException pe) {
             return "\nerror retrieving:\n"+pe.getClass().getName()+"\n"+
                     pe.getMessage();
