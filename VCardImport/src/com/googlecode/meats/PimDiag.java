@@ -110,6 +110,7 @@ public class PimDiag {
         try { 
             ContactList contacts = (ContactList) PIM.getInstance().openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
             String[] categories = contacts.getCategories();
+            contacts.close();
             if (categories.length == 0)
                 return "\n(no categories)";
             return "\n" + StringUtils.join(categories, "\n");
@@ -151,6 +152,7 @@ public class PimDiag {
                     labels.addElement("["+j+"] " + contacts.getArrayElementLabel(fields[i], elements[j]));
             }
         }
+        contacts.close();
         return "\n" + StringUtils.join(labels.elements(), '\n');
     }
 

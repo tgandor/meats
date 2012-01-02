@@ -22,13 +22,20 @@ public class VCardExporter {
             PIM pim = PIM.getInstance();
             ContactList cl = (ContactList) pim.openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
             Enumeration items = cl.items();
-            ByteArrayOutputStream bo = new ByteArrayOutputStream();
-            if ( items.hasMoreElements() && atMost != 0) {
+            int processed = 0;
+            StringBuffer sb = new StringBuffer("\n");
+            while ( items.hasMoreElements() && atMost != 0) {
                 Contact c = (Contact) items.nextElement();
+                ByteArrayOutputStream bo = new ByteArrayOutputStream();
                 pim.toSerialFormat(c, bo, null, "VCARD/2.1");
                 --atMost;
+                ++processed;
+                sb.append(bo.toString());
+                sb.append("-------\n");
             }
-            return bo.toString();
+            cl.close();
+            sb.append("Total: "+processed);
+            return sb.toString();
         }
         catch (PIMException pe) {
             return "Export failed:\n" + pe.getMessage();
