@@ -128,18 +128,19 @@ public class PimDiag {
     public static String getSupportedFieldAttr() throws PIMException {
         final ContactList contacts = (ContactList) PIM.getInstance().openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
         int[] fields = contacts.getSupportedFields();
+        ArrayUtils.sort(fields);
         Vector labels = new Vector();
         for(int i=0; i<fields.length; ++i) {
             int dataType = contacts.getFieldDataType(fields[i]);
-            labels.addElement(""+(i+1)+". "+
-                    contacts.getFieldLabel(fields[i]) + 
-                    par(fields[i]) +" : "+ 
+            labels.addElement(ArrayUtils.pad(i+1, 2)+". "+
+                    fields[i] +" : "+
                     getFieldSymbol(fields[i]) + " : " +
-                    getDatatypeLabel(dataType)+par(dataType));
-
+                    getDatatypeLabel(dataType));
+            
             int[] attrs = contacts.getSupportedAttributes(fields[i]);
+            ArrayUtils.sort(attrs);
             if ( attrs.length > 1 )
-                labels.addElement("Attributes: " + StringUtils.join(Mapper.map(attrs, new IntStr() {
+                labels.addElement("Attribs: " + StringUtils.join(Mapper.map(attrs, new IntStr() {
                 public String map(int val) {
                     return contacts.getAttributeLabel(val) + par(val);
                 }
@@ -154,6 +155,16 @@ public class PimDiag {
             }
         }
         return "\n" + StringUtils.join(labels.elements(), '\n');
+    }
+
+    public static String getSupportedFields()
+    {
+        try {
+            return getSupportedFieldAttr();
+        } catch (PIMException pe) {
+            return "\nerror retrieving:\n"+pe.getClass().getName()+"\n"+
+                    pe.getMessage();
+        }
     }
 
 }
