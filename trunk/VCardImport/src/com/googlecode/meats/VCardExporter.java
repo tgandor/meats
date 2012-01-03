@@ -1,8 +1,13 @@
 package com.googlecode.meats;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
+import java.util.Vector;
+import javax.microedition.io.Connector;
+import javax.microedition.io.file.FileConnection;
+import javax.microedition.io.file.FileSystemRegistry;
 import javax.microedition.pim.Contact;
 import javax.microedition.pim.ContactList;
 import javax.microedition.pim.PIM;
@@ -48,5 +53,33 @@ public class VCardExporter {
     public static String dumpAll()
     {
         return dumpSome(-1);
+    }
+    
+    public static String[] findWritableDirectories()
+    {
+        Enumeration roots = FileSystemRegistry.listRoots();
+        Vector results = new Vector();
+        Fifo queue = new Fifo(roots);
+        results.addElement("entering loop");
+        if(!queue.isEmpty()) {
+            results.addElement("loop entered");
+            String root = (String) queue.dequeue();
+            try {
+                FileConnection fc = (FileConnection) Connector.open("file:///"+root);
+                if ( fc.canWrite() )
+                    results.addElement(root+" ok.");     
+                else {
+                    Enumeration dir = fc.list();
+                    results.addElement(root+" not writable.");
+                }
+            }
+            catch(Exception ioe) {
+                results.addElement(root+" failed: "+ioe.getMessage());
+            }
+        }
+        results.addElement("loop finished");
+        String[] result = new String[results.size()];
+        results.copyInto(result);
+        return result;
     }
 }
