@@ -340,7 +340,7 @@ return okCommandDiag;
 public Form getFormDiag () {
 if (formDiag == null) {//GEN-END:|55-getter|0|55-preInit
             // write pre-init user code here
-formDiag = new Form ("PIM API diags", new Item[] { getStringItem1 (), getStringItem4 (), getStringItem3 (), getStringItem2 (), getStringItem6 () });//GEN-BEGIN:|55-getter|1|55-postInit
+formDiag = new Form ("PIM API diags", new Item[] { getStringItem6 (), getStringItem1 (), getStringItem4 (), getStringItem3 (), getStringItem2 () });//GEN-BEGIN:|55-getter|1|55-postInit
 formDiag.addCommand (getItemCommand1 ());
 formDiag.addCommand (getBackCommand1 ());
 formDiag.setCommandListener (this);//GEN-END:|55-getter|1|55-postInit

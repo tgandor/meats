@@ -60,24 +60,26 @@ public class VCardExporter {
         Enumeration roots = FileSystemRegistry.listRoots();
         Vector results = new Vector();
         Fifo queue = new Fifo(roots);
-        results.addElement("entering loop");
-        if(!queue.isEmpty()) {
-            results.addElement("loop entered");
+        while(!queue.isEmpty()) {
             String root = (String) queue.dequeue();
             try {
                 FileConnection fc = (FileConnection) Connector.open("file:///"+root);
                 if ( fc.canWrite() )
                     results.addElement(root+" ok.");     
                 else {
-                    Enumeration dir = fc.list();
                     results.addElement(root+" not writable.");
+                    Enumeration dir = fc.list();
+                    while(dir.hasMoreElements()) {
+                        String entry = (String) dir.nextElement();
+                        if ( entry.endsWith("/") )
+                            queue.enqueue(root + entry);
+                    }
                 }
             }
             catch(Exception ioe) {
                 results.addElement(root+" failed: "+ioe.getMessage());
             }
         }
-        results.addElement("loop finished");
         String[] result = new String[results.size()];
         results.copyInto(result);
         return result;
