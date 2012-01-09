@@ -2,6 +2,7 @@ package com.googlecode.meats;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -19,7 +20,8 @@ import javax.microedition.pim.PIMException;
  */
 public class VCardExporter {
     /*
-     * @return vCard string for (currently) first contact
+     * @param atMost limit of contacts to return
+     * @return vCard string for the contact(s)
      */
     public static String dumpSome(int atMost)
     {
@@ -65,9 +67,9 @@ public class VCardExporter {
             try {
                 FileConnection fc = (FileConnection) Connector.open("file:///"+root);
                 if ( fc.canWrite() )
-                    results.addElement(root+" ok.");     
+                    results.addElement(root);     
                 else {
-                    results.addElement(root+" not writable.");
+                    // results.addElement(root+" not writable.");
                     Enumeration dir = fc.list();
                     while(dir.hasMoreElements()) {
                         String entry = (String) dir.nextElement();
@@ -83,5 +85,37 @@ public class VCardExporter {
         String[] result = new String[results.size()];
         results.copyInto(result);
         return result;
+    }
+    
+    public static String getFilenameSuggestion()
+    {
+        return System.getProperty("microedition.platform") + ".vcf";
+    }
+    
+    public static String exportContacts(String filename)
+    {
+        try {
+            int processed = 0;
+            FileConnection fc = (FileConnection) Connector.open("file:///"+filename, Connector.READ_WRITE);
+            if ( !fc.exists() )
+                fc.create();    
+            OutputStream os = fc.openOutputStream();
+            PIM pim = PIM.getInstance();
+            ContactList cl = (ContactList) pim.openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
+            Enumeration items = cl.items();
+            while ( items.hasMoreElements() ) {
+                Contact c = (Contact) items.nextElement();
+                pim.toSerialFormat(c, os, null, "VCARD/2.1");
+                ++processed;
+            }
+            cl.close();
+            os.close();
+            fc.close();
+            return "Processed " + processed + " contacts.";       
+        } catch ( IOException ioe ) {
+            return "IO Error: " + ioe.getMessage();
+        } catch ( PIMException pe ) {
+            return "PIM Error: " + pe.getMessage();
+        }
     }
 }
