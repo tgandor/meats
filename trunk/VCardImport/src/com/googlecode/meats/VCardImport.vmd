@@ -138,6 +138,12 @@
                     <Property name="label" typeID="Pjava.lang.String" value="VSelect"/>
                     <Property name="type" typeID="Pint" value="V8"/>
                 </Component>
+                <Component componentID="118" typeID="Cjavax.microedition.lcdui.Command">
+                    <Property name="instanceName" typeID="Pjava.lang.String" value="VbackCommand4"/>
+                    <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
+                    <Property name="label" typeID="Pjava.lang.String" value="VBack"/>
+                    <Property name="type" typeID="Pint" value="V2"/>
+                </Component>
             </Component>
             <Component componentID="10" typeID="C#DisplayablesCategory">
                 <Component componentID="14" typeID="Cjavax.microedition.lcdui.Form">
@@ -302,7 +308,7 @@
                         <Property name="string" typeID="Pjava.lang.String" value="VOpen"/>
                         <Component componentID="81" typeID="C#SwitchDisplayableEventHandler">
                             <Property name="eventSource" typeID="C#EventSource" value="R73"/>
-                            <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R22"/>
+                            <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R115"/>
                         </Component>
                     </Component>
                     <Component componentID="74" typeID="C#ListElementEventSource">
@@ -409,20 +415,46 @@
                         </Component>
                     </Component>
                 </Component>
+                <Component componentID="115" typeID="Cjavax.microedition.lcdui.List">
+                    <Property name="instanceName" typeID="Pjava.lang.String" value="VvCardsFound"/>
+                    <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
+                    <Property name="commands" typeID="1C#CommandEventSource" value="A2:4_R1164_R119"/>
+                    <Property name="title" typeID="Pjava.lang.String" value="VAvailable vCards"/>
+                    <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
+                    <Property name="selectCommand" typeID="C#CommandEventSource" value="R116"/>
+                    <Component componentID="116" typeID="C#ListSelectCommandEventSource">
+                        <Property name="eventHandler" typeID="C#EventHandler" value="R117"/>
+                        <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R115"/>
+                        <Property name="command" typeID="Cjavax.microedition.lcdui.Command" value="R65"/>
+                        <Component componentID="117" typeID="C#ListEventHandler">
+                            <Property name="eventSource" typeID="C#EventSource" value="R116"/>
+                        </Component>
+                    </Component>
+                    <Component componentID="119" typeID="C#CommandEventSource">
+                        <Property name="eventHandler" typeID="C#EventHandler" value="R120"/>
+                        <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R115"/>
+                        <Property name="command" typeID="Cjavax.microedition.lcdui.Command" value="R118"/>
+                        <Component componentID="120" typeID="C#SwitchDisplayableEventHandler">
+                            <Property name="eventSource" typeID="C#EventSource" value="R119"/>
+                            <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R64"/>
+                        </Component>
+                    </Component>
+                </Component>
             </Component>
             <Component componentID="13" typeID="C#ResourcesCategory"/>
             <Component componentID="21" typeID="C#DatabindingCategory"/>
         </Component>
     </Document>
     <FlowScene version="1">
-        <Node componentID="14" descriptorID="componentNode14" x="120" y="432"/>
-        <Node componentID="64" descriptorID="componentNode64" x="25" y="182"/>
-        <Node componentID="99" descriptorID="componentNode99" x="351" y="361"/>
-        <Node componentID="91" descriptorID="componentNode91" x="491" y="42"/>
-        <Node componentID="2" descriptorID="componentNode2" x="24" y="26"/>
-        <Node componentID="22" descriptorID="componentNode22" x="398" y="207"/>
-        <Node componentID="48" descriptorID="componentNode48" x="644" y="216"/>
-        <Node componentID="105" descriptorID="componentNode105" x="651" y="325"/>
+        <Node componentID="64" descriptorID="componentNode64" x="26" y="203"/>
         <Node componentID="55" descriptorID="componentNode55" x="309" y="14"/>
+        <Node componentID="48" descriptorID="componentNode48" x="822" y="90"/>
+        <Node componentID="91" descriptorID="componentNode91" x="491" y="42"/>
+        <Node componentID="22" descriptorID="componentNode22" x="791" y="161"/>
+        <Node componentID="115" descriptorID="componentNode115" x="428" y="181"/>
+        <Node componentID="2" descriptorID="componentNode2" x="24" y="26"/>
+        <Node componentID="105" descriptorID="componentNode105" x="651" y="325"/>
+        <Node componentID="99" descriptorID="componentNode99" x="351" y="361"/>
+        <Node componentID="14" descriptorID="componentNode14" x="133" y="436"/>
     </FlowScene>
 </VisualDesign>

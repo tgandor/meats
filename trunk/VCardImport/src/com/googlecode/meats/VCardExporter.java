@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Vector;
 import javax.microedition.io.Connector;
@@ -87,9 +89,46 @@ public class VCardExporter {
         return result;
     }
     
+    public static String[] findVCards() 
+    {
+        Vector results = new Vector();
+        Enumeration roots = FileSystemRegistry.listRoots();
+        Fifo queue = new Fifo(roots);
+        while(!queue.isEmpty()) {
+            String root = (String) queue.dequeue();
+            try {
+                FileConnection fc = (FileConnection) Connector.open("file:///"+root);
+                Enumeration dir = fc.list();
+                while(dir.hasMoreElements()) {
+                    String entry = (String) dir.nextElement();
+                    if ( entry.endsWith("/") )
+                        queue.enqueue(root + entry);
+                    else if ( entry.toLowerCase().endsWith(".vcf") )
+                        results.addElement(root + entry);
+                }
+            }
+            catch(Exception ioe) {
+                results.addElement(root + " failed: " + ioe.getMessage());
+            }
+        }
+        String[] result = new String[results.size()];
+        results.copyInto(result);
+        return result;
+    }
+    
     public static String getFilenameSuggestion()
     {
-        return System.getProperty("microedition.platform") + ".vcf";
+        String platform = System.getProperty("microedition.platform");
+        int slash = platform.indexOf("/");
+        if (  slash != -1 ) 
+            platform = platform.substring(slash+1, platform.length());
+        Calendar cal = Calendar.getInstance();  
+        cal.setTime(new Date());
+        return platform + "_" + cal.get(Calendar.YEAR) + 
+                ArrayUtils.pad(cal.get(Calendar.MONTH)+1, 2) + 
+                ArrayUtils.pad(cal.get(Calendar.DAY_OF_MONTH), 2) + "_" + 
+                ArrayUtils.pad(cal.get(Calendar.HOUR_OF_DAY), 2) + 
+                ArrayUtils.pad(cal.get(Calendar.MINUTE),2 ) + ".vcf";
     }
     
     public static String exportContacts(String filename)
