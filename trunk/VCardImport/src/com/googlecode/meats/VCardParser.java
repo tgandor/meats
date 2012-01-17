@@ -5,19 +5,15 @@
 
 package com.googlecode.meats;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.file.FileConnection;
-
-import javax.microedition.pim.PIM;
 import javax.microedition.pim.Contact;
 import javax.microedition.pim.ContactList;
+import javax.microedition.pim.PIM;
 import javax.microedition.pim.PIMException;
 
 /**
@@ -101,6 +97,26 @@ public class VCardParser {
             }
         }
         contacts.close();
+    }
+    
+    private Hashtable getContactDict(int field)
+    {
+        Hashtable result = new Hashtable();
+        try {
+            ContactList contacts = (ContactList) PIM.getInstance().openPIMList(PIM.CONTACT_LIST, PIM.READ_ONLY);
+            if ( contacts.isSupportedField(field) )
+                return result;
+            Enumeration all = contacts.items();
+            while(all.hasMoreElements())
+            {
+                Contact c = (Contact)all.nextElement();
+                for(int i=0; i<c.countValues(field); ++i)
+                    result.put(c.getString(field, i), c);
+            }
+        } catch (PIMException ex) {
+            ex.printStackTrace();
+        }
+        return result;
     }
 
     /**
