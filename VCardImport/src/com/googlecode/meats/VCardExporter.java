@@ -43,7 +43,7 @@ public class VCardExporter {
                 sb.append("-------\n");
             }
             cl.close();
-            sb.append("Total: "+processed);
+            sb.append("Total: ").append(processed);
             return sb.toString();
         }
         catch (PIMException pe) {
@@ -121,7 +121,7 @@ public class VCardExporter {
         String platform = System.getProperty("microedition.platform");
         int slash = platform.indexOf("/");
         if (  slash != -1 ) 
-            platform = platform.substring(slash+1, platform.length());
+            platform = platform.substring(0, slash);
         Calendar cal = Calendar.getInstance();  
         cal.setTime(new Date());
         return platform + "_" + cal.get(Calendar.YEAR) + 
