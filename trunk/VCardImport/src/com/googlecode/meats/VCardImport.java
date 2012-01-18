@@ -1,12 +1,11 @@
 package com.googlecode.meats;
 
-import java.io.UnsupportedEncodingException;
 import javax.microedition.lcdui.*;
 import javax.microedition.midlet.MIDlet;
-import javax.microedition.pim.PIMException;
-import org.netbeans.microedition.lcdui.pda.FileBrowser;
+import javax.microedition.pim.Contact;
 
 /**
+ * The main MIDlet, hairy due to much generated code.
  * @author olaija
  */
 public class VCardImport extends MIDlet implements CommandListener {
@@ -16,6 +15,8 @@ public class VCardImport extends MIDlet implements CommandListener {
     private boolean showDetails = false;
     
     private Ticker notification = null;
+    
+    private Contact[] readContacts = null;
     
 //<editor-fold defaultstate="collapsed" desc=" Generated Fields ">//GEN-BEGIN:|fields|0|
     private Command exitCommand;
@@ -269,11 +270,6 @@ public class VCardImport extends MIDlet implements CommandListener {
 //</editor-fold>//GEN-END:|28-getter|2|
 
 
-
-
-
-
-
 //<editor-fold defaultstate="collapsed" desc=" Generated Getter: cancelCommand ">//GEN-BEGIN:|50-getter|0|50-preInit
     /**
      * Returns an initialized instance of cancelCommand component.
@@ -358,8 +354,6 @@ public class VCardImport extends MIDlet implements CommandListener {
         return stringItem1;
     }
 //</editor-fold>//GEN-END:|60-getter|2|
-
-
 
 //<editor-fold defaultstate="collapsed" desc=" Generated Getter: stringItem3 ">//GEN-BEGIN:|62-getter|0|62-preInit
     /**
@@ -485,8 +479,6 @@ public class VCardImport extends MIDlet implements CommandListener {
     }//GEN-BEGIN:|64-action|12|
 //</editor-fold>//GEN-END:|64-action|12|
 
-
-
 //<editor-fold defaultstate="collapsed" desc=" Generated Getter: stringItem2 ">//GEN-BEGIN:|61-getter|0|61-preInit
     /**
      * Returns an initialized instance of stringItem2 component.
@@ -578,7 +570,7 @@ public class VCardImport extends MIDlet implements CommandListener {
     public StringItem getStringItem5() {
         if (stringItem5 == null) {//GEN-END:|95-getter|0|95-preInit
         // write pre-init user code here
-            stringItem5 = new StringItem("vCard", VCardExporter.dumpSome(5));//GEN-LINE:|95-getter|1|95-postInit
+            stringItem5 = new StringItem("vCard", VCardExporter.dumpAll());//GEN-LINE:|95-getter|1|95-postInit
         // write post-init user code here
         }//GEN-BEGIN:|95-getter|2|
         return stringItem5;
@@ -825,6 +817,12 @@ public class VCardImport extends MIDlet implements CommandListener {
             showNotification("No vCards found in filesystems.");
         else
             showNotification(""+vCards.length+" vCards found.");       
+    }
+    
+    private void importingContacts()
+    {
+        showNotification("Processing contacts, please wait...");
+        //VCardParser parser = new VCardParser()        
     }
     
     private void showNotification(String msg)
