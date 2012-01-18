@@ -1,11 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.googlecode.meats;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -17,52 +14,23 @@ import javax.microedition.pim.PIM;
 import javax.microedition.pim.PIMException;
 
 /**
- * This class 
+ * Used for getting contacts out of a vCard file
  * @author olaija
  */
 public class VCardParser {
-    private String fileURL;
-    private FileConnection fc;
-    private InputStream is;
-    private Reader rr;
+    private String fileURL = null;
+    private FileConnection fc = null;
+    private InputStream is = null;
 
     private int numImported = 0;
     private int numAttempted = 0;
     private int numRead = 0;
-
-    public String readline() {
-        StringBuffer sb = new StringBuffer();
-        int i;
-        char c;
-        try {
-            while ( true ) {
-                i = rr.read();
-                if (i == -1)
-                    break;
-                c = (char) i;
-                if (c == '\n')
-                    break;
-                // carrige return suppression
-                if ( c == '\r' )
-                    continue;
-                    // sb.append("\\r");
-                else
-                    sb.append(c);
-            }
-        } catch (IOException ioe) {
-            return null;
-        }
-        if ( i == -1 && sb.length() == 0)
-            return null;
-        return sb.toString();
-    }
-    
+   
     public VCardParser(String url) {
         fileURL = url;
         try {
             fc = (FileConnection) Connector.open(fileURL);
             is = fc.openInputStream();
-            rr = new InputStreamReader(is);
         } catch (IOException ex) {
         }
     }

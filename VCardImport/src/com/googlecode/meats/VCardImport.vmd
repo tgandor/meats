@@ -205,6 +205,10 @@
                         <Property name="itemCommandListener" typeID="C#ItemCommandListener" value="R17"/>
                         <Property name="text" typeID="Pjava.lang.String" value="UPimDiag.getSerialFormats()"/>
                     </Component>
+                    <Component componentID="87" typeID="C#CommandEventSource">
+                        <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R55"/>
+                        <Property name="command" typeID="Cjavax.microedition.lcdui.Command" value="R86"/>
+                    </Component>
                     <Component componentID="89" typeID="C#CommandEventSource">
                         <Property name="eventHandler" typeID="C#EventHandler" value="R90"/>
                         <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R55"/>
@@ -220,10 +224,6 @@
                         <Property name="label" typeID="Pjava.lang.String" value="VWritable directories"/>
                         <Property name="itemCommandListener" typeID="C#ItemCommandListener" value="R17"/>
                         <Property name="text" typeID="Pjava.lang.String" value="U&quot;\n&quot;+org.apache.commons.lang.StringUtils.join(VCardExporter.findWritableDirectories(), &quot;\n&quot;)"/>
-                    </Component>
-                    <Component componentID="87" typeID="C#CommandEventSource">
-                        <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R55"/>
-                        <Property name="command" typeID="Cjavax.microedition.lcdui.Command" value="R86"/>
                     </Component>
                 </Component>
                 <Component componentID="64" typeID="Cjavax.microedition.lcdui.List">
@@ -315,7 +315,7 @@
                         <Property name="codeGenerated" typeID="Pboolean" value="Vtrue"/>
                         <Property name="label" typeID="Pjava.lang.String" value="VvCard"/>
                         <Property name="itemCommandListener" typeID="C#ItemCommandListener" value="R17"/>
-                        <Property name="text" typeID="Pjava.lang.String" value="UVCardExporter.dumpSome(5)"/>
+                        <Property name="text" typeID="Pjava.lang.String" value="UVCardExporter.dumpAll()"/>
                     </Component>
                 </Component>
                 <Component componentID="99" typeID="Cjavax.microedition.lcdui.List">
@@ -404,13 +404,13 @@
         </Component>
     </Document>
     <FlowScene version="1">
-        <Node componentID="99" descriptorID="componentNode99" x="390" y="400"/>
         <Node componentID="115" descriptorID="componentNode115" x="436" y="182"/>
-        <Node componentID="91" descriptorID="componentNode91" x="491" y="42"/>
         <Node componentID="64" descriptorID="componentNode64" x="26" y="203"/>
-        <Node componentID="105" descriptorID="componentNode105" x="586" y="428"/>
-        <Node componentID="14" descriptorID="componentNode14" x="133" y="436"/>
-        <Node componentID="2" descriptorID="componentNode2" x="24" y="26"/>
+        <Node componentID="99" descriptorID="componentNode99" x="390" y="400"/>
         <Node componentID="55" descriptorID="componentNode55" x="309" y="14"/>
+        <Node componentID="14" descriptorID="componentNode14" x="133" y="436"/>
+        <Node componentID="91" descriptorID="componentNode91" x="491" y="42"/>
+        <Node componentID="2" descriptorID="componentNode2" x="24" y="26"/>
+        <Node componentID="105" descriptorID="componentNode105" x="586" y="428"/>
     </FlowScene>
 </VisualDesign>
