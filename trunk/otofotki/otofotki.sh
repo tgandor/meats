@@ -19,6 +19,6 @@ fi
 for i in "$@"
 do
   echo "<!-- Uploading $i -->"
-  curl -s -F "plik1=@$i;type=image/jpeg" http://www.otofotki.pl/img14/module.php | grep miniaturka | grep -o \<a\ href.\*\</a\> | tee -a images.html
+  curl -s -F "plik1=@$i;type=image/jpeg" http://img30.otofotki.pl/module.php | grep miniaturka | grep -o \<a\ href.\*\</a\> | tee -a images.html
   echo >> images.html
 done
