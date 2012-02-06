@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import time
+import re
+
+if len(sys.argv) < 2:
+    print "Usage: %s IFACE" % sys.argv[0]
+    exit()
+
+interface = sys.argv[1]
+
+def get_bytes():
+    data = os.popen('ifconfig '+interface).read()
+    m = re.search("RX bytes:(\d+)", data)
+    rxb = int(m.group(1))
+    m = re.search("TX bytes:(\d+)", data)
+    txb = int(m.group(1))
+    return rxb, txb
+
+rxb0, txb0 = get_bytes()
+
+print "If you see this, it's working. Exit with Ctrl-C."
+
+def human_format(n):
+    if n > 2**20:
+        return "%6.1f MB" % (n/2.0**20,)
+    if n > 2**10:
+        return "%6.1f KB" % (n/2.0**10,)
+    return "%6d B " % n
+
+while True:
+    time.sleep(1)
+    rxb, txb = get_bytes()
+    print "Recv %s/s, Send %s/s. Total: %s, %s." % tuple(
+            map(human_format, (rxb-rxb0, txb-txb0, rxb, txb)))
+    rxb0, txb0 = rxb, txb
