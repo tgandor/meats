@@ -30,9 +30,18 @@ def human_format(n):
         return "%6.1f KB" % (n/2.0**10,)
     return "%6d B " % n
 
+idle_secs = 0
+
 while True:
     time.sleep(1)
     rxb, txb = get_bytes()
+    if (rxb, txb) == (rxb0, txb0):
+        idle_secs += 1
+        if idle_secs % 10 == 0:
+            print "%d seconds idle" % idle_secs
+        continue
+    else:
+        idle_secs = 0
     print "Recv %s/s, Send %s/s. Total: %s, %s." % tuple(
             map(human_format, (rxb-rxb0, txb-txb0, rxb, txb)))
     rxb0, txb0 = rxb, txb
