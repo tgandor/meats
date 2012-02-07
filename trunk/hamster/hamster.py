@@ -47,11 +47,13 @@ the_url = sys.argv[1]
 hostname = re.match('http://([^/]+)/', the_url).group(1)
 content = get_content(the_url)
 dirname = clean_name(the_url[the_url.rfind('/')+1:])
+if not os.path.exists(dirname):
+    os.mkdir(dirname)
+
 for title, audio_id in set(re.findall('/([^/]+),(\d+)\\.mp3', content)):
     title_c = clean_name(title)+'.mp3'
-    print "Retrieving >%s< (%s)" % (title_c, audio_id)
-    continue
-    open(title_c, 'w').write(get_audio(hostname, audio_id))
+    print "Retrieving >%s/%s< (%s)" % (dirname, title_c, audio_id)
+    open(os.path.join(dirname, title_c), 'w').write(get_audio(hostname, audio_id))
     print "Sleeping..."
     time.sleep(random.random()*5)
 
