@@ -48,12 +48,21 @@ hostname = re.match('http://([^/]+)/', the_url).group(1)
 content = get_content(the_url)
 dirname = clean_name(the_url[the_url.rfind('/')+1:])
 if not os.path.exists(dirname):
+    print "Creating directory: "+dirname
     os.mkdir(dirname)
+else:
+    print "Directory %s seems to already exist." % dirname
 
-for title, audio_id in set(re.findall('/([^/]+),(\d+)\\.mp3', content)):
+print "Starting download loop, exit easily with Ctrl-C while sleeping."
+
+for title, audio_id in sorted(set(re.findall('/([^/]+),(\d+)\\.mp3', content))):
     title_c = clean_name(title)+'.mp3'
-    print "Retrieving >%s/%s< (%s)" % (dirname, title_c, audio_id)
-    open(os.path.join(dirname, title_c), 'w').write(get_audio(hostname, audio_id))
+    filename = os.path.join(dirname, title_c)
+    if os.path.exists(filename) and os.path.getsize(filename) > 0:
+        print ">%s< seems to exist, skipping." % filename
+        continue
+    print "Retrieving >%s< (id: %s)" % (title_c, audio_id)
+    open(filename, 'w').write(get_audio(hostname, audio_id))
     print "Sleeping..."
-    time.sleep(random.random()*5)
+    time.sleep(random.random()*10)
 
