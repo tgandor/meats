@@ -32,8 +32,15 @@ def get_audio(hostname, audio_id):
             audio_id, ts)
     return urllib.urlopen(url).read()
 
+def deutf(starred):
+    starred = starred.group()
+    ords = [ starred[i:i+2]  for i in xrange(1, len(starred), 3) ]
+    starred = ''.join( chr(int(o, 16)) for o in ords )
+    return starred.decode('utf-8').encode(sys.getfilesystemencoding())
+
 def clean_name(dirty):
-    return dirty.replace('+','_').replace('*', '')
+    dirty = re.sub('(\\*[0-9a-fA-F]{2})+', deutf, dirty)
+    return dirty.replace('+','_')
 
 if not os.path.exists('.hamster'):
     print 'Missing .hamster directory, creating...'
