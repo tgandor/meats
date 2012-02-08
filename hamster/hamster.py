@@ -80,7 +80,11 @@ for title, audio_id in sorted(set(re.findall('/([^/]+),(\d+)\\.mp3', content))):
         print ">%s< seems to exist, skipping." % filename
         continue
     print "Retrieving >%s< (id: %s)" % (title_c, audio_id)
-    open(filename, 'wb').write(get_audio(hostname, audio_id))
+    data = get_audio(hostname, audio_id)
+    if data.startswith("The page cannot be displayed"):
+        print "Reading failed!"
+    else:
+        open(filename, 'wb').write(data)
     print "Sleeping..."
     time.sleep(random.random()*10)
 
