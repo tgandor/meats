@@ -45,7 +45,18 @@ if len(sys.argv) < 2:
 
 the_url = sys.argv[1]
 hostname = re.match('http://([^/]+)/', the_url).group(1)
+hostpath = re.match('http://[^/]+(/.*)', the_url).group(1)
 content = get_content(the_url)
+
+page = 2
+while True:
+    nextpage = "%s,%d" % (hostpath, page)
+    if content.find(nextpage) == -1:
+        break
+    print "Extra page: ", nextpage
+    content += get_content("%s,%d" % (the_url, page))
+    page += 1
+
 dirname = clean_name(the_url[the_url.rfind('/')+1:])
 if not os.path.exists(dirname):
     print "Creating directory: "+dirname
