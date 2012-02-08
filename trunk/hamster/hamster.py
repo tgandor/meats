@@ -22,8 +22,8 @@ def get_content(url):
         return open(content_file).read()
     print 'Retrieving from the Web'
     content = urllib.urlopen(url).read()
-    open(url_file, 'w').write(url)
-    open(content_file, 'w').write(content)
+    open(url_file, 'wb').write(url)
+    open(content_file, 'wb').write(content)
     return content
 
 def get_audio(hostname, audio_id):
@@ -80,7 +80,7 @@ for title, audio_id in sorted(set(re.findall('/([^/]+),(\d+)\\.mp3', content))):
         print ">%s< seems to exist, skipping." % filename
         continue
     print "Retrieving >%s< (id: %s)" % (title_c, audio_id)
-    open(filename, 'w').write(get_audio(hostname, audio_id))
+    open(filename, 'wb').write(get_audio(hostname, audio_id))
     print "Sleeping..."
     time.sleep(random.random()*10)
 
