@@ -31,9 +31,15 @@ def human_format(n):
     return "%6d B " % n
 
 idle_secs = 0
+maxtx, maxrx = 0, 0
 
 while True:
-    time.sleep(1)
+    try:
+        time.sleep(1)
+    except:
+        print "Bye, max speeds were: %s/s, %s/s." %  (
+                human_format(maxrx), human_format(maxtx))
+        break
     rxb, txb = get_bytes()
     if (rxb, txb) == (rxb0, txb0):
         idle_secs += 1
@@ -44,4 +50,6 @@ while True:
         idle_secs = 0
     print "Recv %s/s, Send %s/s. Total: %s, %s." % tuple(
             map(human_format, (rxb-rxb0, txb-txb0, rxb, txb)))
+    maxtx = max(maxtx, txb-txb0)
+    maxrx = max(maxrx, rxb-rxb0)
     rxb0, txb0 = rxb, txb
