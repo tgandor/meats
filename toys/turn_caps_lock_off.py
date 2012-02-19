@@ -9,3 +9,14 @@ X11 = cdll.LoadLibrary("libX11.so.6")
 display = X11.XOpenDisplay(None)
 X11.XkbLockModifiers(display, c_uint(0x0100), c_uint(2), c_uint(0))
 X11.XCloseDisplay(display)
+
+import sys
+if len(sys.argv)==1:
+    exit()
+
+try:
+    import tkMessageBox
+    tkMessageBox.showinfo("Caps lock disable", "Done. Try if now OK.")
+except:
+    pass
+
