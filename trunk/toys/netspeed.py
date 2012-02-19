@@ -19,7 +19,11 @@ def get_bytes():
     txb = int(m.group(1))
     return rxb, txb
 
-rxb0, txb0 = get_bytes()
+try:
+    rxb0, txb0 = get_bytes()
+except Exception, e:
+    print "Error getting data (see other messages)"
+    exit()
 
 print "If you see this, it's working. Exit with Ctrl-C."
 
@@ -37,10 +41,15 @@ while True:
     try:
         time.sleep(1)
     except:
-        print "Bye, max speeds were: %s/s, %s/s." %  (
-                human_format(maxrx), human_format(maxtx))
+        print
         break
-    rxb, txb = get_bytes()
+
+    try:
+        rxb, txb = get_bytes()
+    except:
+        print "Error retrieving data, quitting!"
+        break
+
     if (rxb, txb) == (rxb0, txb0):
         idle_secs += 1
         if idle_secs % 10 == 0:
@@ -53,3 +62,6 @@ while True:
     maxtx = max(maxtx, txb-txb0)
     maxrx = max(maxrx, rxb-rxb0)
     rxb0, txb0 = rxb, txb
+
+print "Bye, max speeds were: %s/s, %s/s." % (
+                human_format(maxrx), human_format(maxtx))
