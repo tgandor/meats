@@ -126,24 +126,21 @@ public:
         }
         limbs.swap(result);
     }
+
+    void mul(const bn& x) 
+    {
+        bn result(0);
+	bn pattern(*this);
+	for (int i=0; i < x.limbs.size(); ++i) {
+	    pattern.mul(BNM);
+            bn row(pattern);
+	    row.mul(x.limbs[i]);
+	    result += row;
+	}
+	limbs.swap(result.limbs);
+    }
     
     void add(long long x) {
-    // perhaps buggy
-    /*
-        long long carry = 0;
-        I i = 0;
-        while ( x ) {
-            long long temp = limbs[i] + x % BNM + carry;
-            if ( i == limbs.size() ) 
-                limbs.PB(temp % BNM);
-            else
-                limbs[i] = temp % BNM;
-            carry = temp / BNM;
-            x /= BNM; ++i;
-        }
-        if ( carry ) 
-            limbs.PB(carry);
-      */
         *this += bn(x);
     }
     
