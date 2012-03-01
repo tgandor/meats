@@ -11,8 +11,6 @@ items = sorted(set(map(float, sys.argv[2:])))
 sums = {0: []}
 surpassed = set()
 
-print limit, items
-
 for item in items:
     while True:
         changes = False
