@@ -32,6 +32,10 @@ def get_audio(hostname, audio_id):
             audio_id, ts)
     return urllib.urlopen(url).read()
 
+def get_video(hostname, video_id)
+    url = "http://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, video_id)
+    return urllib.urlopen(url).read()
+
 def deutf(starred):
     starred = starred.group()
     ords = [ starred[i:i+2]  for i in xrange(1, len(starred), 3) ]
@@ -81,6 +85,21 @@ for title, audio_id in sorted(set(re.findall('/([^/]+),(\d+)\\.mp3', content))):
         continue
     print "Retrieving >%s< (id: %s)" % (title_c, audio_id)
     data = get_audio(hostname, audio_id)
+    if data.startswith("The page cannot be displayed"):
+        print "Reading failed!"
+    else:
+        open(filename, 'wb').write(data)
+    print "Sleeping..."
+    time.sleep(random.random()*10)
+
+for title, video_id in sorted(set(re.findall('/([^/]+),(\d+)\\.avi', content))):
+    title_c = clean_name(title)+'.flv'
+    filename = os.path.join(dirname, title_c)
+    if os.path.exists(filename) and os.path.getsize(filename) > 0:
+        print ">%s< seems to exist, skipping." % filename
+        continue
+    print "Retrieving >%s< (id: %s)" % (title_c, audio_id)
+    data = get_video(hostname, audio_id)
     if data.startswith("The page cannot be displayed"):
         print "Reading failed!"
     else:
