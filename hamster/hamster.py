@@ -32,7 +32,7 @@ def get_audio(hostname, audio_id):
             audio_id, ts)
     return urllib.urlopen(url).read()
 
-def get_video(hostname, video_id)
+def get_video(hostname, video_id):
     url = "http://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, video_id)
     return urllib.urlopen(url).read()
 
@@ -98,8 +98,8 @@ for title, video_id in sorted(set(re.findall('/([^/]+),(\d+)\\.avi', content))):
     if os.path.exists(filename) and os.path.getsize(filename) > 0:
         print ">%s< seems to exist, skipping." % filename
         continue
-    print "Retrieving >%s< (id: %s)" % (title_c, audio_id)
-    data = get_video(hostname, audio_id)
+    print "Retrieving >%s< (id: %s)" % (title_c, video_id)
+    data = get_video(hostname, video_id)
     if data.startswith("The page cannot be displayed"):
         print "Reading failed!"
     else:
