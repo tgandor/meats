@@ -59,14 +59,19 @@ hostname = re.match('http://([^/]+)/', the_url).group(1)
 hostpath = re.match('http://[^/]+(/.*)', the_url).group(1)
 content = get_content(the_url)
 
+contents = [content[content.rfind('folderContentContainer'):]]
+
 page = 2
 while True:
     nextpage = "%s,%d" % (hostpath, page)
     if content.find(nextpage) == -1:
         break
     print "Extra page: ", nextpage
-    content += get_content("%s,%d" % (the_url, page))
+    content = get_content("%s,%d" % (the_url, page))
+    contents.append(content[content.rfind('folderContentContainer'):])
     page += 1
+
+content = " ".join(contents)
 
 dirname = clean_name(the_url[the_url.rfind('/')+1:])
 if not os.path.exists(dirname):
@@ -92,7 +97,7 @@ for title, audio_id in sorted(set(re.findall('/([^/]+),(\d+)\\.mp3', content))):
     print "Sleeping..."
     time.sleep(random.random()*10)
 
-for title, video_id in sorted(set(re.findall('/([^/]+),(\d+)\\.avi', content))):
+for title, video_id in sorted(set(re.findall('/([^/]+),(\d+)\\.(?:avi|mp4)', content))):
     title_c = clean_name(title)+'.flv'
     filename = os.path.join(dirname, title_c)
     if os.path.exists(filename) and os.path.getsize(filename) > 0:
