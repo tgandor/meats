@@ -15,4 +15,4 @@ if [ -z $date_formatted ] ; then
 	exit
 fi
 
-svn log -r "{$date_formatted}:HEAD" | awk '/^r[1-9]/ { print $3; }' | sort | uniq -c | sort -n
+svn log -r "{$date_formatted}:HEAD" $LOGURL | awk '/^r[1-9]/ { print $3; }' | sort | uniq -c | sort -n
