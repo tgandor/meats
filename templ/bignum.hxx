@@ -92,10 +92,11 @@ public:
     bn& pow(int k)
     {
 	bn result(1), multiplier(*this);
-	while(k) {
+	for(;k;) {
 		if (k & 1) result.mul(multiplier);
-		multiplier.mul(multiplier);
 		k >>= 1;
+		if(!k) break;
+		multiplier.mul(multiplier);
 	}
 	limbs.swap(result.limbs);
 	return *this;
