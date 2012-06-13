@@ -6,4 +6,4 @@ if [ -z $1 ] ; then
 	exit
 fi
 
-svn log -r "$1:HEAD" | awk '/^r[1-9]/ { print $3; }' | sort | uniq -c | sort -n
+svn log -r "$1:HEAD" $LOGURL | awk '/^r[1-9]/ { print $3; }' | sort | uniq -c | sort -n
