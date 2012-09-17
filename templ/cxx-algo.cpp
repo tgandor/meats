@@ -11,9 +11,9 @@
 #include <vector>
 
 #define I int
-#define IN(x) I x; scanf("%d", &x)
+#define IN(x) int x; scanf("%d", &x)
 #define OUT(x) printf("%d\n", x)
-#define FRN(ii, ll, uu) for(I ii = (ll); ii < uu; ++ii)
+#define FRN(ii, ll, uu) for(int ii = (ll); ii < uu; ++ii)
 #define FOR(ii, nn) FRN(ii, 0, nn)
 #define LI long long
 #define LIN(x) LI x; scanf("%lld", &x)
