@@ -7,9 +7,12 @@ import time
 import urllib
 import random
 
-urllib.URLopener.version = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0'
+urllib.URLopener.version = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:16.0) Gecko/20100101 Firefox/16.0'
 
 def get_content(url):
+    if not os.path.exists('.hamster'):
+        print 'Missing .hamster directory, creating...'
+        os.mkdir('.hamster')
     from hashlib import md5
     digest = md5(url).hexdigest()
     url_file = os.path.join('.hamster/', digest+'.url')
@@ -46,9 +49,6 @@ def clean_name(dirty):
     dirty = re.sub('(\\*[0-9a-fA-F]{2})+', deutf, dirty)
     return dirty.replace('+','_')
 
-if not os.path.exists('.hamster'):
-    print 'Missing .hamster directory, creating...'
-    os.mkdir('.hamster')
 
 if len(sys.argv) < 2:
     print 'Usage: %s [URL]' % sys.argv[0]
