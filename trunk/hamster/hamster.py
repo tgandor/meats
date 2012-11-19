@@ -29,86 +29,90 @@ def get_content(url):
     open(content_file, 'wb').write(content)
     return content
 
-def get_audio(hostname, audio_id):
-    ts = int(time.time() * 1000)
-    url = "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname,
-            audio_id, ts)
-    return urllib.urlopen(url).read()
-
-def get_video(hostname, video_id):
-    url = "http://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, video_id)
-    return urllib.urlopen(url).read()
-
-def deutf(starred):
-    starred = starred.group()
-    ords = [ starred[i:i+2]  for i in xrange(1, len(starred), 3) ]
-    starred = ''.join( chr(int(o, 16)) for o in ords )
-    return starred.decode('utf-8').encode(sys.getfilesystemencoding())
-
 def clean_name(dirty):
+    def deutf(starred):
+        starred = starred.group()
+        ords = [ starred[i:i+2]  for i in xrange(1, len(starred), 3) ]
+        starred = ''.join( chr(int(o, 16)) for o in ords )
+        return starred.decode('utf-8').encode(sys.getfilesystemencoding())
     dirty = re.sub('(\\*[0-9a-fA-F]{2})+', deutf, dirty)
     return dirty.replace('+','_')
 
+class MusicHandler(object):
+    pattern = re.compile('/([^/]+),(\d+)\\.mp3')
+    fileext = '.mp3'
+    def get_data(self, hostname, file_id):
+        ts = int(time.time() * 1000)
+        url = "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
+        return urllib.urlopen(url).read()
 
-if len(sys.argv) < 2:
-    print 'Usage: %s [URL]' % sys.argv[0]
+class MusicHandler(object):
+    pattern = re.compile('/([^/]+),(\d+)\\.mp3')
+    fileext = '.mp3'
+    def get_data(self, hostname, file_id):
+        ts = int(time.time() * 1000)
+        url = "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
+        return urllib.urlopen(url).read()
+        
+class VideoHandler(object):
+    pattern = re.compile('/([^/]+),(\d+)\\.(?:avi|mp4)')
+    fileext = '.flv'
+    def get_data(self, hostname, file_id):
+        url = "http://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
+        return urllib.urlopen(url).read()
 
+def retrieve_all(hostname, handler, contents, targetdir):
+    print "Starting download loop, exit easily with Ctrl-C while sleeping."
+    # this is uglier than I wanted
+    tasks = sorted(set(sum((handler.pattern.findall(content) for content in contents), [])))
+    # but it gives all "tasks" in one sorted list
+    for title, file_id in tasks:
+        title_c = clean_name(title) + handler.fileext
+        filename = os.path.join(targetdir, title_c)
+        if os.path.exists(filename) and os.path.getsize(filename) > 0:
+            print ">%s< seems to exist, skipping." % filename
+            continue
+        print "Retrieving >%s< (id: %s)" % (title_c, file_id)
+        data = handler.get_data(hostname, file_id)
+        if data.startswith("The page cannot be displayed"):
+            print "Reading failed!"
+        else:
+            open(filename, 'wb').write(data)
+        print "Sleeping..."
+        time.sleep(random.random() * 8 + 2)
 
-the_url = sys.argv[1]
-hostname = re.match('http://([^/]+)/', the_url).group(1)
-hostpath = re.match('http://[^/]+(/.*)', the_url).group(1)
-content = get_content(the_url)
+def main():
+    if len(sys.argv) < 2:
+        print 'Usage: %s [URL]' % sys.argv[0]
 
-contents = [content[content.rfind('folderContentContainer'):]]
+    the_url = sys.argv[1]
+    hostname = re.match('http://([^/]+)/', the_url).group(1)
+    hostpath = re.match('http://[^/]+(/.*)', the_url).group(1)
+    content = get_content(the_url)
 
-page = 2
-while True:
-    nextpage = "%s,%d" % (hostpath, page)
-    if content.find(nextpage) == -1:
-        break
-    print "Extra page: ", nextpage
-    content = get_content("%s,%d" % (the_url, page))
-    contents.append(content[content.rfind('folderContentContainer'):])
-    page += 1
+    contents = [content[content.rfind('folderContentContainer'):]]
 
-content = " ".join(contents)
+    page = 2
+    while True:
+        nextpage = "%s,%d" % (hostpath, page)
+        if content.find(nextpage) == -1:
+            break
+        print "Extra page: ", nextpage
+        content = get_content("%s,%d" % (the_url, page))
+        contents.append(content[content.rfind('folderContentContainer'):])
+        page += 1
 
-dirname = clean_name(the_url[the_url.rfind('/')+1:])
-if not os.path.exists(dirname):
-    print "Creating directory: "+dirname
-    os.mkdir(dirname)
-else:
-    print "Directory %s seems to already exist." % dirname
+    content = " ".join(contents)
 
-print "Starting download loop, exit easily with Ctrl-C while sleeping."
-
-for title, audio_id in sorted(set(re.findall('/([^/]+),(\d+)\\.mp3', content))):
-    title_c = clean_name(title)+'.mp3'
-    filename = os.path.join(dirname, title_c)
-    if os.path.exists(filename) and os.path.getsize(filename) > 0:
-        print ">%s< seems to exist, skipping." % filename
-        continue
-    print "Retrieving >%s< (id: %s)" % (title_c, audio_id)
-    data = get_audio(hostname, audio_id)
-    if data.startswith("The page cannot be displayed"):
-        print "Reading failed!"
+    dirname = clean_name(the_url[the_url.rfind('/')+1:])
+    if not os.path.exists(dirname):
+        print "Creating directory: "+dirname
+        os.mkdir(dirname)
     else:
-        open(filename, 'wb').write(data)
-    print "Sleeping..."
-    time.sleep(random.random()*10)
+        print "Directory %s seems to already exist." % dirname
 
-for title, video_id in sorted(set(re.findall('/([^/]+),(\d+)\\.(?:avi|mp4)', content))):
-    title_c = clean_name(title)+'.flv'
-    filename = os.path.join(dirname, title_c)
-    if os.path.exists(filename) and os.path.getsize(filename) > 0:
-        print ">%s< seems to exist, skipping." % filename
-        continue
-    print "Retrieving >%s< (id: %s)" % (title_c, video_id)
-    data = get_video(hostname, video_id)
-    if data.startswith("The page cannot be displayed"):
-        print "Reading failed!"
-    else:
-        open(filename, 'wb').write(data)
-    print "Sleeping..."
-    time.sleep(random.random()*10)
+    retrieve_all(hostname, MusicHandler(), contents, dirname)
+    #retrieve_all(hostname, VideoHandler(), contents, dirname)
 
+if __name__ == '__main__':
+    main()
