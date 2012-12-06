@@ -1,4 +1,4 @@
-[2~#include <omp.h>
+#include <omp.h>
 #include <stdio.h>
 int main() {
 #pragma omp parallel
