@@ -17,7 +17,7 @@ EXTRA_DIST = examples locale install_locale
 
 POTFILES = main.c program.c
 
-CFLAGS = -g
+AM_CFLAGS = -g
 
 atom_codes.h        : getatoms atomizer_c.c atomizer_pascal.c atomizer_banal.c
 	./getatoms -H atom_codes.h -C atom_codes.c atomizer_c.c atomizer_pascal.c atomizer_banal.c
@@ -45,3 +45,5 @@ atomizer_pascal.o      : atom_codes.h
 
 install: install-am
 	./install_locale
+dist-hook:
+	rm -rf `find $(distdir) -type d -name .svn`
