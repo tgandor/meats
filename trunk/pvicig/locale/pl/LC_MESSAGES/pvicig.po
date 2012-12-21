@@ -1,0 +1,271 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-10-29 22:53+0100\n"
+"PO-Revision-Date: 2006-10-25 08:11+0100\n"
+"Last-Translator: Tomasz P. Gandor <Tomasz.Gandor@gmail.com>\n"
+"Language-Team: Polski, Tomasz.Gandor@gmail.com\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: atomizer_banal.l:72 atomizer_c.l:139
+#, c-format
+msgid "%d: unexpected character `%c'\n"
+msgstr "%d: niespodziewany znak `%c'\n"
+
+#: atomizer_pascal.l:143
+#, c-format
+msgid "'%c' (%d) illegal charcter at line %d\n"
+msgstr "'%c' (%d) niedozwolony znak w linii %d\n"
+
+#: atomizer_pascal.l:170
+#, c-format
+msgid "unexpected EOF inside comment at line %d\n"
+msgstr "niespodziewany koniec pliku wewn±trz komentarza w linii %d\n"
+
+#: comparison.c:109
+#, c-format
+msgid "Number of tiles: %d\n"
+msgstr "Liczba kafli: %d\n"
+
+#: comparison.c:114 comparison.c:118
+#, c-format
+msgid "Fragment of %s:\n"
+msgstr "Fragment pliku %s\n"
+
+#: comparison.c:149
+#, c-format
+msgid "\tTiles: %d, Sum: %d\n"
+msgstr "\tLiczba kafli: %d, Suma d³ugo¶ci: %d\n"
+
+#: comparison.c:154
+#, c-format
+msgid "Metrics values: \n"
+msgstr "Warto¶ci metryk: \n"
+
+#: comparison.c:173
+#, c-format
+msgid "Comparing %s and %s\n"
+msgstr "Porównywanie %s i %s\n"
+
+#: GST.c:534
+#, c-format
+msgid "Atoms: "
+msgstr "Atomy: "
+
+#: main.c:167
+msgid "Too short minimal match length."
+msgstr "Zbyt ma³a warto¶æ dla najkrótszego dopasowanego kafla."
+
+#: main.c:174
+msgid "Wrong Greedy String Tiling parameters."
+msgstr "B³êdne warto¶ci parametrów dla algorytmu GST."
+
+#: main.c:184
+msgid "Too low Karp Rabin base."
+msgstr "Zbyt ma³a podstawa (czynnik) dla algorytmu KR."
+
+#: main.c:186
+msgid "Too low Karp Rabin modulus."
+msgstr "Zbyt ma³y parametr modulus dla algorytmu KR."
+
+#: main.c:188
+msgid "Karp Rabin modulus must be prime."
+msgstr "Parametr modulus algorytmu Karpa Rabina musi byæ liczb± pierwsz±."
+
+#: main.c:190
+msgid "We want Karp Rabin base to be prime too."
+msgstr ""
+"Dla lepszego rozpraszania czynnik w algorytmie KR równie¿ powinien byæ "
+"liczb± pierwsz±."
+
+#: main.c:192
+msgid "Too large Karp Rabin parameters (overflow)."
+msgstr "Zbyt du¿e warto¶ci parametrów algorytmu Karpa Rabina (przepe³nienie)."
+
+#: main.c:199
+#, c-format
+msgid "`%s' - copy detection program\n"
+msgstr "`%s' - program wykrywania podobieñstw\n"
+
+#: main.c:202
+#, c-format
+msgid ""
+"\n"
+"Usage: %s [OPTION]... ARGUMENTS\n"
+msgstr ""
+"\n"
+"U¿ycie: %s [OPCJA].. ARGUMENTY\n"
+
+#: main.c:205
+msgid ""
+"\n"
+"If a long option shows an argument as mandatory, then it is mandatory\n"
+"for the equivalent short option also.  Similarly for optional arguments.\n"
+msgstr ""
+"\n"
+"Arumenty opcjonalne dla d³ugich opcji s± równie¿ opcjonalne dla krótkich.\n"
+"Podobnie argumenty wymagane s± równie¿ wymagane.\n"
+
+#: main.c:210
+msgid ""
+"\n"
+"General Options:\n"
+"  -q, --quiet               supress errors, warnings and excess information\n"
+"  -v, --verbose             output more detailed information\n"
+"  -i, --indicate=FILENAME   compare this file aganist all other arguments "
+"only\n"
+"  -o, --output=FILENAME     redirect stdout to file FILENAME\n"
+"      --version             print version and exit\n"
+"      --help                display this help message\n"
+"\n"
+"Algorithm Options:\n"
+"  -t, --thereshold=VALUE    only display comparisons which yield more than "
+"VALUE %\n"
+"      --gst-start=VALUE     for GST algorithm: initial search length\n"
+"      --gst-min=VALUE       minimal (final) tile length in GST algorithm\n"
+"      --kr-base=VALUE       the Karp Rabin multiplier\n"
+"      --kr-mod=VALUE        the Karp Rabin modulus\n"
+"      --metrics             use also atribute counting metric\n"
+"      --only-metrics        use only atribute counting metric\n"
+"      --zero-same           when comparing metrics, don't ignore zeros\n"
+"      --use-cpp             preprocess C files wich cpp before processing\n"
+"      --source              display source in verbose mode when displaying "
+"program\n"
+"      --sort-asc            sort results ascending (default: sort "
+"descending\n"
+msgstr ""
+"\n"
+"Opcje ogólne:\n"
+"  -q, --quiet               nie pokazuje b³êdów i rozszerzonej informacji\n"
+"  -v, --verbose             zwraca bardziej szczegó³owe informacje\n"
+"  -i, --indicate=FILENAME   tylko wskazany plik bêdzie porównywany\n"
+"  -o, --output=FILENAME     przekierowanie wyj¶cia do pliku\n"
+"      --version             wy¶wietlenie wersji programu i wyj¶cie\n"
+"      --help                wy¶wietlenie tej pomocy\n"
+"\n"
+"Opcje algorytmu:\n"
+"  -t, --thereshold=VALUE   pominiêcie wyników poni¿ej VALUE % (domy¶lnie: "
+"50)\n"
+"      --gst-start=VALUE     pocz±tkowa d³ugo¶æ kafla w algorytmie GST\n"
+"      --gst-min=VALUE       minimalna (koñcowa) d³ugo¶æ kafla w GST\n"
+"      --kr-base=VALUE       podstawa (mno¿nik) w algorytmie Karpa Rabina\n"
+"      --kr-mod=VALUE        modu³ (liczba pierwsza) w algorymie KR\n"
+"      --metrics             zastosowanie miar liczbowych programu\n"
+"      --only-metrics        zastosowanie tylko miar liczbowych programu\n"
+"      --zero-same           przy miarach liczbowych -- branie zer pod uwagê\n"
+"      --use-cpp             przetwarzanie programów w C przez preprocesor\n"
+"      --source              wy¶wietlanie pe³nego ¼ród³a programu\n"
+"      --sort-asc            sortowanie wyników rosn±co (domy¶lnie: "
+"malej±co)\n"
+
+#: main.c:233
+msgid ""
+"\n"
+"Report bugs to: <Tomasz.Gandor@gmail.com>\n"
+msgstr ""
+"\n"
+"Informacje o b³êdach:  <Tomasz.Gandor@gmail.com>\n"
+
+#: main.c:377
+msgid "Resetting GST initial  to 2 * GST shortest."
+msgstr "Zmiana pocz±tkowego s na 2 * GST-min."
+
+#: main.c:381
+msgid "Resetting GST initial to default."
+msgstr "Reinicjalizacja pocz±tkowego s warto¶ci± domy¶ln±."
+
+#: main.c:384
+msgid "Resetting GST shortest to default."
+msgstr "Reinicjalizacja GST-min warto¶ci± domy¶ln±."
+
+#: main.c:393
+msgid "Resetting Karp Rabin params to default."
+msgstr ""
+"Reinicjalizacja parametrów algorytmu Karpa Rabina warto¶ciami domy¶lnymi."
+
+#: main.c:405
+#, c-format
+msgid "Suspected file: %s\n"
+msgstr "Podejrzany plik: %s\n"
+
+#: main.c:409
+msgid "The suspect program was't loaded correctly."
+msgstr "Podejrzany program nie zosta³ za³adowany poprawnie."
+
+#: main.c:414
+msgid "The suspect program was't processed correctly."
+msgstr "Podejrzany program nie zosta³ przetworzony poprawnie."
+
+#: main.c:429
+msgid "Not enough arguments."
+msgstr "Zbyt ma³o argumentów."
+
+#: main.c:453
+msgid "Not enough unique arguments."
+msgstr "Zbyt ma³o unikatowych argumentów."
+
+#: main.c:475
+#, c-format
+msgid "File: `%s' not loaded correctly.\n"
+msgstr "Plik `%s' nie zosta³ za³adowany.\n"
+
+#: main.c:487
+msgid "Not enough loaded programs."
+msgstr "Zbyt ma³o za³adowanych poprawnie programów."
+
+#: main.c:509
+#, c-format
+msgid "Program `%s' not processed.\n"
+msgstr "Program `%s' nie zosta³ przetworzony poprawnie.\n"
+
+#: main.c:524
+msgid "Not enough processed programs."
+msgstr "Zbyt ma³o programów poprawnie przetworzonych."
+
+#: program.c:79
+msgid "No program - null pointer"
+msgstr "Brak programu - pusty wska¼nik"
+
+#: program.c:83
+msgid "Program contents:"
+msgstr "Zawarto¶æ programu:"
+
+#: program.c:84
+#, c-format
+msgid "Filename: %s\n"
+msgstr "Nazwa pliku: %s\n"
+
+#: program.c:87
+msgid "--------- begin source ------------"
+msgstr "--------- pocz±tek kodu -----------"
+
+#: program.c:89
+msgid "---------- end source -------------"
+msgstr "--------- koniec kodu -------------"
+
+#: program.c:93
+#, c-format
+msgid "Number of lexical atoms: %d\n"
+msgstr "Liczba atomów leksykalnych: %d\n"
+
+#: program.c:100
+#, c-format
+msgid "Metrics values (as they follow, for reference read metrics.h):\n"
+msgstr ""
+"Warto¶ci metryk programu (ich znaczenie mo¿na sprawdziæ w pliku metrics.h\n"
+
+#: program.c:110
+#, c-format
+msgid "Processing program %s...\n"
+msgstr "Przetwarzanie programu %s...\n"
+
+#: program.c:117
+msgid "File preprocessed."
+msgstr "Plik przetworzony."
+
+#: program.c:192
+msgid "Processed."
+msgstr "Przetworzone."

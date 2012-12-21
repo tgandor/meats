@@ -1,0 +1,14 @@
+AC_INIT(main.c)
+
+AM_INIT_AUTOMAKE(pvicig, 0.0.1)
+
+AC_PROG_CC
+AC_LANG_C
+AC_PROG_LEX
+
+AC_HEADER_STDC
+AC_CHECK_HEADERS(limits.h memory.h)
+
+AC_FUNC_ALLOCA
+
+AC_OUTPUT(Makefile)

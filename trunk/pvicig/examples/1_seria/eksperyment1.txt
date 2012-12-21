@@ -1,0 +1,1148 @@
+--------------------------------------------------------
+maszyna111.c	-	maszyna110.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna111.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna110.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+--------------------------------------------------------
+maszyna111.c	-	maszyna101.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna111.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna101.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+--------------------------------------------------------
+maszyna111.c	-	maszyna100.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna111.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna100.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+--------------------------------------------------------
+maszyna111.c	-	maszyna011.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna111.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna011.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna111.c	-	maszyna010.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna111.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna010.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna111.c	-	maszyna001.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna111.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna001.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna111.c	-	maszyna000.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna111.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna000.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna110.c	-	maszyna101.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna110.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna101.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+--------------------------------------------------------
+maszyna110.c	-	maszyna100.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna110.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna100.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+--------------------------------------------------------
+maszyna110.c	-	maszyna011.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna110.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna011.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna110.c	-	maszyna010.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna110.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna010.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna110.c	-	maszyna001.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna110.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna001.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna110.c	-	maszyna000.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna110.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna000.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna101.c	-	maszyna100.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna101.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna100.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+--------------------------------------------------------
+maszyna101.c	-	maszyna011.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna101.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna011.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna101.c	-	maszyna010.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna101.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna010.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna101.c	-	maszyna001.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna101.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna001.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna101.c	-	maszyna000.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna101.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna000.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna100.c	-	maszyna011.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna100.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna011.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna100.c	-	maszyna010.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna100.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna010.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna100.c	-	maszyna001.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna100.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna001.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna100.c	-	maszyna000.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna100.c
+
+char no[256];
+
+/* autorem zest kto inny ? */
+int main()
+{
+	int n,i;
+	int addr,z,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,z=strlen(no)-1; z>=0; z--)
+			addr = (addr*2 + (no[z]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+Fragment pliku maszyna000.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna011.c	-	maszyna010.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna011.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+Fragment pliku maszyna010.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna011.c	-	maszyna001.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna011.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+Fragment pliku maszyna001.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna011.c	-	maszyna000.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna011.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+Fragment pliku maszyna000.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna010.c	-	maszyna001.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna010.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+Fragment pliku maszyna001.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna010.c	-	maszyna000.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna010.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+Fragment pliku maszyna000.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+--------------------------------------------------------
+maszyna001.c	-	maszyna000.c	100,00%
+	Liczba kafli: 1, Suma d³ugo¶ci: 81
+Liczba kafli: 1
+1:
+Atomy: BUILTINTYPE IDENTIFIER INTEGER BUILTINTYPE IDENTIFIER BRACKET BRACKET BEGN BUILTINTYPE IDENTIFIER IDENTIFIER BUILTINTYPE IDENTIFIER IDENTIFIER IDENTIFIER IDENTIFIER BRACKET STRING BITWISE IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER IDENTIFIER IDENTIFIER ARITHMETIC BRACKET BEGN IDENTIFIER BRACKET STRING IDENTIFIER BRACKET CONTROL BRACKET IDENTIFIER ASSIGNMENT INTEGER IDENTIFIER ASSIGNMENT IDENTIFIER BRACKET IDENTIFIER BRACKET ARITHMETIC INTEGER IDENTIFIER RELATION INTEGER IDENTIFIER ARITHMETIC BRACKET IDENTIFIER ASSIGNMENT BRACKET IDENTIFIER INTEGER ARITHMETIC BRACKET IDENTIFIER IDENTIFIER RELATION CHARACTER BRACKET BRACKET ARITHMETIC INTEGER IDENTIFIER BRACKET STRING STRING IDENTIFIER BRACKET END CONTROL INTEGER END 
+Fragment pliku maszyna001.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
+Fragment pliku maszyna000.c
+char no[256];
+
+int main()
+{
+	int n,i;
+	int addr,j,len;
+	scanf("%d", &n);
+	for(i=0; i<n; i++)
+	{
+		scanf(" %s", no);
+		for(addr=0,j=strlen(no)-1; j>=0; j--)
+			addr = (addr*2 + (no[j]=='1')) % 3;
+		printf("%c\n", "011"[addr]);
+	}
+	return 0;
+}
