@@ -53,7 +53,7 @@ class MusicHandler(object):
         ts = int(time.time() * 1000)
         url = "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
         return urllib.urlopen(url).read()
-        
+
 class VideoHandler(object):
     pattern = re.compile('/([^/]+),(\d+)\\.(?:avi|mp4)')
     fileext = '.flv'
@@ -83,7 +83,7 @@ def retrieve_all(hostname, handler, contents, targetdir):
 
 def main():
     if len(sys.argv) < 2:
-        print 'Usage: %s [URL]' % sys.argv[0]
+        print 'Usage: %s [dl|ls|find] URL' % sys.argv[0]
 
     the_url = sys.argv[1]
     hostname = re.match('http://([^/]+)/', the_url).group(1)
