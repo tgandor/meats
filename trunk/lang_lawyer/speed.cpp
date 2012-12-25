@@ -39,6 +39,7 @@ void getc_test()
     fclose(input);
 }
 
+#ifdef unix
 #include <unistd.h>
 #include <fcntl.h>
 void read_test()
@@ -49,6 +50,7 @@ void read_test()
         do ++stats[buf[--s]]; while(s);
     close(input);
 }
+#endif
 
 int main(int argc, char **_argv)
 {
@@ -60,7 +62,9 @@ int main(int argc, char **_argv)
     }
     TIMEIT(fread_test);
     TIMEIT(getc_test);
+#ifdef unix
     TIMEIT(read_test);
+#endif
     return 0;
 }
 
