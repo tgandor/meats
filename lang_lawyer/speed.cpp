@@ -17,9 +17,12 @@ void timeit(void (*fcn)(), const char *name)
     clock_t t = clock();
     fcn();
     t = clock() - t;
-    printf ("%-15s took me: %10lld clicks (%f seconds).\n", 
-                    name, (long long)t, ((float)t)/CLOCKS_PER_SEC);
-    printf("    First few stats: %d %d %d\n", *stats, stats[1], stats[2]);
+    long long total = 0;
+    for (int i=0; i < 256; ++i) total += stats[i];
+    float sec = ((float)t)/CLOCKS_PER_SEC;
+    float mbps = (float)total / sec / 1024 / 1024;
+    printf ("%-15s took me: %.4f seconds (%7.3f MB/s),\n", name, sec, mbps);
+    printf("    first few stats: %d %d %d\n", *stats, stats[1], stats[2]);
     if (stats[0]) textual = 0;
     memset(stats, 0, 256*sizeof(int));
 }
