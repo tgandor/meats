@@ -7,6 +7,9 @@
 int stats[256];
 unsigned char buf[BUFSIZE];
 
+int textual = 1;
+#define TEXTONLY(f) if (textual) TIMEIT(f); else printf("%-15s not timed: binary file\n", #f)
+
 char **argv; // why not ;)
 
 void timeit(void (*fcn)(), const char *name)
@@ -14,9 +17,10 @@ void timeit(void (*fcn)(), const char *name)
     clock_t t = clock();
     fcn();
     t = clock() - t;
-    printf ("%-12s took me: %10lld clicks (%f seconds).\n", 
-		    name, (long long)t, ((float)t)/CLOCKS_PER_SEC);
+    printf ("%-15s took me: %10lld clicks (%f seconds).\n", 
+                    name, (long long)t, ((float)t)/CLOCKS_PER_SEC);
     printf("    First few stats: %d %d %d\n", *stats, stats[1], stats[2]);
+    if (stats[0]) textual = 0;
     memset(stats, 0, 256*sizeof(int));
 }
 #define TIMEIT(f) timeit(f, #f)
@@ -52,6 +56,18 @@ void read_test()
 }
 #endif
 
+void fgets_strlen()
+{
+    FILE *input = fopen(argv[1], "rb");
+    size_t s;
+    while (fgets((char*)buf, BUFSIZE, input))
+    {
+        s = strlen((char*)buf);
+        do ++stats[buf[--s]]; while(s);
+    }
+    fclose(input);
+}
+
 int main(int argc, char **_argv)
 {
     argv = _argv;
@@ -65,6 +81,7 @@ int main(int argc, char **_argv)
 #ifdef unix
     TIMEIT(read_test);
 #endif
+    TEXTONLY(fgets_strlen);
     return 0;
 }
 
