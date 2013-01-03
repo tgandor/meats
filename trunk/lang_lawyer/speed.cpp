@@ -71,6 +71,18 @@ void fgets_strlen()
     fclose(input);
 }
 
+void fgets_test()
+{
+    FILE *input = fopen(argv[1], "rb");
+    size_t s;
+    while (fgets((char*)buf, BUFSIZE, input))
+    {
+        unsigned char *p = buf;
+        do ++stats[*p]; while(*++p);
+    }
+    fclose(input);
+}
+
 int main(int argc, char **_argv)
 {
     argv = _argv;
@@ -85,6 +97,7 @@ int main(int argc, char **_argv)
     TIMEIT(read_test);
 #endif
     TEXTONLY(fgets_strlen);
+    TEXTONLY(fgets_test);
     return 0;
 }
 
