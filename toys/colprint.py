@@ -34,16 +34,16 @@ class PerCol(object):
             self.colsizes.append(self.curr_max)
             self.curr_max = 0
             self.curr_cnt = 0
-    def render(self, lines):
+    def render(self, lines, align=str.ljust):
         len_lines = len(lines)
         for i in xrange(self.capacity):
             line = []
             j = i
             for w in self.colsizes:
-                line.append(lines[j].ljust(w))
+                line.append(align(lines[j], w))
                 j += self.capacity
             if j < len_lines:
-                line.append(lines[j])
+                line.append(align(lines[j], self.curr_max))
             if len(line) > 0:
                 print (' '*self.sep_width).join(line)
 
@@ -58,9 +58,16 @@ def try_fit(capacity, lines, width):
 if __name__ == '__main__':
     lines = map(str.strip, sys.stdin.readlines())
     width = 80
+    options = {}
     if len(sys.argv) > 1:
         try:
             width = int(sys.argv[1])
+            if width == 0:
+                print "Too narrow"
+                exit()
+            if width < 0:
+                width = -width
+                options['align'] = str.rjust
         except:
             print "Error parsing width."
     else:
@@ -75,5 +82,5 @@ if __name__ == '__main__':
         if cols:
             break
         i += 1
-    cols.render(lines)
+    cols.render(lines, **options)
 
