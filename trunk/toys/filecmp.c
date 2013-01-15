@@ -24,9 +24,10 @@ main(int argc, char *argv[])
 		if (c1 == EOF)
 		{
 			puts("Files same.");
+			break;
 		}
 	}
-	fclose(f1); 
+	fclose(f1);
 	fclose(f2);
 	return 0;
 }
