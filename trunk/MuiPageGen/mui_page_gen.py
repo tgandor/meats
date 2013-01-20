@@ -4,12 +4,15 @@ class Item(object):
     LABEL = 0
     CHECKBOX = 1
     SPACER = 2
-    def __init__(self, kind, left=2, right=330):
+    def __init__(self, kind, left=2, right=330, name=None):
         self.kind = kind
         self.left = left
         self.right = right
         self.field_id = 0
         self.formname = ''
+	self.name = name
+    def generate_getters(self, out):
+        pass
 
 class I18nItem(Item):
     langs = [
@@ -58,10 +61,22 @@ class Label(I18nItem):
 
 class Checkbox(I18nItem):
     def __init__(self, name, **kwargs):
-        super(Checkbox, self).__init__(Item.CHECKBOX, **kwargs)
+        super(Checkbox, self).__init__(Item.CHECKBOX, name=name, **kwargs)
         self.name = name
     def item_type(self):
         return 'checkbox'
+    def generate_getters(self, out):
+        out.write("""
+!macro _%s.%s _a _b _t _f
+  !insertmacro MUI_INSTALLOPTIONS_READ $_%s_temp "%s.ini" "Field %d" "State"
+  StrCmp "1" $_%s_temp `${_t}` `${_f}`
+!macroend 
+!define %s.%s `"" %s.%s ""`
+""" % (
+    self.formname, self.name, self.formname, self.formname, self.field_id,
+    self.formname, self.formname, self.name, self.formname, self.name
+    ))
+
 
 class Spacer(Item):
     def __init__(self, height=10, **kwargs):
@@ -106,7 +121,8 @@ class Form(object):
     def write_nsh_file(self):
         f = open(self.name+'.nsh', 'w')
         f.write("; This file was generated with mui_page_gen.py\n\n")
-
+        f.write("!include LogicLib.nsh\n\n")
+        f.write("Var /GLOBAL _%s_temp\n\n" % self.name)
         f.write("; Language strings\n\n")
         for field in self.fields:
             field.write_translations(f)
@@ -125,12 +141,14 @@ class Form(object):
         f.write('  !insertmacro MUI_INSTALLOPTIONS_DISPLAY "%s.ini"\n' %
                 self.name)
         f.write("FunctionEnd\n\n")
+        for field in self.fields:
+            field.generate_getters(f)
         f.close()
 
 def test():
     form = Form('components')
     form.append(Label())
-    form.append(Checkbox('shortcut'))
+    form.append(Checkbox('shortcut', texts=[('mark me', 'en')]))
     form.append(Spacer())
     form.append(Label(texts=[('fiu', 'pl'), ('phew', 'en')]))
     form.write_ini_file()
