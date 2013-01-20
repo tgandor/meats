@@ -114,15 +114,17 @@ class Form(object):
 
         # Page function to translate etc.
         f.write("Function %sStandardInit\n" % self.name.capitalize())
+        f.write('  ReserveFile "%s.ini"\n' % self.name)
+        f.write('  !insertmacro MUI_INSTALLOPTIONS_EXTRACT "%s.ini"\n' % self.name)
         for field in self.fields:
             field.write_translate(f)
-        f.write("EndFunction\n\n")
+        f.write("FunctionEnd\n\n")
         # Default page function
         f.write("Function %sCustomPage\n" % self.name.capitalize())
         f.write("  Call %sStandardInit\n" % self.name.capitalize())
-        f.write("  !insertmacro MUI_INSTALLOPTIONS_DISPLAY \"%s.ini\"\n" %
+        f.write('  !insertmacro MUI_INSTALLOPTIONS_DISPLAY "%s.ini"\n' %
                 self.name)
-        f.write("EndFunction\n\n")
+        f.write("FunctionEnd\n\n")
         f.close()
 
 def test():
