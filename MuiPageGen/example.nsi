@@ -16,5 +16,10 @@ Page custom ComponentsCustomPage
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
 Section "Install"
+${If} ${components.shortcut}
+  MessageBox MB_OK "You want the shortcut, right?"
+${Else}
+  MessageBox MB_OK "Oh, you want no shortcuts, sorry..."
+${Endif}
 SectionEnd
 
