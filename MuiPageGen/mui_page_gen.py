@@ -9,6 +9,7 @@ class Item(object):
         self.left = left
         self.right = right
         self.field_id = 0
+        self.formname = ''
 
 class I18nItem(Item):
     langs = [
@@ -31,14 +32,22 @@ class I18nItem(Item):
         out.write("Left=%d\r\nRight=%d\r\nTop=%d\r\nBottom=%d\r\n\r\n" % (
             self.left, self.right, top, bottom
         ))
+    def _i18nSymbol(self):
+        return "%s_FIELD_%d_TEXT" % (self.formname.upper(), self.field_id)
 
-    def write_translations(self, out, name):
+    def write_translations(self, out):
         for message in self.texts:
             for lang in self.langs:
                 if message[1] in lang:
-                    out.write("LangString %s_FIELD_%d_TEXT %d \"%s\"\n" % (
-                        name.upper(), self.field_id, lang[1], message[0]
-                        ))
+                    out.write("LangString %s %d \"%s\"\n" % (
+                        self._i18nSymbol(), lang[1], message[0] ))
+
+    def write_translate(self, out):
+        if len(self.texts) < 2:
+            return # no need to set text (none available)
+        out.write(
+"  !insertmacro MUI_INSTALLOPTIONS_WRITE \"%s.ini\" \"Field %d\" \"Text\" $(%s)\n"
+% (self.formname, self.field_id, self._i18nSymbol()))
 
 
 class Label(I18nItem):
@@ -77,6 +86,7 @@ class Form(object):
         if isinstance(item, I18nItem):
             self.fieldnum += 1
             item.field_id = self.fieldnum
+            item.formname = self.name
             self.fields.append(item)
         self.items.append(item)
 
@@ -96,10 +106,23 @@ class Form(object):
     def write_nsh_file(self):
         f = open(self.name+'.nsh', 'w')
         f.write("; This file was generated with mui_page_gen.py\n\n")
+
         f.write("; Language strings\n\n")
         for field in self.fields:
-            field.write_translations(f, self.name)
-        f.write("\n")
+            field.write_translations(f)
+        f.write("\n; Initialization\n\n")
+
+        # Page function to translate etc.
+        f.write("Function %sStandardInit\n" % self.name.capitalize())
+        for field in self.fields:
+            field.write_translate(f)
+        f.write("EndFunction\n\n")
+        # Default page function
+        f.write("Function %sCustomPage\n" % self.name.capitalize())
+        f.write("  Call %sStandardInit\n" % self.name.capitalize())
+        f.write("  !insertmacro MUI_INSTALLOPTIONS_DISPLAY \"%s.ini\"\n" %
+                self.name)
+        f.write("EndFunction\n\n")
         f.close()
 
 def test():
