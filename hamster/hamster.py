@@ -18,12 +18,12 @@ def get_content(url):
     url_file = os.path.join('.hamster/', digest+'.url')
     content_file = os.path.join('.hamster', digest+'.data')
     if os.path.exists(url_file):
-        print 'Retrieving from cache'
+        print '  (retrieving from cache...)'
         saved_url = open(url_file).read()
         if saved_url != url:
             print "You're lucky! Found a md5 collision between:\n%s\nand:\n%s" % (saved_url, url)
         return open(content_file).read()
-    print 'Retrieving from the Web'
+    print '  (retrieving from the Web...)'
     content = urllib.urlopen(url).read()
     open(url_file, 'wb').write(url)
     open(content_file, 'wb').write(content)
@@ -61,14 +61,21 @@ class VideoHandler(object):
         url = "http://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
         return urllib.urlopen(url).read()
 
+def _extract_tasks(handler, contents):
+    # this is uglier than I wanted
+    # but it gives all "tasks" in one sorted list
+    return sorted(set(sum((handler.pattern.findall(content) for content in contents), [])))
+
 def retrieve_all(hostname, handler, contents, targetdir):
     print "Starting download loop, exit easily with Ctrl-C while sleeping."
-    # this is uglier than I wanted
-    tasks = sorted(set(sum((handler.pattern.findall(content) for content in contents), [])))
-    # but it gives all "tasks" in one sorted list
+    tasks = _extract_tasks(handler, contents)
+    total = len(tasks)
+    i = 0
     for title, file_id in tasks:
         title_c = clean_name(title) + handler.fileext
         filename = os.path.join(targetdir, title_c)
+        i += 1
+        print "%d/%d" % (i, total),
         if os.path.exists(filename) and os.path.getsize(filename) > 0:
             print ">%s< seems to exist, skipping." % filename
             continue
@@ -81,29 +88,28 @@ def retrieve_all(hostname, handler, contents, targetdir):
         print "Sleeping..."
         time.sleep(random.random() * 8 + 2)
 
-def main():
-    if len(sys.argv) < 2:
-        print 'Usage: %s [dl|ls|find] URL' % sys.argv[0]
-
-    the_url = sys.argv[1]
-    hostname = re.match('http://([^/]+)/', the_url).group(1)
-    hostpath = re.match('http://[^/]+(/.*)', the_url).group(1)
+def _get_inner_content(the_url):
     content = get_content(the_url)
+    pos = content.rfind('folderContentContainer')
+    if pos == -1: # backward compatibility?
+        return content
+    return content[pos:]
 
-    contents = [content[content.rfind('folderContentContainer'):]]
-
+def _gather_contents(the_url):
+    hostpath = re.match('http://[^/]+(/.*)', the_url).group(1)
+    contents = [_get_inner_content(the_url)]
     page = 2
     while True:
         nextpage = "%s,%d" % (hostpath, page)
-        if content.find(nextpage) == -1:
+        if contents[-1].find(nextpage) == -1:
             break
         print "Extra page: ", nextpage
-        content = get_content("%s,%d" % (the_url, page))
-        contents.append(content[content.rfind('folderContentContainer'):])
+        contents.append(_get_inner_content("%s,%d" % (the_url, page)))
         page += 1
+    return contents
 
-    content = " ".join(contents)
-
+def command_dl(the_url):
+    hostname = re.match('http://([^/]+)/', the_url).group(1)
     dirname = clean_name(the_url[the_url.rfind('/')+1:])
     if not os.path.exists(dirname):
         print "Creating directory: "+dirname
@@ -111,8 +117,49 @@ def main():
     else:
         print "Directory %s seems to already exist." % dirname
 
-    retrieve_all(hostname, MusicHandler(), contents, dirname)
-    #retrieve_all(hostname, VideoHandler(), contents, dirname)
+    retrieve_all(hostname, MusicHandler(), _gather_contents(the_url), dirname)
+    #retrieve_all(hostname, VideoHandler(), _gather_contents(the_url), dirname)
+
+def _print_tasks(tasks, ext):
+    if len(tasks) == 0:
+        print " (empty)"
+
+    fmt = "%%%dd. %%-%ds (id: %%s)" % (
+        len(str(len(tasks))),
+        max(len(t[0]) for t in tasks) + len(ext),
+    )
+    i = 1
+    for title, file_id in tasks:
+        print fmt % (i, clean_name(title) + ext, file_id)
+        i += 1
+
+def command_ls(the_url):
+    contents = _gather_contents(the_url)
+    msg = "Listing of: %s" % the_url
+    print msg, '\n'+'-'*len(msg)
+    _print_tasks(_extract_tasks(MusicHandler(), contents), '.mp3')
+
+def main():
+    if len(sys.argv) < 2:
+        return usage()
+
+    if len(sys.argv) == 3:
+        command = sys.argv[1]
+        the_url = sys.argv[2]
+    else:
+        command = 'dl'
+        the_url = sys.argv[1]
+
+    if command == 'dl':
+        command_dl(the_url)
+    elif command == 'ls':
+        command_ls(the_url)
+    else:
+        print "Error: unknown command %s." % command
+        return usage()
+
+def usage():
+    print 'Usage: %s [dl|ls/*|find|rdl*/] URL' % sys.argv[0]
 
 if __name__ == '__main__':
     main()
