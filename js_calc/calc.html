@@ -1,11 +1,72 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>JavaScript calculator</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <!-- <script src="jquery.js"></script> -->
+    <script type="text/javascript">
+        function run() {
+            var expr = $('#expr').val();
+            // close unclosed parentheses
+            var unbalance = expr.split('(').length - expr.split(')').length;
+            if (unbalance > 0) {
+                expr += Array(unbalance + 1).join(')');
+                $('#expr').val(expr);
+            }
+            try { $('#result').text(eval(expr)); }
+            catch(e) { alert(e); }
+        }
+        function append(x) { $('#expr').val($('#expr').val()+$(x).val()); }
+        function appendv(x) { $('#expr').val($('#expr').val()+x); }
+        function backsp() { x = $('#expr').val(); $('#expr').val(x.substr(0, x.length-1)); }
+    </script>
+    <style type="text/css">
+    input {
+        width: 3em;
+    }
+    #expr {
+        width: 16em;
+    }
+    </style>
 </head>
 <body>
-    <input type="text" id="expr" />
-    <input type="button" value="=" onclick="$('#result').text(eval($('#expr').val()))" />
+    <input type="text" id="expr" value="" />
+    <input type="button" value="=" onclick="run()" />
     <span id="result">0</span>
+    <table>
+        <tr>
+            <td><input type="button" value="1" onclick="append(this)" /></td>
+            <td><input type="button" value="2" onclick="append(this)" /></td>
+            <td><input type="button" value="3" onclick="append(this)" /></td>
+            <td><input type="button" value="C" onclick="backsp()" /></td>
+            <td><input type="button" value="AC" onclick="$('#expr').val('')" /></td>
+            <td><input type="button" value="ANS" onclick="$('#expr').val($('#result').text())" /></td>
+        </tr>
+        <tr>
+            <td><input type="button" value="4" onclick="append(this)" /></td>
+            <td><input type="button" value="5" onclick="append(this)" /></td>
+            <td><input type="button" value="6" onclick="append(this)" /></td>
+            <td><input type="button" value="+" onclick="append(this)" /></td>
+            <td><input type="button" value="-" onclick="append(this)" /></td>
+            <td><input type="button" value="%" onclick="append(this)" title="modulo" /></td>
+        </tr>
+        <tr>
+            <td><input type="button" value="7" onclick="append(this)" /></td>
+            <td><input type="button" value="8" onclick="append(this)" /></td>
+            <td><input type="button" value="9" onclick="append(this)" /></td>
+            <td><input type="button" value="*" onclick="append(this)" /></td>
+            <td><input type="button" value="/" onclick="append(this)" /></td>
+            <td><input type="button" value="&radic;" onclick="appendv('Math.sqrt(')" /></td>
+        </tr>
+        <tr>
+            <td><input type="button" value="." onclick="append(this)" /></td>
+            <td><input type="button" value="0" onclick="append(this)" /></td>
+            <td><input type="button" value="e" onclick="append(this)" /></td>
+            <td><input type="button" value="(" onclick="append(this)" /></td>
+            <td><input type="button" value=")" onclick="append(this)" /></td>
+            <td><input type="button" value="&pi;" onclick="appendv('Math.PI')" /></td>
+        </tr>
+    </table>
 </body>
 </html>
