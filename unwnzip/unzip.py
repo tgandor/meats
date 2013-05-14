@@ -36,10 +36,15 @@ def _filename(fileinfo):
     return fileinfo.filename.decode(options['-e'])
 
 def _print_short(fi):
-    print "%9d  %d-%02d-%02d %02d:%02d   %s" % (
+    try:
+        print "%9d  %d-%02d-%02d %02d:%02d   %s" % (
             (fi.file_size,) + fi.date_time[:-1] + (_filename(fi),)
-    )
-
+        )
+    except:
+        print "%9d  %d-%02d-%02d %02d:%02d   %s(ERR)" % (
+            (fi.file_size,) + fi.date_time[:-1] + (fi.filename,)
+        )
+     
 def _full_info(fileinfo):
     print _filename(fileinfo)
     for f in dir(fileinfo):
@@ -62,9 +67,15 @@ def _extract(fi, z):
         data = z.read(fi)
         open(name, 'wb').write(data)
         if not flags['-q'] and fi.compress_type:
-            print "%11s: %s" % ('inflating', name)
+            try:
+                print "%11s: %s" % ('inflating', name)
+            except:
+                print "%11s: %s(ERR)" % ('inflating', fi.filename)
         elif not flags['-q']:
-            print "%11s: %s" % ('extracting', name)
+            try:
+                print "%11s: %s" % ('extracting', name)
+            except:
+                print "%11s: %s(ERR)" % ('extracting', name)
     elif not flags['-q']:
         print "%11s: %s" % ('creating', name)
 
