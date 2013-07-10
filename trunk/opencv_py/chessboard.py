@@ -6,6 +6,7 @@ Draw the found corners.
 """
 
 import cv
+import cv2 # only flag value
 import pygame
 import sys
 
@@ -19,13 +20,11 @@ findFlags = (
     cv.CV_CALIB_CB_ADAPTIVE_THRESH
     | cv.CV_CALIB_CB_NORMALIZE_IMAGE
     | cv.CV_CALIB_CB_FILTER_QUADS
+    | cv2.CALIB_CB_FAST_CHECK
 )
 
 infoFont = cv.InitFont(cv.CV_FONT_HERSHEY_DUPLEX, 0.75, 0.75)
 infoOrigin = (0, 20)
-# is it only me who's missing it?
-if hasattr(cv, 'CALIB_CB_FAST_CHECK'):
-    findFlags |= cv.CALIB_CB_FAST_CHECK
 
 camera = cv.CreateCameraCapture(0)
 
