@@ -16,7 +16,7 @@ int main()
 """
 
 headers = []
-command = ['g++']
+command = ['g++', '-o', 'cpp_shell_temp.exe']
 
 while True:
     print 'c++>',
@@ -62,4 +62,4 @@ while True:
     }
     open('cpp_shell_temp.cpp', 'w').write(code_template % context)
     if subprocess.call(command+['cpp_shell_temp.cpp']) == 0:
-        subprocess.call('./a.out')
+        subprocess.call('./cpp_shell_temp.exe')
