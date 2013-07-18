@@ -17,7 +17,7 @@ def group_report(doc, element='AdditionalDependencies'):
     print "=" * 60
     print "Grouping by", element
     print "=" * 60
-    for k, g in groupby(sorted(configs(doc), key=itemgetter(0)), key=itemgetter(0)):
+    for k, g in groupby(sorted(configs(doc, element), key=itemgetter(0)), key=itemgetter(0)):
         gn += 1
         print "Group", gn, "\n" + "-" * 40
         cn = 0
