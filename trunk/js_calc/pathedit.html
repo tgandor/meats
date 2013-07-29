@@ -1,0 +1,28 @@
+<html>
+<head>
+	<title>The Path Editor</title>
+	<script>
+	function upNewlined()
+	{
+		document.getElementById("newl").value = document.getElementById("semi").value.replace(/;/g, "\n");
+	}
+	function upSemi()
+	{
+		document.getElementById("semi").value = document.getElementById("newl").value.replace(/\n/g, ";");
+	}
+	</script>
+</head>
+<body>
+	<h1>Path Editor</h1>
+	<p>Semicoloned:</p>
+	<textarea id="semi" rows="2" style="width: 100%;" onchange="upNewlined()" onkeyup="upNewlined()" onclick="upNewlined();this.select()"></textarea>
+	<p>Newlined:</p>
+	<textarea id="newl" rows="15" style="width: 100%;" onchange="upSemi()" onkeyup="upSemi()" onclick="upSemi()"></textarea>
+	<h2>Usage</h2>
+	<ol>
+		<li>Paste your messy path into the "semicoloned" text area,</li>
+		<li>Hack about in the "newlined" text area,</li>
+		<li>When done, click "semicoloned" to select all, copy it and paste where needed.</li>
+	</ol>
+</body>
+</html>
