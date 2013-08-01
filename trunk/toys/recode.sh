@@ -11,9 +11,8 @@ fi
 
 echo "Recoding from $fro to $too"
 
-exit
-
 for f in "$@" ; do 
+  echo $f
   iconv -f $fro -t $too "$f" > /tmp/`basename $f`
   mv /tmp/`basename $f` $f
 done
