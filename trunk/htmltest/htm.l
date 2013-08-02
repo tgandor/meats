@@ -10,6 +10,7 @@ vector<string> tagstack;
 vector<int> linestack;
 int lineNo = 1;
 bool dbg = false;
+bool quiet = false;
 const char *legal[] =
 {
 "img",
@@ -57,7 +58,7 @@ FILE *closeme = 0;
 	{
 		while (!tagstack.empty() && find(legal, legal_end, tagstack.back()) != legal_end)
 		{
-			printf("Warn: discarding unclosed <%s> from line  %d\n", tagstack.back().c_str(), linestack.back());
+			if (!quiet) printf("Warn: discarding unclosed <%s> from line  %d\n", tagstack.back().c_str(), linestack.back());
 			tagstack.pop_back();
 			linestack.pop_back();
 		}
@@ -72,7 +73,8 @@ FILE *closeme = 0;
 		}
 		else
 		{
-			printf("Line %d: </%s> closed, last == <%s>\n", lineNo, yytext+2, tagstack.back().c_str());
+			printf("Line %d: </%s> closed, last == <%s> (line %d)\n", lineNo, yytext+2, 
+				tagstack.back().c_str(), linestack.back());
 		}
 	}
 	else
@@ -112,6 +114,11 @@ int yywrap()
 	default:
 		printf("--- Opening: %s ---\n", *g_argv);
 		yyin = closeme = fopen( *g_argv++, "r" );
+		if (!closeme)
+		{
+			fprintf(stderr, "Error opening file: %s\n", g_argv[-1]);
+			exit(1);
+		}
 		--g_argc;
 		return 0;
 	}
@@ -120,9 +127,14 @@ int yywrap()
 int main( int argc, char **argv )
 {
 	g_argv = ++argv, g_argc = --argc;  /* skip over program name */
-	if (argc > 0 && !strcmp("-d", *argv))
+	if (argc > 0 && !strcmp("-d", *g_argv))
 	{
 		dbg = true;
+		++g_argv, --g_argc;  /* skip over option */
+	}
+	if (argc > 0 && !strcmp("-q", *g_argv))
+	{
+		quiet = true;
 		++g_argv, --g_argc;  /* skip over option */
 	}
 	yywrap();
