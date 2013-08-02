@@ -16,6 +16,7 @@ const char *legal[] =
 "img",
 "br",
 "hr",
+"input",
 };
 const char **legal_end = legal+(sizeof(legal)/sizeof(const char*));
 
@@ -32,39 +33,39 @@ FILE *closeme = 0;
 "<"[a-zA-Z1-6]+ { 
 	tagstack.push_back(string(yytext+1, yytext+strlen(yytext))); 
 	linestack.push_back(lineNo);
-	if (dbg) printf("(dbg) Line %d: <%s> opened\n", lineNo, tagstack.back().c_str()); 
+	if (dbg) printf("  (dbg) Line %d: <%s> opened\n", lineNo, tagstack.back().c_str()); 
 }
 
 "/>" { 
 	if (tagstack.empty())
 	{
-		printf("Line %d: misplaced self closing\n", lineNo);
+		printf("  Line %d: misplaced self closing\n", lineNo);
 	}
 	else
 	{
-		if (dbg) printf("(dbg) Line %d: <%s/> self-closed\n", lineNo, tagstack.back().c_str());
+		if (dbg) printf("  (dbg) Line %d: <%s/> self-closed\n", lineNo, tagstack.back().c_str());
 		tagstack.pop_back(); 
 		linestack.pop_back();
 	}
 }
 
 "</"[a-zA-Z1-6]+ { 
-	if (dbg) printf("(dbg) Line %d: </%s> closed\n", lineNo, yytext+2);
+	if (dbg) printf("  (dbg) Line %d: </%s> closed\n", lineNo, yytext+2);
 	if (tagstack.empty())
 	{
-		printf("Line %d: no opening tag for </%s> found!\n", lineNo, yytext+2);
+		printf("  Line %d: no opening tag for </%s> found!\n", lineNo, yytext+2);
 	}
 	else if (strcmp(yytext+2, tagstack.back().c_str()) != 0)
 	{
 		while (!tagstack.empty() && find(legal, legal_end, tagstack.back()) != legal_end)
 		{
-			if (!quiet) printf("Warn: discarding unclosed <%s> from line  %d\n", tagstack.back().c_str(), linestack.back());
+			if (!quiet) printf("  Warn: discarding unclosed <%s> from line  %d\n", tagstack.back().c_str(), linestack.back());
 			tagstack.pop_back();
 			linestack.pop_back();
 		}
 		if (tagstack.empty())
 		{
-			printf("Line %d: no opening tag for </%s> found!\n", lineNo, yytext+2);
+			printf("  Line %d: no opening tag for </%s> found!\n", lineNo, yytext+2);
 		}
 		else if (strcmp(yytext+2, tagstack.back().c_str()) == 0)
 		{
@@ -73,7 +74,7 @@ FILE *closeme = 0;
 		}
 		else
 		{
-			printf("Line %d: </%s> closed, last == <%s> (line %d)\n", lineNo, yytext+2, 
+			printf("  Line %d: </%s> closed, last == <%s> (line %d)\n", lineNo, yytext+2, 
 				tagstack.back().c_str(), linestack.back());
 		}
 	}
