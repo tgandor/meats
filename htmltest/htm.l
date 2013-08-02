@@ -1,8 +1,6 @@
 %{
 #include <vector>
 #include <string>
-#include <cstring>
-#include <cstdio>
 #include <algorithm>
 using namespace std;
 
@@ -31,7 +29,7 @@ FILE *closeme = 0;
 \n	++lineNo;
 
 "<"[a-zA-Z1-6]+ { 
-	tagstack.push_back(string(yytext+1, yytext+strlen(yytext))); 
+	tagstack.push_back(string(yytext+1, yytext+yyleng)); 
 	linestack.push_back(lineNo);
 	if (dbg) printf("  (dbg) Line %d: <%s> opened\n", lineNo, tagstack.back().c_str()); 
 }
@@ -49,13 +47,14 @@ FILE *closeme = 0;
 	}
 }
 
-"</"[a-zA-Z1-6]+ { 
-	if (dbg) printf("  (dbg) Line %d: </%s> closed\n", lineNo, yytext+2);
+"</"[a-zA-Z1-6]+">" { 
+	string closed(yytext+2, yytext+yyleng-1);
+	if (dbg) printf("  (dbg) Line %d: %s closed\n", lineNo, closed.c_str());
 	if (tagstack.empty())
 	{
-		printf("  Line %d: no opening tag for </%s> found!\n", lineNo, yytext+2);
+		printf("  Line %d: no opening tag for %s found!\n", lineNo, yytext);
 	}
-	else if (strcmp(yytext+2, tagstack.back().c_str()) != 0)
+	else if (closed != tagstack.back())
 	{
 		while (!tagstack.empty() && find(legal, legal_end, tagstack.back()) != legal_end)
 		{
@@ -65,16 +64,16 @@ FILE *closeme = 0;
 		}
 		if (tagstack.empty())
 		{
-			printf("  Line %d: no opening tag for </%s> found!\n", lineNo, yytext+2);
+			printf("  Line %d: no opening tag for %s found!\n", lineNo, yytext);
 		}
-		else if (strcmp(yytext+2, tagstack.back().c_str()) == 0)
+		else if (closed == tagstack.back())
 		{
 			tagstack.pop_back();
 			linestack.pop_back();
 		}
 		else
 		{
-			printf("  Line %d: </%s> closed, last == <%s> (line %d)\n", lineNo, yytext+2, 
+			printf("  Line %d: %s closed, last == <%s> (line %d)\n", lineNo, yytext, 
 				tagstack.back().c_str(), linestack.back());
 		}
 	}

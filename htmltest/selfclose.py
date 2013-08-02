@@ -3,7 +3,7 @@
 def main():
     import re
     import sys
-    unselfclosed = re.compile('<(img|br|hr|input) [^>]+[^/]>')
+    unselfclosed = re.compile('<(img|input|hr|br) [^>]+[^/]>|<br>|<hr>')
     def repl(match):
         orig = match.group()
         print '   ', orig
