@@ -27,6 +27,15 @@ const char *legal[] =
 };
 const char **legal_end = legal+(sizeof(legal)/sizeof(const char*));
 
+const char *block[] =
+{
+	"ul",
+	"ol",
+	"div",
+	"table",
+};
+const char **block_end = block+(sizeof(block)/sizeof(const char*));
+
 int g_argc;
 char **g_argv;
 
@@ -37,13 +46,21 @@ FILE *closeme = 0;
 
 \n	++lineNo;
 
-"<"[a-zA-Z1-6]+ { 
-	tagstack.push_back(string(yytext+1, yytext+yyleng)); 
+"<"[a-zA-Z1-6]+ {
+	string opened(yytext+1, yytext+yyleng);
+	if (dbg) printf("  (dbg) Line %d: <%s> opened\n", lineNo, tagstack.back().c_str());
+	if (!tagstack.empty())
+	{
+		if (tagstack.back() == "p" && find(block, block_end, opened) != block_end)
+		{
+			printf("  Line %d: <%s> nested inside of <p>\n", lineNo, yytext+1);
+		}
+	}
+	tagstack.push_back(opened);
 	linestack.push_back(lineNo);
-	if (dbg) printf("  (dbg) Line %d: <%s> opened\n", lineNo, tagstack.back().c_str()); 
 }
 
-"/>" { 
+"/>" {
 	if (tagstack.empty())
 	{
 		printf("  Line %d: misplaced self closing\n", lineNo);
@@ -51,12 +68,12 @@ FILE *closeme = 0;
 	else
 	{
 		if (dbg) printf("  (dbg) Line %d: <%s/> self-closed\n", lineNo, tagstack.back().c_str());
-		tagstack.pop_back(); 
+		tagstack.pop_back();
 		linestack.pop_back();
 	}
 }
 
-"</"[a-zA-Z1-6]+">" { 
+"</"[a-zA-Z1-6]+">" {
 	string closed(yytext+2, yytext+yyleng-1);
 	if (dbg) printf("  (dbg) Line %d: %s closed\n", lineNo, closed.c_str());
 	if (tagstack.empty())
