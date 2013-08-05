@@ -1,4 +1,13 @@
 %{
+
+#ifdef _MSC_VER
+#  define YY_NO_UNISTD_H
+#  define YY_NEVER_INTERACTIVE
+#  include <io.h>
+#  define fileno _fileno
+#  define isatty _isatty
+#endif
+
 #include <vector>
 #include <string>
 #include <algorithm>
