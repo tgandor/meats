@@ -7,7 +7,7 @@ import time
 import urllib
 import random
 
-urllib.URLopener.version = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:16.0) Gecko/20100101 Firefox/16.0'
+urllib.URLopener.version = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:20.0) Gecko/20100101 Firefox/20.0'
 
 def get_content(url):
     if not os.path.exists('.hamster'):
@@ -36,6 +36,7 @@ def clean_name(dirty):
         starred = ''.join( chr(int(o, 16)) for o in ords )
         return starred.decode('utf-8').encode(sys.getfilesystemencoding())
     dirty = re.sub('(\\*[0-9a-fA-F]{2})+', deutf, dirty)
+    dirty = dirty.replace('(', '').replace(')', '')
     return dirty.replace('+','_')
 
 class MusicHandler(object):
