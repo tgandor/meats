@@ -102,7 +102,9 @@ def _gather_contents(the_url):
     page = 2
     while True:
         nextpage = "%s,%d" % (hostpath, page)
-        if contents[-1].find(nextpage) == -1:
+        unquoted = urllib.unquote(nextpage)
+        last = contents[-1]
+        if last.find(nextpage)==-1 and last.find(unquoted)==-1:
             break
         print "Extra page: ", nextpage
         contents.append(_get_inner_content("%s,%d" % (the_url, page)))
