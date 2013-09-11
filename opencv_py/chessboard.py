@@ -7,6 +7,7 @@ Draw the found corners.
 
 import cv
 import cv2 # only flag value
+import math
 import numpy
 import pygame
 import sys
@@ -56,14 +57,26 @@ def get_image():
         imagePoints = cv.fromarray(imgPointArr)
         pointCounts = cv.CreateMat(1, 1, cv.CV_32S)
         pointCounts[0, 0] = PAT_SIZE[0] * PAT_SIZE[1]
-        cv.CalibrateCamera2(objectPoints, imagePoints, pointCounts, IMG_SIZE, cam_matrix, dist_coeff, rvecs, tvecs)
+        # Rodrigues version:
+        rvecs3 = cv.CreateMat(1, 3, cv.CV_32F)
+        cv.CalibrateCamera2(objectPoints, imagePoints, pointCounts, IMG_SIZE, cam_matrix, dist_coeff, rvecs3, tvecs)
+        rmat3 = cv.CreateMat(3, 3, cv.CV_32F)
+        cv.Rodrigues2(rvecs3, rmat3)
+        # end Rodrigues version
+        #cv.CalibrateCamera2(objectPoints, imagePoints, pointCounts, IMG_SIZE, cam_matrix, dist_coeff, rvecs, tvecs)
+        #rmat = numpy.asarray(rvecs).reshape((3, 3), order='C')
+        #print "RVecs:"
+        #print rmat
         print "TVecs:", numpy.asarray(tvecs)
-        rmat = numpy.asarray(rvecs).reshape((3, 3), order='C')
-        print "RVecs:"
-        print rmat
-        # print "Azimuth:", rmat.dot(numpy.array([0, 0, 1]))
-        # time.sleep(1)
+        # 3. column of R == rotated z versor, angle toward x; z=(2, 2), x=(0, 2)
+        yaw = math.atan2(rmat3[0, 2], rmat3[2, 2]) * 180 / math.pi
+        # rotated z versor, height y=(1, 2) to length==1
+        pitch = math.asin(rmat3[1, 2]) * 180 / math.pi
+        # 1. column of R = rotated x versor, height y = (1, 0) to length==1
+        roll = math.asin(rmat3[1, 0]) * 180 / math.pi
+        print "Yaw %5.2f, Pitch %5.2f, Roll %5.2f" % (yaw, pitch, roll)
         #import pdb; pdb.set_trace()
+        print '-'*40
     else:
         cv.PutText(im, "Not found.", infoOrigin, infoFont, (0, 255, 0))
     return cv2pygame(im)
