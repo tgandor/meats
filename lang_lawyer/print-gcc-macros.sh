@@ -1,1 +1,1 @@
-echo  | gcc "$@" -dM -E -x c -  | sort
+echo  | gcc "$@" -dM -E -  | sort
