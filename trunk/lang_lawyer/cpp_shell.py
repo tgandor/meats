@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import subprocess
+import os
 
 code_template = """
 #include <iostream>
@@ -23,6 +24,8 @@ while True:
     try:
         line = raw_input()
     except EOFError:
+        os.unlink('cpp_shell_temp.cpp')
+        os.unlink('cpp_shell_temp.exe')
         print
         break
 
