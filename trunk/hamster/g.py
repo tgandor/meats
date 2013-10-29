@@ -41,5 +41,9 @@ else:
     except:
         print "Error: couldn't find androidhelper"
         exit()
+    try:
+        os.chdir('/mnt/sdcard/')
+    except:
+        pass
     URL = androidhelper.Android().getClipboard().result
     download(URL)
