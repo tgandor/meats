@@ -15,7 +15,10 @@ def human(x):
 
 def dot_report(total, elapsed):
     sys.stdout.write('.')
-    sys.stdout.flush()
+    try: # QPython, has no flush...
+        sys.stdout.flush()
+    except:
+        pass
 
 def download(URL, report = dot_report):
     f = os.path.basename(URL)
