@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+# OK, the target platform has no 'env'...
 
 import sys, urllib, os, re, time, socket, errno
 
