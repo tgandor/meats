@@ -32,7 +32,7 @@ def download(URL, report = dot_report):
             size += len(data)
             elap = time.time() - start
             report(size, elap)
-    print "\ngot %sB in %.1f s (%sB/s), saving" % (human(size), elap, human(size/elap))
+    print "\ngot %sB in %.1f s (%sB/s), saved" % (human(size), elap, human(size/elap))
 
 if len(sys.argv) > 1:
     for URL in sys.argv[1:]:
@@ -45,8 +45,11 @@ else:
         print "Error: couldn't find androidhelper"
         exit()
     try:
-        os.chdir('/mnt/sdcard/')
+        os.chdir('/mnt/sdcard/external_sd/')
     except:
-        pass
+        try:
+            os.chdir('/mnt/sdcard/')
+        except:
+            pass
     URL = androidhelper.Android().getClipboard().result
     download(URL)

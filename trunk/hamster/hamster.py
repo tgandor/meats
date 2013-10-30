@@ -6,8 +6,18 @@ import re
 import time
 import urllib
 import random
+import cStringIO
 
 urllib.URLopener.version = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:20.0) Gecko/20100101 Firefox/20.0'
+
+CHUNK = 512 * 1024
+
+def human(x):
+    for sufix in ['', 'k', 'M', 'G']:
+        if x < 1024:
+            return "%.1f %s" % (x, sufix)
+        x /= 1024.0
+    return "%.1f P" % x
 
 def get_content(url):
     if not os.path.exists('.hamster'):
@@ -39,13 +49,27 @@ def clean_name(dirty):
     dirty = dirty.replace('(', '').replace(')', '')
     return dirty.replace('+','_')
 
-class MusicHandler(object):
-    pattern = re.compile('/([^/]+),(\d+)\\.mp3')
-    fileext = '.mp3'
-    def get_data(self, hostname, file_id):
-        ts = int(time.time() * 1000)
-        url = "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
-        return urllib.urlopen(url).read()
+def read_with_progress(resp):
+    start = time.time()
+    sio = cStringIO.StringIO()
+    for chunk in iter(lambda: resp.read(CHUNK), ''):
+        sio.write(chunk)
+        sys.stdout.write('.')
+        try:
+            sys.stdout.flush()
+        except:
+            pass
+    elap = time.time() - start
+    print " done: %sB in %.1f s, %sB/s" % (human(sio.tell()), elap, human(sio.tell()/elap))
+    return sio.getvalue()
+
+def download_url(url):
+    resp = urllib.urlopen(url)
+    msg = resp.info()
+    length = msg.getheader('Content-Length')
+    if length:
+        print "Downloading %sB " % human(int(length)),
+    return read_with_progress(resp)
 
 class MusicHandler(object):
     pattern = re.compile('/([^/]+),(\d+)\\.mp3')
@@ -53,14 +77,14 @@ class MusicHandler(object):
     def get_data(self, hostname, file_id):
         ts = int(time.time() * 1000)
         url = "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
-        return urllib.urlopen(url).read()
+        return download_url(url)
 
 class VideoHandler(object):
     pattern = re.compile('/([^/]+),(\d+)\\.(?:avi|mp4)')
     fileext = '.flv'
     def get_data(self, hostname, file_id):
         url = "http://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
-        return urllib.urlopen(url).read()
+        return download_url(url)
 
 def _extract_tasks(handler, contents):
     # this is uglier than I wanted
