@@ -10,6 +10,7 @@ run = lambda cmd: os.popen(cmd).read()
 val = lambda rev: run('svn pg %s -r %d' % (prop, rev))
 
 maxrev = int(re.search('r(\d+)', run('svn log -r HEAD:1 -l 1')).group(1))
+minrev = int(re.search('r(\d+)', run('svn log -r 1:HEAD -l 1')).group(1))
 maxval = val(maxrev)
 
 def find_end(startrev):
@@ -27,7 +28,7 @@ def find_end(startrev):
                 return currev
             startrev = currev
 
-left = 1
+left = minrev
 while True:
     right = find_end(left)
     print "%d-%d" % (left, right)
