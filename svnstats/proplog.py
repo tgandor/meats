@@ -4,7 +4,14 @@ import sys
 import os
 import re
 
-prop = sys.argv[1]
+try:
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("property", help="SVN property name")
+    args = parser.parse_args()
+    prop = args.property
+except ImportError:
+    prop = sys.argv[1]
 
 run = lambda cmd: os.popen(cmd).read()
 val = lambda rev: run('svn pg %s -r %d' % (prop, rev))
@@ -28,12 +35,25 @@ def find_end(startrev):
                 return currev
             startrev = currev
 
+def diff(newval, oldval):
+    nlines = newval.strip().split('\n')
+    olines = oldval.strip().split('\n')
+    ins = set(nlines) - set(olines)
+    out = set(olines) - set(nlines)
+    return '\n'.join(
+        [ ('+%s' if line in ins else ' %s') % line for line in nlines ] +
+        [ '-%s' % line for line in olines if line in out ]
+    )
+
+history = [(0, 0, '')]
 left = minrev
 while True:
     right = find_end(left)
+    value = val(left)
     print "%d-%d" % (left, right)
-    print val(left)
+    print diff(value, history[-1][2])
+    print '-'*40
+    history.append((left, right, value))
     if right == maxrev:
         break
     left = right + 1
-
