@@ -17,16 +17,23 @@ def human(x):
     return "%.1f P" % x
 
 compressors = [
-    ('gzip',  'gzip -9 %s', '%s.gz', 'gunzip %s.gz'),
+    # ('gzip',  'gzip -9 %s', '%s.gz', 'gunzip %s.gz'),
     ('bzip2', 'bzip2 %s', '%s.bz2', 'bunzip2 %s.bz2'),
     ('gzip',  'gzip -9 %s', '%s.gz', 'gunzip %s.gz'),
+    # ('bzip2', 'bzip2 %s', '%s.bz2', 'bunzip2 %s.bz2'),
     ('lzip',  'lzip -9 %s', '%s.lz', 'lzip -d %s.lz'),
     ('plzip',  'plzip -9 %s', '%s.lz', 'plzip -d %s.lz'),
     ('lzma',  'lzma -9 %s', '%s.lzma', 'lzma -d %s.lzma'),
 ]
 
 for f in sys.argv[1:]:
+    if not os.path.exists(f):
+        print "Skipping %s: file does not exist" % f
+        continue
     origsize = os.path.getsize(f)
+    if origsize == 0:
+        print "Skipping %s: empty file" % f
+        continue
     print "Bechmarking file:", f, 'size:', '%sB' % human(origsize), '(%d)' % origsize
     for name, comp, out, decomp in compressors:
         if os.system('which %s > /dev/null' % name) == 0:
@@ -39,4 +46,5 @@ for f in sys.argv[1:]:
             print '    Compressed in %5.3f s, in: %8sB/s, out %8sB/s.' % (elap,  human(origsize/elap),  human(compsize/elap))
             elap2 = timed(decomp % f)
             print '    Decompress in %5.3f s, in: %8sB/s, out %8sB/s.' % (elap2, human(compsize/elap2), human(origsize/elap2))
-            print '-'*40
+            print '  ' + '-'*40
+    print '=' * 60
