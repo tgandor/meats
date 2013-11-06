@@ -4,6 +4,7 @@ def main(maxcols = 0):
     """Read input lines, split and pad to have even columns."""
     import re
     import sys
+    import shlex
 
     def pad(s, n):
         return s + (n-len(s))*' ' if len(s) < n else s
@@ -13,7 +14,10 @@ def main(maxcols = 0):
     try:
         while True:
             line = raw_input()
-            rows.append(line.split(None, maxcols-1))
+            if maxcols == -1:
+                rows.append(shlex.split(line, posix=False))
+            else:
+                rows.append(line.split(None, maxcols-1))
             indents.append(re.match('\s+', line))
     except EOFError:
         pass
