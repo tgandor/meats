@@ -7,7 +7,7 @@ import sys, urllib, os, time
 CHUNK = 1024 * 1024
 
 def human(x):
-    for sufix in ['', 'K', 'M', 'G']:
+    for sufix in ['', 'K', 'M', 'G', 'T']:
         if x < 1024:
             return "%.1f %s" % (x, sufix)
         x /= 1024.0

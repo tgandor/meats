@@ -13,7 +13,7 @@ urllib.URLopener.version = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:20.0) Gec
 CHUNK = 512 * 1024
 
 def human(x):
-    for sufix in ['', 'K', 'M', 'G']:
+    for sufix in ['', 'K', 'M', 'G', 'T']:
         if x < 1024:
             return "%.1f %s" % (x, sufix)
         x /= 1024.0

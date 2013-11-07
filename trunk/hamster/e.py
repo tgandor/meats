@@ -5,7 +5,7 @@
 import sys, urllib, os, re, time, socket, errno
 
 def human(x):
-    for sufix in ['', 'K', 'M', 'G']:
+    for sufix in ['', 'K', 'M', 'G', 'T']:
         if x < 1024:
             return "%.1f %s" % (x, sufix)
         x /= 1024.0
