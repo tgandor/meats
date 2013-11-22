@@ -27,10 +27,14 @@ def hlp(obj, like=''):
     return False
 
 def interactive():
+    try:
+        import readline
+    except:
+        pass
     modules = []
     try:
         while True:
-            cmd = raw_input()
+            cmd = raw_input('dirr> ')
             if cmd == 'q':
                 break
             if cmd.startswith('i '):
@@ -47,7 +51,7 @@ def interactive():
                         dirr(m, cmd)
     except EOFError:
         pass
-    print "Be seeing you..."
+    print "\nBe seeing you..."
 
 if __name__ == '__main__':
     interactive()
