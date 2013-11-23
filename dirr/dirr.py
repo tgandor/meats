@@ -29,6 +29,14 @@ def hlp(obj, like=''):
 def interactive():
     try:
         import readline
+        import atexit
+        import os
+        histfile = os.path.expanduser("~/.dirr_history")
+        try:
+            readline.read_history_file(histfile)
+        except IOError:
+            pass
+        atexit.register(readline.write_history_file, histfile)
     except:
         pass
     modules = []
