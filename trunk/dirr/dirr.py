@@ -46,13 +46,22 @@ def interactive():
             if cmd == 'q':
                 break
             if cmd.startswith('i '):
-                modules.append(__import__(cmd[2:]))
-                print "Loaded modules:", ", ".join([m.__name__ for m in modules])
+                try:
+                    modules.append(__import__(cmd[2:]))
+                    print " == Loaded modules:", ", ".join([m.__name__ for m in modules])
+                except ImportError:
+                    print "ERROR: Could not import: '%s'" % (cmd[2:],)
             elif cmd.startswith('h '):
                 for m in modules:
                     if hlp(m, cmd[2:]):
                         break
+            elif cmd == '': # prevent flooding on nervous enter pressing
+                pass
             else:
+                if cmd.startswith('\\'):
+                    # escaping commands like i, q, h,
+                    # or even empty query (== show all)
+                    cmd = cmd[1:]
                 for m in modules:
                     if getr(m, cmd) is not None:
                         print "  ---  In module %s:  ---  " % (m.__name__,)
