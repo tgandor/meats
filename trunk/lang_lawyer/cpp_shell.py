@@ -2,6 +2,15 @@
 
 import subprocess
 import os
+import readline
+import atexit
+
+histfile = os.path.expanduser("~/.cpp_history")
+try:
+    readline.read_history_file(histfile)
+except IOError:
+    pass
+atexit.register(readline.write_history_file, histfile)
 
 code_template = """
 #include <iostream>
@@ -16,16 +25,20 @@ int main()
 }
 """
 
+TMPEXE = './cpp_shell_temp.exe'
+TMPCPP = 'cpp_shell_temp.cpp'
+
 headers = []
-command = ['g++', '-o', 'cpp_shell_temp.exe']
+command = ['g++', '-o', TMPEXE]
 
 while True:
-    print 'c++>',
     try:
-        line = raw_input()
+        line = raw_input('c++> ')
     except EOFError:
-        os.unlink('cpp_shell_temp.cpp')
-        os.unlink('cpp_shell_temp.exe')
+        if os.path.exists(TMPCPP):
+            os.unlink(TMPCPP)
+        if os.path.exists(TMPEXE):
+            os.unlink(TMPEXE)
         print
         break
 
@@ -63,6 +76,6 @@ while True:
             'main': 'cout << (%s) << endl;' % line,
             'headers': '\n'.join('#include <%s>' % h for h in headers)
     }
-    open('cpp_shell_temp.cpp', 'w').write(code_template % context)
-    if subprocess.call(command+['cpp_shell_temp.cpp']) == 0:
-        subprocess.call('./cpp_shell_temp.exe')
+    open(TMPCPP, 'w').write(code_template % context)
+    if subprocess.call(command+[TMPCPP]) == 0:
+        subprocess.call(TMPEXE)
