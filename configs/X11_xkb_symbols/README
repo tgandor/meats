@@ -1,0 +1,23 @@
+1.
+Copy the file(s), except this one, to (probably):
+/usr/share/X11/xkb/symbols/
+
+2.
+Then (probably) delete the .xkm files in:
+/var/lib/xkb/
+
+and reboot.
+
+3.
+It will become possible to:
+setxkbmap -layout 'pl(colemak)'
+(and confuse keyboard layout switcher...)
+
+4.
+Integrate with keyboard layout switcher:
+overwrite files in:
+/usr/share/X11/xkb/rules/
+with files from rules/ subdirectory (base.lst/.xml, evdev.lst/.xml)
+
+5. Open keyboard layout switcher, register your new keyboard layout...
+
