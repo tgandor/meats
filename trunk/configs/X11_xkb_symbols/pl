@@ -74,7 +74,7 @@ xkb_symbols "qwertz" {
 };
 
 // A Polish keymap with a comprehensive set of quotes, dashes, and dead accents
-// 
+//
 // See http://marcinwolinski.pl/keyboard/ for a description.
 //
 // ┌────┐
@@ -125,17 +125,17 @@ xkb_symbols "intl" {
 // Polish Dvorak keymaps
 // by Rafal Rzepecki <divide@users.sf.net>
 
-// The base keymap "pl" places Polish quotes on quotemark key and 
-// moves the dead symbols from there to "1/!" key. If you are used to common 
-// dead keys placement, you could use "pl_altquotes"; in this layout 
+// The base keymap "pl" places Polish quotes on quotemark key and
+// moves the dead symbols from there to "1/!" key. If you are used to common
+// dead keys placement, you could use "pl_altquotes"; in this layout
 // dead keys remain in the old place, whereas Polish quotes are placed on the
 // "1/!" key. If you do not use Polish quotes at all, you can use "pl_basic" map.
 
 // Basic Polish keymap (without Polish quotes)
-partial alphanumeric_keys 
+partial alphanumeric_keys
 xkb_symbols "dvorak" {
     include "us(dvorak)"
-    
+
     name[Group1] = "Polish (Dvorak)";
 
     key <AD08> { [	    c,	C,	cacute,	Cacute		]	};
@@ -147,7 +147,7 @@ xkb_symbols "dvorak" {
     key <AC10> { [	    s,	S,      sacute, Sacute		]	};
     key <AB09> { [	    v,	V,      zacute, Zacute		]	};
     key <AB10> { [	    z,	Z,   zabovedot, Zabovedot	]	};
-    
+
     include "kpdl(comma)"
 
     // this to allow writing ALL CAPS with a Shift key
@@ -161,7 +161,7 @@ xkb_symbols "dvorak" {
 partial alphanumeric_keys
 xkb_symbols "dvorak_quotes" {
     include "pl(dvorak)"
-    
+
     name[Group1] = "Polish (Dvorak, Polish quotes on quotemark key)";
 
     key <AD01> { [  apostrophe,	quotedbl, doublelowquotemark, rightdoublequotemark	] };
@@ -398,16 +398,19 @@ xkb_symbols "ru_phonetic_dvorak" {
    include "level3(ralt_switch)"
 };
 
-partial alphanumeric_keys 
+partial alphanumeric_keys
 xkb_symbols "colemak" {
     include "us(colemak)"
-    
+
     name[Group1] = "Polish (Colemak)";
 
     key <AC01>  { [         a,          A,      aogonek,      Aogonek ] };
     key <AC08>  { [         e,          E,      eogonek,      Eogonek ] };
     key <AC07>  { [         n,          N,       nacute,       Nacute ] };
     key <AC03>  { [         s,          S,       sacute,       Sacute ] };
+
+    // return strategic partner's letter
+    key <AB05>  { [         b,          B,       ssharp,   dead_breve ] };
 
     key <AB01>  { [         z,          Z,    zabovedot,    Zabovedot ] };
     key <AB02>  { [         x,          X,       zacute,       Zacute ] };
@@ -417,4 +420,3 @@ xkb_symbols "colemak" {
 
     include "level3(ralt_switch)"
 };
-
