@@ -21,14 +21,10 @@ namespace Demote
             notifyIcon1.Visible = true;
             if (!AreWeElevated())
             {
-                notifyIcon1.ShowBalloonTip(2500, "Process Not Elevated", 
+                notifyIcon1.ShowBalloonTip(3500, "Process Not Elevated", 
                     "Accessing processes from other users may fail.", ToolTipIcon.Warning);
             }
-        }
-
-        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            WindowState = FormWindowState.Normal;
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.BelowNormal;
         }
 
         public static bool AreWeElevated()
@@ -146,6 +142,23 @@ namespace Demote
         {
             listBox1.Items.Add(textBox1.Text);
             textBox1.Clear();
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (notifyIcon1 != null)
+            {
+                notifyIcon1.Visible = false;
+                notifyIcon1.Dispose();
+                notifyIcon1 = null;
+            }
+        }
+
+        private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
+        {
+            WindowState = WindowState == FormWindowState.Minimized 
+                ? FormWindowState.Normal 
+                : FormWindowState.Minimized;
         }
     }
 }
