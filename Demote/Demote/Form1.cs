@@ -14,6 +14,8 @@ namespace Demote
 
     public partial class Form1 : Form
     {
+        private int total = 0;
+
         public Form1()
         {
             InitializeComponent();
@@ -38,11 +40,11 @@ namespace Demote
                 WindowsPrincipal principal = new WindowsPrincipal(user);
                 isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
                 isAdmin = false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 isAdmin = false;
             }
@@ -96,12 +98,13 @@ namespace Demote
                             break;
                         case 1:
                             ++demoted;
+                            ++total;
                             break;
                     }
                 }
             }
-            toolStripStatusLabel1.Text = String.Format("{0}: {1} processes, {2} demoted, {3} failed.", 
-                DateTime.Now.ToString("HH:mm:ss"), found, demoted, failed);
+            toolStripStatusLabel1.Text = String.Format("{0}: {1} processes, {2} demoted ({4} total), {3} failed.", 
+                DateTime.Now.ToString("HH:mm:ss"), found, demoted, failed, total);
         }
 
         private void button1_Click(object sender, EventArgs e)
