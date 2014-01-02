@@ -46,7 +46,9 @@ def main():
                 im = CloneImage(im)
             PutText(im, text, (100, 100), InitFont(CV_FONT_HERSHEY_SIMPLEX, 2, 2), 28)
         ShowImage('wnd', im)
-        WaitKey(0)
+        if (WaitKey(0) & 0xff) == 27:
+            print "OK, quitting"
+            exit()
 
     import sys
     max_stage = None
@@ -58,7 +60,7 @@ def main():
 
     for i in glob.glob('*.JPG'):
 
-        # STAGE 1: show original image 
+        # STAGE 1: show original image
 
         print i
         img = LoadImage(i, CV_LOAD_IMAGE_GRAYSCALE)
@@ -156,4 +158,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
