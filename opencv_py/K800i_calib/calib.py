@@ -44,9 +44,9 @@ def main():
                 im = CloneMat(im)
             except:
                 im = CloneImage(im)
-            PutText(im, text, (100, 100), InitFont(CV_FONT_HERSHEY_SIMPLEX, 2, 2), 28)
+            PutText(im, text, (100, 100), InitFont(CV_FONT_HERSHEY_SIMPLEX, 2, 2, thickness=2), (0, 255, 0))
         ShowImage('wnd', im)
-        if (WaitKey(0) & 0xff) == 27:
+        if (WaitKey(0) & 0xff) in (27, ord('q')):
             print "OK, quitting"
             exit()
 
@@ -64,7 +64,8 @@ def main():
 
         print i
         img = LoadImage(i, CV_LOAD_IMAGE_GRAYSCALE)
-        pause(img, "Original")
+        imc = LoadImage(i)
+        pause(imc, "Original")
         if max_stage == 1:
             continue
 
@@ -103,11 +104,12 @@ def main():
         mapx = CreateMat(h, w, CV_32FC1)
         mapy = CreateMat(h, w, CV_32FC1)
         outimg = CreateMat(h, w, CV_8U)
+        outimc = CreateMat(h, w, CV_8UC3)
 
         # plain undistort
         InitUndistortMap(cameraMatrix, distCoefs, mapx, mapy)
-        Remap(img, outimg, mapx, mapy)
-        pause(outimg, "Undistort")
+        Remap(imc, outimc, mapx, mapy)
+        pause(outimc, "Undistort")
 
         if max_stage == 2:
             continue
@@ -120,8 +122,8 @@ def main():
                 unrotMap(rvecs, tvecs),
                 cameraMatrix,
                 mapx, mapy)
-        Remap(img, outimg, mapx, mapy)
-        pause(outimg, "Undistort+Rectify")
+        Remap(imc, outimc, mapx, mapy)
+        pause(outimc, "Undistort+Rectify")
 
         if max_stage == 3:
             continue
@@ -150,8 +152,8 @@ def main():
                 unrotMap(rvecs, tvecs),
                 newCam,
                 mapx, mapy)
-        Remap(img, outimg, mapx, mapy)
-        pause(outimg, "Undistort+Rectify+newCameraMatrix")
+        Remap(imc, outimc, mapx, mapy)
+        pause(outimc, "Undistort+Rectify+newCameraMatrix")
 
         print mapx[0, 0]
         print mapy[0, 0]
