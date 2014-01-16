@@ -27,7 +27,8 @@ for r in revisions:
     if diff.find(query) == -1:
         print 'not found.'
         continue
-    os.system('svn log -r %s %s' % (r, target))
+    print os.popen('svn log -r %s %s' % (r, target)).read()
     print diff
     print '-' * 60
+    sys.stdout.flush()
 
