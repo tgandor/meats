@@ -36,7 +36,7 @@ def get_image():
     if success:
         # import pdb; pdb.set_trace()
         cv2.drawChessboardCorners(im, PAT_SIZE, corners, success)
-        cv2.putText(im, "Found: (%.1f, %.1f)" %  tuple(corners[0, 0].tolist()), 
+        cv2.putText(im, "Found: (%.1f, %.1f)" %  tuple(corners[0, 0].tolist()),
                 infoOrigin, cv2.FONT_HERSHEY_DUPLEX, 0.75, (0, 255, 0))
     else:
 		cv2.putText(im, "Not found.", infoOrigin, cv2.FONT_HERSHEY_DUPLEX, 0.75, (0, 255, 0))

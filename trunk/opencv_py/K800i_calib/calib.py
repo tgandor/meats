@@ -129,7 +129,7 @@ def main():
             continue
 
         # STAGE 4: undistort + rectify + change new camera matrix
-
+        ''' '''
         print mapx[0, 0]
         print mapy[0, 0]
 
@@ -142,6 +142,11 @@ def main():
         newy = newvec2[1,0]/newvec2[2,0]
         print 'new x', newx
         print 'new y', newy
+        ''' '''
+
+        outpts = list2mat([[0, 0]])
+        ProjectPoints2(list2mat([[size[0]/2, size[1]/2, 0]]), rvecs, tvecs, cameraMatrix, distCoefs, outpts)
+        out(outpts)
 
         newCam = CloneMat(cameraMatrix)
         newCam[0, 2] -= newx
