@@ -46,6 +46,15 @@ void getc_test()
     fclose(input);
 }
 
+void getc_unlocked_test()
+{
+    FILE *input = fopen(argv[1], "rb");
+    int c;
+    while ((c=getc_unlocked(input)) != EOF)
+        ++stats[c];
+    fclose(input);
+}
+
 #ifdef unix
 #include <unistd.h>
 #include <fcntl.h>
@@ -93,6 +102,7 @@ int main(int argc, char **_argv)
     }
     TIMEIT(fread_test);
     TIMEIT(getc_test);
+    TIMEIT(getc_unlocked_test);
 #ifdef unix
     TIMEIT(read_test);
 #endif
