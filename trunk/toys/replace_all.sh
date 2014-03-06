@@ -11,10 +11,9 @@ if [ -z "$2" ]; then
 fi
 
 if [ -z "$3" ]; then
-    grexpr="$1"
+    searchexpr="$1"
 else
-    grexpr="$3"
+    searchexpr="$3"
 fi
 
-wcgrep -l "$grexpr" | while read f; do echo $f; perl -i -pe "s/$1/$2/g" "$f"; done
-
+wcgrep -l "$1" | while read f; do echo $f; perl -i -pe "s^$searchexpr^$2^g" "$f"; done
