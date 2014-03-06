@@ -16,4 +16,8 @@ else
     searchexpr="$3"
 fi
 
-wcgrep -l "$1" | while read f; do echo $f; perl -i -pe "s^$searchexpr^$2^g" "$f"; done
+if [ -n "$4" ]; then
+	condexpr=" if /$4/"
+fi
+
+wcgrep -l "$1" | while read f; do echo $f; perl -i -pe "s^$searchexpr^$2^g$condexpr" "$f"; done
