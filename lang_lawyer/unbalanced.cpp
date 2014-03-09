@@ -12,5 +12,7 @@ int main()
 {
 	const int x = 3;
 	info<int, x < 4>();
+	// info<int, x > 4>(); // - parse error
+	info<int, (x > 4)>();
 	return 0;
 }
