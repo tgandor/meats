@@ -22,6 +22,25 @@ inline void inp(int &n)
 
 #define GI2 ({int t; inp(t); t;})
 
+inline int ins(char *buf)
+{
+	int ch=getcx();
+	while (ch <= ' ')
+	{
+		if ((ch = getcx()) == -1)
+			return 0;
+	}
+	char *oldbuf = buf;
+	while (ch > ' ')
+	{
+		*buf++ = ch;
+		ch = getcx();
+	}
+	*buf = '\0';
+	return (int)(buf-oldbuf);
+}
+
+
 int main()
 {
 	return 0;
