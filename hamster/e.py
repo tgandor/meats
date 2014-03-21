@@ -37,12 +37,33 @@ def down(URL):
   open(f,"w").write(data)
   return size
 
-URL = sys.argv[1]
+def download_all(URL, SEARCH = 'mp3$'):
+    total = 0
+    try:
+        for link in re.findall("http[^\"]+", get(URL)):
+            if re.search(SEARCH, link):
+                total += down(link)
+    finally:
+        print "Total downloaded: %sB" % human(total)
 
-total = 0
-try:
-    for link in re.findall("http[^\"]+", get (URL)):
-        if re.search(sys.argv[2], link):
-            total += down(link)
-finally:
-    print "Total downloaded: %sB" % human(total)
+if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        download_all(sys.argv[1])
+    elif len(sys.argv) == 3:
+        download_all(sys.argv[1], sys.argv[2])
+    else:
+        print "trying to retrieve from clipboard"
+        try:
+            import androidhelper
+        except:
+            print "Error: couldn't find androidhelper"
+            exit()
+        try:
+            os.chdir('/mnt/sdcard/external_sd/')
+        except:
+            try:
+                os.chdir('/mnt/sdcard/')
+            except:
+                pass
+        URL = androidhelper.Android().getClipboard().result
+        download_all(URL)
