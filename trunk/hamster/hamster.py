@@ -20,6 +20,9 @@ def human(x):
     return "%.1f P" % x
 
 def get_content(url):
+    if url.endswith('/'):
+        # minor unification
+        url = url[:-1]
     if not os.path.exists('.hamster'):
         print 'Missing .hamster directory, creating...'
         os.mkdir('.hamster')
@@ -150,6 +153,7 @@ def command_dl(the_url):
 def _print_tasks(tasks, ext):
     if len(tasks) == 0:
         print " (empty)"
+        return
 
     fmt = "%%%dd. %%-%ds (id: %%s)" % (
         len(str(len(tasks))),
