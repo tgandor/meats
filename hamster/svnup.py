@@ -4,6 +4,9 @@ from e import down, get
 
 URL = 'https://meats.googlecode.com/svn/trunk/hamster/'
 
+# chdir to 'working copy'
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 for f in re.findall('href="([^.][^"]+)"', get(URL)):
     if not f.startswith('http'):
         data = get(URL+f)
