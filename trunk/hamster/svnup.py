@@ -8,15 +8,16 @@ URL = 'https://meats.googlecode.com/svn/trunk/hamster/'
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 for f in re.findall('href="([^.][^"]+)"', get(URL)):
-    if not f.startswith('http'):
-        data = get(URL+f)
-        if os.path.exists(f):
-            old_data = open(f).read()
-            if data != old_data:
-                open(f, 'rb').write(data)
-                print 'U\t%s' % f
-            else:
-                print '\t%s - up to date.' % f
-        else:
+    if f.startswith('http') or f=='svnup.py':
+        continue
+    data = get(URL+f)
+    if os.path.exists(f):
+        old_data = open(f).read()
+        if data != old_data:
             open(f, 'rb').write(data)
-            print 'A\t%s' % f
+            print 'U\t%s' % f
+        else:
+            print '\t%s - up to date.' % f
+    else:
+        open(f, 'rb').write(data)
+        print 'A\t%s' % f
