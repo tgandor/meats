@@ -19,7 +19,7 @@ def human(x):
         x /= 1024.0
     return "%.1f P" % x
 
-def get_content(url):
+def get_content(url, cache=[True]):
     if url.endswith('/'):
         # minor unification
         url = url[:-1]
@@ -35,11 +35,15 @@ def get_content(url):
         saved_url = open(url_file).read()
         if saved_url != url:
             print "You're lucky! Found a md5 collision between:\n%s\nand:\n%s" % (saved_url, url)
+        cache[0] = True
         return open(content_file).read()
     print '  (retrieving from the Web...)'
+    if not cache[0]:
+        time.sleep(random.random()*1.0)
     content = urllib.urlopen(url).read()
     open(url_file, 'wb').write(url)
     open(content_file, 'wb').write(content)
+    cache[0] = False
     return content
 
 def clean_name(dirty):
@@ -203,7 +207,6 @@ def command_rls(the_url, level = 2, verbose=False):
         print ' '*level + 'there are mp3s here.'
     for subf in subdirs:
         command_rls(the_url + subf.replace(base_dir, ''), level+2, verbose)
-        time.sleep(random.random() * 1 + 0.5)
 
 
 def main():
