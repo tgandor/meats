@@ -170,6 +170,42 @@ def command_ls(the_url):
     print msg, '\n'+'-'*len(msg)
     _print_tasks(_extract_tasks(MusicHandler(), contents), '.mp3')
 
+interesting = []
+
+def command_rls(the_url, level = 2, verbose=False):
+    contents = _get_inner_content(the_url)
+    base_dir = re.search('/.*$', the_url.replace('http://', '')).group()
+    print "Searching", base_dir
+    pos = contents.rfind('FilesList')
+    subfolder_content = contents[:pos]
+    subdirs = []
+    for subf in sorted(set(re.findall('<a href="(/[^"]+)"', subfolder_content))):
+        if subf.startswith(base_dir+'/'):
+            if verbose:
+                print ' '*level + subf
+            subdirs.append(subf)
+    file_content = contents[pos:]
+    if verbose:
+        print 'FILES:'
+    somefiles = []
+    for subf in sorted(set(re.findall('<a href="(/[^"]+)"', file_content))):
+        if subf.startswith(base_dir+'/'):
+            if verbose:
+                print ' '*level + subf
+            somefiles.append(subf)
+
+    if len(somefiles) == 0:
+        print ' '*level + '(empty)'
+    else:
+        print ' '*level + somefiles[0] + '...'
+    if any(sf.endswith('.mp3') for sf in somefiles):
+        interesting.append(the_url)
+        print ' '*level + 'there are mp3s here.'
+    for subf in subdirs:
+        command_rls(the_url + subf.replace(base_dir, ''), level+2, verbose)
+        time.sleep(random.random() * 1 + 0.5)
+
+
 def main():
     if len(sys.argv) < 2:
         return usage()
@@ -185,12 +221,21 @@ def main():
         command_dl(the_url)
     elif command == 'ls':
         command_ls(the_url)
+    elif command == 'rls':
+        try:
+            command_rls(the_url)
+        except KeyboardInterrupt:
+            pass
+        if len(interesting):
+            print 'Interesting folders:'
+        for ifolder in interesting:
+            print ifolder
     else:
         print "Error: unknown command %s." % command
         return usage()
 
 def usage():
-    print 'Usage: %s [dl|ls/*|find|rdl*/] URL' % sys.argv[0]
+    print 'Usage: %s [dl|ls|rls] URL' % sys.argv[0]
 
 if __name__ == '__main__':
     main()
