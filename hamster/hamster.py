@@ -31,7 +31,7 @@ def get_content(url, cache=[True]):
     url_file = os.path.join('.hamster/', digest+'.url')
     content_file = os.path.join('.hamster', digest+'.data')
     if os.path.exists(url_file):
-        print '  (retrieving from cache...)'
+        # print '  (retrieving from cache...)'
         saved_url = open(url_file).read()
         if saved_url != url:
             print "You're lucky! Found a md5 collision between:\n%s\nand:\n%s" % (saved_url, url)
@@ -81,9 +81,11 @@ def download_url(url):
 class MusicHandler(object):
     pattern = re.compile('/([^/]+),(\d+)\\.mp3')
     fileext = '.mp3'
-    def get_data(self, hostname, file_id):
+    def get_url(self, hostname, file_id):
         ts = int(time.time() * 1000)
-        url = "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
+        return "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
+    def get_data(self, hostname, file_id):
+        url = self.get_url(hostname, file_id)
         return download_url(url)
 
 class VideoHandler(object):
@@ -179,7 +181,7 @@ interesting = []
 def command_rls(the_url, level = 2, verbose=False):
     contents = _get_inner_content(the_url)
     base_dir = re.search('/.*$', the_url.replace('http://', '')).group()
-    print "Searching", base_dir
+    print ' '*level + "Searching", base_dir
     pos = contents.rfind('FilesList')
     subfolder_content = contents[:pos]
     subdirs = []
@@ -208,6 +210,18 @@ def command_rls(the_url, level = 2, verbose=False):
     for subf in subdirs:
         command_rls(the_url + subf.replace(base_dir, ''), level+2, verbose)
 
+def command_play(the_url):
+    hostname = re.match('http://([^/]+)/', the_url).group(1)
+    contents = _gather_contents(the_url)
+    msg = "Playing: %s" % the_url
+    print msg, '\n'+'-'*len(msg)
+    handler = MusicHandler()
+    for track, file_id in _extract_tasks(handler, contents):
+        url = handler.get_url(hostname, file_id)
+        print track, url
+        if os.system("mplayer '%s'" % url) != 0:
+            print "Unclean exit. quitting."
+            break
 
 def main():
     if len(sys.argv) < 2:
@@ -224,13 +238,15 @@ def main():
         command_dl(the_url)
     elif command == 'ls':
         command_ls(the_url)
+    elif command == 'play':
+        command_play(the_url)
     elif command == 'rls':
         try:
             command_rls(the_url)
         except KeyboardInterrupt:
             pass
         if len(interesting):
-            print 'Interesting folders:'
+            print len(interesting), 'Interesting folders:'
         for ifolder in interesting:
             print ifolder
     else:
