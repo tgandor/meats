@@ -15,12 +15,15 @@ for f in re.findall('href="([^.][^"]+)"', get(URL)):
         old_data = open(f).read()
         if data != old_data:
             try:
-                open(f, 'rb').write(data)
+                open(f, 'wb').write(data)
                 print 'U\t%s' % f
             except:
                 print 'Problem updating:', f
         else:
             print '\t%s - up to date.' % f
     else:
-        open(f, 'rb').write(data)
-        print 'A\t%s' % f
+        try:
+            open(f, 'wb').write(data)
+            print 'A\t%s' % f
+        except:
+            print 'Problem creating:', f
