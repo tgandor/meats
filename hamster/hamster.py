@@ -223,15 +223,35 @@ def command_play(the_url):
             print "Unclean exit. quitting."
             break
 
+def command_rdl(the_url):
+    command_rls(the_url)
+    for url in interesting:
+        command_dl(url)
+
 def main():
     if len(sys.argv) < 2:
-        return usage()
+        # maybe phone clipboard
+        try:
+            import androidhelper
+            print "trying to retrieve from clipboard"
+        except ImportError:
+            return usage()
 
-    if len(sys.argv) == 3:
+        # go to the right location
+        try:
+            os.chdir('/mnt/sdcard/external_sd/Music')
+        except:
+            try:
+                os.chdir('/mnt/sdcard/download')
+            except:
+                pass
+        the_url = androidhelper.Android().getClipboard().result
+        command = 'rdl'
+    elif len(sys.argv) == 3:
         command = sys.argv[1]
         the_url = sys.argv[2]
     else:
-        command = 'dl'
+        command = 'rdl'
         the_url = sys.argv[1]
 
     if command == 'dl':
@@ -240,6 +260,8 @@ def main():
         command_ls(the_url)
     elif command == 'play':
         command_play(the_url)
+    elif command == 'rdl':
+        command_rdl(the_url)
     elif command == 'rls':
         try:
             command_rls(the_url)
@@ -254,7 +276,7 @@ def main():
         return usage()
 
 def usage():
-    print 'Usage: %s [dl|ls|rls] URL' % sys.argv[0]
+    print 'Usage: %s [dl|ls|rls|rdl|play] URL' % sys.argv[0]
 
 if __name__ == '__main__':
     main()
