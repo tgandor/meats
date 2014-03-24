@@ -27,6 +27,7 @@ def get_content(url, cache=[True]):
         print 'Missing .hamster directory, creating...'
         os.mkdir('.hamster')
     from hashlib import md5
+    import gzip
     digest = md5(url).hexdigest()
     url_file = os.path.join('.hamster/', digest+'.url')
     content_file = os.path.join('.hamster', digest+'.data')
@@ -36,13 +37,19 @@ def get_content(url, cache=[True]):
         if saved_url != url:
             print "You're lucky! Found a md5 collision between:\n%s\nand:\n%s" % (saved_url, url)
         cache[0] = True
-        return open(content_file).read()
+        if os.path.exists(content_file):
+            return open(content_file).read()
+        if os.path.exists(content_file+'.gz'):
+            return gzip.open(content_file+'.gz', 'rb').read()
+        print 'Missing data file for:', url
     print '  (retrieving from the Web...)'
     if not cache[0]:
         time.sleep(random.random()*1.0)
     content = urllib.urlopen(url).read()
     open(url_file, 'wb').write(url)
-    open(content_file, 'wb').write(content)
+    f = gzip.open(content_file+'.gz', 'wb', 9)
+    f.write(content)
+    f.close()
     cache[0] = False
     return content
 
