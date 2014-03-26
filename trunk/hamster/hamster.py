@@ -239,6 +239,33 @@ def command_rdl(the_url):
     for url in interesting:
         command_dl(url)
 
+def command_shell(the_url):
+    command_rls(the_url)
+    if len(interesting) == 0:
+        print "No playables or downloadables."
+        return
+    hostname = re.match('http://([^/]+)/', the_url).group(1)
+    if len(interesting) > 1:
+        print "Choose folder:"
+        for i, f in zip(range(len(interesting)), interesting):
+            print i, f.replace(hostname, '')
+        choice = int(raw_input())
+        the_url = interesting[choice]
+    contents = _gather_contents(the_url)
+    handler = MusicHandler()
+    tasks = _extract_tasks(handler, contents)
+    while True:
+        for i in xrange(len(tasks)):
+            print i, tasks[i][0]
+        cmd = raw_input()
+        if cmd == 'q':
+            return
+        idx = int(cmd)
+        url = handler.get_url(hostname, tasks[idx][1])
+        print "Playing %s from %s..." % (tasks[idx][0], url)
+        os.system("mplayer '%s'" % url)
+
+
 def main():
     if len(sys.argv) < 2:
         # maybe phone clipboard
@@ -271,6 +298,8 @@ def main():
         command_ls(the_url)
     elif command == 'play':
         command_play(the_url)
+    elif command == 'shell':
+        command_shell(the_url)
     elif command == 'rdl':
         command_rdl(the_url)
     elif command == 'rls':
