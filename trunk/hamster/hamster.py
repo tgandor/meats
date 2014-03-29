@@ -265,6 +265,11 @@ def command_shell(the_url):
         print "Playing %s from %s..." % (tasks[idx][0], url)
         os.system("mplayer '%s'" % url)
 
+def command_find(the_url, query):
+    command_rls(the_url)
+    for i in interesting:
+        if i.lower().find(query.lower()) != -1:
+            print i
 
 def main():
     if len(sys.argv) < 2:
@@ -285,6 +290,10 @@ def main():
                 pass
         the_url = androidhelper.Android().getClipboard().result
         command = 'rdl'
+    elif len(sys.argv) == 4:
+        command = sys.argv[1]
+        the_url = sys.argv[2]
+        query = sys.argv[3]
     elif len(sys.argv) == 3:
         command = sys.argv[1]
         the_url = sys.argv[2]
@@ -296,6 +305,8 @@ def main():
         command_dl(the_url)
     elif command == 'ls':
         command_ls(the_url)
+    elif command == 'find':
+        command_find(the_url, query)
     elif command == 'play':
         command_play(the_url)
     elif command == 'shell':
