@@ -1,13 +1,16 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #define FOR(ii, ll, uu)  for(int ii##lim = (uu), ii = (ll); ii < ii##lim; ++ii)
 #define REP(ii, nn) FOR(ii, 0, nn)
 
 // from stackoverflow
+int getchar_unlocked();
 #define getcx getchar_unlocked
-inline void inp(int &n)
+
+extern inline int gis()
 {
-	n=0;
+	int n = 0;
 	int ch=getcx(), sign=1;
 	while (ch < '0' || ch > '9')
 	{
@@ -15,11 +18,11 @@ inline void inp(int &n)
 		ch = getcx();
 	}
 	while (ch >= '0' && ch <= '9')
-		n = (n<<3)+(n<<1) + ch-'0', ch=getcx();
-	n = n * sign;
+		n = (n<<3)+(n<<1) + ch-'0', ch = getcx();
+	return n * sign;
 }
 
-inline int giu()
+extern inline int giu()
 {
 	int n = 0;
 	int ch=getcx();
@@ -32,10 +35,7 @@ inline int giu()
 	return n;
 }
 
-#define GI (giu())
-#define GI2 ({int t; inp(t); t;})
-
-inline int ins(char *buf)
+extern inline int ins(char *buf)
 {
 	int ch=getcx();
 	while (ch <= ' ')
@@ -53,6 +53,7 @@ inline int ins(char *buf)
 	return (int)(buf-oldbuf);
 }
 
+#define GI giu()
 
 int main()
 {
