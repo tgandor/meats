@@ -2,7 +2,7 @@
 
 # OK, the target platform has no 'env'...
 
-import sys, urllib, os, re, time, socket, errno
+import sys, urllib, os, re, time, socket, errno, urlparse
 
 def human(x):
     for sufix in ['', 'K', 'M', 'G', 'T']:
@@ -24,7 +24,7 @@ def get(URL):
             time.sleep(5)
 
 def down(URL):
-  f = os.path.basename(URL)
+  f = urllib.unquote(os.path.basename(URL))
   if os.path.exists(f):
       print  "skipped", f
       return 0
@@ -37,12 +37,32 @@ def down(URL):
   open(f,"w").write(data)
   return size
 
+def folder_name(URL):
+    return urlparse.urlsplit(URL).path.split('/')[-2]
+    
 def download_all(URL, SEARCH = 'mp3$'):
     total = 0
     try:
-        for link in re.findall("http[^\"]+", get(URL)):
-            if re.search(SEARCH, link):
-                total += down(link)
+        content = get(URL)
+        links = sorted(set([link
+                 for link in re.findall('href="([^"]+)"', content)
+                 if re.search(SEARCH, link)]))
+        links = [ urlparse.urljoin(URL, link)
+                  if not link.startswith('http')
+                  else link for link in links ]
+    except:
+        print "Error retrieving file list."
+        return
+    # print links
+    if not links:
+        print "No URLs found to follow."
+        # print content
+        return
+    try:
+        os.mkdir(folder_name(URL))
+        os.chdir(folder_name(URL))
+        for link in links:
+            total += down(link)
     finally:
         print "Total downloaded: %sB" % human(total)
 
@@ -59,7 +79,7 @@ if __name__ == '__main__':
             print "Error: couldn't find androidhelper"
             exit()
         try:
-            os.chdir('/mnt/sdcard/external_sd/')
+            os.chdir('/mnt/sdcard/external_sd/Music/')
         except:
             try:
                 os.chdir('/mnt/sdcard/')
