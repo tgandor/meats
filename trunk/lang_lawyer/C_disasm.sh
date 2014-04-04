@@ -6,5 +6,5 @@ if [ -z $1 ]; then
 fi
 
 gcc -g -c -o /tmp/C_disasm.o "$@"
-objdump -S /tmp/C_disasm.o
+objdump -S -M intel  /tmp/C_disasm.o
 rm /tmp/C_disasm.o
