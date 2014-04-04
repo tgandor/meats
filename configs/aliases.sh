@@ -8,3 +8,5 @@ echo "Use 'g11' to compile C++11"
 alias g99s='gcc -std=c99 -Wall -Werror'
 echo "Use 'g99s' to compile C99 strict"
 
+alias svni='svn --ignore-externals'
+echo "Use 'svni' to ignore externals (st, up)."
