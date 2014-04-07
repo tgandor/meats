@@ -19,9 +19,15 @@ else:
 if not path.startswith('/'):
     path = '/' + path
 
+regexp = "inet addr:([0-9.]+)"
 config = os.popen('ifconfig').read()
 
-for ip in re.findall("inet addr:([0-9.]+)", config):
+if not config:
+    # Windows
+    config = os.popen('ipconfig').read()
+    regexp = "IPv4 Address. . . . . . . . . . . : ([0-9.]+)"
+
+for ip in re.findall(regexp, config):
     if ip == '127.0.0.1':
         continue
     print "http://%s%s%s" % (ip, port, path)
