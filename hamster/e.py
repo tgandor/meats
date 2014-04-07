@@ -48,7 +48,7 @@ def enter_folder(name):
         print "Error: %s exists, but is not a directory"
         sufix = 1
         new_name = "%s_%d" % (name, sufix)
-        while os.path.exists(new_name):
+        while os.path.exists(new_name) and not os.path.isdir(new_name):
             sufix += 1
             new_name = "%s_%d" % (name, sufix)
         os.mkdir(new_name)
