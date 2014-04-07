@@ -1,2 +1,5 @@
 #!/bin/bash
-qrencode "$1"  -o -| display -resize 300x300% -
+for i in "$@"; do
+	echo "Showing $i..."
+	qrencode "$i"  -o -| display -resize 300x300% -
+done
