@@ -54,7 +54,7 @@ def enter_folder(name):
         os.mkdir(new_name)
     else:
         new_name = name
-    os.chdir(new_name
+    os.chdir(new_name)
 
 def download_all(URL, SEARCH = 'mp3$'):
     total = 0
