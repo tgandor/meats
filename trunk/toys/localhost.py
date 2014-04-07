@@ -22,4 +22,6 @@ if not path.startswith('/'):
 config = os.popen('ifconfig').read()
 
 for ip in re.findall("inet addr:([0-9.]+)", config):
+    if ip == '127.0.0.1':
+        continue
     print "http://%s%s%s" % (ip, port, path)
