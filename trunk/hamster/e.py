@@ -39,7 +39,23 @@ def down(URL):
 
 def folder_name(URL):
     return urlparse.urlsplit(URL).path.split('/')[-2]
-    
+
+def enter_folder(name):
+    if not os.path.exists(name):
+        os.mkdir(name)
+        new_name = name
+    elif not os.path.isdir(name):
+        print "Error: %s exists, but is not a directory"
+        sufix = 1
+        new_name = "%s_%d" % (name, sufix)
+        while os.path.exists(new_name):
+            sufix += 1
+            new_name = "%s_%d" % (name, sufix)
+        os.mkdir(new_name)
+    else:
+        new_name = name
+    os.chdir(new_name
+
 def download_all(URL, SEARCH = 'mp3$'):
     total = 0
     try:
@@ -53,14 +69,13 @@ def download_all(URL, SEARCH = 'mp3$'):
     except:
         print "Error retrieving file list."
         return
-    # print links
+    print "Found:", links
     if not links:
         print "No URLs found to follow."
         # print content
         return
     try:
-        os.mkdir(folder_name(URL))
-        os.chdir(folder_name(URL))
+        enter_folder(folder_name(URL))
         for link in links:
             total += down(link)
     finally:
