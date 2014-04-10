@@ -18,8 +18,12 @@ def main():
     num_proc = os.getenv('NUM_PROC')
     p = multiprocessing.Pool(int(num_proc) if num_proc else None)
     print "Mapping, please wait..."
-    outputs = p.map(go, [ (sys.argv[1], arg) for arg in sys.argv[2:]] )
-    print "\n".join(outputs)
+    for output in p.imap_unordered(
+        go, 
+	[ (sys.argv[1], arg) for arg in sys.argv[2:]] 
+    ):
+	    print output
 
-if __name__ == '__main__': main()
+if __name__ == '__main__': 
+    main()
 
