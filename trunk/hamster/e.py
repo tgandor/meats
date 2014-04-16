@@ -41,6 +41,7 @@ def folder_name(URL):
     return urlparse.urlsplit(URL).path.split('/')[-2]
 
 def enter_folder(name):
+    print "Trying to create {0}, being in {1}...".format(name, os.getcwd())
     if not os.path.exists(name):
         os.mkdir(name)
         new_name = name
