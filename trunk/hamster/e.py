@@ -38,10 +38,14 @@ def down(URL):
   return size
 
 def folder_name(URL):
-    return urlparse.urlsplit(URL).path.split('/')[-2]
+    candidate = urlparse.urlsplit(URL).path.split('/')[-2]
+    if not candidate:
+        print 'Could not find folder name, returning generic.'
+        return 'new_folder'
+    return candidate
 
 def enter_folder(name):
-    print "Trying to create {0}, being in {1}...".format(name, os.getcwd())
+    print "Trying to create '{0}', being in {1}...".format(name, os.getcwd())
     if not os.path.exists(name):
         os.mkdir(name)
         new_name = name
