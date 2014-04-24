@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <omp.h>
 
 int naive_is_prime(int n)
@@ -19,8 +20,12 @@ int naive_is_prime(int n)
 int main()
 {
 	// printf("Num threads: %d\n", omp_get_num_threads()); // == 1 in sequential
-	// int counts[16] = {0};
-	int *counts;
+	int max_threads = omp_get_max_threads();
+	printf("Max num threads: %d\n", max_threads);
+	// int counts[16] = {0}; // fixed: bad
+	// int *counts; // for dynamic allocation
+	int counts[max_threads];
+	memset(&counts[0], 0, max_threads * sizeof(int));
 	int limit;
 	puts("Count primes up to?");
 	scanf("%d", &limit);
@@ -29,11 +34,11 @@ int main()
 		int N = omp_get_num_threads();
 		int id = omp_get_thread_num();
 		int i;
-#pragma omp master
-		{
-		counts = (int*) calloc(N, sizeof(int));
-		}
-#pragma omp barrier
+// #pragma omp master
+		// {
+		// counts = (int*) calloc(N, sizeof(int));
+		// }
+// #pragma omp barrier
 #pragma omp for
 		for (i=0; i<limit; ++i)
 		{
