@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z $1 ]; then
-    echo "Usage: $0 path [subdir]"
+    echo "Usage: $0 path [name_to_share]"
     exit
 fi
 
@@ -26,4 +26,8 @@ popd
 
 bd=`dirname $0`
 
-$bd/localhost.py "$name"/ | xargs $bd/qr.sh
+if [ -d $1 ]; then
+	$bd/localhost.py "$name"/ | xargs $bd/qr.sh
+else
+	$bd/localhost.py "$name" | xargs $bd/qr.sh
+fi
