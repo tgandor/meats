@@ -13,7 +13,10 @@ echo "Recoding from $fro to $too"
 
 for f in "$@" ; do 
   echo $f
-  iconv -f $fro -t $too "$f" > /tmp/`basename $f`
-  mv /tmp/`basename $f` $f
+  if iconv -f $fro -t $too "$f" > "/tmp/`basename $f`"; then
+    mv "/tmp/`basename $f`" "$f"
+  else
+    echo "  ... Not overwriting ..."
+  fi
 done
 
