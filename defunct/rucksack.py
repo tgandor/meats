@@ -21,6 +21,11 @@ def search(money_left, item_prices, bag=[]):
 limit = float(sys.argv[1])
 items = sorted(set(map(float, sys.argv[2:])), reverse=True)
 
+if items[-1] < 0:
+    # min price specified
+    items = filter(lambda x: x >= -items[-1], items)
+    sys.stderr.write('Selected items: %s\n' % str(items))
+
 for result in search(limit, items):
     print sum(price * count for price, count in result), len(result), sum(count for _, count
             in result), result
