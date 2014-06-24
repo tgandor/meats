@@ -4,8 +4,9 @@ if [ ! -f menu.txt ] ; then
 	exit
 fi
 
-prices=`perl -ne 'print "$1\n" if /\(([\d\.]+) zł\)/;' menu.txt`
+prices=`perl -ne 'print "$1\n" if /\(([\d\.]+) zł\)/;' menu.txt | sort -n | uniq`
 echo $prices
-./rucksack.py $1 $prices | sort -n > results.txt
-vi results.txt +20000
+echo ./rucksack.py $1 $2 ...
+./rucksack.py $1 $2 $prices | sort -n > results.txt
+vi +`wc -l results.txt`
 
