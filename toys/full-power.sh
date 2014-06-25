@@ -1,11 +1,14 @@
 #!/bin/bash
 
 if [ "$1" == "off" ]; then
-	echo "Activating ondemand governor..."
-	# sudo cpufreq-set -r -g ondemand
-	echo ondemand | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null
+	governor=ondemand
+elif [ "$1" == "down" ]; then
+	governor=powersave
 else
-	echo "Activating performance governor..."
-	# sudo cpufreq-set -r -g performance
-	echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null
+	governor=performance
 fi
+
+echo "Activating $governor governor..."
+# sudo cpufreq-set -r -g $governor
+echo $governor | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null
+
