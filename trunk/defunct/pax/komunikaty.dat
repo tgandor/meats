@@ -1,0 +1,36 @@
+I w ten oto sposob zegnasz ziemski padol. #
+Burczy Ci w brzuchu. #
+Zemdlales z glodu. #
+Nie masz tyle pieniedzy. #
+Transakcja zostala dokonana! #
+Uderzasz swoja prawica. #
+Spadaja na Ciebie razy. #
+Jestes uzbrojony. #
+To pyszne! Zjadasz do konca. #
+Dalej jestes glodny. #
+Jestes przejedzony. #
+Zaczynasz sie modlic. #
+Modlitwa zostala wysluchana. #
+Twoja modlitwa jest zbyt mechaniczna. #
+Nie masz nic do uzycia. #
+Nie masz nic do jedzenia. #
+Nie masz nic do upuszczenia. #
+Nic tu nie ma. #
+Czy na pewno chcesz wracac do domu? #
+Czy na pewno zaatakowac? #
+Witaj w PAX. To przecudne miasto. Zeby uzyskac pomoc, nacisnij 'h'. #
+Co chcesz zjesc? #
+Co chcesz wziac do reki? #
+Co chcesz uzyc? #
+Co chcesz podniesc? #
+Co chcesz odlozyc? #
+Jeszcze nigdzie nie byles. #
+
+
+// Koniec pliku.
+// Ka¿dy komunikat musi byc zakonczony znakiem # poprzedzonym odstepem
+// Znak # nie moze wystapic w tresci zadnego komunikatu.
+// Liczba komunikatow jest ustalona i nie mozna dopisywac nowych. 
+// Mozna je np. przetlumaczyæ na inny jezyk, lub ukwiecic,
+// ale nie mozna tworzyc nowych, poniewaz nie wiadomo byloby,
+// czego dotycza.

@@ -1,0 +1,61 @@
+5
+Poborca
+20
+10
+10
+50
+0
+1
+Zebrak
+25
+11
+11
+80
+0
+0
+Smok
+50
+18
+18
+33
+1
+1
+S
+Nietoperz
+15
+9
+10
+200
+1
+2
+n
+Utopiec
+20
+15
+18
+60
+2
+2
+U
+
+*******************
+Na koñcu pliku mog¹ zostaæ te komentarze, w celu dokumentacji warto
+je pozostawiæ. W pierwszym wierszu jest zapisana liczba dostêpnych
+postaci ze œwiata pax.
+W nastêpnych wierszach kolejno nastêpuj¹ dane dotycz¹ce poszczególnych
+postaci, w nastêpuj¹cym formacie:
+- Nazwa potworka
+- HP max
+- si³a
+- konstytucja
+- szybkoœæ (dla postaci graj¹cego szybkoœæ wynosi zawsze 100)
+- rasa, a mo¿e gatunek:
+  0 - cz³owiek (³atwo zapamiêtaæ)
+  1 - zwierzê
+  2 - istota duchowa
+- prawdopodobne nastawienie do gracza:
+  0 - spokojny
+  1 - spokojny lub wrogi
+  2 - wrogi
+- [ Je¿eli w rasie jest co innego ni¿ 0 (ludzie = @),
+   to w ostatniej lini jest znak ]

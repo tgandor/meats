@@ -1,0 +1,33 @@
+5
+Skora
+20
+100
+5
+PZP (pelna zbroja plytowa)
+100
+600
+25
+Glany
+5
+50
+3
+Czapka
+3
+1
+1
+Zbroja z kolek
+80
+400
+18
+
+// na koñcu mog¹ byæ komentarze do tego pliku:
+Program czyta tylko do ostatniej zbroi.
+Format pliku jest nastêpuj¹cy:
+W pierwszym wierszu jest liczba dostêpnych zbroi,
+a nastêpnie kolejno zbroje w nastêpuj¹cym formacie
+(ka¿dy myœlnik oznacza now¹ liniê):
+- nazwa zbroi
+- masa
+- cena
+- obra¿enia w³asne -
+

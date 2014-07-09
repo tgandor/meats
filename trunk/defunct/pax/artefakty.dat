@@ -1,0 +1,62 @@
+5
+Pas Cnot
+30
+500
+0
+1
+0
+5
+0
+}
+Gotteslob
+15
+200
+0
+0
+0
+10
+1
++
+Chodaki szybkosci
+40
+750
+0
+0
+50
+0
+-3
+>
+Naszyjnik sily
+5
+1000
+5
+2
+-10
+0
+-2
+=
+Wlosienica ascezy
+20
+700
+-1
+2
+-1
+15
+25
+*
+
+// na koñcu mog¹ byæ komentarze do tego pliku:
+Program czyta tylko do ostatniego artefaktu.
+Format pliku jest nastêpuj¹cy:
+W pierwszym wierszu jest liczba dostêpnych artefaktów,
+a nastêpnie kolejno artefakty w nastêpuj¹cym formacie
+(ka¿dy myœlnik oznacza now¹ liniê):
+- nazwa artefaktu
+- masa
+- cena
+- si³a +
+- konstytucja +
+- szybkoœæ +
+- wiara +
+- energia + (zmniejszenie g³odu)
+- symbol

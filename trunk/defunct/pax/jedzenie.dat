@@ -1,0 +1,32 @@
+5
+Pizza
+20
+10
+500
+Racja zywnosciowa
+50
+15
+1000
+Lembas
+5
+50
+2000
+Jablko
+3
+1
+100
+Konserwa
+10
+10
+400
+
+// na koñcu mog¹ byæ komentarze do tego pliku:
+Program czyta tylko do ostatniej wiktua³u.
+Format pliku jest nastêpuj¹cy:
+W pierwszym wierszu jest liczba dostêpnych wiktua³ów,
+a nastêpnie kolejno wiktua³y w nastêpuj¹cym formacie
+(ka¿dy myœlnik oznacza now¹ liniê):
+- nazwa wiktua³u
+- masa
+- cena
+- liczba kalorii
