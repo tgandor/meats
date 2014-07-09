@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+using namespace std;
+
 Wsp Wsp::operator+ (Wsp value)
 /* dodanie odpowiednich wspolrzednych do siebie */
 {
@@ -112,12 +114,12 @@ const char* Wsp::nazwa_pliku()
     	strcat(buf,"m");
     else
     	strcat(buf,"p");
-    strcat(buf, itoa(abs(x), temp, 10) );
+    strcat(buf, itoa(abs(x), temp, 10).c_str() );
     if(y < 0)
     	strcat(buf,"m");
     else
     	strcat(buf,"p");
-	strcat(buf, itoa(abs(y), temp, 10) );
+	strcat(buf, itoa(abs(y), temp, 10).c_str() );
     return buf;
 }
 
@@ -129,9 +131,9 @@ char* Wsp::w_nawiasach()
     static char buf[30];
     char temp[30];
     strcpy(buf,"(");
-    strcat(buf, itoa(x, temp, 10) );
+    strcat(buf, itoa(x, temp, 10).c_str() );
    	strcat(buf,", ");
-	strcat(buf, itoa(y, temp, 10) );
+	strcat(buf, itoa(y, temp, 10).c_str() );
    	strcat(buf,")");
     return buf;
 }

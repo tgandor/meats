@@ -13,20 +13,20 @@
 #include "Wsp.h"
 #include "TPlansza.h"
 
-#include <fstream.h>
+#include <fstream>
 
 class TMapa : public Byt
 {
 /*  DANE  */
-    list<Wsp> Dostepne_Plansze;
+	std::list<Wsp> Dostepne_Plansze;
 public:
 /*  USLUGI  */
     TPlansza* Odczytaj(Wsp ktora);
     TPlansza* Daj_Inna(Wsp &niz_ktora);
     void Zapisz(TPlansza *co, Wsp gdzie);
 /*  KONSERWACJA  */
-	void zachowaj(ofstream &str);
-    void pobierz(ifstream &str);
+	void zachowaj(std::ofstream &str);
+    void pobierz(std::ifstream &str);
 };
 
 #endif

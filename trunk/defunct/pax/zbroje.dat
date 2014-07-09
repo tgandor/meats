@@ -20,14 +20,14 @@ Zbroja z kolek
 400
 18
 
-// na koñcu mog¹ byæ komentarze do tego pliku:
+// na koÅ„cu mogÄ… byÄ‡ komentarze do tego pliku:
 Program czyta tylko do ostatniej zbroi.
-Format pliku jest nastêpuj¹cy:
-W pierwszym wierszu jest liczba dostêpnych zbroi,
-a nastêpnie kolejno zbroje w nastêpuj¹cym formacie
-(ka¿dy myœlnik oznacza now¹ liniê):
+Format pliku jest nastÄ™pujÄ…cy:
+W pierwszym wierszu jest liczba dostÄ™pnych zbroi,
+a nastÄ™pnie kolejno zbroje w nastÄ™pujÄ…cym formacie
+(kaÅ¼dy myÅ›lnik oznacza nowÄ… liniÄ™):
 - nazwa zbroi
 - masa
 - cena
-- obra¿enia w³asne -
+- obraÅ¼enia wÅ‚asne -
 

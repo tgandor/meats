@@ -18,9 +18,21 @@
 #include "TPrzedmiot.h"
 #include "Wsp.h"
 
-#include <string.h>
-#include <dir.h>
+#include <string>
+// #include <dir.h>
+#include <sys/stat.h>
 #include <stdio.h>
+#include <unistd.h>
+
+#include "itoa.hpp"
+
+using std::string;
+using std::list;
+
+inline void Sleep(int miliseconds)
+{
+	usleep(1000 * miliseconds);
+}
 
 class TGra : public Byt
 {

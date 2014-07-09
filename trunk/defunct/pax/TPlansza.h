@@ -15,9 +15,9 @@
 #include "TPrzedmiot.h"
 /* wspolrzedne - typ Wsp */
 
-#include <conio.h>
-#include <iostream.h>
-#include <fstream.h>
+#include "conio.h"
+#include <iostream>
+#include <fstream>
 
 /* FLAGI POLA NA PLANSZY */
 #define POLE_WOLNE 0
@@ -44,8 +44,8 @@ public:
     int ile;
     virtual void wyswietl();
     virtual void akt_pole(Wsp ktore);
-    void wczytaj(ifstream &str);
-    void zapisz(ofstream &str);
+    void wczytaj(std::ifstream &str);
+    void zapisz(std::ofstream &str);
     Wsp Daj_Wolne_Pole();
     Wsp Ustaw_Dom();
     /* INLINE'OWE funkcje przyspieszajace zapis */

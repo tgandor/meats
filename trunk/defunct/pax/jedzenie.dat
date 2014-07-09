@@ -20,13 +20,13 @@ Konserwa
 10
 400
 
-// na koñcu mog¹ byæ komentarze do tego pliku:
-Program czyta tylko do ostatniej wiktua³u.
-Format pliku jest nastêpuj¹cy:
-W pierwszym wierszu jest liczba dostêpnych wiktua³ów,
-a nastêpnie kolejno wiktua³y w nastêpuj¹cym formacie
-(ka¿dy myœlnik oznacza now¹ liniê):
-- nazwa wiktua³u
+// na koÅ„cu mogÄ… byÄ‡ komentarze do tego pliku:
+Program czyta tylko do ostatniej wiktuaÅ‚u.
+Format pliku jest nastÄ™pujÄ…cy:
+W pierwszym wierszu jest liczba dostÄ™pnych wiktuaÅ‚Ã³w,
+a nastÄ™pnie kolejno wiktuaÅ‚y w nastÄ™pujÄ…cym formacie
+(kaÅ¼dy myÅ›lnik oznacza nowÄ… liniÄ™):
+- nazwa wiktuaÅ‚u
 - masa
 - cena
 - liczba kalorii

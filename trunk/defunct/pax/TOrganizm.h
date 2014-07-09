@@ -16,9 +16,9 @@
 #include "TPrzedmiot.h"
 
 #include <string.h>
-#include <fstream.h>
-#include <iostream.h>
-#include <conio.h>
+#include <fstream>
+#include <iostream>
+#include "conio.h"
 
 /* DEFINICJE STALYCH  -  gatunki */
 #define CZLOWIEK 0
@@ -57,7 +57,7 @@ public:
     int konstytucja;
     int szybkosc;
 	virtual int tura()=0;
-    virtual void wczytaj(ifstream &str)=0;
+    virtual void wczytaj(std::ifstream &str)=0;
     virtual int przyjmij_atak(int punkty_ataku) = 0;
     virtual int atakuj() = 0;
 };
@@ -82,9 +82,9 @@ public:
     int glod; /* zarowno nadmiar, jak niedobor energii */
     Lista plecak;
 /*  KONSERWACJA KLASY - OPERACJE WE/WY  */
-    virtual void wczytaj(ifstream &str);
-    void zachowaj(ofstream &str);
-    void przywroc(ifstream &str);
+    virtual void wczytaj(std::ifstream &str);
+    void zachowaj(std::ofstream &str);
+    void przywroc(std::ifstream &str);
 /*  INICJALIZACJA PRZY TWORZENIU OBIEKTU  */
 	TJa()
     {
@@ -115,7 +115,7 @@ public:
     int rasa;
     char symbol;
 /*  PRZYGOTOWANIE KLASY  */
-    virtual void wczytaj(ifstream &str);
+    virtual void wczytaj(std::ifstream &str);
 /*  FUNKCJE UZYKTOWE  */
     virtual int tura();
     virtual int przyjmij_atak(int punkty_ataku);
