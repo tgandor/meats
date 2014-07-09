@@ -1,0 +1,27 @@
+3
+Rycerz
+30
+18
+15
+12
+Mnich
+25
+14
+18
+18
+Mieszczka
+35
+17
+13
+16
+// na koñcu mog¹ byæ komentarze do tego:
+Program czyta tylko do ostatniego herosa.
+Format pliku jest nastêpuj¹cy:
+W pierwszym wierszu jest liczba dostêpnych profesji,
+a nastêpnie kolejno profesje w nastêpuj¹cym formacie
+(ka¿dy myœlnik oznacza now¹ liniê):
+- nazwa profesji
+- pocz¹tkowe HP
+- si³a
+- konstytucja (twardoœæ)
+- wiara

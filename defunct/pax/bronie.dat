@@ -1,0 +1,32 @@
+5
+Siekierka
+20
+100
+5
+Zweihaender
+100
+600
+25
+Kozik
+5
+50
+3
+Kwiatek jalowca
+3
+1
+1
+Morgensztern
+80
+400
+18
+
+// na koñcu mog¹ byæ komentarze do tego pliku:
+Program czyta tylko do ostatniej broni.
+Format pliku jest nastêpuj¹cy:
+W pierwszym wierszu jest liczba dostêpnych broni,
+a nastêpnie kolejno bronie w nastêpuj¹cym formacie
+(ka¿dy myœlnik oznacza now¹ liniê):
+- nazwa broni
+- masa
+- cena
+- obra¿enia +
