@@ -39,23 +39,23 @@ Utopiec
 U
 
 *******************
-Na koñcu pliku mog¹ zostaæ te komentarze, w celu dokumentacji warto
-je pozostawiæ. W pierwszym wierszu jest zapisana liczba dostêpnych
-postaci ze œwiata pax.
-W nastêpnych wierszach kolejno nastêpuj¹ dane dotycz¹ce poszczególnych
-postaci, w nastêpuj¹cym formacie:
+Na koÅ„cu pliku mogÄ… zostaÄ‡ te komentarze, w celu dokumentacji warto
+je pozostawiÄ‡. W pierwszym wierszu jest zapisana liczba dostÄ™pnych
+postaci ze Å›wiata pax.
+W nastÄ™pnych wierszach kolejno nastÄ™pujÄ… dane dotyczÄ…ce poszczegÃ³lnych
+postaci, w nastÄ™pujÄ…cym formacie:
 - Nazwa potworka
 - HP max
-- si³a
+- siÅ‚a
 - konstytucja
-- szybkoœæ (dla postaci graj¹cego szybkoœæ wynosi zawsze 100)
-- rasa, a mo¿e gatunek:
-  0 - cz³owiek (³atwo zapamiêtaæ)
-  1 - zwierzê
+- szybkoÅ›Ä‡ (dla postaci grajÄ…cego szybkoÅ›Ä‡ wynosi zawsze 100)
+- rasa, a moÅ¼e gatunek:
+  0 - czÅ‚owiek (Å‚atwo zapamiÄ™taÄ‡)
+  1 - zwierzÄ™
   2 - istota duchowa
 - prawdopodobne nastawienie do gracza:
   0 - spokojny
   1 - spokojny lub wrogi
   2 - wrogi
-- [ Je¿eli w rasie jest co innego ni¿ 0 (ludzie = @),
+- [ JeÅ¼eli w rasie jest co innego niÅ¼ 0 (ludzie = @),
    to w ostatniej lini jest znak ]

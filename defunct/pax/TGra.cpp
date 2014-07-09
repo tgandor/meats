@@ -93,7 +93,7 @@ void TGra::Jakie_Imie()
     for(i=0; (i<29) && (buf[i]); i++)
     	imie[i] = buf[i];
     imie[i]=0;
-    while(mkdir(imie))
+    while(mkdir(imie, 0777))
     {
     	cout << "\tTo imie nie jest przyzwoite. Podaj inne> ";
 	    cin >> buf;
@@ -153,7 +153,7 @@ void TGra::Inicjalizuj()
  * powitalny na poczatku gry...
  */
 {
-    randomize();
+    srand(time(0));
 	Plansza = Generator->Daj_Plansze();
     Ja->polozenie = Plansza->Ustaw_Dom();
     Plansza->wyswietl();

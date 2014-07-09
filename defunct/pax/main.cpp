@@ -5,8 +5,10 @@
 #include "TGenerator.h"
 #include "TKontener.h"
 
-#include <fstream.h>
-#include <conio.h>
+#include <fstream>
+#include "conio.h"
+
+using namespace std;
 
 int main(int argc, char* argv[])
 {

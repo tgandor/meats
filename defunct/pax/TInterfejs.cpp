@@ -2,6 +2,8 @@
 
 #include "TInterfejs.h"
 
+int kbhit();
+
 char TInterfejs::Czekaj_Na_Rozkazy()
 /* FUNKCJA STANDARYZUJE NACISNIETE KLAWISZE
  * to znaczy zwraca pojedynczy znak - jednoznacznie

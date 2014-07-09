@@ -14,14 +14,14 @@ Mieszczka
 17
 13
 16
-// na koñcu mog¹ byæ komentarze do tego:
+// na koÅ„cu mogÄ… byÄ‡ komentarze do tego:
 Program czyta tylko do ostatniego herosa.
-Format pliku jest nastêpuj¹cy:
-W pierwszym wierszu jest liczba dostêpnych profesji,
-a nastêpnie kolejno profesje w nastêpuj¹cym formacie
-(ka¿dy myœlnik oznacza now¹ liniê):
+Format pliku jest nastÄ™pujÄ…cy:
+W pierwszym wierszu jest liczba dostÄ™pnych profesji,
+a nastÄ™pnie kolejno profesje w nastÄ™pujÄ…cym formacie
+(kaÅ¼dy myÅ›lnik oznacza nowÄ… liniÄ™):
 - nazwa profesji
-- pocz¹tkowe HP
-- si³a
-- konstytucja (twardoœæ)
+- poczÄ…tkowe HP
+- siÅ‚a
+- konstytucja (twardoÅ›Ä‡)
 - wiara

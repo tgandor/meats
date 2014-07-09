@@ -10,8 +10,9 @@
 #define WspH
 
 #include <stdlib.h>
-#include <string.h>
-#include <fstream.h>
+#include <fstream>
+
+#include "itoa.hpp"
 
 /* WSPOLRZEDNE */
 struct Wsp
@@ -46,8 +47,8 @@ struct Wsp
     Wsp Zmiana_Planszy(Wsp value);
     const char *nazwa_pliku();
     char *w_nawiasach();
-    void wczytaj(ifstream &str);
-    void zapisz(ofstream &str);
+    void wczytaj(std::ifstream &str);
+    void zapisz(std::ofstream &str);
 
 };
 

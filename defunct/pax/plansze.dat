@@ -64,13 +64,13 @@
 ............................................................
 -1
 // Koniec pliku.
-// Poni¿szy tekst mo¿e zostaæ usuniêty - nie ma znaczenia
-// dla dzia³ania programu, ale zaleca siê pozostawienie go
+// PoniÅ¼szy tekst moÅ¼e zostaÄ‡ usuniÄ™ty - nie ma znaczenia
+// dla dziaÅ‚ania programu, ale zaleca siÄ™ pozostawienie go
 // w celach dokumentacji. 
-// Piêtnaœcie kolejnych linii, z dodan¹ pod spodem pojedyncz¹
-// liczb¹ reprezentuje planszê. Liczba oznacza, ile maksymalnie
-// takich plansz mo¿na wygenerowaæ: od 1 do MAXINT, lub -1
-// czyli nieskoñczonoœæ. 
+// PiÄ™tnaÅ›cie kolejnych linii, z dodanÄ… pod spodem pojedynczÄ…
+// liczbÄ… reprezentuje planszÄ™. Liczba oznacza, ile maksymalnie
+// takich plansz moÅ¼na wygenerowaÄ‡: od 1 do MAXINT, lub -1
+// czyli nieskoÅ„czonoÅ›Ä‡. 
 // UWAGA: dla pierwszej przedstawionej planszy - zawsze -1
-// znaki: \, /, | oraz - oznaczaj¹ œciany, a & - sklep.
+// znaki: \, /, | oraz - oznaczajÄ… Å›ciany, a & - sklep.
 // W PIERWSZYM WIERSZU JEST LICZBA WZORCOWYCH PLANSZ.

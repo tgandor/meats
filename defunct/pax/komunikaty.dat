@@ -28,9 +28,9 @@ Jeszcze nigdzie nie byles. #
 
 
 // Koniec pliku.
-// Ka¿dy komunikat musi byc zakonczony znakiem # poprzedzonym odstepem
+// KaÅ¼dy komunikat musi byc zakonczony znakiem # poprzedzonym odstepem
 // Znak # nie moze wystapic w tresci zadnego komunikatu.
 // Liczba komunikatow jest ustalona i nie mozna dopisywac nowych. 
-// Mozna je np. przetlumaczyæ na inny jezyk, lub ukwiecic,
+// Mozna je np. przetlumaczyÄ‡ na inny jezyk, lub ukwiecic,
 // ale nie mozna tworzyc nowych, poniewaz nie wiadomo byloby,
 // czego dotycza.

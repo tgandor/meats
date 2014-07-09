@@ -7,7 +7,7 @@
 #define _Byt_included
 
 #include <string.h>
-#include <list.h>
+#include <list>
 
 class Byt
 {
@@ -25,7 +25,7 @@ public:
 	virtual ~Byt();
 };
 
-typedef list<Byt*> Lista;
+typedef std::list<Byt*> Lista;
 
 void wyczysc_liste(Lista &l);
 

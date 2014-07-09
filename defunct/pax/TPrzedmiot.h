@@ -16,10 +16,14 @@
 
 #include "Byt.h"
 
-#include <fstream.h>
-#include <iostream.h>
-#include <string.h>
-#include <typeinfo.h>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <typeinfo>
+
+#include "itoa.hpp"
+
+using namespace std;
 
 class TPrzedmiot : public Byt
 {

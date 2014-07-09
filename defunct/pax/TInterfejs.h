@@ -13,10 +13,13 @@
 #include "Wsp.h"
 #include "TOrganizm.h"
 
-#include <iostream.h>
-#include <fstream.h>
-#include <string.h>
-#include <conio.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+
+#include "conio.h"
+
+using std::string;
 
 #define LICZBA_KOMUNIKATOW 27
 
