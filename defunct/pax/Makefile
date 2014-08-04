@@ -11,7 +11,7 @@ pax: $(OBJ_FILES)
 
 %.o: %.cpp
 	g++ $(CC_FLAGS) -c -o $@ $<
-	g++ -MM $(CC_FLAGS) -c $*.cpp > $*.d
+	g++ -MM $(CC_FLAGS) $*.cpp > $*.d
 
 depend:
 	makedepend -- $(CC_FLAGS) -- $(SRC_FILES)
