@@ -2,6 +2,7 @@
 
 import os
 import sqlite3
+import sys
 
 def get_alien_files__pipe():
     for line in os.popen('svn st --no-ignore'):
@@ -15,7 +16,7 @@ def get_alien_files__entries(top='.'):
     from os.path import join, isdir, exists, islink
     entries_file = join(top, '.svn/entries')
     if not exists(entries_file):
-        # print 'Not exists:', entries_file
+        sys.stderr.write('Entries file not found in: '+top)
         return
     # print 'Entering', top
     entries = open(entries_file).read().split('\x0c\n')
@@ -53,6 +54,7 @@ def _get_alien_files(versioned, top='', externals=set()):
 def get_alien_files__db(wc_root=''):
     wcdb_file = os.path.join(wc_root, '.svn', 'wc.db')
     if not os.path.exists(wcdb_file):
+        sys.stderr.write('Database file wanted, but not found.')
         return []
     conn = sqlite3.connect(wcdb_file)
     c = conn.cursor()
@@ -74,7 +76,7 @@ def test():
 
 def get_alien_files(top='.'):
     entries = os.path.join(top, '.svn', 'entries')
-    if os.path.exists(entries) and (open(entries).readline().strip()) <= 10:
+    if os.path.exists(entries) and int(open(entries).readline().strip()) <= 10:
         return get_alien_files__entries()
     return get_alien_files__db()
 
