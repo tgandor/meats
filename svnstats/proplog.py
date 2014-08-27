@@ -7,17 +7,21 @@ import re
 try:
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("property", help="SVN property name")
+    parser.add_argument("--property", type=str, help="SVN property name (default: svn:mergeinfo)", default='svn:mergeinfo')
+    parser.add_argument('--minrev', type=int, default=0) 
     args = parser.parse_args()
     prop = args.property
+    minrev = args.minrev
 except ImportError:
     prop = sys.argv[1]
+    minrev = 0
 
 run = lambda cmd: os.popen(cmd).read()
 val = lambda rev: run('svn pg %s -r %d' % (prop, rev))
 
 maxrev = int(re.search('r(\d+)', run('svn log -r HEAD:1 -l 1')).group(1))
-minrev = int(re.search('r(\d+)', run('svn log -r 1:HEAD -l 1')).group(1))
+if not minrev:
+    minrev = int(re.search('r(\d+)', run('svn log -r 1:HEAD -l 1')).group(1))
 maxval = val(maxrev)
 
 def find_end(startrev):
