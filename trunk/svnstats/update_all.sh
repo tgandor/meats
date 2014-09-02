@@ -5,7 +5,7 @@ for f in */.svn ; do
 # find -type d -name .svn | while read f; do
 	directory=`dirname $f`
 	# if [ ! -d $f/../../.svn ] ; then
-		echo "Updating $directory"
+		echo "*** Updating $directory ***"
 		svn up "$directory"
 	# fi
 done
