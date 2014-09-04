@@ -15,7 +15,7 @@ while(<STDIN>)
 	push (@data, $_);
 	if (/^---/)
 	{
-		if ($print) 
+		if ($print)
 		{
 			print @data;
 		}
