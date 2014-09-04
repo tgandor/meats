@@ -18,24 +18,24 @@
     
     ---------------------------------
 
-  pvicig -- porównuje teksty ¼ród³owe programów i okre¶la ich podobieñstwo
+  pvicig -- porÃ³wnuje teksty ÅºrÃ³dÅ‚owe programÃ³w i okreÅ›la ich podobieÅ„stwo
   Copyright (C) 2006 Tomasz Gandor
 
-    Niniejszy program jest wolnym oprogramowaniem; mo¿esz go
-    rozprowadzaæ dalej i/lub modyfikowaæ na warunkach Powszechnej
-    Licencji Publicznej GNU, wydanej przez Fundacjê Wolnego
-    Oprogramowania - wed³ug wersji 2 tej Licencji lub (wed³ug twojego
-    wyboru) której¶ z pó¼niejszych wersji.
+    Niniejszy program jest wolnym oprogramowaniem; moÅ¼esz go
+    rozprowadzaÄ‡ dalej i/lub modyfikowaÄ‡ na warunkach Powszechnej
+    Licencji Publicznej GNU, wydanej przez FundacjÄ™ Wolnego
+    Oprogramowania - wedÅ‚ug wersji 2 tej Licencji lub (wedÅ‚ug twojego
+    wyboru) ktÃ³rejÅ› z pÃ³Åºniejszych wersji.
 
-    Niniejszy program rozpowszechniany jest z nadziej±, i¿ bêdzie on
-    u¿yteczny - jednak BEZ JAKIEJKOLWIEK GWARANCJI, nawet domy¶lnej
-    gwarancji PRZYDATNO¦CI HANDLOWEJ albo PRZYDATNO¦CI DO OKRE¦LONYCH
-    ZASTOSOWAÑ. W celu uzyskania bli¿szych informacji siêgnij do
+    Niniejszy program rozpowszechniany jest z nadziejÄ…, iÅ¼ bÄ™dzie on
+    uÅ¼yteczny - jednak BEZ JAKIEJKOLWIEK GWARANCJI, nawet domyÅ›lnej
+    gwarancji PRZYDATNOÅšCI HANDLOWEJ albo PRZYDATNOÅšCI DO OKREÅšLONYCH
+    ZASTOSOWAÅƒ. W celu uzyskania bliÅ¼szych informacji siÄ™gnij do
     Powszechnej Licencji Publicznej GNU.
 
-    Z pewno¶ci± wraz z niniejszym programem otrzyma³e¶ te¿ egzemplarz
+    Z pewnoÅ›ciÄ… wraz z niniejszym programem otrzymaÅ‚eÅ› teÅ¼ egzemplarz
     Powszechnej Licencji Publicznej GNU (GNU General Public License);
-    je¶li nie - napisz do Free Software Foundation, Inc., 59 Temple
+    jeÅ›li nie - napisz do Free Software Foundation, Inc., 59 Temple
     Place, Fifth Floor, Boston, MA  02110-1301  USA
     
 */
@@ -44,7 +44,7 @@
 /*
  * The headers, defines, includes are all in one file 
  * ---
- *  Wszystkie nag³ówki, makrodefinicje i tym podobne w osobnym pliku
+ *  Wszystkie nagÅ‚Ã³wki, makrodefinicje i tym podobne w osobnym pliku
  */
 #include "main.h"
 
@@ -57,42 +57,42 @@
 /* 
   The name this program was run with. 
   ---
-  Nazwa, z któr± program zosta³ uruchomiony
+  Nazwa, z ktÃ³rÄ… program zostaÅ‚ uruchomiony
 */
 static const char *program_name;
 
 /* 
   If nonzero, display usage information and exit.  
   ---
-  Flaga wymuszaj±ca wypisanie pomocy do programu
+  Flaga wymuszajÄ…ca wypisanie pomocy do programu
 */
 static int show_help = 0;
 
 /* 
   If nonzero, print the version on standard output and exit.  
   ---
-  Flaga wymuszaj±ca wypisanie informacji o wersji
+  Flaga wymuszajÄ…ca wypisanie informacji o wersji
 */
 static int show_version = 0;
 
 /*
   Increases amount of output data 
   --- 
-  Zwiêksza ilo¶æ wypisywanych informacji
+  ZwiÄ™ksza iloÅ›Ä‡ wypisywanych informacji
 */
 int verbose_flag = 0;
 
 /* 
   Decreases amount of output data (e.g. errors)
   --- 
-  Zmniejsza ilo¶æ wypisywanych informacji (diagnostycznych)
+  Zmniejsza iloÅ›Ä‡ wypisywanych informacji (diagnostycznych)
 */
 int quiet_flag = 0;
 
 /*
  * Karp-Rabin hashing parameters
  * ---
- *  Parametry funkcji haszuj±cej do algorytmu Karpa-Rabina
+ *  Parametry funkcji haszujÄ…cej do algorytmu Karpa-Rabina
  */
 int KR_base      =   DEFAULT_KR_BASE;
 int KR_modulus   =   DEFAULT_KR_MODULUS;
@@ -110,7 +110,7 @@ int sort_asc      = 0;
 /* 
   Long and short options 
   ---
-  Opcje programu w formacie d³ugim i krótkim
+  Opcje programu w formacie dÅ‚ugim i krÃ³tkim
 */
 enum optcodes {
 	GST_START = 500,
@@ -242,7 +242,7 @@ main (int argc, char *const *argv)
   /*
    * Iterators, indexes, counters
    * ---
-   *  Zmienne pomocnicze, steruj±ce
+   *  Zmienne pomocnicze, sterujÄ…ce
    */
   int i,j;
   int program_count, temp_count;
@@ -258,21 +258,21 @@ main (int argc, char *const *argv)
   /*
   flag - if set we only compare the input files against the indicated source
   ---
-  flaga - gdy ustawiona porównujemy tylko z wskazanym programem
+  flaga - gdy ustawiona porÃ³wnujemy tylko z wskazanym programem
   */
   int one_suspect = 0;
   
   /*
   a vector of programs to process
   ---
-  tablica programów do przetworzenia
+  tablica programÃ³w do przetworzenia
   */
   PROGRAM *programs, *temp_programs, suspect_program=NULL;
 
   /*
   a data structure to store filenames and make them unique
   ---
-  struktura danych do przechowywania nazw plików
+  struktura danych do przechowywania nazw plikÃ³w
   */
   UNIQUE_DICTIONARY filenames;
   char *suspect_filename;
@@ -280,7 +280,7 @@ main (int argc, char *const *argv)
   /*
   an array of pointers to a comparison structure
   ---
-  tablica wska¼ników do struktury opisuj±cej porównanie programów
+  tablica wskaÅºnikÃ³w do struktury opisujÄ…cej porÃ³wnanie programÃ³w
   */
   COMPARISON *comparisons;
   int comparison_count;
@@ -288,14 +288,14 @@ main (int argc, char *const *argv)
   /*
   a minimal value of simmilarity to be shown in results
   ---
-  minimalny poziom podobieñstwa do wy¶wietlenia w wynikach
+  minimalny poziom podobieÅ„stwa do wyÅ›wietlenia w wynikach
   */
   double thereshold = 0.5;
 
   /*
   adjust locale - for messages in many languages
   ---
-  ustawienia lokalne - komunikaty w wielu jêzykach
+  ustawienia lokalne - komunikaty w wielu jÄ™zykach
   */
 
   setlocale(LC_ALL, "");
@@ -305,7 +305,7 @@ main (int argc, char *const *argv)
   /*
   decode program options with getopt_long
   ---
-  przeanalizowanie opcji programu funkcj± getopt_long
+  przeanalizowanie opcji programu funkcjÄ… getopt_long
   */
   while ( (option_char = getopt_long (argc, argv, opt_str,
      long_options, NULL)) != EOF) 
@@ -357,7 +357,7 @@ main (int argc, char *const *argv)
   /*
   Handle trivial options
   ---
-  Obs³uga prostych opcji
+  ObsÅ‚uga prostych opcji
   */
   program_name = argv[0];
   if (show_help)
@@ -421,7 +421,7 @@ main (int argc, char *const *argv)
   /*
   Check if enough arguments
   ---
-  Sprawdzenie, czy nie za ma³o argumentów
+  Sprawdzenie, czy nie za maÅ‚o argumentÃ³w
   */
   program_count = argc - optind;
   if (program_count + one_suspect < 2) 
@@ -433,7 +433,7 @@ main (int argc, char *const *argv)
   /*
    * Making sure if filenames are unique
    * ---
-   *  Upewnienie siê, czy nazwy plików s± unikatowe
+   *  Upewnienie siÄ™, czy nazwy plikÃ³w sÄ… unikatowe
    */
   filenames = new_unique_dictionary();
   for(i=optind; i<argc; i++)
@@ -445,7 +445,7 @@ main (int argc, char *const *argv)
   /*
   Check if enough unique arguments
   ---
-  Sprawdzenie, czy nie za ma³o unikatowych argumentów
+  Sprawdzenie, czy nie za maÅ‚o unikatowych argumentÃ³w
   */
   program_count = filenames->count;
   if (program_count + one_suspect < 2) 
@@ -457,7 +457,7 @@ main (int argc, char *const *argv)
   /*
   loading programs into memory and processing them
   ---
-  wczytywanie programów do pamiêci i przetwarzanie ich
+  wczytywanie programÃ³w do pamiÄ™ci i przetwarzanie ich
   */
   programs = (PROGRAM *) malloc (sizeof(PROGRAM) * program_count);
   iter = filenames->entries;
@@ -480,7 +480,7 @@ main (int argc, char *const *argv)
   /*
   Check if enough succesfully loaded programs
   ---
-  Sprawdzenie, czy nie za ma³o wczytanych programów
+  Sprawdzenie, czy nie za maÅ‚o wczytanych programÃ³w
   */
   if (program_count + one_suspect < 2) 
   {
@@ -491,7 +491,7 @@ main (int argc, char *const *argv)
   /*
   process programs - prepare for comparision
   ---
-  przetwórz programy - przygotowanie do porównania
+  przetwÃ³rz programy - przygotowanie do porÃ³wnania
   */
   temp_programs = (PROGRAM *) malloc (sizeof(PROGRAM) * program_count);
   temp_count = 0;
@@ -517,7 +517,7 @@ main (int argc, char *const *argv)
   /*
   Check if enough succesfully processed programs
   ---
-  Sprawdzenie, czy nie za ma³o przeanalizowanych programów
+  Sprawdzenie, czy nie za maÅ‚o przeanalizowanych programÃ³w
   */
   if (program_count + one_suspect < 2) 
   {
@@ -528,14 +528,14 @@ main (int argc, char *const *argv)
   /*
    * Program comparison 
    * ---
-   *  Porównywanie programów
+   *  PorÃ³wnywanie programÃ³w
    */
   if (one_suspect) 
   {
     /* 
     N = O(N) comparisions of programs (linear)
     ---
-    N = O(N) liniowa liczba porównañ
+    N = O(N) liniowa liczba porÃ³wnaÅ„
     */
     comparisons = (COMPARISON *) malloc (sizeof(COMPARISON) * program_count);
     for(i=0; i < program_count; i++)
@@ -547,7 +547,7 @@ main (int argc, char *const *argv)
     /* 
     N * (N-1) / 2 = O(N^2) comparisions of programs (square complexity)
     ---
-    N * (N-1) / 2 = O(N^2) liczba porównañ proporcjonalna do kwadratu
+    N * (N-1) / 2 = O(N^2) liczba porÃ³wnaÅ„ proporcjonalna do kwadratu
     */
     comparison_count = program_count * (program_count-1) / 2;
     comparisons = (COMPARISON *) malloc ( sizeof(COMPARISON) * comparison_count );
@@ -560,14 +560,14 @@ main (int argc, char *const *argv)
   /*
   sort results descending
   ---
-  sortowanie wyników malej±co wzglêdem podobieñstwa
+  sortowanie wynikÃ³w malejÄ…co wzglÄ™dem podobieÅ„stwa
   */
   qsort(comparisons, comparison_count, sizeof(COMPARISON), compare_comparison);
   
   /*
   print results to output
   ---
-  wydrukowanie wyników na wyj¶cie
+  wydrukowanie wynikÃ³w na wyjÅ›cie
   */
   for (i=0; i < comparison_count; i++)
   {
