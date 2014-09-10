@@ -3,51 +3,49 @@
 #define FOR(ii, ll, uu)  for(int ii##lim = (uu), ii = (ll); ii < ii##lim; ++ii)
 #define REP(ii, nn) FOR(ii, 0, nn)
 
-// from stackoverflow
-#define getcx getchar_unlocked
-inline void inp(int &n)
+inline int gis()
 {
-	n=0;
-	int ch=getcx(), sign=1;
+	int n = 0;
+	int ch = getchar_unlocked(), sign = 0;
 	while (ch < '0' || ch > '9')
 	{
-		if (ch=='-') sign=-1;
-		ch = getcx();
+		if (ch == '-') sign=-1;
+		ch = getchar_unlocked();
 	}
 	while (ch >= '0' && ch <= '9')
-		n = (n<<3)+(n<<1) + ch-'0', ch=getcx();
-	n = n * sign;
+		n = (n<<3)+(n<<1) + ch-'0', ch = getchar_unlocked();
+	return sign ? -n : n;
 }
+#define GI (gis())
 
 inline int giu()
 {
 	int n = 0;
-	int ch=getcx();
+	int ch=getchar_unlocked();
 	while (ch < '0' || ch > '9')
 	{
-		ch = getcx();
+		ch = getchar_unlocked();
 	}
 	while (ch >= '0' && ch <= '9')
-		n = (n<<3)+(n<<1) + ch-'0', ch = getcx();
+		n = (n<<3)+(n<<1) + ch-'0', ch = getchar_unlocked();
 	return n;
 }
+#define GU (giu())
 
-#define GI (giu())
-#define GI2 ({int t; inp(t); t;})
 
 inline int ins(char *buf)
 {
-	int ch=getcx();
+	int ch = getchar_unlocked();
 	while (ch <= ' ')
 	{
-		if ((ch = getcx()) == -1)
+		if ((ch = getchar_unlocked()) == -1)
 			return 0;
 	}
 	char *oldbuf = buf;
 	while (ch > ' ')
 	{
 		*buf++ = ch;
-		ch = getcx();
+		ch = getchar_unlocked();
 	}
 	*buf = '\0';
 	return (int)(buf-oldbuf);
