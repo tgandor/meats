@@ -1,5 +1,7 @@
 @echo off
 
+set LC_CTYPE=en_US.UTF-8
+
 set mystart=%time%
 
 for /D %%d in (*.*) do (
