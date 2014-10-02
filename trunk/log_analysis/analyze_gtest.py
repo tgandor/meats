@@ -10,7 +10,7 @@ for f in sys.argv[1:]:
     for test, time in re.findall('([A-Za-z]*\.\w+) \((\d+) ms\)', open(f).read()):
         # print test, time
         stats[test].append(int(time))
-        
+
 for test in sorted(stats.keys()):
     results = sorted(stats[test])
     n = len(results)
