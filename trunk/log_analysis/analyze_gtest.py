@@ -13,6 +13,7 @@ for f in sys.argv[1:]:
         
 for test in sorted(stats.keys()):
     results = sorted(stats[test])
-    print "%-40s [ms] : %3d min %3d max %3d tercile." % (
-        test, results[0], results[-1], results[len(results)/3]
+    n = len(results)
+    print "%-40s [ms] : %3d min %3d max %3d terc. |%d|" % (
+        test, results[0], results[-1], results[n/3], n
     )
