@@ -1,1 +1,1 @@
-echo  | gcc "$@" -dM -E -  | sort
+echo  | g++ "$@" -dM -E -  | sort
