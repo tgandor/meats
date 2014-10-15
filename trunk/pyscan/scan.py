@@ -5,6 +5,7 @@ import sys
 import threading
 
 from Tkinter import Frame, Tk, Button, BOTH, Label, Entry, StringVar, END, Spinbox, NORMAL, DISABLED
+import tkMessageBox
 
 import sane
 print 'SANE version:', sane.init()
@@ -53,7 +54,7 @@ class ScanDialog(Frame):
 
     def initUI(self):
 
-        self.parent.title("Scan images")
+        self.parent.title("Scan Images")
         self.pack(fill=BOTH, expand=1)
 
         Label(self, text="Name prefix:").grid(row=0, column=0)
@@ -63,12 +64,15 @@ class ScanDialog(Frame):
         self.newName.set('Scan_')
         newName = Entry(self, textvariable=self.newName, width=60)
         newName.grid(row=1, column=0)
-        newName.bind("<Return>", lambda event: self.scan())
+        newName.bind("<Return>",   lambda event: self.scan())
+        newName.bind("<KP_Enter>", lambda event: self.scan())
         newName.bind("<Escape>", lambda event: self.parent.destroy())
         newName.focus_set()
         self.newNameEntry = newName
 
         self.numberSuffix = Spinbox(self, from_=1, to=999)
+        self.numberSuffix.bind("<Return>",   lambda event: self.scan())
+        self.numberSuffix.bind("<KP_Enter>", lambda event: self.scan())
         self.numberSuffix.grid(row=1, column=1)
 
         self.okButton = Button(self, text="Scan", command=self.scan, width=60, height=5)
@@ -97,8 +101,16 @@ class ScanDialog(Frame):
     def scan(self):
         target = '%s%03d.jpg' % (self.newName.get(), int(self.numberSuffix.get()), )
         if os.path.exists(target):
-            print 'Not scanning: %s - file exists!' % target
-            return
+            if not tkMessageBox.askokcancel(title='Scan Images', message='File exists. Overwrite?'):
+                print 'Not scanning: %s - file exists!' % target
+                newName = self.newName.get()
+                for i in xrange(int(self.numberSuffix.get()), 1000):
+                    if not os.path.exists('%s%03d.jpg' % (newName, i)):
+                        print 'Next available filename: %s%03d.jpg' % (newName, i)
+                        self.numberSuffix.delete(0, 'end')
+                        self.numberSuffix.insert(0, i)
+                        break
+                return
         print "Scanning to filename '%s' ..." % (target, )
         if self.worker is None:
             self.worker = ScanWorker(target)
