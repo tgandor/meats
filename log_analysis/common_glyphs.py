@@ -3,16 +3,22 @@
 import collections
 
 total_counter = collections.Counter()
+character_sets = []
 
 try:
     while True:
         line = input()
         if not line:
             break
-        counter = collections.Counter(c for c in line if ord(c) > 1000)
-        total_counter.update(c for c in line if ord(c) > 1000)
+        selected = [c for c in line if ord(c) > 1000]
+        counter = collections.Counter(selected)
+        total_counter.update(selected)
         print(counter.most_common(10))
+        character_sets.append(set(selected))
+
 except EOFError:
     pass
 
 print('Total top ten: {0}'.format(total_counter.most_common(10)))
+
+print('Reduced: ', set.intersection(*character_sets))
