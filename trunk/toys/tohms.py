@@ -20,7 +20,7 @@ for limb in hms[1:]:
 
 print_secs(secs)
 
-if secs > 24 * 3600: 
+if secs > 24 * 3600:
 	days, rest = divmod(secs, 24 * 3600)
 	print days, 'days',
 	print_secs(rest)
