@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name           AutoScroller
 // @description    Add a button which scrolls the page down 10px/s.
-// @include        *
-// @version        1.1
+// @include        http://*
+// @version        1.2
 // ==/UserScript==
 
 
@@ -22,7 +22,14 @@ function stopScroll()
 
 scrollButton = document.createElement('input');
 scrollButton.type = 'button';
-scrollButton.onclick = function() {
+scrollButton.onclick = function(e) {
+	if (e.which == 2)
+	{
+		if (this.value == "Stop")
+			stopScroll();
+		document.body.removeChild(scrollButton);
+		return;
+	}
 	if (this.value == "Scroll")
 	{
 		pageScroll();
@@ -35,8 +42,7 @@ scrollButton.onclick = function() {
 	}
 };
 scrollButton.style.position = 'fixed';
-scrollButton.style.top = 0;
+scrollButton.style.top = '2em';
 scrollButton.style.left = 0;
 scrollButton.value = 'Scroll';
 document.body.appendChild(scrollButton);
-window.scrollButton = scrollButton;
