@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           PrevNext
 // @description    Add buttons to navigate to pages with successive numbers.
-// @include        *
+// @include        http://*
 // @version        1.0
 // ==/UserScript==
 
