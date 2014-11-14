@@ -11,10 +11,13 @@ if len(sys.argv) < 2:
 def video_info(video_id):
     json_info = urllib2.urlopen('http://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=jsonc' % video_id).read()
     info = json.loads(json_info)
-    print json.dumps(info, indent=2)
-    print 'Specifically,'
-    print 'Title: %s' % info['data']['title']
-    print 'Description:\n%s' % info['data']['description']
+    # print json.dumps(info, indent=2)
+    # print 'Specifically,'
+    print '%s : %s\n\t%s' % (
+        info['data']['id'],
+        info['data']['title'],
+        info['data']['description']
+    )
 
 def playlist_info(playlist_id):
     json_info = urllib2.urlopen('http://gdata.youtube.com/feeds/api/playlists/%s?v=2&alt=jsonc' % playlist_id).read()
