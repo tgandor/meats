@@ -3,8 +3,8 @@
 import sys
 import re
 
-tokener = re.compile('^([0-9.,]+)([KMG]?)')
-scale = {'K': 2**10, 'M': 2**20, 'G': 2**30}
+tokener = re.compile('^([0-9.,]+)([KMGT]?)')
+scale = {'K': 2**10, 'M': 2**20, 'G': 2**30, 'T': 2**40}
 
 def getBytes(line):
     m = tokener.search(line)
