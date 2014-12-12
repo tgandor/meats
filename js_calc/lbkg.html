@@ -1,0 +1,22 @@
+<html>
+<head>
+	<title>Unit conversion: kg vs lb.</title>
+	<script>
+	function upKg()
+	{
+		document.getElementById("kg").value = document.getElementById("lb").value * 0.45359;
+	}
+	function upLb()
+	{
+		document.getElementById("lb").value = document.getElementById("kg").value * 2.204624;
+	}
+	</script>
+</head>
+<body>
+	<h1>Path Editor</h1>
+	Kg:
+	<input id="kg" onchange="upLb()" onkeyup="upLb()" onclick="upLb()" value="0" type="text" />
+	Lb:
+	<input id="lb" onchange="upKg()" onkeyup="upKg()" onclick="upKg()" value="0" type="text" />
+</body>
+</html>
