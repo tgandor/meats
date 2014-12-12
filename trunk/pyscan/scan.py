@@ -20,6 +20,7 @@ if not available:
 s = sane.open(available[0][0])
 s.mode = 'color'
 
+
 def do_scan(output_filename):
     # s.br_x=320. ; s.br_y=240.
     print 'Scanning with parameters:', s.get_parameters()
@@ -40,6 +41,7 @@ class ScanWorker(threading.Thread):
     def __init__(self, output_filename):
         super(ScanWorker, self).__init__()
         self.output_filename = output_filename
+
     def run(self):
         do_scan(self.output_filename)
 
@@ -50,6 +52,7 @@ class ScanDialog(Frame):
         self.parent = parent
         self.worker = None
         self.elapsed = 0
+        self.extension = 'png'
         self.initUI()
 
     def initUI(self):
@@ -99,14 +102,15 @@ class ScanDialog(Frame):
             self.statusLabel.config(text='Idle')
 
     def scan(self):
-        target = '%s%03d.jpg' % (self.newName.get(), int(self.numberSuffix.get()), )
+        target = '%s%03d.%s' % (self.newName.get(), int(self.numberSuffix.get()), self.extension, )
         if os.path.exists(target):
             if not tkMessageBox.askokcancel(title='Scan Images', message='File exists. Overwrite?'):
                 print 'Not scanning: %s - file exists!' % target
-                newName = self.newName.get()
+                new_name = self.newName.get()
                 for i in xrange(int(self.numberSuffix.get()), 1000):
-                    if not os.path.exists('%s%03d.jpg' % (newName, i)):
-                        print 'Next available filename: %s%03d.jpg' % (newName, i)
+                    new_target = '%s%03d.%s' % (self.newName.get(), int(self.numberSuffix.get()), self.extension, )
+                    if not os.path.exists(new_target):
+                        print 'Next available filename: %s' % (new_target, )
                         self.numberSuffix.delete(0, 'end')
                         self.numberSuffix.insert(0, i)
                         break
