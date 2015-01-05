@@ -282,12 +282,9 @@ def main():
 
         # go to the right location
         try:
-            os.chdir('/mnt/sdcard/external_sd/Music')
+            os.chdir('/mnt/sdcard/Download')
         except:
-            try:
-                os.chdir('/mnt/sdcard/download')
-            except:
-                pass
+            pass
         the_url = androidhelper.Android().getClipboard().result
         command = 'rdl'
     elif len(sys.argv) == 4:
