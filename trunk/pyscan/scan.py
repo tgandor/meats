@@ -1,40 +1,44 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import threading
 
-from Tkinter import Frame, Tk, Button, BOTH, Label, Entry, StringVar, END, Spinbox, NORMAL, DISABLED
+from Tkinter import Frame, Tk, Button, BOTH, Label, Entry, StringVar, Spinbox, NORMAL, DISABLED
 import tkMessageBox
 
 import sane
 print 'SANE version:', sane.init()
 
 available = sane.get_devices()
-print 'Available devices=', available
+print 'Available devices =', available
 
 if not available:
-    print "NO DEVICES FOUND. File '%s' not saved..." % (output_filename, )
+    print "NO DEVICES FOUND."
     exit()
+
+
+class Settings(object):
+    def __init__(self):
+        self.width = 210.0
+        self.height = 297.0
+
 
 s = sane.open(available[0][0])
 s.mode = 'color'
+s.br_x = 210.0
+s.br_y = 297.0
+
+print 'Resolution: {0}'.format(s.resolution)
+print 'Scanning with parameters:', s.get_parameters()
 
 
 def do_scan(output_filename):
-    # s.br_x=320. ; s.br_y=240.
-    print 'Scanning with parameters:', s.get_parameters()
-
     s.start()
     print 'started'
-
     im = s.snap()
     print 'snapped'
-
     im.save(output_filename)
-
-    # s.close()
-    # sane.exit()
+    return im
 
 
 class ScanWorker(threading.Thread):
@@ -108,7 +112,7 @@ class ScanDialog(Frame):
                 print 'Not scanning: %s - file exists!' % target
                 new_name = self.newName.get()
                 for i in xrange(int(self.numberSuffix.get()), 1000):
-                    new_target = '%s%03d.%s' % (self.newName.get(), int(self.numberSuffix.get()), self.extension, )
+                    new_target = '%s%03d.%s' % (new_name, int(self.numberSuffix.get()), self.extension, )
                     if not os.path.exists(new_target):
                         print 'Next available filename: %s' % (new_target, )
                         self.numberSuffix.delete(0, 'end')
