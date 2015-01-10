@@ -5,7 +5,16 @@ if [ -f /usr/share/sane/gt68xx/SBSfw.usb ] ; then
 	exit
 fi
 
-sudo mkdir -p /usr/share/sane/gt68xx
+
+if [ ! -d /usr/share/sane ]; then
+	sudo apt-get install sane sane-utils python-imaging-sane
+fi
+
+if [ ! -d /usr/share/sane/gt68xx ]; then
+	echo Missing gt68xx directory, creating...
+	sudo mkdir -p /usr/share/sane/gt68xx
+fi
+
 if [ -f ~/SBSfw.usb ] ; then
 	echo Installing firmware from home directory...
 	sudo cp ~/SBSfw.usb /usr/share/sane/gt68xx
