@@ -3,8 +3,18 @@
 import os
 import threading
 
+try:
+    import Tkinter
+except ImportError:
+    os.system('sudo apt-get install python-tk')
+
 from Tkinter import Frame, Tk, Button, BOTH, Label, Entry, StringVar, Spinbox, NORMAL, DISABLED
 import tkMessageBox
+
+try:
+    import sane
+except ImportError:
+    os.system('sudo apt-get install sane sane-utils python-imaging-sane')
 
 import sane
 print 'SANE version:', sane.init()
