@@ -18,6 +18,11 @@ def get_screen_res():
         lines = [line for line in os.popen('xrandr').read().split('\n') if line.find('*') != -1]
         return tuple(map(int, lines[0].split()[0].split('x')))
     else:
+        try:
+            from win32gui import GetDesktopWindow, GetWindowRect
+            return tuple(GetWindowRect(GetDesktopWindow())[2:])
+        except ImportError:
+            pass
         return 800, 600
 
 SCREEN_WIDTH, SCREEN_HEIGHT = get_screen_res()
