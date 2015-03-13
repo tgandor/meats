@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 
+import os
 from collections import deque
+
+# Pre-checks for dependencies
+
+missing = []
+try:
+    import matplotlib
+except ImportError:
+    missing.append('python-matplotlib')
+
+if os.system('which sensors') != 0:
+    missing.append('lm-sensors')
+
+if missing:
+    packages = ' '.join(missing)
+    print 'Missing some packages:', packages
+    print 'Install them and run again.'
+    os.system('sudo apt-get install '+packages)
+    exit()
+
 
 def cpu_temps():
     """Run sensors program and parse temperatures."""
@@ -10,13 +30,15 @@ def cpu_temps():
     #print(dta)
     return map(float, findall(':\s*\+([\d\.]+)', dta))
 
+
 def cpu_freq():
     from os import popen
     from re import findall
     dta = open('/proc/cpuinfo').read()
     #print(dta)
     return map(float, findall('cpu MHz\s*:\s*([\d\.]+)', dta))
-    
+
+
 def temp_graph():
     """Animate a graph with temperatures from sensors output."""
     import matplotlib
@@ -25,13 +47,14 @@ def temp_graph():
     from time import time, sleep
     from threading import Thread
     init_temps = cpu_temps()
-    window =[ deque([i]*300) for i in init_temps ]
+    window = [deque([i]*300) for i in init_temps]
     fig = figure()
     ax = fig.add_subplot(111)
-    lines = [ ax.plot(win)[0] for win in window ]
+    lines = [ax.plot(win)[0] for win in window]
     ax.axis([0, 300,
              min(30, min(init_temps)-10),
              max(60, max(init_temps)+10)])
+
     def update():
         if update.live and fig.canvas.manager.window:
             for i in xrange(len(init_temps)):
@@ -42,12 +65,14 @@ def temp_graph():
             fig.canvas.manager.window.after(1000, update)
     update.live = True
     fig.canvas.manager.window.after(1000, update)
+
     def toggle(event):
         if update.live:
             update.live = False
         else:
             update.live = True
             fig.canvas.manager.window.after(100, update)
+
     fig.canvas.mpl_connect('key_press_event', toggle)
     show()    
         
