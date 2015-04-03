@@ -42,6 +42,9 @@ while True:
         print
         break
 
+    if line.strip() == '':
+        continue
+
     if line.startswith('+inc'):
         if len(line.split()) > 1:
             headers.append(line.split()[1])
