@@ -51,7 +51,7 @@ def print_devices(results):
     for name, resolutions in results:
         print name
         for res in resolutions:
-            print '%10d' % (res[0]*res[1],), res
+            print '%4.2f MPix' % (res[0]*res[1]*1e-6,), res
 
 if __name__ == '__main__':
     xrandr_output = os.popen('xrandr').read()
