@@ -4,9 +4,11 @@ import os
 import threading
 
 try:
-    import Tkinter
+    import Tkinter as tk
 except ImportError:
     os.system('sudo apt-get install python-tk')
+    print('Please re-run to use Tkinter')
+    exit()
 
 from Tkinter import Frame, Tk, Button, BOTH, Label, Entry, StringVar, Spinbox, NORMAL, DISABLED
 import tkMessageBox
@@ -15,6 +17,8 @@ try:
     import sane
 except ImportError:
     os.system('sudo apt-get install sane sane-utils python-imaging-sane')
+    print('Please re-run to use sane scanners')
+    exit()
 
 import sane
 print 'SANE version:', sane.init()
@@ -28,21 +32,28 @@ if not available:
 
 
 class Settings(object):
-    def __init__(self):
+    def __init__(self, tk_root):
         self.width = 210.0
         self.height = 297.0
+        self.scale = tk.DoubleVar(tk_root, value=1.0)
+
+    def br_x(self):
+        return self.width * self.scale.get()
+
+    def br_y(self):
+        return self.height * self.scale.get()
+
 
 
 s = sane.open(available[0][0])
 s.mode = 'color'
-s.br_x = 210.0
-s.br_y = 297.0
-
-print 'Resolution: {0}'.format(s.resolution)
-print 'Scanning with parameters:', s.get_parameters()
 
 
-def do_scan(output_filename):
+def do_scan(output_filename, settings):
+    s.br_x = settings.br_x()
+    s.br_y = settings.br_y()
+    print 'Resolution: {0}'.format(s.resolution)
+    print 'Scanning with parameters:', s.get_parameters()
     s.start()
     print 'started'
     im = s.snap()
@@ -52,12 +63,13 @@ def do_scan(output_filename):
 
 
 class ScanWorker(threading.Thread):
-    def __init__(self, output_filename):
+    def __init__(self, output_filename, settings):
         super(ScanWorker, self).__init__()
         self.output_filename = output_filename
+        self.settings = settings
 
     def run(self):
-        do_scan(self.output_filename)
+        do_scan(self.output_filename, self.settings)
 
 
 class ScanDialog(Frame):
@@ -67,15 +79,19 @@ class ScanDialog(Frame):
         self.worker = None
         self.elapsed = 0
         self.extension = 'png'
-        self.initUI()
 
-    def initUI(self):
+        self.settings = Settings(self)
+
+        # self.initUI() follows
 
         self.parent.title("Scan Images")
         self.pack(fill=BOTH, expand=1)
 
-        Label(self, text="Name prefix:").grid(row=0, column=0)
-        Label(self, text="Number suffix:").grid(row=0, column=1)
+        r = 0  # current grid row
+
+        Label(self, text="Name prefix:").grid(row=r, column=0)
+        Label(self, text="Number suffix:").grid(row=r, column=1)
+        r += 1
 
         self.newName = StringVar()
         self.newName.set('Scan_')
@@ -90,16 +106,26 @@ class ScanDialog(Frame):
         self.numberSuffix = Spinbox(self, from_=1, to=999)
         self.numberSuffix.bind("<Return>",   lambda event: self.scan())
         self.numberSuffix.bind("<KP_Enter>", lambda event: self.scan())
-        self.numberSuffix.grid(row=1, column=1)
+        self.numberSuffix.grid(row=r, column=1)
+        r += 1
 
         self.okButton = Button(self, text="Scan", command=self.scan, width=60, height=5)
-        self.okButton.grid(row=3, column=0)
+        self.okButton.grid(row=r, column=0)
 
         cancelButton = Button(self, text="Cancel", command=self.parent.destroy)
-        cancelButton.grid(row=3, column=1)
+        cancelButton.grid(row=r, column=1)
+        r += 1
+
+        panel = tk.Frame(self)
+        tk.Label(panel, text="Format").pack()
+        tk.Radiobutton(panel, text="A4", value=1.0, variable=self.settings.scale).pack()
+        tk.Radiobutton(panel, text="A5", value=2 ** (-0.5), variable=self.settings.scale).pack()
+        tk.Radiobutton(panel, text="A6", value=0.5, variable=self.settings.scale).pack()
+        panel.grid(row=r, column=0)
+        r += 1
 
         self.statusLabel = Label(self, text="Idle")
-        self.statusLabel.grid(row=4, column=0, columnspan=2)
+        self.statusLabel.grid(row=r, column=0, columnspan=2)
 
     def _checkAlive(self):
         if self.worker is None:
@@ -113,7 +139,7 @@ class ScanDialog(Frame):
             self.okButton.config(state=NORMAL)
             self.numberSuffix.invoke('buttonup')
             self.newNameEntry.focus_set()
-            self.statusLabel.config(text='Idle')
+            self.statusLabel.config(text='Idle (last scan: %.1f s)' % (self.elapsed/10.0))
 
     def scan(self):
         target = '%s%03d.%s' % (self.newName.get(), int(self.numberSuffix.get()), self.extension, )
@@ -131,7 +157,7 @@ class ScanDialog(Frame):
                 return
         print "Scanning to filename '%s' ..." % (target, )
         if self.worker is None:
-            self.worker = ScanWorker(target)
+            self.worker = ScanWorker(target, self.settings)
             self.worker.start()
             self.elapsed = 0
             self.after(100, self._checkAlive)
