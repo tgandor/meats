@@ -28,7 +28,10 @@ print 'Available devices =', available
 
 if not available:
     print "NO DEVICES FOUND."
-    exit()
+    s = None
+else:
+    s = sane.open(available[0][0])
+    s.mode = 'color'
 
 
 class Settings(object):
@@ -36,6 +39,7 @@ class Settings(object):
         self.width = 210.0
         self.height = 297.0
         self.scale = tk.DoubleVar(tk_root, value=1.0)
+        self.extension = tk.StringVar(tk_root, value='.png')
 
     def br_x(self):
         return self.width * self.scale.get()
@@ -43,10 +47,8 @@ class Settings(object):
     def br_y(self):
         return self.height * self.scale.get()
 
-
-
-s = sane.open(available[0][0])
-s.mode = 'color'
+    def ext(self):
+        return self.extension.get()
 
 
 def do_scan(output_filename, settings):
@@ -78,8 +80,6 @@ class ScanDialog(Frame):
         self.parent = parent
         self.worker = None
         self.elapsed = 0
-        self.extension = 'png'
-
         self.settings = Settings(self)
 
         # self.initUI() follows
@@ -117,11 +117,18 @@ class ScanDialog(Frame):
         r += 1
 
         panel = tk.Frame(self)
-        tk.Label(panel, text="Format").pack()
+        tk.Label(panel, text="Paper Format").pack()
         tk.Radiobutton(panel, text="A4", value=1.0, variable=self.settings.scale).pack()
         tk.Radiobutton(panel, text="A5", value=2 ** (-0.5), variable=self.settings.scale).pack()
         tk.Radiobutton(panel, text="A6", value=0.5, variable=self.settings.scale).pack()
         panel.grid(row=r, column=0)
+
+        panel = tk.Frame(self)
+        tk.Label(panel, text="File Format").pack()
+        tk.Radiobutton(panel, text="PNG", value='.png', variable=self.settings.extension).pack()
+        tk.Radiobutton(panel, text="JPG", value='.jpg', variable=self.settings.extension).pack()
+        panel.grid(row=r, column=1)
+
         r += 1
 
         self.statusLabel = Label(self, text="Idle")
@@ -141,21 +148,30 @@ class ScanDialog(Frame):
             self.newNameEntry.focus_set()
             self.statusLabel.config(text='Idle (last scan: %.1f s)' % (self.elapsed/10.0))
 
+    def _ext(self):
+        return self.settings.ext()
+
     def scan(self):
-        target = '%s%03d.%s' % (self.newName.get(), int(self.numberSuffix.get()), self.extension, )
+        target = '%s%03d%s' % (self.newName.get(), int(self.numberSuffix.get()), self._ext(), )
         if os.path.exists(target):
             if not tkMessageBox.askokcancel(title='Scan Images', message='File exists. Overwrite?'):
                 print 'Not scanning: %s - file exists!' % target
                 new_name = self.newName.get()
                 for i in xrange(int(self.numberSuffix.get()), 1000):
-                    new_target = '%s%03d.%s' % (new_name, int(self.numberSuffix.get()), self.extension, )
+                    new_target = '%s%03d.%s' % (new_name, int(self.numberSuffix.get()), self._ext(), )
                     if not os.path.exists(new_target):
                         print 'Next available filename: %s' % (new_target, )
                         self.numberSuffix.delete(0, 'end')
                         self.numberSuffix.insert(0, i)
                         break
                 return
+
         print "Scanning to filename '%s' ..." % (target, )
+
+        if s is None:
+            print('No scanner present. Connect and restart application.')
+            return
+
         if self.worker is None:
             self.worker = ScanWorker(target, self.settings)
             self.worker.start()
