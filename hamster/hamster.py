@@ -8,16 +8,18 @@ import urllib
 import random
 import cStringIO
 
-urllib.URLopener.version = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:32.0) Gecko/20100101 Firefox/32.0'
+urllib.URLopener.version = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:37.0) Gecko/20100101 Firefox/37.0'
 
 CHUNK = 512 * 1024
 
+
 def human(x):
-    for sufix in ['', 'K', 'M', 'G', 'T']:
+    for suffix in ['', 'K', 'M', 'G', 'T']:
         if x < 1024:
-            return "%.1f %s" % (x, sufix)
+            return "%.1f %s" % (x, suffix)
         x /= 1024.0
     return "%.1f P" % x
+
 
 def get_content(url, cache=[True]):
     if url.endswith('/'):
@@ -53,15 +55,18 @@ def get_content(url, cache=[True]):
     cache[0] = False
     return content
 
+
 def clean_name(dirty):
-    def deutf(starred):
+    def parse_uft8(starred):
         starred = starred.group()
-        ords = [ starred[i:i+2]  for i in xrange(1, len(starred), 3) ]
-        starred = ''.join( chr(int(o, 16)) for o in ords )
-        return starred.decode('utf-8').encode(sys.getfilesystemencoding())
-    dirty = re.sub('(\\*[0-9a-fA-F]{2})+', deutf, dirty)
+        codes = [starred[i:i+2] for i in xrange(1, len(starred), 3)]
+        starred = ''.join(chr(int(o, 16)) for o in codes)
+        return starred.decode('utf-8')
+
+    dirty = re.sub('(\\*[0-9a-fA-F]{2})+', parse_uft8, dirty)
     dirty = dirty.replace('(', '').replace(')', '')
-    return dirty.replace('+','_')
+    return dirty.replace('+', '_')
+
 
 def read_with_progress(resp):
     start = time.time()
@@ -69,13 +74,15 @@ def read_with_progress(resp):
     for chunk in iter(lambda: resp.read(CHUNK), ''):
         sio.write(chunk)
         sys.stdout.write('.')
-        try:
-            sys.stdout.flush()
-        except:
-            pass
-    elap = time.time() - start
-    print " done: %sB in %.1f s, %sB/s" % (human(sio.tell()), elap, human(sio.tell()/elap))
+        sys.stdout.flush()
+    elapsed = time.time() - start
+    print " done: %sB in %.1f s, %sB/s" % (
+        human(sio.tell()),
+        elapsed,
+        human(sio.tell()/elapsed)
+    )
     return sio.getvalue()
+
 
 def download_url(url):
     resp = urllib.urlopen(url)
@@ -85,27 +92,32 @@ def download_url(url):
         print "Downloading %sB " % human(int(length)),
     return read_with_progress(resp)
 
+
 class MusicHandler(object):
     pattern = re.compile('/([^/]+),(\d+)\\.mp3')
     fileext = '.mp3'
+
     def get_url(self, hostname, file_id):
         ts = int(time.time() * 1000)
         return "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
+
     def get_data(self, hostname, file_id):
         url = self.get_url(hostname, file_id)
         return download_url(url)
 
+
 class VideoHandler(object):
     pattern = re.compile('/([^/]+),(\d+)\\.(?:avi|mp4)')
     fileext = '.flv'
+
     def get_data(self, hostname, file_id):
         url = "http://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
         return download_url(url)
 
+
 def _extract_tasks(handler, contents):
-    # this is uglier than I wanted
-    # but it gives all "tasks" in one sorted list
     return sorted(set(sum((handler.pattern.findall(content) for content in contents), [])))
+
 
 def retrieve_all(hostname, handler, contents, targetdir):
     print "Starting download loop, exit easily with Ctrl-C while sleeping."
@@ -129,43 +141,49 @@ def retrieve_all(hostname, handler, contents, targetdir):
         print "Sleeping..."
         time.sleep(random.random() * 8 + 2)
 
+
 def _get_inner_content(the_url):
     content = get_content(the_url)
     pos = content.rfind('folderContentContainer')
-    if pos == -1: # backward compatibility?
+    if pos == -1:  # backward compatibility?
         return content
     return content[pos:]
 
+
 def _gather_contents(the_url):
-    hostpath = re.match('http://[^/]+(/.*)', the_url).group(1)
+    host_path = re.match('http://[^/]+(/.*)', the_url).group(1)
     contents = [_get_inner_content(the_url)]
     page = 2
     while True:
-        nextpage = "%s,%d" % (hostpath, page)
-        print nextpage, '?'
-        unquoted = urllib.unquote(nextpage)
+        next_page = "%s,%d" % (host_path, page)
+        print next_page, '?'
+        unquoted = urllib.unquote(next_page)
         last = contents[-1]
         try:
-            if last.find(nextpage)==-1 and last.find(unquoted)==-1:
+            if last.find(next_page) == -1 and last.find(unquoted) == -1:
                 break
         except:
             break
-        print "Extra page: ", nextpage
+        print "Extra page: ", next_page
         contents.append(_get_inner_content("%s,%d" % (the_url, page)))
         page += 1
     return contents
 
+
 def command_dl(the_url):
     hostname = re.match('http://([^/]+)/', the_url).group(1)
-    dirname = clean_name(the_url[the_url.rfind('/')+1:])
-    if not os.path.exists(dirname):
-        print "Creating directory: "+dirname
-        os.mkdir(dirname)
+    dir_name = clean_name(the_url[the_url.rfind('/')+1:])
+    if not os.path.exists(dir_name):
+        try:
+            print "Creating directory: " + dir_name
+        except UnicodeEncodeError:
+            pass
+        os.mkdir(dir_name)
     else:
-        print "Directory %s seems to already exist." % dirname
+        print "Directory %s seems to already exist." % dir_name
 
-    retrieve_all(hostname, MusicHandler(), _gather_contents(the_url), dirname)
-    #retrieve_all(hostname, VideoHandler(), _gather_contents(the_url), dirname)
+    retrieve_all(hostname, MusicHandler(), _gather_contents(the_url), dir_name)
+
 
 def _print_tasks(tasks, ext):
     if len(tasks) == 0:
@@ -181,6 +199,7 @@ def _print_tasks(tasks, ext):
         print fmt % (i, clean_name(title) + ext, file_id)
         i += 1
 
+
 def command_ls(the_url):
     contents = _gather_contents(the_url)
     msg = "Listing of: %s" % the_url
@@ -188,6 +207,7 @@ def command_ls(the_url):
     _print_tasks(_extract_tasks(MusicHandler(), contents), '.mp3')
 
 interesting = []
+
 
 def command_rls(the_url, level = 2, verbose=False):
     contents = _get_inner_content(the_url)
@@ -221,6 +241,7 @@ def command_rls(the_url, level = 2, verbose=False):
     for subf in subdirs:
         command_rls(the_url + subf.replace(base_dir, ''), level+2, verbose)
 
+
 def command_play(the_url):
     hostname = re.match('http://([^/]+)/', the_url).group(1)
     contents = _gather_contents(the_url)
@@ -234,15 +255,17 @@ def command_play(the_url):
             print "Unclean exit. quitting."
             break
 
+
 def command_rdl(the_url):
     command_rls(the_url)
     for url in interesting:
         command_dl(url)
 
+
 def command_shell(the_url):
     command_rls(the_url)
     if len(interesting) == 0:
-        print "No playables or downloadables."
+        print "No playable or downloadable files."
         return
     hostname = re.match('http://([^/]+)/', the_url).group(1)
     if len(interesting) > 1:
@@ -265,11 +288,13 @@ def command_shell(the_url):
         print "Playing %s from %s..." % (tasks[idx][0], url)
         os.system("mplayer '%s'" % url)
 
+
 def command_find(the_url, query):
     command_rls(the_url)
     for i in interesting:
         if i.lower().find(query.lower()) != -1:
             print i
+
 
 def main():
     if len(sys.argv) < 2:
@@ -283,10 +308,10 @@ def main():
         # go to the right location
         try:
             os.chdir('/mnt/sdcard/Download')
-        except:
+        except OSError:
             pass
         the_url = androidhelper.Android().getClipboard().result
-        command = 'rdl'
+        command = 'dl'
     elif len(sys.argv) == 4:
         command = sys.argv[1]
         the_url = sys.argv[2]
@@ -322,6 +347,7 @@ def main():
     else:
         print "Error: unknown command %s." % command
         return usage()
+
 
 def usage():
     print 'Usage: %s [dl|ls|rls|rdl|play] URL' % sys.argv[0]
