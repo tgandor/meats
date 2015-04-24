@@ -13,6 +13,10 @@ urllib.URLopener.version = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:37.0) Gec
 CHUNK = 512 * 1024
 
 
+def info(s, eol='\n'):
+    print(s.encode('utf-8')+eol)
+
+
 def human(x):
     for suffix in ['', 'K', 'M', 'G', 'T']:
         if x < 1024:
@@ -26,7 +30,7 @@ def get_content(url, cache=[True]):
         # minor unification
         url = url[:-1]
     if not os.path.exists('.hamster'):
-        print 'Missing .hamster directory, creating...'
+        info('Missing .hamster directory, creating...')
         os.mkdir('.hamster')
     from hashlib import md5
     import gzip
@@ -34,17 +38,16 @@ def get_content(url, cache=[True]):
     url_file = os.path.join('.hamster/', digest+'.url')
     content_file = os.path.join('.hamster', digest+'.data')
     if os.path.exists(url_file):
-        # print '  (retrieving from cache...)'
         saved_url = open(url_file).read()
         if saved_url != url:
-            print "You're lucky! Found a md5 collision between:\n%s\nand:\n%s" % (saved_url, url)
+            info("You're lucky! Found a md5 collision between:\n%s\nand:\n%s" % (saved_url, url))
         cache[0] = True
         if os.path.exists(content_file):
             return open(content_file).read()
         if os.path.exists(content_file+'.gz'):
             return gzip.open(content_file+'.gz', 'rb').read()
-        print 'Missing data file for:', url
-    print '  (retrieving from the Web...)'
+        info('Missing data file for: %s' % url)
+    info('  (retrieving from the Web...)')
     if not cache[0]:
         time.sleep(random.random()*1.0)
     content = urllib.urlopen(url).read()
@@ -76,11 +79,11 @@ def read_with_progress(resp):
         sys.stdout.write('.')
         sys.stdout.flush()
     elapsed = time.time() - start
-    print " done: %sB in %.1f s, %sB/s" % (
+    info(" done: %sB in %.1f s, %sB/s" % (
         human(sio.tell()),
         elapsed,
         human(sio.tell()/elapsed)
-    )
+    ))
     return sio.getvalue()
 
 
@@ -89,12 +92,12 @@ def download_url(url):
     msg = resp.info()
     length = msg.getheader('Content-Length')
     if length:
-        print "Downloading %sB " % human(int(length)),
+        info("Downloading %sB " % human(int(length)), eol='')
     return read_with_progress(resp)
 
 
 class MusicHandler(object):
-    pattern = re.compile('/([^/]+),(\d+)\\.mp3')
+    pattern = re.compile('/([^/]+),(\d+)\\.mp3', re.IGNORECASE)
     fileext = '.mp3'
 
     def get_url(self, hostname, file_id):
@@ -107,7 +110,7 @@ class MusicHandler(object):
 
 
 class VideoHandler(object):
-    pattern = re.compile('/([^/]+),(\d+)\\.(?:avi|mp4)')
+    pattern = re.compile('/([^/]+),(\d+)\\.(?:avi|mp4)', re.IGNORECASE)
     fileext = '.flv'
 
     def get_data(self, hostname, file_id):
@@ -120,7 +123,7 @@ def _extract_tasks(handler, contents):
 
 
 def retrieve_all(hostname, handler, contents, targetdir):
-    print "Starting download loop, exit easily with Ctrl-C while sleeping."
+    info("Starting download loop, exit easily with Ctrl-C while sleeping.")
     tasks = _extract_tasks(handler, contents)
     total = len(tasks)
     i = 0
@@ -128,17 +131,19 @@ def retrieve_all(hostname, handler, contents, targetdir):
         title_c = clean_name(title) + handler.fileext
         filename = os.path.join(targetdir, title_c)
         i += 1
-        print "%d/%d" % (i, total),
+        info("%d/%d" % (i, total), eol='')
         if os.path.exists(filename) and os.path.getsize(filename) > 0:
-            print ">%s< seems to exist, skipping." % filename
+            info(">%s< seems to exist, skipping." % filename)
             continue
-        print "Retrieving >%s< (id: %s)" % (title_c, file_id)
+        info("Retrieving >%s< (id: %s)" % (title_c, file_id))
         data = handler.get_data(hostname, file_id)
         if data.startswith("The page cannot be displayed"):
-            print "Reading failed!"
+            info("Reading failed!")
         else:
             open(filename, 'wb').write(data)
-        print "Sleeping..."
+        if i == total:
+            break
+        info("Sleeping...")
         time.sleep(random.random() * 8 + 2)
 
 
@@ -156,7 +161,7 @@ def _gather_contents(the_url):
     page = 2
     while True:
         next_page = "%s,%d" % (host_path, page)
-        print next_page, '?'
+        info(next_page)
         unquoted = urllib.unquote(next_page)
         last = contents[-1]
         try:
@@ -164,7 +169,7 @@ def _gather_contents(the_url):
                 break
         except:
             break
-        print "Extra page: ", next_page
+        info("Extra page: " + next_page)
         contents.append(_get_inner_content("%s,%d" % (the_url, page)))
         page += 1
     return contents
@@ -174,20 +179,17 @@ def command_dl(the_url):
     hostname = re.match('http://([^/]+)/', the_url).group(1)
     dir_name = clean_name(the_url[the_url.rfind('/')+1:])
     if not os.path.exists(dir_name):
-        try:
-            print "Creating directory: " + dir_name
-        except UnicodeEncodeError:
-            pass
+        info("Creating directory: " + dir_name)
         os.mkdir(dir_name)
     else:
-        print "Directory %s seems to already exist." % dir_name
+        info("Directory %s seems to already exist." % dir_name)
 
     retrieve_all(hostname, MusicHandler(), _gather_contents(the_url), dir_name)
 
 
 def _print_tasks(tasks, ext):
     if len(tasks) == 0:
-        print " (empty)"
+        info(" (empty)")
         return
 
     fmt = "%%%dd. %%-%ds (id: %%s)" % (
@@ -196,7 +198,7 @@ def _print_tasks(tasks, ext):
     )
     i = 1
     for title, file_id in tasks:
-        print fmt % (i, clean_name(title) + ext, file_id)
+        info(fmt % (i, clean_name(title) + ext, file_id))
         i += 1
 
 
