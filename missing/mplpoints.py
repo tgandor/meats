@@ -7,7 +7,10 @@ x = []
 y = []
 
 for line in sys.stdin.readlines():
-    xi, yi = map(float, line.split()[:2])
+    chunks = line.split()[:2]
+    if len(chunks) < 2:
+        continue
+    xi, yi = map(float, chunks)
     x.append(xi)
     y.append(yi)
 
