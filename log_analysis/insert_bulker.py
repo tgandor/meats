@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
+import gzip
+import itertools
 import os
 import re
 import sys
 import time
+
 
 class Bulker(object):
     VALUES = ') VALUES '
@@ -60,15 +63,42 @@ class Bulker(object):
     def close(self):
         self.end_bulk()
 
+
+def separate_args(arg_v):
+    if '--' in arg_v:
+        split = arg_v.index('--')
+        post_args = arg_v[split+1:]
+        arg_v = arg_v[:split]
+    else:
+        post_args = []
+    options = [option for option in arg_v if option.startswith('-')]
+    args = [arg for arg in arg_v if not arg.startswith('-')]
+    return args + post_args, options
+
+
+def open_or_unzip(filename):
+    if not os.path.exists(filename):
+        sys.stderr.write('Warning: file {0} not found.\n'.format(filename))
+        return []
+    if filename.endswith('.gz'):
+        return gzip.open(filename)
+    return open(filename)
+
+
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
+    args, options = separate_args(sys.argv[1:])
+    if len(args) < 0:
         in_stream = sys.stdin
     else:
-        in_stream = open(sys.argv[1])
+        in_stream = itertools.chain.from_iterable(itertools.imap(open_or_unzip, args))
 
     bulker = Bulker()
 
-    for line in in_stream:
-        bulker.process_line(line)
+    if '--engine' in options:
+        for line in in_stream:
+            bulker.process_line(line.replace('InnoDB', 'MyISAM'))
+    else:
+        for line in in_stream:
+            bulker.process_line(line)
 
     bulker.close()
