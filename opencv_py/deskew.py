@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import numpy as np
 import math
 import cv2
 import sys
+import os
 
 from fractions import Fraction
 
@@ -14,7 +14,7 @@ def cv_size(img):
 
 def cv_center(img):
     w, h = cv_size(img)
-    return (w/2, h/2)
+    return w/2, h/2
 
 
 def get_screen_res():
@@ -50,7 +50,7 @@ def show_fit(img, name='preview', expand=False, rotate=False):
             h1 = h * W / w
         to_show = cv2.resize(img, (w1, h1))
     else:  # expand ...
-        raise NotImplementedError
+        raise NotImplementedError('Cannot expand preview image')
 
     scale = 1.0
     while True:
@@ -71,22 +71,43 @@ def show_fit(img, name='preview', expand=False, rotate=False):
             exit()
 
 
-def main():
-    img = cv2.imread(sys.argv[1])
-    print cv_size(img)
+def process(filename):
+    print('Processing {0}...'.format(filename))
+    img = cv2.imread(filename)
+    print(cv_size(img))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # _, region = cv2.threshold(img, 128.0, 255.0, cv2.THRESH_BINARY_INV)
     edges = cv2.Canny(gray, 50, 150, apertureSize=3)
     lines = cv2.HoughLinesP(edges, rho=1, theta=math.pi/180.0, threshold=80, minLineLength=60, maxLineGap=10)
-    # print lines
     n = len(lines[0])
     for x1, y1, x2, y2 in lines[0]:
-        cv2.line(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv2.line(gray, (x1, y1), (x2, y2), (0, 255, 0), 2)
     angles = sorted([math.atan2(y2-y1, x2-x1) for x1, y1, x2, y2 in lines[0]])
     print("There's {0} lines.".format(n))
-    print('The middle angle is: {0}'.format(angles[n/2]))
-    img_rotated = cv2.warpAffine(img, cv2.getRotationMatrix2D(cv_center(img), angles[n/2]*180/math.pi, 1.0), cv_size(img))
-    show_fit(img_rotated, rotate=False)
+    middle_angle = angles[n / 2] * 180/math.pi
+    print('The middle angle is: {0}'.format(middle_angle))
+    if -5.0 < middle_angle < 5.0:
+        if middle_angle > 0.125 or middle_angle < -0.125:
+            img_rotated = cv2.warpAffine(
+                img,
+                cv2.getRotationMatrix2D(cv_center(img), middle_angle , 1.0),
+                cv_size(img),
+                borderMode=cv2.BORDER_CONSTANT,
+                borderValue=(255, 255, 255)
+            )
+            file_, extension = os.path.splitext(filename)
+            cv2.imwrite('_'+file_+'_'+extension, img_rotated)
+        else:
+            print('The angle is too small. No action taken.')
+    else:
+        print('The angle is too radical. No action taken.')
+    # show_fit(gray, rotate=False)
+
+
+def main():
+    if len(sys.argv) < 2:
+        print('Usage: {0} <image_with_text_file>...'.format(sys.argv[0]))
+    map(process, sys.argv[1:])
 
 
 if __name__ == '__main__':
