@@ -31,7 +31,6 @@ if not available:
     s = None
 else:
     s = sane.open(available[0][0])
-    s.mode = 'color'
 
 
 class Settings(object):
@@ -40,6 +39,7 @@ class Settings(object):
         self.height = 297.0
         self.scale = tk.DoubleVar(tk_root, value=1.0)
         self.extension = tk.StringVar(tk_root, value='.png')
+        self.scan_mode = tk.StringVar(tk_root, value='color')
 
     def br_x(self):
         return self.width * self.scale.get()
@@ -50,10 +50,14 @@ class Settings(object):
     def ext(self):
         return self.extension.get()
 
+    def mode(self):
+        return self.scan_mode.get()
+
 
 def do_scan(output_filename, settings):
     s.br_x = settings.br_x()
     s.br_y = settings.br_y()
+    s.mode = settings.mode()
     print 'Resolution: {0}'.format(s.resolution)
     print 'Scanning with parameters:', s.get_parameters()
     s.start()
@@ -116,20 +120,31 @@ class ScanDialog(Frame):
         cancelButton.grid(row=r, column=1)
         r += 1
 
-        panel = tk.Frame(self)
+        settings_panel = tk.Frame(self)
+
+        panel = tk.Frame(settings_panel)
         tk.Label(panel, text="Paper Format").pack()
-        tk.Radiobutton(panel, text="A4", value=1.0, variable=self.settings.scale).pack()
-        tk.Radiobutton(panel, text="A5", value=2 ** (-0.5), variable=self.settings.scale).pack()
-        tk.Radiobutton(panel, text="A6", value=0.5, variable=self.settings.scale).pack()
-        panel.grid(row=r, column=0)
+        tk.Radiobutton(panel, text="A4", value=1.0, variable=self.settings.scale).pack(anchor=tk.W)
+        tk.Radiobutton(panel, text="A5", value=2 ** (-0.5), variable=self.settings.scale).pack(anchor=tk.W)
+        tk.Radiobutton(panel, text="A6", value=0.5, variable=self.settings.scale).pack(anchor=tk.W)
+        panel.pack(side=tk.LEFT, anchor=tk.N)
 
-        panel = tk.Frame(self)
+        panel = tk.Frame(settings_panel)
         tk.Label(panel, text="File Format").pack()
-        tk.Radiobutton(panel, text="PNG", value='.png', variable=self.settings.extension).pack()
-        tk.Radiobutton(panel, text="JPG", value='.jpg', variable=self.settings.extension).pack()
-        panel.grid(row=r, column=1)
+        tk.Radiobutton(panel, text="PNG", value='.png', variable=self.settings.extension).pack(anchor=tk.W)
+        tk.Radiobutton(panel, text="JPG", value='.jpg', variable=self.settings.extension).pack(anchor=tk.W)
+        panel.pack(side=tk.LEFT, anchor=tk.N)
 
+        panel = tk.Frame(settings_panel)
+        tk.Label(panel, text="Scan Mode").pack()
+        tk.Radiobutton(panel, text="Color", value='color', variable=self.settings.scan_mode).pack(anchor=tk.W)
+        tk.Radiobutton(panel, text="Gray", value='gray', variable=self.settings.scan_mode).pack(anchor=tk.W)
+        tk.Radiobutton(panel, text="Lineart", value='lineart', variable=self.settings.scan_mode).pack(anchor=tk.W)
+        panel.pack(side=tk.LEFT, anchor=tk.N)
+
+        settings_panel.grid(row=r, column=0, columnspan=2)
         r += 1
+
 
         self.statusLabel = Label(self, text="Idle")
         self.statusLabel.grid(row=r, column=0, columnspan=2)
@@ -185,7 +200,6 @@ class ScanDialog(Frame):
 
 root = Tk()
 ex = ScanDialog(root)
-# root.geometry("650x100+300+300")
 root.geometry("+300+300")
 root.mainloop()
 
