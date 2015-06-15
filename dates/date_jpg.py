@@ -9,10 +9,12 @@ import re
 import sys
 
 def info(f):
-    some_data = open(f).read(2**11)
-    print f, re.search('\d{4}([ :]\d\d){5}', some_data).group()
+    some_data = open(f).read(2**14)
+    match = re.search('\d{4}([ :]\d\d){5}', some_data)
+    if not match:
+        print f, '- not found'
+        return
+    print f, match.group()
 
 if __name__=='__main__':
     map(info, sys.argv[1:])
-
-
