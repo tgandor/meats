@@ -3,9 +3,14 @@
 #define FOR(ii, ll, uu)  for(int ii##lim = (uu), ii = (ll); ii < ii##lim; ++ii)
 #define REP(ii, nn) FOR(ii, 0, nn)
 
-inline int gis()
+typedef int SINT;
+typedef unsigned UINT;
+
+#define ABS(x) ((x)<0 ? -(x) : (x))
+
+inline SINT gis()
 {
-	int n = 0;
+	SINT n = 0;
 	int ch = getchar_unlocked(), sign = 0;
 	while (ch < '0' || ch > '9')
 	{
@@ -18,10 +23,10 @@ inline int gis()
 }
 #define GI (gis())
 
-inline int giu()
+inline UINT giu()
 {
-	int n = 0;
-	int ch=getchar_unlocked();
+	UINT n = 0;
+	int ch = getchar_unlocked();
 	while (ch < '0' || ch > '9')
 	{
 		ch = getchar_unlocked();
