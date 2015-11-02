@@ -7,14 +7,33 @@
 
 import re
 import sys
+import datetime
+
+
+def grep_date(filename):
+    some_data = open(filename).read(2**14)
+    match = re.search('\d{4}([ :]\d\d){5}', some_data)
+    if match:
+        return match.group()
+    return None
+
+
+def file_date(filename):
+    date_time_str = grep_date(filename)
+    if not date_time_str:
+        return None
+    date_str = date_time_str.split()[0]
+    y, m, d = map(int, date_str.split(':'))
+    return datetime.date(y, m, d)
+
 
 def info(f):
-    some_data = open(f).read(2**14)
-    match = re.search('\d{4}([ :]\d\d){5}', some_data)
+    match = grep_date(f)
     if not match:
         print f, '- not found'
         return
-    print f, match.group()
+    print f, match
+
 
 if __name__=='__main__':
     map(info, sys.argv[1:])

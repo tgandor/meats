@@ -6,6 +6,7 @@ import glob
 import shutil
 import datetime
 import threading
+from date_jpg import file_date
 
 IMAGE_GLOB = '*.[Jj][Pp][Gg]'
 FILE_TEMPLATE = 'img_%03d.jpg'
@@ -33,19 +34,32 @@ def ucfirst(str_):
 
 def guess_date(date_str):
     parts = date_str.split()
+
     if len(parts) == 3:
         year = int(parts[0])
         if year < 100:
             year += 2000
         return datetime.date(year, int(parts[1]), int(parts[2]))
+
     if len(parts) == 2:
         return datetime.date.today().replace(month=int(parts[0]), day=int(parts[1]))
-    if len(parts) == 0:
+
+    try:
+        day = int(date_str)
+        if (day <= 0):
+            return datetime.date.fromordinal(datetime.date.today().toordinal() + day)
+        return datetime.date.today().replace(day=day)
+    except ValueError:
+        images = glob.glob(IMAGE_GLOB)
+        if len(images) == 0:
+            print >>sys.stderr, "No images to guess date from."
+            return datetime.date.today()
+        image = min(images)
+        guess_date = file_date(image)
+        if guess_date is not None:
+            return guess_date
+        print >>sys.stderr, "Couldn't find date in:", image
         return datetime.date.today()
-    day = int(date_str)
-    if (day < 0):
-        return datetime.date.fromordinal(datetime.date.today().toordinal() + day)
-    return datetime.date.today().replace(day=day)
 
 
 def make_description(description):
@@ -66,6 +80,7 @@ def move_images(dirname):
 def process(cmd):
     if not cmd.strip():
         return
+
     if (cmd.find(',') == -1):
         date = datetime.date.today()
         description = cmd
@@ -73,8 +88,13 @@ def process(cmd):
         parts = cmd.split(',')
         date = guess_date(parts[0])
         description = parts[1]
+
     if not description.strip():
+        print 'Date is %s, but no description found.' % date.isoformat()
+        images = glob.glob(IMAGE_GLOB)
+        print 'Considered:', sorted(images), len(images)
         return
+
     dirname = date.isoformat() + '-' + make_description(description)
     print dirname
     move_images(dirname)
