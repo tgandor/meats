@@ -1,0 +1,22 @@
+<html>
+<head>
+	<title>The Jira Table Editor</title>
+	<script>
+	function upJira()
+	{
+		var data = document.getElementById("tabbed").value.split('\n');
+		var result = '||' + data[0].split('\t').join(' || ') + '||\n';
+		data.shift();
+		result += data.map(function(row) { return '|' + row.split('\t').join(' | ') + '|'; }).join('\n');
+		document.getElementById("jira").value = result;
+	}
+	</script>
+</head>
+<body>
+	<h1>Jira Table Editor</h1>
+	<p>Tabbed:</p>
+	<textarea id="tabbed" rows="15" style="width: 95%;" onchange="upJira()" onkeyup="upJira()" onclick="upJira();this.select()"></textarea>
+	<p>Jira:</p>
+	<textarea id="jira" rows="15" style="width: 95%;"></textarea>
+</body>
+</html>
