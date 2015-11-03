@@ -24,9 +24,8 @@ BEGIN
 
 	SET @sql = @sql + 'ORDER BY [tableName], [value] '
 
-	PRINT @sql
-
-	EXEC sp_executesql @sql
+	IF @resultTable IS NULL 
+	   EXEC sp_executesql @sql
 
 	IF @resultTable IS NOT NULL 
 	BEGIN
