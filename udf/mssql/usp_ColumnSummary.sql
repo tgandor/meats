@@ -5,6 +5,7 @@ GO
 CREATE PROCEDURE [dbo].[usp_ColumnReport] (
 	@columnName SYSNAME
 	,@schema SYSNAME = 'dbo'
+	,@resultTable SYSNAME = NULL
 	)
 AS
 BEGIN
@@ -26,5 +27,29 @@ BEGIN
 	PRINT @sql
 
 	EXEC sp_executesql @sql
+
+	IF @resultTable IS NOT NULL 
+	BEGIN
+	   DECLARE @dropSql NVARCHAR(MAX) = '
+		  IF OBJECT_ID(''tempdb..'+@resultTable+''') IS NOT NULL
+			 BEGIN
+				DROP TABLE '+@resultTable+'
+			 END'
+	   EXEC sp_executesql @dropSql
+
+	   DECLARE @execSql NVARCHAR(MAX) = '
+		  CREATE TABLE '+@resultTable+' (
+			  [tableName] SYSNAME
+			  ,[value] VARCHAR(max)
+			  ,[count] INT
+			  ,[percent] DECIMAL(18, 4)
+		  );
+		  DECLARE @innerSql NVARCHAR(MAX) = ''' + REPLACE(@sql, '''', '''''') + ''';
+		  INSERT INTO '+@resultTable+' 
+		  EXEC sp_executesql @innerSql;
+	   '
+	   PRINT @execSql;
+	   EXEC sp_executesql @execSql
+	END
 END
 GO
