@@ -9,20 +9,20 @@ CREATE PROCEDURE [dbo].[usp_ColumnReport] (
 	)
 AS
 BEGIN
-	DECLARE @sql NVARCHAR(max) = 'SELECT '''' as tableName, NULL as [value], 0 as [count], 0 as [percent] where 0=1' + CHAR(13) + CHAR(10);
+	DECLARE @sql NVARCHAR(max) = 'SELECT '''' as tableName, '''' as columnName, NULL as [value], 0 as [count], 0 as [percent] where 0=1' + CHAR(13) + CHAR(10);
 
 	SELECT @sql = @sql 
-	   + 'union all SELECT ''' + ST.[name] + ''' AS tableName, ' 
-	   + @columnName + ' AS [value], COUNT(*) as [count], CAST(100.0 * COUNT(*) / (SELECT COUNT(*) FROM ' 
+	   + 'union all SELECT ''' + ST.[name] + ''' AS tableName, ''' + SC.[name] + ''' AS columnName, '
+	   + '[' + SC.[name] + '] AS [value], COUNT(*) as [count], CAST(100.0 * COUNT(*) / (SELECT COUNT(*) FROM ' 
 	   + SCHEMA_NAME(ST.schema_id) + '.' + ST.[name] + ') AS DECIMAL(18,4)) as [percent]  FROM ' 
-	   + SCHEMA_NAME(ST.schema_id) + '.' + ST.[name] + ' GROUP BY ' + @columnName + CHAR(13) + CHAR(10)
+	   + SCHEMA_NAME(ST.schema_id) + '.' + ST.[name] + ' GROUP BY [' + SC.[name] + ']' + CHAR(13) + CHAR(10)
 	FROM sys.tables ST
 	JOIN sys.columns SC ON SC.object_id = ST.object_id
 	JOIN sys.schemas SS ON SS.schema_id = ST.schema_id
-	WHERE SC.[name] = @columnName
+	WHERE SC.[name] like @columnName
 		AND SS.[name] like @schema;
 
-	SET @sql = @sql + 'ORDER BY [tableName], [value] '
+	SET @sql = @sql + 'ORDER BY [tableName], [columnName], [value] '
 
 	IF @resultTable IS NULL 
 	   EXEC sp_executesql @sql
@@ -39,6 +39,7 @@ BEGIN
 	   DECLARE @execSql NVARCHAR(MAX) = '
 		  CREATE TABLE '+@resultTable+' (
 			  [tableName] SYSNAME
+			  ,[columnName] SYSNAME
 			  ,[value] VARCHAR(max)
 			  ,[count] INT
 			  ,[percent] DECIMAL(18, 4)
@@ -47,7 +48,6 @@ BEGIN
 		  INSERT INTO '+@resultTable+' 
 		  EXEC sp_executesql @innerSql;
 	   '
-	   PRINT @execSql;
 	   EXEC sp_executesql @execSql
 	END
 END
