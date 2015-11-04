@@ -1,5 +1,7 @@
 ﻿-- http://www.brentozar.com/blitz/foreign-key-trusted/
 
+-- faster hack: EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'
+
 IF OBJECT_ID('dbo.usp_RepairUntrustedForeignKeys', 'P') IS NOT NULL
 	DROP PROCEDURE [dbo].[usp_RepairUntrustedForeignKeys]
 GO
