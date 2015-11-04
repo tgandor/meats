@@ -1,5 +1,4 @@
 import sys
-import time
 
 try:
     from Tkinter import Tk
