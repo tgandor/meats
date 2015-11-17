@@ -1,13 +1,15 @@
+#!/usr/bin/env python
+
 import sys
 
 try:
-    from Tkinter import Tk
+    import Tkinter as Tk
 except ImportError:
     # welcome to Python3
-    from tkinter import Tk
+    import tkinter as Tk
     raw_input = input
 
-r = Tk()
+r = Tk.Tk()
 r.withdraw()
 r.clipboard_clear()
 
@@ -24,6 +26,9 @@ if sys.platform != 'win32':
     else:
         # stdin already read; use GUI to exit
         print('Data was copied into clipboard. Paste, then close popup to exit...')
+        Tk.Button(r, text='Click or press key to exit', command=r.destroy, width=40, height=10).pack(fill=Tk.BOTH)
+        r.title('Clipboard Copy')
+        r.bind('<Key>', lambda e: r.destroy())
         r.deiconify()
         r.mainloop()
 else:
