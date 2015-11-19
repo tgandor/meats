@@ -28,7 +28,7 @@ if sys.platform != 'win32':
         print('Data was copied into clipboard. Paste, then close popup to exit...')
         Tk.Button(r, text='Click or press key to exit', command=r.destroy, width=40, height=10).pack(fill=Tk.BOTH)
         r.title('Clipboard Copy')
-        r.bind('<Key>', lambda e: r.destroy())
+        r.bind('<Key>', lambda e: r.destroy() if e.keysym != 'Alt_L' else None)
         r.deiconify()
         r.mainloop()
 else:
