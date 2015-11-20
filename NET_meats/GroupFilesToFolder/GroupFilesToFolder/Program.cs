@@ -1,6 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
+internal struct MoveOperation
+{
+    public string TargetFolder { get; set; }
+    public List<string>  FilesToMove { get; set; }
+}
 
 namespace GroupFilesToFolder
 {
@@ -33,12 +40,45 @@ namespace GroupFilesToFolder
 
             Console.WriteLine("Reading directory files...");
 
-            var results = Directory.EnumerateFiles(directory).GroupBy(f => Path.GetFileName(f).Substring(0, 8), f => f, (key, g) => new
+            var results = Directory.EnumerateFiles(directory).GroupBy(f => Path.GetFileName(f).Substring(0, 8), f => f, (key, g) => new MoveOperation()
             {
                 TargetFolder = key,
                 FilesToMove = g.ToList()
             });
 
+            var level2 = results.GroupBy(row => row.TargetFolder.Substring(0, 6), row => row, (key, group) => new
+            {
+                FolderAbove = key,
+                MoveOperations = group
+            });
+
+            foreach (var folderGroup in level2)
+            {
+                var listSubfolders = folderGroup.MoveOperations.OrderBy(moveOp => moveOp.TargetFolder).ToList();
+                int packNumber = 1;
+                while (listSubfolders.Count > 0)
+                {
+                    var subfolder = string.Format("{0}-{1}", folderGroup.FolderAbove, packNumber);
+                    ++packNumber;
+                    var targetPrefix = Path.Combine(directory, subfolder);
+                    if (!Directory.Exists(targetPrefix))
+                    {
+                        Directory.CreateDirectory(targetPrefix);
+                    }                    
+
+                    int numToTake = listSubfolders.Count > 11 ? 10 : listSubfolders.Count;
+                    var portion = listSubfolders.GetRange(0, numToTake);
+                    listSubfolders = listSubfolders.GetRange(numToTake, listSubfolders.Count - numToTake);
+
+                    MoveFilesToDirectory(portion, targetPrefix);
+                }
+            }
+            
+            Die(0);
+        }
+
+        private static void MoveFilesToDirectory(IEnumerable<MoveOperation> results, string directory)
+        {
             foreach (var moveOperation in results)
             {
                 var targetFolder = Path.Combine(directory, moveOperation.TargetFolder);
@@ -54,8 +94,6 @@ namespace GroupFilesToFolder
                     Console.WriteLine("  {0} -> {1}", file, targetFile);
                 }
             }
-
-            Die(0);
         }
     }
 }
