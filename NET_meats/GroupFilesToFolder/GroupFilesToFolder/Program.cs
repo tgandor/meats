@@ -40,7 +40,9 @@ namespace GroupFilesToFolder
 
             Console.WriteLine("Reading directory files...");
 
-            var results = Directory.EnumerateFiles(directory).GroupBy(f => Path.GetFileName(f).Substring(0, 8), f => f, (key, g) => new MoveOperation()
+            var results = Directory.EnumerateFiles(directory)
+                .Where(f => Path.GetFileName(f).Length >= 8)
+                .GroupBy(f => Path.GetFileName(f).Substring(0, 8), f => f, (key, g) => new MoveOperation()
             {
                 TargetFolder = key,
                 FilesToMove = g.ToList()
