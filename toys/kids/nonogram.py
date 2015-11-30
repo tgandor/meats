@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 
+import re
 import sys
 
 MARKED = '#'
@@ -9,10 +10,18 @@ EMPTY = '.'
 
 def main():
     if len(sys.argv) < 3:
-        print('Usage: nonogram.py SIZE NUMBERS...')
+        print('Usage: nonogram.py SIZE NUMBERS... [FILTER]')
         exit()
 
     size = int(sys.argv[1])
+    if not re.match('\d+$', sys.argv[-1]):
+        filter_ = sys.argv[-1]
+        if set(filter_) - set([EMPTY, EXCLUDED, MARKED]) != set() or len(filter_) != size:
+            print('Invalid filter expression: {0}'.format(filter_))
+            exit()
+        sys.argv.pop()
+    else:
+        filter_ = None
     numbers = list(map(int, sys.argv[2:]))
 
     if size <= 0 or any(x <= 0 for x in numbers):
@@ -23,12 +32,16 @@ def main():
         print('Size too small to fit')
         exit()
 
-    results = list(nonogram(size, numbers))
+    results = filter(
+        lambda x: matches_filter(x, filter_), 
+        list(nonogram(size, numbers)))
     was_marked = [False] * size
     was_empty = [False] * size
     print('There are {0} possibilities:'.format(len(results)))
     for result in results:
         assert len(result) == size
+        if not matches_filter(result, filter_):
+            continue
         print(result)
         was_empty = new_mask(result, EMPTY, was_empty)
         was_marked = new_mask(result, MARKED, was_marked)
@@ -37,11 +50,25 @@ def main():
     if suggested == EMPTY * size:
         print('Bad - no suggestions for any field')
         return
+    if filter_ is not None and suggested == filter_:
+        print('Bad - no new findings...')
+        return
     print('Suggested squares:')
     print(suggested)
     print('Or vertically:')
     for c in suggested:
         print(c)
+
+
+def matches_filter(result, filter):
+    if filter is None:
+        return True
+    return all(
+        required == EMPTY or
+        required == MARKED and actual == MARKED or
+        required == EXCLUDED and actual == EMPTY
+        for required, actual in zip(filter, result)
+        )
 
 
 def sure_result(was_empty, was_marked):
