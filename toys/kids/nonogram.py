@@ -2,6 +2,7 @@
 
 import re
 import sys
+from itertools import groupby
 
 MARKED = '#'
 EXCLUDED = 'X'
@@ -16,7 +17,7 @@ def main():
     size = int(sys.argv[1])
     if not re.match('\d+$', sys.argv[-1]):
         filter_ = sys.argv[-1]
-        if set(filter_) - set([EMPTY, EXCLUDED, MARKED]) != set() or len(filter_) != size:
+        if set(filter_) - {EMPTY, EXCLUDED, MARKED} != set() or len(filter_) != size:
             print('Invalid filter expression: {0}'.format(filter_))
             exit()
         sys.argv.pop()
@@ -32,9 +33,9 @@ def main():
         print('Size too small to fit')
         exit()
 
-    results = filter(
+    results = list(filter(
         lambda x: matches_filter(x, filter_), 
-        list(nonogram(size, numbers)))
+        list(nonogram(size, numbers))))
     was_marked = [False] * size
     was_empty = [False] * size
     print('There are {0} possibilities:'.format(len(results)))
@@ -55,19 +56,23 @@ def main():
         return
     print('Suggested squares:')
     print(suggested)
-    print('Or vertically:')
-    for c in suggested:
-        print(c)
+    print(run_length_filter(suggested))
 
 
-def matches_filter(result, filter):
-    if filter is None:
+def run_length_filter(filter_):
+    prefix = {EXCLUDED: '-', MARKED: '+'}
+    return ' '.join(prefix.get(x, '') + str(len(list(g)))
+                    for x, g in groupby(filter_))
+
+
+def matches_filter(result, filter_):
+    if filter_ is None:
         return True
     return all(
         required == EMPTY or
         required == MARKED and actual == MARKED or
         required == EXCLUDED and actual == EMPTY
-        for required, actual in zip(filter, result)
+        for required, actual in zip(filter_, result)
         )
 
 
@@ -81,19 +86,20 @@ def sure_result(was_empty, was_marked):
 
 
 def new_mask(result, character, prev_mask):
-    return [ prev or current
+    return [prev or current
             for prev, current in zip(
                     prev_mask,
-                    [ x == character for x in result]
+                    [x == character for x in result]
                 )
             ]
+
 
 def packed_size(elements):
     return sum(elements) + len(elements) - 1
 
 
 def nonogram(size, elements, min_slack=0):
-    if elements == []:
+    if not elements:
         yield EMPTY * size
         return
     
