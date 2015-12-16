@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import Image
-import ImageDraw
-import ImageTk
-import Tkinter
+from PIL import Image, ImageDraw, ImageTk
+try:
+    import Tkinter
+except ImportError:
+    import tkinter as Tkinter
 import random
 
 SIZE = 300
@@ -29,6 +30,5 @@ tk_image = ImageTk.PhotoImage(image)
 # layout the window
 root.geometry('{0}x{0}'.format(SIZE+10))
 label_image = Tkinter.Label(root, image=tk_image)
-# label_image.place(x=0, y=0, width=150, height=150)
 label_image.pack()
 root.mainloop()
