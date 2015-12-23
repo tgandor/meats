@@ -6,15 +6,37 @@ import re
 import time
 import urllib
 import random
-import cStringIO
-
-urllib.URLopener.version = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:37.0) Gecko/20100101 Firefox/37.0'
 
 CHUNK = 512 * 1024
+user_agent = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)'
+
+try:
+	import cStringIO
+except ImportError:
+    import io as StringIO	
+
+	
+def urlopen3(url):
+	import urllib.request
+	req = urllib.request.Request(
+		url, 
+		data=None, 
+		headers={'User-Agent': user_agent}
+	)
+	return urllib.request.urlopen(req)		
+	
+try:
+	urllib.URLopener.version = user_agent
+	urlopen = urllib.urlopen
+except AttributeError:
+	urlopen = urlopen3
 
 
 def info(s, eol='\n'):
-    print(s.encode('utf-8')+eol)
+	try:
+		print(s.encode('utf-8')+eol)
+	except TypeError:
+		print(s)
 
 
 def human(x):
@@ -34,7 +56,7 @@ def get_content(url, cache=[True]):
         os.mkdir('.hamster')
     from hashlib import md5
     import gzip
-    digest = md5(url).hexdigest()
+    digest = md5(url.encode()).hexdigest()
     url_file = os.path.join('.hamster/', digest+'.url')
     content_file = os.path.join('.hamster', digest+'.data')
     if os.path.exists(url_file):
@@ -50,8 +72,8 @@ def get_content(url, cache=[True]):
     info('  (retrieving from the Web...)')
     if not cache[0]:
         time.sleep(random.random()*1.0)
-    content = urllib.urlopen(url).read()
-    open(url_file, 'wb').write(url)
+    content = urlopen(url).read()
+    open(url_file, 'wb').write(url.encode('utf-8'))
     f = gzip.open(content_file+'.gz', 'wb', 9)
     f.write(content)
     f.close()
@@ -88,7 +110,7 @@ def read_with_progress(resp):
 
 
 def download_url(url):
-    resp = urllib.urlopen(url)
+    resp = urlopen(url)
     msg = resp.info()
     length = msg.getheader('Content-Length')
     if length:
@@ -205,7 +227,7 @@ def _print_tasks(tasks, ext):
 def command_ls(the_url):
     contents = _gather_contents(the_url)
     msg = "Listing of: %s" % the_url
-    print msg, '\n'+'-'*len(msg)
+    print(msg, '\n'+'-'*len(msg))
     _print_tasks(_extract_tasks(MusicHandler(), contents), '.mp3')
 
 interesting = []
@@ -214,32 +236,32 @@ interesting = []
 def command_rls(the_url, level = 2, verbose=False):
     contents = _get_inner_content(the_url)
     base_dir = re.search('/.*$', the_url.replace('http://', '')).group()
-    print ' '*level + "Searching", base_dir
+    print(' '*level + "Searching %s" % base_dir)
     pos = contents.rfind('FilesList')
     subfolder_content = contents[:pos]
     subdirs = []
     for subf in sorted(set(re.findall('<a href="(/[^"]+)"', subfolder_content))):
         if subf.startswith(base_dir+'/'):
             if verbose:
-                print ' '*level + subf
+                print(' '*level + subf)
             subdirs.append(subf)
     file_content = contents[pos:]
     if verbose:
-        print 'FILES:'
+        print('FILES:')
     somefiles = []
     for subf in sorted(set(re.findall('<a href="(/[^"]+)"', file_content))):
         if subf.startswith(base_dir+'/'):
             if verbose:
-                print ' '*level + subf
+                print(' '*level + subf)
             somefiles.append(subf)
 
     if len(somefiles) == 0:
-        print ' '*level + '(empty)'
+        print(' '*level + '(empty)')
     else:
-        print ' '*level + somefiles[0] + '...'
+        print(' '*level + somefiles[0] + '...')
     if any(sf.endswith('.mp3') for sf in somefiles):
         interesting.append(the_url)
-        print ' '*level + 'there are mp3s here.'
+        print(' '*level + 'there are mp3s here.')
     for subf in subdirs:
         command_rls(the_url + subf.replace(base_dir, ''), level+2, verbose)
 
@@ -248,13 +270,13 @@ def command_play(the_url):
     hostname = re.match('http://([^/]+)/', the_url).group(1)
     contents = _gather_contents(the_url)
     msg = "Playing: %s" % the_url
-    print msg, '\n'+'-'*len(msg)
+    print(msg, '\n'+'-'*len(msg))
     handler = MusicHandler()
     for track, file_id in _extract_tasks(handler, contents):
         url = handler.get_url(hostname, file_id)
-        print track, url
+        print(track, url)		
         if os.system("mplayer '%s'" % url) != 0:
-            print "Unclean exit. quitting."
+            print("Unclean exit. quitting.")
             break
 
 
@@ -267,13 +289,13 @@ def command_rdl(the_url):
 def command_shell(the_url):
     command_rls(the_url)
     if len(interesting) == 0:
-        print "No playable or downloadable files."
+        print("No playable or downloadable files.")
         return
     hostname = re.match('http://([^/]+)/', the_url).group(1)
     if len(interesting) > 1:
-        print "Choose folder:"
+        print("Choose folder:")
         for i, f in zip(range(len(interesting)), interesting):
-            print i, f.replace(hostname, '')
+            print(i, f.replace(hostname, ''))
         choice = int(raw_input())
         the_url = interesting[choice]
     contents = _gather_contents(the_url)
@@ -281,13 +303,13 @@ def command_shell(the_url):
     tasks = _extract_tasks(handler, contents)
     while True:
         for i in xrange(len(tasks)):
-            print i, tasks[i][0]
+            print(i, tasks[i][0])
         cmd = raw_input()
         if cmd == 'q':
             return
         idx = int(cmd)
         url = handler.get_url(hostname, tasks[idx][1])
-        print "Playing %s from %s..." % (tasks[idx][0], url)
+        print("Playing %s from %s..." % (tasks[idx][0], url))
         os.system("mplayer '%s'" % url)
 
 
@@ -295,7 +317,7 @@ def command_find(the_url, query):
     command_rls(the_url)
     for i in interesting:
         if i.lower().find(query.lower()) != -1:
-            print i
+            print(i)
 
 
 def main():
@@ -303,7 +325,7 @@ def main():
         # maybe phone clipboard
         try:
             import androidhelper
-            print "trying to retrieve from clipboard"
+            print("trying to retrieve from clipboard")
         except ImportError:
             return usage()
 
@@ -343,16 +365,16 @@ def main():
         except KeyboardInterrupt:
             pass
         if len(interesting):
-            print len(interesting), 'Interesting folders:'
+            print('%d Interesting folders:' % len(interesting))
         for ifolder in interesting:
-            print ifolder
+            print(ifolder)
     else:
-        print "Error: unknown command %s." % command
+        print("Error: unknown command %s." % command)
         return usage()
 
 
 def usage():
-    print 'Usage: %s [dl|ls|rls|rdl|play] URL' % sys.argv[0]
+    print('Usage: %s [dl|ls|rls|rdl|play] URL' % sys.argv[0])
 
 if __name__ == '__main__':
     main()
