@@ -53,17 +53,41 @@ class Settings(object):
     def mode(self):
         return self.scan_mode.get()
 
+    def configure_device(self, device):
+        device.br_x = self.br_x()
+        device.br_y = self.br_y()
+        if self.mode() == 'gray+otsu':
+            device.mode = 'gray'
+        else:
+            device.mode = self.mode()
+
+    def postprocess(self, image):
+        if self.mode() == 'gray+otsu':
+            try:
+                import cv2
+                import numpy
+                from PIL import Image
+                cv_img = numpy.array(image)
+                theresh, result = cv2.threshold(cv_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+                print('Determined threshold: {0}'.format(theresh))
+                return Image.fromarray(result)
+            except ImportError:
+                print('Error - OpenCV (cv2) missing. Cannot postprocess.')
+                return image
+        else:
+            return image
+
 
 def do_scan(output_filename, settings):
-    s.br_x = settings.br_x()
-    s.br_y = settings.br_y()
-    s.mode = settings.mode()
-    print 'Resolution: {0}'.format(s.resolution)
-    print 'Scanning with parameters:', s.get_parameters()
+    settings.configure_device(s)
+    print('Resolution: {0}'.format(s.resolution))
+    print('Scanning with parameters:', s.get_parameters())
     s.start()
-    print 'started'
+    print('started')
     im = s.snap()
-    print 'snapped'
+    print('snapped')
+    im = settings.postprocess(im)
+    print('postprocessed')
     im.save(output_filename)
     return im
 
@@ -140,6 +164,7 @@ class ScanDialog(Frame):
         tk.Radiobutton(panel, text="Color", value='color', variable=self.settings.scan_mode).pack(anchor=tk.W)
         tk.Radiobutton(panel, text="Gray", value='gray', variable=self.settings.scan_mode).pack(anchor=tk.W)
         tk.Radiobutton(panel, text="Lineart", value='lineart', variable=self.settings.scan_mode).pack(anchor=tk.W)
+        tk.Radiobutton(panel, text="Gray+Otsu", value='gray+otsu', variable=self.settings.scan_mode).pack(anchor=tk.W)
         panel.pack(side=tk.LEFT, anchor=tk.N)
 
         settings_panel.grid(row=r, column=0, columnspan=2)
