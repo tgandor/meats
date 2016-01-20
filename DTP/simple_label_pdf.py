@@ -7,12 +7,13 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import datetime
 import os
+import tempfile
 import sys
 
 font_size = 16
 default_width = 20*cm
 default_height = 10*cm
-default_output_file = 'label_output.pdf'
+default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.pdf')
 fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial']
 
 
