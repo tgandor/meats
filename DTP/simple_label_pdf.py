@@ -60,7 +60,7 @@ def main():
     if sys.platform.startswith('linux'):
         os.system('xdg-open "%s"' % default_output_file)
     else:
-        os.system('start "%s"' % default_output_file)
+        os.system('start "" "%s"' % default_output_file)
 
 
 if __name__=='__main__':
