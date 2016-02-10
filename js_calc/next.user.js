@@ -2,16 +2,16 @@
 // @name           PrevNext
 // @description    Add buttons to navigate to pages with successive numbers.
 // @include        http://*
-// @version        1.0
+// @version        1.1
 // ==/UserScript==
 
 function next(delta)
 {
-	var match = /\d*$/.exec(window.location.href)[0];
+	var match = /(\d+)(\D*)$/.exec(window.location.href)[1];
 	if (match)
 	{
 		next_id = parseInt(match) + delta;
-		window.location = window.location.href.replace(/\d+$/, next_id);
+		window.location = window.location.href.replace(/(\d+)(\D*)$/, next_id+"$2");
 	}
 	else
 	{
