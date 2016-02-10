@@ -2,7 +2,7 @@
 // @name           PrevNext
 // @description    Add buttons to navigate to pages with successive numbers.
 // @include        http://*
-// @version        1.1
+// @version        1.2
 // ==/UserScript==
 
 function next(delta)
@@ -31,9 +31,6 @@ function make_button(value, left)
 	return button;
 }
 
-prevButton = make_button('<', 0);
-nextButton = make_button('>', '1em');
-
 function make_handler(delta)
 {
 	return function(e) {
@@ -49,5 +46,11 @@ function make_handler(delta)
 	};
 }
 
-nextButton.onclick = make_handler(1);
-prevButton.onclick = make_handler(-1);
+// only when applicable...
+if (/(\d+)(\D*)$/.exec(window.location.href)[0])
+{
+	prevButton = make_button('<', 0);
+	nextButton = make_button('>', '1em');
+	nextButton.onclick = make_handler(1);
+	prevButton.onclick = make_handler(-1);
+}
