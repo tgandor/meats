@@ -44,7 +44,8 @@
 
 #include <QMainWindow>
 #include <QPrinter>
-#include <QToolBar>
+
+#include "directoryfeeder.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -52,9 +53,10 @@ class QLabel;
 class QMenu;
 class QScrollArea;
 class QScrollBar;
+class QToolbar;
 QT_END_NAMESPACE
 
-//! [0]
+
 class ImageViewer : public QMainWindow
 {
     Q_OBJECT
@@ -74,6 +76,7 @@ private slots:
     void about();
 
 private:
+    void displayFile(const QString &fileName);
     void createActions();
     void createMenus();
     void updateActions();
@@ -106,8 +109,9 @@ private:
     QMenu *viewMenu;
     QMenu *helpMenu;
 
+    DirectoryFeeder feeder;
     QString currentFilename;
 };
-//! [0]
+
 
 #endif
