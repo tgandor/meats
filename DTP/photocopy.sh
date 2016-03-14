@@ -35,6 +35,11 @@ fi
 echo "Scanning to: $tmpdf"
 
 scanimage -p --format=tiff > $tmpdf
-# shaving and thresholding may be scanner-specific
-mogrify -level-colors "gray(35%),gray(85%)" -shave 80x30-80-30 $tmpdf
-lpr -T $title $tmpdf
+if [ "$1"=="-e" -o "$2"=="-e" -o "$3"=="-e" ] ; then
+	# leaving all modifications to the user
+	gimp $tmpdf
+else
+	# shaving and thresholding may be scanner-specific
+	mogrify -level-colors "gray(35%),gray(85%)" -shave 80x30-80-30 $tmpdf
+	lpr -T $title $tmpdf
+fi
