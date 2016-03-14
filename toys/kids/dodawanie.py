@@ -1,12 +1,19 @@
+#!/usr/bin/env python
 
 import random
 import re
+import sys
+
+try:
+    LIMIT=int(sys.argv[1])
+except:
+    LIMIT=10
 
 points = 0
 
 while True:
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
+    a = random.randint(1, LIMIT)
+    b = random.randint(1, LIMIT)
     while True:
         try:
             ans = raw_input('%d + %d = ? ' % (a, b))

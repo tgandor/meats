@@ -1,11 +1,18 @@
+#!/usr/bin/env python
 
 import random
 import re
+import sys
+
+try:
+    LIMIT=int(sys.argv[1])
+except:
+    LIMIT=10
 
 points = 0
 
 while True:
-    a, b = sorted([random.randint(1, 10) for _ in xrange(2)], reverse=True)
+    a, b = sorted([random.randint(1, LIMIT) for _ in xrange(2)], reverse=True)
     while True:
         try:
             ans = raw_input('%d - %d = ? ' % (a, b))
