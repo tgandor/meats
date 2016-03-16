@@ -69,13 +69,16 @@ ImageViewer::ImageViewer()
     resize(500, 400);
 }
 
-
-
 void ImageViewer::open()
-
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath());
-    if (!fileName.isEmpty()) {
+    const QString LAST_DIRECTORY("last_directory");
+    QSettings mySettings; // http://stackoverflow.com/a/3598245/1338797
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                    mySettings.value(LAST_DIRECTORY).toString());
+    if (!fileName.isEmpty())
+    {
+        QDir currentDirectory;
+        mySettings.setValue(LAST_DIRECTORY, currentDirectory.absoluteFilePath(fileName));
         displayFile(fileName);
         feeder.reload(fileName);
     }
@@ -87,11 +90,9 @@ void ImageViewer::next()
 }
 
 void ImageViewer::print()
-
 {
     Q_ASSERT(imageLabel->pixmap());
 #ifndef QT_NO_PRINTER
-
     QPrintDialog dialog(&printer, this);
 
     if (dialog.exec()) {
@@ -106,10 +107,7 @@ void ImageViewer::print()
 #endif
 }
 
-
-
 void ImageViewer::zoomIn()
-
 {
     scaleImage(1.25);
 }
@@ -119,15 +117,11 @@ void ImageViewer::zoomOut()
     scaleImage(0.8);
 }
 
-
 void ImageViewer::normalSize()
-
 {
     imageLabel->adjustSize();
     scaleFactor = 1.0;
 }
-
-
 
 void ImageViewer::fitToWindow()
 

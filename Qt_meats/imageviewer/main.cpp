@@ -46,6 +46,9 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    app.setApplicationName("imagesorter");
+    app.setOrganizationName("tgandor");
+    app.setOrganizationDomain("github.com");
     ImageViewer imageViewer;
 #if defined(Q_OS_SYMBIAN)
     imageViewer.showMaximized();
