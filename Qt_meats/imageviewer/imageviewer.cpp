@@ -67,6 +67,8 @@ ImageViewer::ImageViewer()
 
     setWindowTitle(tr("Image Sorter"));
     resize(500, 400);
+
+    scaleFactor = 1.0;
 }
 
 void ImageViewer::open()
@@ -139,10 +141,6 @@ void ImageViewer::fitToWidth()
     scaleImage(1.0 * this->scrollArea->width() / imageLabel->width());
 }
 
-
-
-
-
 void ImageViewer::about()
 
 {
@@ -172,7 +170,6 @@ void ImageViewer::displayFile(const QString &fileName)
 
     imageLabel->setPixmap(QPixmap::fromImage(image));
 
-    scaleFactor = 1.0;
 
     printAct->setEnabled(true);
     fitToWindowAct->setEnabled(true);
@@ -180,6 +177,7 @@ void ImageViewer::displayFile(const QString &fileName)
 
     if (!fitToWindowAct->isChecked())
         imageLabel->adjustSize();
+    scaleImage(1.0);
 
     statusBar()->showMessage(fileName);
 }
