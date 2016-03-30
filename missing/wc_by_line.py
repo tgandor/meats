@@ -4,8 +4,11 @@ import sys
 
 lines = words = bytes_ = 0
 
+infile = next(iter(sys.argv[1:]), None)
+input_ = open(infile) if infile else sys.stdin
+
 while True:
-    line = sys.stdin.readline()
+    line = input_.readline()
     if line == '':
         break
     lines += 1
