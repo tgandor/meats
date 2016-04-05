@@ -34,7 +34,6 @@ class StopWatchDialog(tk.Frame):
         self.update_elapsed()
 
     def initUI(self):
-
         self.parent.title("stopper")
         self.pack(fill=tk.BOTH, expand=1)
 
@@ -54,6 +53,8 @@ class StopWatchDialog(tk.Frame):
         #self.statusLabel = tk.Label(self, text="Idle")
         #self.statusLabel.pack()
 
+        self.startButton.focus_set()
+
     def update_elapsed(self):
         self.elapsed.config(text=to_hms(self.elapsed_time))
 
@@ -70,12 +71,14 @@ class StopWatchDialog(tk.Frame):
         self.after(100, self.cycle)
         self.startButton.config(text="Restart")
         self.stopButton.config(state=tk.NORMAL)
+        self.stopButton.focus_set()
 
     def stop(self):
         self.elapsed_time = time.time() - self.start_time
         self.state = self.STATE_STOPPED
         self.update_elapsed()
         self.stopButton.config(state=tk.DISABLED)
+        self.startButton.focus_set()
 
 
 root = tk.Tk()
