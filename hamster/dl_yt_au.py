@@ -15,9 +15,8 @@ except:
 
 print 'working in', os.getcwd()
 
-the_url = androidhelper.Android().getClipboard().result
-
+android = androidhelper.Android()
+the_url = android.getClipboard().result
 the_url = the_url.split()[-1]
-
-if __name__ == '__main__':
-    youtube_dl.main(['--format', 'm4a', the_url])
+youtube_dl.main(['--format', 'm4a', the_url])
+android.vibrate(2000)
