@@ -23,4 +23,7 @@ set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.i
 " http://vim.wikia.com/wiki/Append_output_of_an_external_command
 command! -nargs=* -complete=shellcmd R new | setlocal buftype=nofile bufhidden=hide noswapfile | r !<args>
 
+" http://stackoverflow.com/questions/158968/changing-vim-indentation-behavior-by-file-type
+au FileType python setl sw=4 sts=4 et ai
+
 " vim: set ft=vim :
