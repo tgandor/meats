@@ -9,9 +9,8 @@ EMPTY = '.'
 
 def main():
     if len(sys.argv) < 2:
-        print('Usage: nonogram.py <+MARKED|-EXCLUDED|EMPTY>...')
+        print('Usage: nono_filter.py <+MARKED|-EXCLUDED|EMPTY>...')
         exit()
-    
     chunks = []
     for arg in sys.argv[1:]:
         if arg.startswith('+'):
