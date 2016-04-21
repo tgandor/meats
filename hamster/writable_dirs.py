@@ -2,6 +2,7 @@
 
 import os
 import sys
+import tempfile
 import time
 
 
@@ -21,5 +22,19 @@ def recurse(root, level=0):
             for writeable in recurse(subdir, level+1):
                 yield writeable
 
+def test_file_write(directory):
+    try:
+        _, temp_path = tempfile.mkstemp(dir=directory)
+        os.remove(temp_path)
+        return True
+    except:
+        return False
+
+    
 if __name__ == '__main__':
-    map(sys.stdout.write, (_+'\n' for _ in recurse('/')))
+    for d in recurse('/'):
+        if test_file_write(d):
+            print(d + " OK")
+        else:
+            print(d + " FAIL")
+        

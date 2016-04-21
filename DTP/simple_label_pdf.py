@@ -93,8 +93,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     c.setDash(4, 8)
     c.setLineWidth(0.25)
 
-    # seems like transform not part of state...
-    h_offset = 0
+    # seems like transform IS part of state
     if state.height_left < page_height:
         c.line(0, state.height_left, page_width, state.height_left)
         h_offset = state.height_left - page_height
@@ -117,8 +116,6 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
 
     # final cleanup
     c.restoreState()
-    if h_offset != 0:
-        c.translate(0, -h_offset)
     state.height_left -= height
     return True
 
@@ -155,7 +152,7 @@ def main():
     label(c, text, width, height)
     if length:
         label(c, text, length, height)
-        label(c, text, length, width)
+        label(c, text, width, length)
     c.showPage()
     c.save()
     if sys.platform.startswith('linux'):
@@ -164,5 +161,5 @@ def main():
         os.system('start "" "%s"' % default_output_file)
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     main()
