@@ -8,6 +8,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 import datetime
 import os
 import tempfile
+import sqlite3
 import sys
 
 
@@ -22,7 +23,6 @@ fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial']
 
 
 last_font = []  # needs to be reloaded after new page
-
 
 def _setup_canvas(outfile=default_output_file):
     for font_name in fonts_to_try:
@@ -146,8 +146,65 @@ def get_parameters():
     return text, width, height, length
 
 
+# label persistance
+
+def open_database():
+    labels_file = os.path.expanduser("~/labels.db")
+    initialize = not os.path.exists(labels_file)
+    conn = sqlite3.connect(labels_file)
+    cursor = conn.cursor()
+    if initialize:
+        cursor.executescript("""
+create table labels
+(
+    id integer not null primary key autoincrement,
+    text contents not null,
+    width decimal not null,
+    height decimal not null,
+    length decimal null
+);
+
+create table outprints
+(
+    id integer not null primary key autoincrement,
+    label_id integer not null references labels(id),
+    outprint_date datetime not null 
+);
+""")
+    conn.text_factory = str # which == unicode on Py3, and works!
+    return conn, cursor
+
+
+def close_database(conn, cursor):
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def save_label(text, width, height, length):
+    conn, cursor = open_database()
+    cursor.execute(u"select id from labels where text = ?", (text,))
+    # create or update label
+    label_id = cursor.fetchone()
+    if label_id is None:
+        print('Creating label')
+        cursor.execute("insert into labels (text, width, height, length) values (?,?,?,?)",
+                       (text, width, height, length, ))
+        label_id = cursor.lastrowid
+    else:
+        label_id = label_id[0]
+        print('Updating label {}'.format(label_id))
+        cursor.execute("update labels set width=?, height=?, length=? where id=?",
+                       (width, height, length, label_id))
+    # log the generation
+    cursor.execute("insert into outprints(label_id, outprint_date) values (?,?)",
+                   (label_id, datetime.datetime.now()))
+    close_database(conn, cursor)
+
+
 def main():
     text, width, height, length = get_parameters()
+    save_label(text, width, height, length)
     c = _setup_canvas()
     label(c, text, width, height)
     if length:
