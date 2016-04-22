@@ -6,21 +6,23 @@ import shutil
 import sys
 import time
 
-if len(sys.argv) < 2:
-    print("Usage: {} TARGET_DIR".format(sys.argv[0]))
+if len(sys.argv) < 3:
+    print("Usage: {} PHOTOS_JSON TARGET_DIR".format(sys.argv[0]))
     exit()
 
-if not os.path.exists('photos.json'):
+json_file = sys.argv[1]
+
+if not os.path.exists(json_file):
     print("photos.json file must exist")
     exit()
 
-target_dir = sys.argv[1]
+target_dir = sys.argv[2]
 
 if not os.path.isdir(target_dir):
     print("{} is not a directory".format(target_dir))
     exit()
 
-files = json.load(open('photos.json'))
+files = json.load(open(json_file))
 
 files_to_download = [f for f in files if not os.path.exists(os.path.join(target_dir, os.path.basename(f)))]
 
