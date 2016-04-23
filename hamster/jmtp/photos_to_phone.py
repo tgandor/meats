@@ -15,7 +15,7 @@ size_limit = 2500 * MB
 os.system("df " + photos_phone)
 
 size_already = sum(map(os.path.getsize,  glob.glob(os.path.join(photos_phone, '*'))))
-print("{} bytes already present.".format(size_already))
+print("{:,} bytes already present.".format(size_already))
 
 size_limit -= size_already
 
@@ -41,12 +41,13 @@ for f in files_to_download:
     if total_size + size > size_limit:
         print("Size limit reached.")
         break
+    i += 1
+    print("{} ({:,} KB) {}/{} ...".format(os.path.basename(f), size/1024, i, to_download))
     os.system('cp "{}" "{}"'.format(f, photos_phone))
     already.add(f)
     elapsed = time.time() - start_single
-    i += 1
     total_size += size
-    print("Copied {} ({:,} KB) in {:.1f}s ({:.1f} KB/s). {}/{}".format(os.path.basename(f), size/1024, elapsed, size / elapsed / 1024, i, to_download))
+    print(" - {:.1f}s ({:.1f} KB/s).".format(elapsed, size / elapsed / 1024, i, to_download))
 
 elapsed = time.time() - start_all
 size = total_size

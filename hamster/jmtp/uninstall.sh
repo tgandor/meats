@@ -1,3 +1,5 @@
 #!/bin/bash
 
-rm -v mnt/Phone/com.hipipal.qpyplus/scripts/$1
+for i in "$@"; do
+	rm -v "mnt/Phone/com.hipipal.qpyplus/scripts/$i"
+done
