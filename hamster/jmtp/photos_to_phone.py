@@ -12,6 +12,13 @@ photos_phone = '/mnt/sdcard/DCIM/Camera'
 MB = 2**20
 size_limit = 2500 * MB
 
+os.system("df " + photos_phone)
+
+size_already = sum(map(os.path.getsize,  glob.glob(os.path.join(photos_phone, '*'))))
+print("{} bytes already present.".format(size_already))
+
+size_limit -= size_already
+
 copied_json = os.path.join(os.path.dirname(__file__), 'copied.json')
 
 if os.path.exists(copied_json):
@@ -50,4 +57,4 @@ with open(copied_json, 'w') as f:
     print("{} files copied already".format(len(already)))
     json.dump(list(sorted(already)), f, indent=4)
 
-os.system("df -h " + photos_phone)
+os.system("df " + photos_phone)
