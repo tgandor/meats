@@ -10,6 +10,7 @@ def dump_photos(photo_dir, mounted_dir, target_json):
     mounted_files = [f.replace(photo_dir, mounted_dir) for f in files]
     with open(target_json, 'w') as f:
         json.dump(mounted_files, f, indent=4)
+    print("{} files in {}".format(len(files), photo_dir))
 
 photo_dir = '/mnt/extSdCard/DCIM/Camera'
 mounted_dir = 'mnt/Card/DCIM/Camera'

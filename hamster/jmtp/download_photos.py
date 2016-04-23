@@ -29,8 +29,6 @@ files_to_download = [f for f in files if not os.path.exists(os.path.join(target_
 to_download = len(files_to_download)
 print("{} total files, {} left to download.".format(len(files), to_download))
 
-block_size = os.statvfs(target_dir).f_bsize
-
 i = total_size = 0
 start_all = time.time()
 for f in files_to_download:
