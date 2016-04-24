@@ -15,5 +15,5 @@ query_data() {
 
 query_data &
 sleep 2
-gnuplot plot_battery.gnu
+gnuplot `dirname $0`/plot_battery.gnu
 kill $!
