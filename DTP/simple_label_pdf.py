@@ -6,6 +6,7 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import datetime
+import locale
 import os
 import tempfile
 import sqlite3
@@ -20,6 +21,7 @@ default_height = 10*cm
 default_length = None
 default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.pdf')
 fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial']
+
 
 
 last_font = []  # needs to be reloaded after new page
@@ -203,6 +205,7 @@ def save_label(text, width, height, length):
 
 
 def main():
+    locale.setlocale(locale.LC_ALL, '')
     text, width, height, length = get_parameters()
     save_label(text, width, height, length)
     c = _setup_canvas()
