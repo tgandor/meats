@@ -8,6 +8,7 @@
 import re
 import sys
 import datetime
+import time
 
 
 def grep_date(filename):
@@ -30,9 +31,10 @@ def file_date(filename):
 def info(f):
     match = grep_date(f)
     if not match:
-        print f, '- not found'
+        print('{} - not found'.format(f))
         return
-    print f, match
+    parsed = time.strptime(match, "%Y:%m:%d %H:%M:%S")
+    print('{} : {}'.format(f, time.strftime("%Y-%m-%d (%a) %H:%M:%S", parsed)))
 
 
 if __name__=='__main__':
