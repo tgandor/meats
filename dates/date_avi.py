@@ -8,9 +8,12 @@ import re
 import sys
 import time
 
-if __name__=='__main__':
-    some_data = open(sys.argv[1]).read(2**11)
+def info(f):
+    some_data = open(f).read(2**11)
     date_string = re.search('([A-Z][a-z]{2} ){2}\d\d?([ :]\d\d){4}\d\d', some_data).group()
-    print(date_string)
+    # print(date_string)
     parsed_date = time.strptime(date_string, "%a %b %d %H:%M:%S %Y")
-    print(time.strftime("%Y-%m-%d %H:%M:%S", parsed_date))
+    print('{} ; {}'.format(f, time.strftime("%Y-%m-%d (%a) %H:%M:%S", parsed_date)))
+
+if __name__=='__main__':
+    map(info, sys.argv[1:])

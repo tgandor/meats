@@ -34,7 +34,7 @@ def info(f):
         print('{} - not found'.format(f))
         return
     parsed = time.strptime(match, "%Y:%m:%d %H:%M:%S")
-    print('{} : {}'.format(f, time.strftime("%Y-%m-%d (%a) %H:%M:%S", parsed)))
+    print('{} ; {}'.format(f, time.strftime("%Y-%m-%d (%a) %H:%M:%S", parsed)))
 
 
 if __name__=='__main__':
