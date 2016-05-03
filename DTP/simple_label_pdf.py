@@ -8,9 +8,10 @@ from reportlab.pdfbase.ttfonts import TTFont
 import datetime
 import locale
 import os
-import tempfile
+import re
 import sqlite3
 import sys
+import tempfile
 
 
 font_size = 20
@@ -58,7 +59,7 @@ class LabelState:
 def label(c, text, width=default_width, height=default_height, state=LabelState()):
     # validate
     if min(width, height) > min(A4) or max(width, height) > max(A4):
-        sys.stderr.write('Error: label too big: {0} - not generating.\n'.format((width, height)))
+        sys.stderr.write('Error: label too big: {}x{} - not generating.\n'.format(width, height))
         return False
 
     # starting page width
@@ -108,7 +109,10 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     # text breaking...
     lines = text.split('\n')
     extra_h = len(lines) / 2 * font_size * (-1)
-    for line in lines:
+    for line, i in zip(lines, range(len(lines))):
+        # serial label: last line should be with date font
+        if i == len(lines) - 1 and re.match(r'\d+/\d+$', line):
+            c.setFontSize(date_font)
         c.drawCentredString(width/2, inv((height+font_size)/2 + extra_h), line)
         extra_h += font_size
 
@@ -204,8 +208,24 @@ def save_label(text, width, height, length):
     close_database(conn, cursor)
 
 
+def _finish_rendering(canvas):
+    canvas.showPage()
+    canvas.save()
+    if sys.platform.startswith('linux'):
+        os.system('xdg-open "%s"' % default_output_file)
+    else:
+        os.system('start "" "%s"' % default_output_file)
+
+
+def multi_label(text, width, height, count):
+    save_label(text, width, height, None)
+    c = _setup_canvas()
+    for i in range(count):
+        label(c, '{}\n{}/{}'.format(text, i+1, count), width, height)
+    _finish_rendering(c)
+
+
 def main():
-    locale.setlocale(locale.LC_ALL, '')
     text, width, height, length = get_parameters()
     save_label(text, width, height, length)
     c = _setup_canvas()
@@ -213,13 +233,12 @@ def main():
     if length:
         label(c, text, length, height)
         label(c, text, width, length)
-    c.showPage()
-    c.save()
-    if sys.platform.startswith('linux'):
-        os.system('xdg-open "%s"' % default_output_file)
-    else:
-        os.system('start "" "%s"' % default_output_file)
+    _finish_rendering(c)
 
 
 if __name__ == '__main__':
-    main()
+    locale.setlocale(locale.LC_ALL, '')
+    if len(sys.argv) == 5 and sys.argv[4].startswith('x'):
+        multi_label(sys.argv[1], float(sys.argv[2])*cm, float(sys.argv[3])*cm, int(sys.argv[4][1:]))
+    else:
+        main()
