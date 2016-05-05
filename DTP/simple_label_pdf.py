@@ -19,6 +19,8 @@ date_font = 12
 default_text = 'Example label'
 default_width = 20*cm
 default_height = 10*cm
+top_margin = 0.0*cm
+line_width = 0.25
 default_length = None
 default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.pdf')
 fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial']
@@ -53,7 +55,7 @@ def new_page(c):
 
 class LabelState:
     horizontal = False
-    height_left = A4[1]
+    height_left = A4[1] - top_margin
 
 
 def label(c, text, width=default_width, height=default_height, state=LabelState()):
@@ -68,7 +70,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     # new page if can't fit
     if height > state.height_left:
         new_page(c)
-        state.height_left = page_height
+        state.height_left = page_height - top_margin
 
     # maybe switch to landscape
     if width > page_width:
@@ -77,7 +79,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
         c.setPageSize(landscape(A4))
         page_width, page_height = landscape(A4)
         state.horizontal = True
-        state.height_left = page_height
+        state.height_left = page_height - top_margin
         sys.stderr.write('Warning: switched to horizontal.\n')
 
     # maybe switch back to portrait
@@ -86,7 +88,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
         c.setPageSize(A4)
         page_width, page_height = A4
         state.horizontal = False
-        state.height_left = page_height
+        state.height_left = page_height - top_margin
         sys.stderr.write('Warning: switched to vertical.\n')
 
     # coordinates inversion
@@ -94,17 +96,18 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
 
     c.saveState()
     c.setDash(4, 8)
-    c.setLineWidth(0.25)
+    c.setLineWidth(line_width)
 
     # seems like transform IS part of state
-    if state.height_left < page_height:
+    if line_width > 0 and state.height_left < page_height: #  - top_margin:
         c.line(0, state.height_left, page_width, state.height_left)
-        h_offset = state.height_left - page_height
-        c.translate(0, h_offset)
+    h_offset = state.height_left - page_height
+    c.translate(0, h_offset)
 
     # borders
-    c.line(0, inv(height), width, inv(height))
-    c.line(width, inv(0), width, inv(height))
+    if line_width > 0:
+        c.line(0, inv(height), width, inv(height))
+        c.line(width, inv(0), width, inv(height))
 
     # text breaking...
     lines = text.split('\n')
