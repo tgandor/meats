@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 
 // -std=c++11
 // for && (and decltype, but decltype(std::endl) doesn't work)
@@ -21,10 +22,25 @@ NullStream &NullStream::operator<<(T&& arg)
 */
 
 template <typename T>
-NullStream operator<<(NullStream ns, T&& arg)
+NullStream operator<<(NullStream ns, T&& /* arg */)
 {
     return ns;
 }
+
+typedef std::basic_ostream<char, std::char_traits<char>> ostream_char;
+NullStream operator<<(NullStream ns, ostream_char& (* /* arg */)(ostream_char&))
+{
+    return ns;
+}
+
+// (below) seems not necessary, ostream&(*)(ostream) overload is enough.
+// However, when only this available - setw() and boolalpha work,
+// and endl doesn't
+
+//NullStream operator<<(NullStream ns, std::ios_base& (* /* arg */)(std::ios_base&))
+//{
+//    return ns;
+//}
 
 /*
  * VS2015 - illegal argument to decltype
@@ -78,8 +94,7 @@ LoggedConcrete::LoggedConcrete() : value1(42), value2(24)
 
 void LoggedConcrete::speak()
 {
-    DBG(this) << "My value2 is: " << value1 << '\n';
-    // <<  std::endl; - template argument deduction/substitution failed
+    DBG(this) << "My value2 is: " << value1 << std::endl;
 }
 
 
@@ -90,6 +105,9 @@ template <typename T>
 std::ostream& LoggedConcrete::LoggerStream::operator<<(T&& arg)
 {
     ++msgNum;
-    return std::cout << msgNum << ": LoggedConcrete with value1=" << parent_->value1
-                     << " says: " << std::forward(arg);
+    return std::cout << std::boolalpha << true << " " // manipulators
+                     <<  std::setw(4) << msgNum // manipulators continued
+                     << ": LoggedConcrete with value1=" << parent_->value1
+                     << " says: "
+                     << std::forward<T>(arg); // forward arg, no copying
 }
