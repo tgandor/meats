@@ -5,7 +5,7 @@ import time
 
 def fib(n):
     if n < 2:
-        return 1
+        return n
     return fib(n-1) + fib(n-2)
 
 if __name__=='__main__':
@@ -14,6 +14,6 @@ if __name__=='__main__':
     fib_n = fib(n)
     elapsed = time.time() - start
     calls = 2*fib_n-1
-    print("fib({}) = {}; {:.2f} s elapsed. {:,} calls, {:,.0f} c/s.".format(
+    print("fib({}) = {}; {:.3f} s elapsed. {:,} calls, {:,.0f} c/s.".format(
         n, fib_n, elapsed, calls, calls/elapsed
     ))
