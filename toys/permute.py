@@ -4,5 +4,5 @@ import sys
 import itertools
 
 for p in itertools.permutations(sys.argv[1]):
-    print ''.join(p)
+    print(''.join(p))
 
