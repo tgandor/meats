@@ -19,7 +19,7 @@ struct Numpunct: public std::numpunct<char>
 {
 protected:
 	virtual char do_thousands_sep() const { return ','; }
-	virtual std::string do_grouping() const { return "\03"; }
+	virtual std::string do_grouping() const { return "\003"; }
 };
 	
 int main(int argc, char **argv)
