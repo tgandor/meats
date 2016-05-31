@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import cm
-from reportlab.lib.pagesizes import A4, landscape
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 import datetime
 import locale
 import os
@@ -13,12 +8,22 @@ import sqlite3
 import sys
 import tempfile
 
+try:
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.units import cm
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+except ImportError:
+    os.system("sudo apt-get install python-reportlab")
+    exit()
+
 
 font_size = 20
 date_font = 12
 default_text = 'Example label'
-default_width = 20*cm
-default_height = 10*cm
+default_width = 21*cm
+default_height = 28.5*cm
 top_margin = 0.0*cm
 line_width = 0.25
 default_length = None
