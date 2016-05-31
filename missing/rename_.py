@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
+import glob
 import os
 import sys
+from itertools import chain
 
 search = sys.argv[1]
 replace = sys.argv[2]
 
-for f in sys.argv[3:]:
+for f in chain(*(glob.glob(g) for g in sys.argv[3:])):
     target = f.replace(search, replace)
     if f == target:
         print ('File: {0} - not affected.'.format(f))
