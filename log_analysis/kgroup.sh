@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ruby -ne 'puts $_.reverse.gsub(/(\d{3})(?=\d+\s)/, "\\1,").reverse'
+ruby -ne 'puts $_.reverse.gsub(/(\d{3})(?=\d+\s|\d+$)/, "\\1,").reverse'
