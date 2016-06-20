@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 
 from reportlab.pdfgen import canvas
@@ -10,6 +11,15 @@ from reportlab.lib.utils import ImageReader
 margin_x = 2*cm  # horizontal; margins are on both sides
 margin_y = 3*cm  # includes footer
 footer_y = 2*cm  # where page numbers go
+
+
+def update_settings():
+    global margin_x, margin_y, footer_y
+    if os.getenv('MX'):
+        margin_x = float(os.getenv('MX')) * cm
+    if os.getenv('MY'):
+        margin_y = float(os.getenv('MY')) * cm
+        footer_y = margin_y - 1*cm
 
 
 def create_image_pdf(images, output="images.pdf"):
@@ -32,11 +42,15 @@ def create_image_pdf(images, output="images.pdf"):
         c.showPage()
         print('Processed {} - page {}'.format(filename, page_num))
     c.save()
+    if sys.platform.startswith('linux'):
+        os.system('xdg-open "%s"' % output)
+    else:
+        os.system('start "" "%s"' % output)
 
 
 def main():
     if len(sys.argv) < 2:
-        print('Usage: {} [-o OUTPUT.pdf] IMAGE_FILE...')
+        print('Usage: {} [-o OUTPUT.pdf] IMAGE_FILE...'.format(sys.argv[0]))
         exit()
     else:
         images = sys.argv[1:]
@@ -50,4 +64,5 @@ def main():
 
 
 if __name__ == "__main__":
+    update_settings()
     main()
