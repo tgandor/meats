@@ -35,6 +35,7 @@ else:
 
 class Settings(object):
     def __init__(self, tk_root):
+        self.resolution = 150
         self.width = 210.0
         self.height = 297.0
         self.scale = tk.DoubleVar(tk_root, value=1.0)
@@ -60,6 +61,7 @@ class Settings(object):
             device.mode = 'gray'
         else:
             device.mode = self.mode()
+        device.resolution = self.resolution
 
     def postprocess(self, image):
         if self.mode() == 'gray+otsu':

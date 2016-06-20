@@ -8,6 +8,7 @@ import sqlite3
 import sys
 import tempfile
 
+
 try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.units import cm
@@ -15,6 +16,7 @@ try:
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
 except ImportError:
+    print('Missing reportlab, trying to install...')
     os.system("sudo apt-get install python-reportlab")
     exit()
 
