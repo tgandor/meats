@@ -220,6 +220,13 @@ def var_desc(id_, offset, val, val_vars={}):
                 return False
         VAR(18, 68) <= 'cam1_ctx_a_fdperiod_50hz'
         VAR(18, 69) <= 'cam1_ctx_a_fdperiod_60hz'
+        VAR(18, 68+72) <= 'cam1_ctx_b_fdperiod_50hz'
+        VAR(18, 69+72) <= 'cam1_ctx_b_fdperiod_60hz'
+        VAR(18,301) <= 'cam1_flash_fd_60hz_prd_msb_cntxt_a'
+        VAR(18,302) <= 'cam1_flash_fd_60hz_prd_msb_cntxt_b'
+        VAR(18,303) <= 'cam1_flash_fd_50hz_prd_msb_cntxt_a'
+        VAR(18,304) <= 'cam1_flash_fd_50hz_prd_msb_cntxt_b'
+        VAR(18,142) <= 'cam1_ctx_b_rx_fifo_trigger_mark'
 
     if id_==18 and offset==12:
         return [
@@ -232,6 +239,7 @@ def var_desc(id_, offset, val, val_vars={}):
         '_vert_flip={}'.format(_get_bits(val, 1)),
         '_horiz_mirror={}'.format(_get_bits(val, 0)),
         ]
+    
     if id_==18 and offset==12+72:
         return [
         'cam1_ctx_a:',
@@ -243,6 +251,75 @@ def var_desc(id_, offset, val, val_vars={}):
         '_vert_flip={}'.format(_get_bits(val, 1)),
         '_horiz_mirror={}'.format(_get_bits(val, 0)),
         ]
+    
+    if id_ in (26, 27) and offset==160:
+        return [
+        'pri_a_config_jpeg_ob_:' if id_ == 26 else 'pri_b_config_jpeg_ob_:',
+        'enable_resolution={}'.format(_get_bits(val, 15)),
+        'enable_mipi_line_byte_cnt={}'.format(_get_bits(val, 14)),
+        'enable_index_table={}'.format(_get_bits(val, 13)),
+        'en_legalize_status={}'.format(_get_bits(val, 12)),
+        'en_clk_b2_lines={}'.format(_get_bits(val, 11)),
+        'insert_ccir_codes={}'.format(_get_bits(val, 10)),
+        'insert_jp_status={}'.format(_get_bits(val, 9)),
+        'dup_fv_on_lv={}'.format(_get_bits(val, 8)),
+        'en_byte_swap={}'.format(_get_bits(val, 7)),
+        'en_adaptive_clk={}'.format(_get_bits(val, 6)),
+        'soi_eoi_in_fv={}'.format(_get_bits(val, 5)),
+        'en_soi_eoi={}'.format(_get_bits(val, 4)),
+        'en_clk_invalid_data={}'.format(_get_bits(val, 3)),
+        'en_clk_b2_frames={}'.format(_get_bits(val, 2)),
+        'tx_mode={}'.format(_get_bits(val, 1, 0)),
+        ]
+
+    if id_ in (26, 27) and offset==17:
+        return [
+        'pri_a_config_fd_algo_run_:' if id_ == 26 else 'pri_b_config_fd_algo_run_:',
+        'setperiod={}'.format(_get_bits(val, 1)),
+        'detectperiod={}'.format(_get_bits(val, 0)),
+        ]
+    
+    if id_ in (26, 27) and offset==142:
+        return [
+        'pri_a_config_jpeg_:' if id_ == 26 else 'pri_b_config_jpeg_:',
+        'tn_enable={}'.format(_get_bits(val, 1)),
+        'jp_enable={}'.format(_get_bits(val, 0)),
+        ]
+    
+    if id_ in (26, 27) and offset==7:
+        return [
+        'pri_a_of_ (o/format):' if id_ == 26 else 'pri_a_of_ (o/format):',
+        'mono={}'.format(_get_bits(val, 9)),
+        'processed_bayer={}'.format(_get_bits(val, 8)),
+        'raw10={}'.format(_get_bits(val, 6)),
+        'raw8={}'.format(_get_bits(val, 5)),
+        'rgb444x={}'.format(_get_bits(val, 4)),
+        'rgb555x={}'.format(_get_bits(val, 3)),
+        'rgb565={}'.format(_get_bits(val, 2)),
+        'yuv422={}'.format(_get_bits(val, 0)),
+        ]
+    
+    if id_ in (26, 27) and offset==144:
+        return [
+        'pri_a_config_jpeg_jp_cfg_' if id_ == 26 else 'pri_b_config_jpeg_jp_cfg_:',
+        'frm_ovflw_protect={}'.format(_get_bits(val, 15)),
+        'tn_insert_hdr={}'.format(_get_bits(val, 14)),
+        'tn_output_ycbcr={}'.format(_get_bits(val, 13)),
+        'aqle={}'.format(_get_bits(val, 12)),
+        'hdr={}'.format(_get_bits(val, 11, 10)),
+        'speedtags_en={}'.format(_get_bits(val, 9)),
+        'tn_output_format={}'.format(_get_bits(val, 8)),
+        'stat_before_len={}'.format(_get_bits(val, 7)),
+        'qtbl_ptr={}'.format(_get_bits(val, 6)),
+        'qtbl_autosel={}'.format(_get_bits(val, 5)),
+        'qscale_enable={}'.format(_get_bits(val, 4)),
+        'tn_swap_chroma={}'.format(_get_bits(val, 3)),
+        'retry_enable={}'.format(_get_bits(val, 2)),
+        'tn_swap_luma_chroma={}'.format(_get_bits(val, 1)),
+        'tn_disable_marker={}'.format(_get_bits(val, 0)),
+        ]
+
+    # TODO: val_vars
     if id_==18 and offset==15: return ['cam1_ctx_a_fine_correction = {}'.format(val)]
     if id_==18 and offset==17: return ['cam1_ctx_a_fine_itmin = {}'.format(val)]
     if id_==18 and offset==19: return ['cam1_ctx_a_fine_itmax_margin = {}'.format(val)]
@@ -280,21 +357,9 @@ def SET_VAR(address, val):
     ))
 
 
-
-
-'''
-SET_VAR(VAR(27,17)   , 0x0003),
-SET_VAR(VAR(26,17)   , 0x0003),
-'''
-
-SET_VAR(VAR8(18,68)  , 0x00ba),
-SET_VAR(VAR8(18,303) , 0x0000),
-SET_VAR(VAR8(18,69)  , 0x009b),
-SET_VAR(VAR8(18,301) , 0x0000),
-SET_VAR(VAR8(18,140) , 0x0082),
-SET_VAR(VAR8(18,304) , 0x0000),
-SET_VAR(VAR8(18,141) , 0x006d),
-SET_VAR(VAR8(18,302) , 0x0000),
+SET_VAR(VAR(27,144)  , 0x0cb4),
+SET_VAR(VAR(26,7)    , 0x0004),
+SET_VAR(VAR8(26,142) , 0x0000),
 
 def _pll_init():
     print('**** Default')
@@ -450,6 +515,8 @@ def parse_bits_info(bit_info_txt):
 
 
 def parse_bits_info_var(bit_info_txt, id_, offset):
+    if bit_info_txt.strip() == '...':
+        return
     lines = bit_info_txt.split('\n')
     names = []
     prev = ''
@@ -464,8 +531,7 @@ def parse_bits_info_var(bit_info_txt, id_, offset):
         bits = lines[idx-2]
         print("        '{}={}'.format(_get_bits(val, {})),".format(name, '{}',  ', '.join(bits.split(':'))))
     print('        ]')
-
-# parse_bits_info_var(bit_info, 18, 12)
+parse_bits_info_var(bit_info, 26, 7)
 
 
 def PIXCLK(base=768):
