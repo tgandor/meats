@@ -16,7 +16,7 @@ register_defs = """
 #define sensor_clock_divider_reg 0x002e
 #define i2c_master_control 0x3b82
 #define i2c_master_frequency_divider 0x3b84
-#define second_scl_sda_pd_reg 0x0614
+#define second_scl_sda_pd 0x0614
 """
 
 to_translate = """
@@ -45,6 +45,40 @@ to_translate = """
             {0x0018 , 0x402e},
 """
 
+to_translate = """
+            {BEEF_REG , 50 },       // delay(50);
+            {0x0614 , 0x0001},
+            {BEEF_REG , 1 },        // delay(1);
+            {0x0614 , 0x0001},
+            {BEEF_REG , 1 },        // delay(1);
+            {0x0614 , 0x0001},
+            {BEEF_REG , 1 },        // delay(1);
+            {0x0614 , 0x0001},
+            {BEEF_REG , 1 },        // delay(1);
+            {0x0614 , 0x0001},
+            {BEEF_REG , 1 },        // delay(1);
+            {0x0614 , 0x0001},
+            {BEEF_REG , 1 },        // delay(1);
+            {BEEF_REG , 10 },       // delay(10);
+"""
+
+to_translate = """
+            {0x0018 , 0x002a},
+            {0x3084 , 0x2409},
+            {0x3092 , 0x0a49},
+            {0x3094 , 0x4949},
+            {0x3096 , 0x4950},
+            
+            {0x316c , 0x350f},
+            {0x001e , 0x0777},
+"""
+
+EXTCLK = 12.
+
+regHex = '0x[0-9A-Fa-f]'
+fourHex = regHex + '{4}'
+
+
 def translate(to_translate):
     registers = []
     register_names = {}
@@ -72,6 +106,9 @@ def translate(to_translate):
                 unknown.add(match.group(1))
     print('Unknown registers: {}'.format(' '.join(sorted(unknown - register_names_set))))
     return '\n'.join(result)
+
+
+# print translate(to_translate)
 
 
 def _get_bits(val, start, end=None):
@@ -107,17 +144,95 @@ def pll_dividers_reg(val):
     ]
 
 def BEEF_REG(val):
-    return ['delay()'.format(val)]
+    return ['delay({})'.format(val)]
 
+#
+# VARs
+#
+
+def var_id_offset(n):
+    if n & 0x8000:
+        n ^= 0x8000
+    return n >> 10, n & ((1 << 10) - 1)
 
 def var(n):
     vartype = "VAR"
     if n & 0x8000:
-        n ^= 0x8000
         vartype = "VAR8"
-    print("{}({}, {})".format(vartype, n >> 10, n & ((1 << 10) - 1)))
+    id_, offset = var_id_offset(n)
+    return ("{}({},{})".format(vartype, id_, offset))
 
+def VAR(id_, offset):
+    return (id_ << 10) + offset
+def VAR8(id_, offset):
+    return (id_ << 10) + offset + 0x8000
 
+to_set_var = """
+            {0x098e , 0x68a0},
+            {0x0990 , 0x0a2e},
+            {0x098e , 0x6ca0},
+            {0x0990 , 0x0a2e},
+            {0x098e , 0x6c90},
+            {0x0990 , 0x0cb4},
+            {0x098e , 0x6807},
+            {0x0990 , 0x0004},
+            {0x098e , 0xe88e},
+            {0x0990 , 0x0000},
+            {0x316c , 0x350f},
+            {0x001e , 0x0777},
+            {0x098e , 0x8400},
+            {0x0990 , 0x0001},
+            {BEEF_REG , 100 },      // delay(100);
+            {0x098e , 0x8400},
+            {0x0990 , 0x0006},
+"""
+
+def convert_to_set_var(data):
+    lines = data.split('\n')
+    last_var = 0
+    for line in lines:
+        if not line.strip():
+            print('')
+            continue
+        values = re.findall(fourHex, line)
+        if len(values) != 2:
+            print(line)
+            continue
+        reg, val = [int(x, 16) for x in values]
+        if reg == 0x098e:
+            last_var = val
+        elif reg == 0x0990:
+            print('            SET_VAR({:13s}, 0x{:04x}),'.format(
+                    var(last_var), val
+                ))
+        else:
+            print(line)
+# convert_to_set_var(to_set_var)
+
+def var_desc(id_, offset, val):
+    if id_==18 and offset==12:
+        return [
+        'cam1_ctx_a:',
+        '_x_bin_en={}'.format(_get_bits(val, 11)),
+        '_xy_bin_en={}'.format(_get_bits(val, 10)),
+        '_low_power={}'.format(_get_bits(val, 9)),
+        '_x_oddaddr_inc={}'.format(_get_bits(val, 7, 5)),
+        '_y_oddaddr_inc={}'.format(_get_bits(val, 4, 2)),
+        '_vert_flip={}'.format(_get_bits(val, 1)),
+        '_horiz_mirror={}'.format(_get_bits(val, 0)),
+        ]
+
+def var_desc_addr(address, val):
+    id_, offset = var_id_offset(address)
+    return var_desc(id_, offset, val)
+
+def SET_VAR(address, val):
+    print('            SET_VAR({:13s}, 0x{:04x}), // {}'.format(
+        var(address), val, ' '.join(var_desc_addr(address, val))
+    ))
+
+SET_VAR(VAR(18,12)   , 0x046c),
+SET_VAR(VAR(18,12)   , 0x046f),
 
 def _pll_init():
     print('**** Default')
@@ -129,6 +244,10 @@ def _pll_init():
     pll_control_reg(0x2527)
     pll_control_reg(0x3427)
     pll_control_reg(0x3027)
+
+#
+# REG Description functions
+#
 
 def pll_p4_p5_p6_dividers_reg(val):
     return [
@@ -158,36 +277,97 @@ def reset_and_misc_control_reg(val):
     'reset_soc_i2c={}'.format(_get_bits(val, 0)),
     ]
 
+def second_scl_sda_pd(val):
+    return ['disable secondary i2c={}'.format(val)]
 
-# print translate(to_translate)
-# pll_dividers_reg(0x0110)
+def vdd_dis_counter_reg(val):
+    return ['standby delay = {}/EXTCLK = {:.1f} us'.format(val, val / EXTCLK)]
 
-def comment_decompile():
-    data = [
-                    {reset_and_misc_control_reg , 0x0219},
-                {reset_and_misc_control_reg , 0x0018},
-        (pll_control_reg  , 0x2425),
-        (pll_control_reg  , 0x2145),
-        (pll_dividers_reg , 0x0110),
-        (pll_p_dividers_reg , 0x00f0),
-        (pll_p4_p5_p6_dividers_reg , 0x7f77),
-                (pll_control_reg , 0x2545),
-                (pll_control_reg , 0x2547),
-                (pll_control_reg , 0x3447),
-                (pll_control_reg , 0x3047),
-                (pll_control_reg , 0x3046),
+def pad_slew_pad_config_reg(val):
+    return [
+    'slew_pxlclk={}'.format(_get_bits(val, 10, 8)),
+    'slew_vgpio={}'.format(_get_bits(val, 6, 4)),
+    'slew_io={}'.format(_get_bits(val, 2, 0)),
     ]
 
+def i2c_master_frequency_divider(val):
+    return ['= {}'.format(val)]
+
+def sensor_clock_divider_reg(val):
+    return [
+    '(secondary sensor)',
+    'clk_sensor_pll_bypass={}'.format(_get_bits(val, 10)),
+    'clk_sensor1_en={}'.format(_get_bits(val, 8)),
+    'clk_sensor1_divider={}'.format(_get_bits(val, 3, 0)),
+    ]
+
+def standby_control_and_status_reg(val):
+    return [
+    'en_irq={}'.format(_get_bits(val, 3)),
+    'powerup_stop_mcu={}'.format(_get_bits(val, 2)),
+    'standby_i2c={}'.format(_get_bits(val, 0)),
+    ]
+
+def i2c_master_control(val):
+    return [
+    'ignore_ack_err={}'.format(_get_bits(val, 1)),
+    'i2cm_go={}'.format(_get_bits(val, 0)),
+    ]
+
+
+data = [
+    {reset_and_misc_control_reg , 0x0219},
+    {reset_and_misc_control_reg , 0x0018},
+    (pll_control_reg  , 0x2425),
+    (pll_control_reg  , 0x2145),
+    (pll_dividers_reg , 0x0110),
+    (pll_p_dividers_reg , 0x00f0),
+    (pll_p4_p5_p6_dividers_reg , 0x7f77),
+    (pll_control_reg , 0x2545),
+    (pll_control_reg , 0x2547),
+    (pll_control_reg , 0x3447),
+    (pll_control_reg , 0x3047),
+    (pll_control_reg , 0x3046),
+]
+data = [
+            {BEEF_REG , 50 },
+            {second_scl_sda_pd , 0x0001},
+            {BEEF_REG , 1 },
+            {second_scl_sda_pd , 0x0001},
+            {BEEF_REG , 1 },
+            {second_scl_sda_pd , 0x0001},
+            {BEEF_REG , 1 },
+            {second_scl_sda_pd , 0x0001},
+            {BEEF_REG , 1 },
+            {second_scl_sda_pd , 0x0001},
+            {BEEF_REG , 1 },
+            {second_scl_sda_pd , 0x0001},
+            {BEEF_REG , 1 },
+            {BEEF_REG , 10 },
+]
+data = [
+            {vdd_dis_counter_reg , 0x01f4},
+            {pad_slew_pad_config_reg , 0x0707},
+            {i2c_master_frequency_divider , 0x01f4},
+            {sensor_clock_divider_reg , 0x0500},
+            {standby_control_and_status_reg , 0x402b},
+            {i2c_master_control , 0x0004},
+            {standby_control_and_status_reg , 0x402f},
+            {standby_control_and_status_reg , 0x402e},
+]
+
+data = [ {standby_control_and_status_reg , 0x002a}, ]
+def comment_decompile(data):
     for f, val in data:
         if type(val) != int:
             f, val = val, f
         print('            {%s , 0x%04x }, // %s' 
             % (f.__name__, val, ' '.join(f(val))))
 
-comment_decompile()
+# comment_decompile(data)
 
 bit_info = """
-[ left out ]
+...
 """
 
 def parse_bits_info(bit_info_txt):
@@ -195,16 +375,36 @@ def parse_bits_info(bit_info_txt):
     names = []
     prev = ''
     for line in lines:
-        if re.match('0x\d{4}$', prev) and line != 'Reserved':
+        if re.match(fourHex+'$', prev) and line != 'Reserved':
             names.append(line)
         prev = line
+    print('    return [')
     for name in names:
         idx = lines.index(name)
         bits = lines[idx-2]
         print("    '{}={}'.format(_get_bits(val, {})),".format(name, '{}',  ', '.join(bits.split(':'))))
-
-
+    print('    ]')
 # parse_bits_info(bit_info)
+
+
+def parse_bits_info_var(bit_info_txt, id_, offset):
+    lines = bit_info_txt.split('\n')
+    names = []
+    prev = ''
+    for line in lines:
+        if re.match(regHex+'{2,4}$', prev) and line != 'Reserved':
+            names.append(line)
+        prev = line
+    print('    if id_=={} and offset=={}:'.format(id_, offset))
+    print('        return [')
+    for name in names:
+        idx = lines.index(name)
+        bits = lines[idx-2]
+        print("        '{}={}'.format(_get_bits(val, {})),".format(name, '{}',  ', '.join(bits.split(':'))))
+    print('        ]')
+
+# parse_bits_info_var(bit_info, 18, 12)
+
 
 def PIXCLK(base=768):
     for f, t_iter in groupby(sorted( (i * j, i-1, j-1) for i in range(1,17) for j in range(i, 17) ), lambda x: x[0]):
