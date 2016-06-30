@@ -209,7 +209,18 @@ def convert_to_set_var(data):
             print(line)
 # convert_to_set_var(to_set_var)
 
-def var_desc(id_, offset, val):
+def var_desc(id_, offset, val, val_vars={}):
+    if len(val_vars) == 0: # init
+        class VAR:
+            def __init__(self, id_, offset):
+                self.id_ = id_
+                self.offset = offset
+            def __le__(self, val):
+                val_vars[(self.id_, self.offset)] = val
+                return False
+        VAR(18, 68) <= 'cam1_ctx_a_fdperiod_50hz'
+        VAR(18, 69) <= 'cam1_ctx_a_fdperiod_60hz'
+
     if id_==18 and offset==12:
         return [
         'cam1_ctx_a:',
@@ -221,6 +232,43 @@ def var_desc(id_, offset, val):
         '_vert_flip={}'.format(_get_bits(val, 1)),
         '_horiz_mirror={}'.format(_get_bits(val, 0)),
         ]
+    if id_==18 and offset==12+72:
+        return [
+        'cam1_ctx_a:',
+        '_x_bin_en={}'.format(_get_bits(val, 11)),
+        '_xy_bin_en={}'.format(_get_bits(val, 10)),
+        '_low_power={}'.format(_get_bits(val, 9)),
+        '_x_oddaddr_inc={}'.format(_get_bits(val, 7, 5)),
+        '_y_oddaddr_inc={}'.format(_get_bits(val, 4, 2)),
+        '_vert_flip={}'.format(_get_bits(val, 1)),
+        '_horiz_mirror={}'.format(_get_bits(val, 0)),
+        ]
+    if id_==18 and offset==15: return ['cam1_ctx_a_fine_correction = {}'.format(val)]
+    if id_==18 and offset==17: return ['cam1_ctx_a_fine_itmin = {}'.format(val)]
+    if id_==18 and offset==19: return ['cam1_ctx_a_fine_itmax_margin = {}'.format(val)]
+    if id_==18 and offset==29: return ['cam1_ctx_a_base_frame_length_lines = {}'.format(val)]
+    if id_==18 and offset==31: return ['cam1_ctx_a_min_line_length_pclk = {}'.format(val)]
+    if id_==18 and offset==37: return ['cam1_ctx_a_line_length_pck = {}'.format(val)]
+
+    if id_==18 and offset==15+72: return ['cam1_ctx_b_fine_correction = {}'.format(val)]
+    if id_==18 and offset==17+72: return ['cam1_ctx_b_fine_itmin = {}'.format(val)]
+    if id_==18 and offset==19+72: return ['cam1_ctx_b_fine_itmax_margin = {}'.format(val)]
+    if id_==18 and offset==29+72: return ['cam1_ctx_b_base_frame_length_lines = {}'.format(val)]
+    if id_==18 and offset==31+72: return ['cam1_ctx_b_min_line_length_pclk = {}'.format(val)]
+    if id_==18 and offset==37+72: return ['cam1_ctx_b_line_length_pck = {}'.format(val)]
+
+    if id_==18 and offset==70: return ['cam1_ctx_a_fifo_trigger_mark = {}'.format(val)]
+    if id_==18 and offset==17: return ['cam1_ctx_a_fine_itmin = {}'.format(val)]
+
+    if id_==18 and offset==165: return ['cam1_fd_search_f1_50 = {} (Hz?)'.format(val)]
+    if id_==18 and offset==166: return ['cam1_fd_search_f2_50 = {} (Hz?)'.format(val)]
+    if id_==18 and offset==167: return ['cam1_fd_search_f1_60 = {} (Hz?)'.format(val)]
+    if id_==18 and offset==168: return ['cam1_fd_search_f2_60 = {} (Hz?)'.format(val)]
+
+    if (id_, offset) in val_vars:
+        return ['{} = {}'.format(val_vars[(id_, offset)], val)]
+
+    return ["I don't know this variable yet..."]
 
 def var_desc_addr(address, val):
     id_, offset = var_id_offset(address)
@@ -231,8 +279,22 @@ def SET_VAR(address, val):
         var(address), val, ' '.join(var_desc_addr(address, val))
     ))
 
-SET_VAR(VAR(18,12)   , 0x046c),
-SET_VAR(VAR(18,12)   , 0x046f),
+
+
+
+'''
+SET_VAR(VAR(27,17)   , 0x0003),
+SET_VAR(VAR(26,17)   , 0x0003),
+'''
+
+SET_VAR(VAR8(18,68)  , 0x00ba),
+SET_VAR(VAR8(18,303) , 0x0000),
+SET_VAR(VAR8(18,69)  , 0x009b),
+SET_VAR(VAR8(18,301) , 0x0000),
+SET_VAR(VAR8(18,140) , 0x0082),
+SET_VAR(VAR8(18,304) , 0x0000),
+SET_VAR(VAR8(18,141) , 0x006d),
+SET_VAR(VAR8(18,302) , 0x0000),
 
 def _pll_init():
     print('**** Default')
