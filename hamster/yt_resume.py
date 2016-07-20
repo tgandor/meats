@@ -9,12 +9,13 @@ import youtube_dl
 import glob
 
 target = '/mnt/sdcard/Download'
-print('trying to retrieve from clipboard')
 
 os.chdir(target)
 pending = glob.glob('*.part')
 if not pending:
+    print('---\nNo pending files.')
     exit()
+print('---\nFound {} pending files:\n---'.format(len(pending)))
 print('\n---\n'.join(pending))
 
 the_url = pending[0][:-5]
@@ -26,16 +27,9 @@ android = androidhelper.Android()
 os.system('df .')
 print('---')
 
+
 def after_download():
-    # module has no member 'statvfs'
-    """
-    stats = os.statvfs(os.getcwd())
-    print 'Done. {0:,} KB free ({1:.1f}%) left on device. ({2:,} KB total)'.format(
-            stats.f_bavail * stats.f_bsize / 1024,
-            100.0 * stats.f_bavail / stats.f_blocks,
-            stats.f_blocks * stats.f_bsize / 1024
-    )
-    """
+    # os module has no member 'statvfs'
     os.system('df .')
     android.vibrate(2000)
 

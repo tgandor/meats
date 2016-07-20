@@ -4,8 +4,9 @@ import os,os.path,sys
 
 def modcmd(arg):
     arg = 'pip ' + arg
-    print(arg)
-    os.system(sys.executable+" "+sys.prefix+"/bin/"+arg)
+    cmd = sys.executable + " " + sys.prefix + "/bin/" + arg
+    print(cmd)
+    os.system(cmd)
 
 if not(os.path.exists(sys.prefix+"/bin/pip")):
     print("You need to install pip first.")
@@ -14,9 +15,12 @@ if not(os.path.exists(sys.prefix+"/bin/pip")):
 print("Input pip commands, ie: pip install {module}")
 
 shorthands = {
+    # 'i': 'install -i https://pypi.python.org/pypi',
     'i': 'install',
+    # 'u': 'install -i https://pypi.python.org/pypi --upgrade',
+    'u': 'install --upgrade',
     'f': 'freeze',
-    's': 'search'
+    's': 'search --index https://pypi.python.org/pypi'
 }
 
 def expand(cmd):
