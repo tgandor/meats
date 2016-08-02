@@ -12,10 +12,10 @@ import time
 
 
 def grep_date(filename):
-    some_data = open(filename).read(2**14)
-    match = re.search('\d{4}([ :]\d\d){5}', some_data)
+    some_data = open(filename, 'rb').read(2**14)
+    match = re.search(b'\d{4}([ :]\d\d){5}', some_data)
     if match:
-        return match.group()
+        return match.group().decode()
     return None
 
 
@@ -38,4 +38,4 @@ def info(f):
 
 
 if __name__=='__main__':
-    map(info, sys.argv[1:])
+    list(map(info, sys.argv[1:]))
