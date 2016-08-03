@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from socket import *
 from select import select
 
@@ -38,7 +40,7 @@ try:
         if len(clients):
             incoming, _, _ = select(clients, clients, clients, timeout)
             print "incoming: ", incoming
-        else: 
+        else:
             incoming = []
         to_send = []
         for csocket in incoming:
