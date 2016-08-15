@@ -48,9 +48,14 @@ void DirectoryFeeder::reload(const QString &filename)
     parent.setSorting(QDir::Name);
     files = parent.entryList(QStringList() << "*.jpg");
     currentDirectory = parent.absolutePath();
-    currentIndex = files.contains(info.baseName())
-            ? files.indexOf(info.baseName())
-            : 0;
+    if (files.contains(info.fileName()))
+    {
+        currentIndex = files.indexOf(info.fileName());
+    }
+    else
+    {
+        currentIndex = 0;
+    }
 }
 
 QString DirectoryFeeder::next()

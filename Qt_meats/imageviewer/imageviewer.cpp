@@ -61,14 +61,19 @@ ImageViewer::ImageViewer()
     createMenus();
 
     toolBar->addAction(openAct);
-    toolBar->addAction(fitToWidthAct);
+    toolBar->addAction(prevAct);
     toolBar->addAction(nextAct);
+    toolBar->addAction(zoomInAct);
+    toolBar->addAction(zoomOutAct);
+    toolBar->addAction(normalSizeAct);
+    toolBar->addAction(fitToWindowAct);
     addToolBar(toolBar);
 
     setWindowTitle(tr("Image Sorter"));
-    resize(500, 400);
+    resize(1200, 800);
 
     scaleFactor = 1.0;
+    statusBar()->show();
 }
 
 void ImageViewer::open()
@@ -91,101 +96,87 @@ void ImageViewer::next()
     displayFile(feeder.next());
 }
 
-void ImageViewer::print()
+void ImageViewer::prev()
 {
-    Q_ASSERT(imageLabel->pixmap());
-#ifndef QT_NO_PRINTER
-    QPrintDialog dialog(&printer, this);
-
-    if (dialog.exec()) {
-        QPainter painter(&printer);
-        QRect rect = painter.viewport();
-        QSize size = imageLabel->pixmap()->size();
-        size.scale(rect.size(), Qt::KeepAspectRatio);
-        painter.setViewport(rect.x(), rect.y(), size.width(), size.height());
-        painter.setWindow(imageLabel->pixmap()->rect());
-        painter.drawPixmap(0, 0, *imageLabel->pixmap());
-    }
-#endif
+    displayFile(feeder.prev());
 }
 
 void ImageViewer::zoomIn()
 {
     scaleImage(1.25);
+    updateActions();
 }
 
 void ImageViewer::zoomOut()
 {
     scaleImage(0.8);
+    updateActions();
 }
 
 void ImageViewer::normalSize()
 {
     imageLabel->adjustSize();
     scaleFactor = 1.0;
+    scaleImage(1.0);
 }
 
 void ImageViewer::fitToWindow()
-
 {
-    bool fitToWindow = fitToWindowAct->isChecked();
-    scrollArea->setWidgetResizable(fitToWindow);
-    if (!fitToWindow) {
-        normalSize();
-    }
+    double widthRatio = 1.0 * scrollArea->width() / imageLabel->width();
+    double heightRatio = 1.0 * scrollArea->height() / imageLabel->height();
+    scaleImage(std::min(widthRatio, heightRatio));
     updateActions();
 }
 
-void ImageViewer::fitToWidth()
-{
-    scaleImage(1.0 * this->scrollArea->width() / imageLabel->width());
-}
-
 void ImageViewer::about()
-
 {
-    QMessageBox::about(this, tr("About Image Viewer"),
-            tr("<p>The <b>Image Viewer</b> example shows how to combine QLabel "
-               "and QScrollArea to display an image. QLabel is typically used "
-               "for displaying a text, but it can also display an image. "
-               "QScrollArea provides a scrolling view around another widget. "
-               "If the child widget exceeds the size of the frame, QScrollArea "
-               "automatically provides scroll bars. </p><p>The example "
-               "demonstrates how QLabel's ability to scale its contents "
-               "(QLabel::scaledContents), and QScrollArea's ability to "
-               "automatically resize its contents "
-               "(QScrollArea::widgetResizable), can be used to implement "
-               "zooming and scaling features. </p><p>In addition the example "
-               "shows how to use QPainter to print an image.</p>"));
+    QMessageBox::about(this, tr("About Image Sorter"),
+            tr("<p>The <b>Image Sorter</b> is based on the <b>Image Viewer</b> Qt example.</p>"
+               "<p>Removed features:</p>"
+               "<ul>"
+               "<li>Printing the image</li>"
+               "<li>Force-fit image to window</li>"
+               "<li>Zoom out limit scale>=0.33 (now >= 0.05)</li>"
+               "</ul>"
+               "<p>Added features:</p>"
+               "<ul>"
+               "<li>Toolbar</li>"
+               "<li>Prev/next image in the directory</li>"
+               "<li>Aspect-preserving fit to window (zooming action)</li>"
+               "<li>Automatic fitting (zoom) to window when loading image</li>"
+               //"<li></li>"
+               "</ul>"
+               ));
 }
 
 void ImageViewer::displayFile(const QString &fileName)
 {
     QImage image(fileName);
-    if (image.isNull()) {
-        QMessageBox::information(this, tr("Image Viewer"),
-                                 tr("Cannot load %1.").arg(fileName));
+    if (image.isNull())
+    {
+        QMessageBox::information(this, tr("Image Sorter"), tr("Cannot load %1.").arg(fileName));
         return;
     }
 
     imageLabel->setPixmap(QPixmap::fromImage(image));
 
-
-    printAct->setEnabled(true);
-    fitToWindowAct->setEnabled(true);
     updateActions();
 
-    if (!fitToWindowAct->isChecked())
-        imageLabel->adjustSize();
-    scaleImage(1.0);
+    imageLabel->adjustSize();
 
-    statusBar()->showMessage(fileName);
+    scaleImage(1.0);
+    if (autoFitAct->isChecked())
+    {
+        fitToWindow();
+    }
+
+    statusBar()->showMessage(QString("Loaded: ") + fileName);
+    setWindowTitle(fileName + " - Image Sorter");
 }
 
 
 
 void ImageViewer::createActions()
-
 {
     openAct = new QAction(tr("&Open..."), this);
     openAct->setShortcut(tr("Ctrl+O"));
@@ -196,21 +187,21 @@ void ImageViewer::createActions()
     nextAct->setEnabled(false);
     connect(nextAct, SIGNAL(triggered()), this, SLOT(next()));
 
-    printAct = new QAction(tr("&Print..."), this);
-    printAct->setShortcut(tr("Ctrl+P"));
-    printAct->setEnabled(false);
-    connect(printAct, SIGNAL(triggered()), this, SLOT(print()));
+    prevAct = new QAction(tr("&Prev..."), this);
+    prevAct->setShortcut(tr("Ctrl+P"));
+    prevAct->setEnabled(false);
+    connect(prevAct, SIGNAL(triggered()), this, SLOT(prev()));
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcut(tr("Ctrl+Q"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-    zoomInAct = new QAction(tr("Zoom &In (25%)"), this);
+    zoomInAct = new QAction(tr("Zoom &In"), this);
     zoomInAct->setShortcut(tr("Ctrl++"));
     zoomInAct->setEnabled(false);
     connect(zoomInAct, SIGNAL(triggered()), this, SLOT(zoomIn()));
 
-    zoomOutAct = new QAction(tr("Zoom &Out (25%)"), this);
+    zoomOutAct = new QAction(tr("Zoom &Out"), this);
     zoomOutAct->setShortcut(tr("Ctrl+-"));
     zoomOutAct->setEnabled(false);
     connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
@@ -222,14 +213,12 @@ void ImageViewer::createActions()
 
     fitToWindowAct = new QAction(tr("&Fit to Window"), this);
     fitToWindowAct->setEnabled(false);
-    fitToWindowAct->setCheckable(true);
     fitToWindowAct->setShortcut(tr("Ctrl+F"));
     connect(fitToWindowAct, SIGNAL(triggered()), this, SLOT(fitToWindow()));
 
-    fitToWidthAct = new QAction(tr("Fit to &Width"), this);
-    fitToWidthAct->setShortcut(tr("Ctrl+W"));
-    fitToWidthAct->setEnabled(false);
-    connect(fitToWidthAct, SIGNAL(triggered()), this, SLOT(fitToWidth()));
+    autoFitAct = new QAction(tr("A&uto Fit to window"), this);
+    autoFitAct->setEnabled(true);
+    autoFitAct->setCheckable(true);
 
     aboutAct = new QAction(tr("&About"), this);
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
@@ -245,17 +234,17 @@ void ImageViewer::createMenus()
 {
     fileMenu = new QMenu(tr("&File"), this);
     fileMenu->addAction(openAct);
-    fileMenu->addAction(printAct);
+    fileMenu->addAction(prevAct);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 
     viewMenu = new QMenu(tr("&View"), this);
     viewMenu->addAction(zoomInAct);
     viewMenu->addAction(zoomOutAct);
-    viewMenu->addAction(fitToWidthAct);
     viewMenu->addAction(normalSizeAct);
-    viewMenu->addSeparator();
     viewMenu->addAction(fitToWindowAct);
+    viewMenu->addSeparator();
+    viewMenu->addAction(autoFitAct);
 
     helpMenu = new QMenu(tr("&Help"), this);
     helpMenu->addAction(aboutAct);
@@ -271,11 +260,12 @@ void ImageViewer::createMenus()
 void ImageViewer::updateActions()
 
 {
-    zoomInAct->setEnabled(!fitToWindowAct->isChecked());
-    zoomOutAct->setEnabled(!fitToWindowAct->isChecked());
-    fitToWidthAct->setEnabled(!fitToWindowAct->isChecked());
-    normalSizeAct->setEnabled(!fitToWindowAct->isChecked());
     nextAct->setEnabled(true);
+    prevAct->setEnabled(true);
+    fitToWindowAct->setEnabled(true);
+    normalSizeAct->setEnabled(true);
+    zoomInAct->setEnabled(scaleFactor < 3.0);
+    zoomOutAct->setEnabled(scaleFactor > 0.05);
 }
 
 
@@ -290,8 +280,7 @@ void ImageViewer::scaleImage(double factor)
     adjustScrollBar(scrollArea->horizontalScrollBar(), factor);
     adjustScrollBar(scrollArea->verticalScrollBar(), factor);
 
-    zoomInAct->setEnabled(scaleFactor < 3.0);
-    zoomOutAct->setEnabled(scaleFactor > 0.333);
+    statusBar()->showMessage(QString().sprintf("Scale set to: %.2lf x", scaleFactor));
 }
 
 

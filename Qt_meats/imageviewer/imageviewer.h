@@ -67,12 +67,11 @@ public:
 private slots:
     void open();
     void next();
-    void print();
+    void prev();
     void zoomIn();
     void zoomOut();
     void normalSize();
     void fitToWindow();
-    void fitToWidth();
     void about();
 
 private:
@@ -95,13 +94,13 @@ private:
 
     QAction *openAct;
     QAction *nextAct;
-    QAction *printAct;
+    QAction *prevAct;
     QAction *exitAct;
     QAction *zoomInAct;
     QAction *zoomOutAct;
     QAction *normalSizeAct;
     QAction *fitToWindowAct;
-    QAction *fitToWidthAct;
+    QAction *autoFitAct;
     QAction *aboutAct;
     QAction *aboutQtAct;
 
