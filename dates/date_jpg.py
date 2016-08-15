@@ -12,20 +12,11 @@ import time
 
 
 def grep_date(filename):
-    some_data = open(filename, 'rb').read(2**14)
+    some_data = open(filename, 'rb').read(2**12)
     match = re.search(b'\d{4}([ :]\d\d){5}', some_data)
     if match:
         return match.group().decode()
     return None
-
-
-def file_date(filename):
-    date_time_str = grep_date(filename)
-    if not date_time_str:
-        return None
-    date_str = date_time_str.split()[0]
-    y, m, d = map(int, date_str.split(':'))
-    return datetime.date(y, m, d)
 
 
 def info(f):
