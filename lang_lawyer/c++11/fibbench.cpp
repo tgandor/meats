@@ -3,11 +3,19 @@
 #include <chrono>
 #include <iomanip>
 #include <locale>
+#include <cmath>
 
 // -std=c++11
 
+#ifdef CNT
+int g_calls;
+#endif
+
 int fib(int n)
 {
+#ifdef CNT
+	++g_calls;
+#endif
 	if (n < 2)
 	{
 		return n;
@@ -32,7 +40,8 @@ int main(int argc, char **argv)
 	}
 	high_resolution_clock::time_point start = high_resolution_clock::now();
 	int fib_n = fib(n);
-	int calls = 2 * fib_n - 1;
+	// we need fib(n+1)
+	int calls = fib_n * (1 + std::sqrt(5)) - 0.5;
 	high_resolution_clock::time_point end = high_resolution_clock::now();
 	duration<double> elapsed = duration_cast<duration<double>>(end - start);
 	double secs = elapsed.count();
@@ -40,6 +49,9 @@ int main(int argc, char **argv)
 		<< std::setprecision(3) << secs << " s elapsed. ";
 	std::cout.imbue({ std::locale(), new Numpunct() });
 	std::cout << calls << " calls, "
+#ifdef CNT
+		<< g_calls << " (counted), "
+#endif
 		<< std::setprecision(0) << std::fixed << calls/secs << " c/s." 
 		<<  std::endl;
 	return 0;
