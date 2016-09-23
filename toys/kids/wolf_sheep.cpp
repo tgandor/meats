@@ -1,16 +1,26 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 using namespace std;
 
-/* chessboard sizes */
+/* chessboard sizes, should be even */
+#ifndef SIZE
 const int CB_W = 8;
-const int CB_H = 8;
+#else
+const int CB_W = SIZE;
+#endif
+const int CB_H = CB_W;
+
+// position bit field size
+const int PSHIFT = 5;
 
 long long position_counter;
 int wolf_trapped;
 int sheep_blocked;
+
+int VERBOSE_LEVEL = 0;
 
 struct Move
 {
@@ -50,6 +60,8 @@ enum FieldState
 
 Pos pWolf;
 Pos pSheep[CB_W/2];
+
+int total_hits, miss_cache;
 
 // .#.#.#
 // #.#.#.
@@ -95,6 +107,23 @@ void print_board()
 	}
 }
 
+int hash_position()
+{
+	int res = pWolf.r * (CB_W/2) + pWolf.c/2;
+	int positions[CB_W/2];
+	transform(begin(pSheep), end(pSheep), positions, [](Pos x) {
+		return x.r * (CB_W/2) + x.c/2;
+	});
+	sort(begin(positions), end(positions));
+	for (int x : positions)
+	{
+		res = (res << PSHIFT) + x;
+	}
+	return res;
+}
+
+map<int, GameResult> cache_wolf, cache_sheep;
+
 inline void board_set(Pos p, FieldState fs)
 {
 	board[p.r][p.c] = fs;
@@ -105,18 +134,25 @@ inline bool legal(Pos p)
 	return p.r >= 0 && p.r < CB_H && p.c >= 0 && p.c < CB_W && board[p.r][p.c] == EMPTY;
 }
 
-GameResult sheep();
+GameResult sheep(int);
 
-GameResult wolf()
+GameResult wolf(int moves = 0)
 {
-    if (++ position_counter % 100000000 == 0)
+	++total_hits;
+	int h = hash_position();
+	auto cache_it = cache_wolf.find(h);
+	if (cache_it != cache_wolf.end())
 	{
-		cout << "Position " << position_counter << endl;
-		print_board();
+		return cache_it->second;
 	}
+	++miss_cache;
+	if (VERBOSE_LEVEL >= 1)
+		cout << "  Evaluating wolf position " << h  << " after " << moves << " moves:" << endl;
+	if (VERBOSE_LEVEL >= 2)
+		print_board();
+	
 #ifdef VERBOSE
-	cout << "Wolf to move:" << endl;
-	print_board();
+
 #endif
 	Pos origPos = pWolf;
 	bool cantMove = true;
@@ -129,13 +165,13 @@ GameResult wolf()
 			board_set(origPos, EMPTY);
 			board_set(newPos, WOLF);
 			pWolf = newPos;
-			auto res = sheep();
+			auto res = sheep(moves + 1);
 			pWolf = origPos;
 			board_set(newPos, EMPTY);
 			board_set(origPos, WOLF);
 			if (res == WOLF_WINS)
 			{
-				return res;
+				return cache_wolf[h] = res;
 			}
 		}
 	}
@@ -145,23 +181,29 @@ GameResult wolf()
 		cout << "Wolf trapped " << wolf_trapped << endl;
 		print_board();
 	}
-	return SHEEP_WIN;
+	return cache_wolf[h] = SHEEP_WIN;
 }
 
-GameResult sheep()
+GameResult sheep(int moves = 0)
 {
-#ifdef VERBOSE
-	cout << "Sheep to move:" << endl;
-	print_board();
-#endif
+	++total_hits;
+	int h = hash_position();
+	auto cache_it = cache_sheep.find(h);
+	if (cache_it != cache_sheep.end())
+	{
+		return cache_it->second;
+	}
+	++miss_cache;
+	if (VERBOSE_LEVEL >= 1)
+		cout << "  Evaluating sheep position " << h << " after " << moves << " moves:" << endl;
+	if (VERBOSE_LEVEL >= 2)
+		print_board();
+
 	if (pWolf.r == CB_H - 1
 		|| max_element(begin(pSheep), end(pSheep),
 					   [](Pos a, Pos b){ return a.r < b.r; })->r <= pWolf.r)
 	{
-#ifdef VERBOSE
-		cout << "Wolf (" << pWolf.r << ", " << pWolf.c << ") passed or is at finish line" << endl;
-#endif
-		return WOLF_WINS;
+		return cache_sheep[h] = WOLF_WINS;
 	}
 	
 	for (auto& pOneSheep : pSheep)
@@ -176,20 +218,20 @@ GameResult sheep()
 				board_set(origPos, EMPTY);
 				board_set(newPos, SHEEP);
 				pOneSheep = newPos;
-				auto res = wolf();
+				auto res = wolf(moves + 1);
 				pOneSheep = origPos;
 				board_set(newPos, EMPTY);
 				board_set(origPos, SHEEP);
 				if (res == SHEEP_WIN)
 				{
-					return res;
+					return cache_sheep[h] = res;
 				}
 			}
 			// else { cout << "Pos " << newPos.r << ", " << newPos.c << " illegal for sheep." << endl; }
 		}
 	}
 	
-	return WOLF_WINS;
+	return cache_sheep[h] = WOLF_WINS;
 }
 
 int main()
@@ -199,11 +241,12 @@ int main()
 		cout << "Wolf wins if he starts" << endl;
 	else
 		cout << "Wolf loses even if he starts" << endl;
-/*
+
 	if (sheep() == SHEEP_WIN)
 		cout << "Sheep wins if she starts" << endl;
 	else
 		cout << "Sheep loses even if she starts" << endl;
-*/
+
+	cout << "Total calls: " << total_hits << ", cache misses: " << miss_cache << endl;
 	return 0;
 }
