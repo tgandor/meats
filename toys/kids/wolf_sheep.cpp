@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -118,11 +119,13 @@ GameResult wolf()
 	print_board();
 #endif
 	Pos origPos = pWolf;
+	bool cantMove = true;
 	for (auto& d : MovesWolf)
 	{
 		Pos newPos = origPos.shift(d);
 		if (legal(newPos))
 		{
+			cantMove = false;
 			board_set(origPos, EMPTY);
 			board_set(newPos, WOLF);
 			pWolf = newPos;
@@ -137,7 +140,7 @@ GameResult wolf()
 		}
 	}
 	
-	if (++wolf_trapped % 1000000 == 0)
+	if (cantMove && ++wolf_trapped % 1000000 == 0)
 	{
 		cout << "Wolf trapped " << wolf_trapped << endl;
 		print_board();
@@ -151,10 +154,12 @@ GameResult sheep()
 	cout << "Sheep to move:" << endl;
 	print_board();
 #endif
-	if (pWolf.r == CB_H - 1)
+	if (pWolf.r == CB_H - 1
+		|| max_element(begin(pSheep), end(pSheep),
+					   [](Pos a, Pos b){ return a.r < b.r; })->r <= pWolf.r)
 	{
 #ifdef VERBOSE
-		cout << "Wolf (" << pWolf.r << ", " << pWolf.c << ") is at finish line" << endl;
+		cout << "Wolf (" << pWolf.r << ", " << pWolf.c << ") passed or is at finish line" << endl;
 #endif
 		return WOLF_WINS;
 	}
