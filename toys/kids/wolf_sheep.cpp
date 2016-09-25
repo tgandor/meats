@@ -16,11 +16,11 @@ const int CB_H = CB_W;
 // position bit field size
 const int PSHIFT = 5;
 
-long long position_counter;
-int wolf_trapped;
-int sheep_blocked;
-
+#ifdef VERBOSE
+int VERBOSE_LEVEL = VERBOSE;
+#else
 int VERBOSE_LEVEL = 0;
+#endif
 
 struct Move
 {
@@ -145,15 +145,13 @@ GameResult wolf(int moves = 0)
 	{
 		return cache_it->second;
 	}
+
 	++miss_cache;
 	if (VERBOSE_LEVEL >= 1)
 		cout << "  Evaluating wolf position " << h  << " after " << moves << " moves:" << endl;
 	if (VERBOSE_LEVEL >= 2)
 		print_board();
-	
-#ifdef VERBOSE
 
-#endif
 	Pos origPos = pWolf;
 	bool cantMove = true;
 	for (auto& d : MovesWolf)
@@ -175,12 +173,7 @@ GameResult wolf(int moves = 0)
 			}
 		}
 	}
-	
-	if (cantMove && ++wolf_trapped % 1000000 == 0)
-	{
-		cout << "Wolf trapped " << wolf_trapped << endl;
-		print_board();
-	}
+
 	return cache_wolf[h] = SHEEP_WIN;
 }
 
@@ -193,6 +186,7 @@ GameResult sheep(int moves = 0)
 	{
 		return cache_it->second;
 	}
+
 	++miss_cache;
 	if (VERBOSE_LEVEL >= 1)
 		cout << "  Evaluating sheep position " << h << " after " << moves << " moves:" << endl;
@@ -205,7 +199,7 @@ GameResult sheep(int moves = 0)
 	{
 		return cache_sheep[h] = WOLF_WINS;
 	}
-	
+
 	for (auto& pOneSheep : pSheep)
 	{
 		// cout << "Moving sheep at " << pOneSheep.r << ", " << pOneSheep.c << endl;
@@ -230,13 +224,20 @@ GameResult sheep(int moves = 0)
 			// else { cout << "Pos " << newPos.r << ", " << newPos.c << " illegal for sheep." << endl; }
 		}
 	}
-	
+
 	return cache_sheep[h] = WOLF_WINS;
 }
 
 int main()
 {
 	init();
+
+	cout << "Evaluating board size " << CB_W << endl;
+	if (VERBOSE_LEVEL)
+	{
+		cout << "Verbosity: " << VERBOSE_LEVEL << endl;
+	}
+
 	if (wolf() == WOLF_WINS)
 		cout << "Wolf wins if he starts" << endl;
 	else
