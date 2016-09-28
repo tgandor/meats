@@ -45,10 +45,14 @@ def generate_def(functions, dll_file):
             f.write('\t{} @{}\n'.format(name, ordinal))
     return def_file
 
+# this should crash when missing Visual Studio
+vs_tools = os.environ[max([f for f in os.environ if f.startswith('VS')])]
+lib_cmd = '""{}..\\..\\VC\\bin\\lib.exe""'.format(vs_tools)
+dumpbin_cmd = '""{}..\\..\\VC\\bin\\dumpbin.exe""'.format(vs_tools)
             
 dll_file = sys.argv[1]
 
-exports = os.popen('dumpbin /nologo /exports ' + dll_file).readlines()
+exports = os.popen('{} /nologo /exports {}'.format(dumpbin_cmd, dll_file)).readlines()
 
 processor = DumbPinReader()
 
@@ -63,6 +67,6 @@ if processor.funcs_found != processor.funcs_expected:
 
 def_file = generate_def(processor.functions, dll_file)
 
-if os.system('lib /machine:%s /def:%s' % (arch, def_file)) != 0:
+if os.system('%s /machine:%s /def:%s' % (lib_cmd, arch, def_file)) != 0:
     print 'LIB failed'
 
