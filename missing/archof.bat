@@ -19,4 +19,4 @@ if "%BEST_TOOLS%"=="none" (
 
 :: echo Best tools found %BEST_TOOLS%
 
-"%BEST_TOOLS%..\..\VC\bin\dumpbin.exe" /headers "%1" | findstr "machine"
+"%BEST_TOOLS%..\..\VC\bin\dumpbin.exe" /headers "%*" | findstr "machine"
