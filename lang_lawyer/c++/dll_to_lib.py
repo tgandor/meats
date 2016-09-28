@@ -1,10 +1,32 @@
 # Windows, MSVS Tools in path, only...
 
 import os
+import struct
 import sys
 
-arch = 'x64'
+def arch_of(dll_file):
+    with open(dll_file, 'rb') as f:
+        doshdr = f.read(64)
+        magic, padding, offset = struct.unpack('2s58si', doshdr)
+        # print magic, offset
+        if magic != 'MZ':
+            return None
+        f.seek(offset, os.SEEK_SET)
+        pehdr = f.read(6)
+        # careful! H == unsigned short, x64 is negative with signed
+        magic, padding, machine = struct.unpack('2s2sH', pehdr) 
+        # print magic, hex(machine)
+        if magic != 'PE':
+            return None
+        if machine == 0x014c:
+            return 'i386'
+        if machine == 0x0200:
+            return 'IA64'
+        if machine == 0x8664:
+            return 'x64'
+        return 'unknown'
 
+        
 class DumbPinReader:
     def __init__(self):
         self.funcs_expected = 0
@@ -51,6 +73,11 @@ lib_cmd = '""{}..\\..\\VC\\bin\\lib.exe""'.format(vs_tools)
 dumpbin_cmd = '""{}..\\..\\VC\\bin\\dumpbin.exe""'.format(vs_tools)
             
 dll_file = sys.argv[1]
+arch = arch_of(dll_file)
+
+if not arch:
+    print('Not a DLL file. Exiting.')
+    exit()
 
 exports = os.popen('{} /nologo /exports {}'.format(dumpbin_cmd, dll_file)).readlines()
 
@@ -67,6 +94,9 @@ if processor.funcs_found != processor.funcs_expected:
 
 def_file = generate_def(processor.functions, dll_file)
 
-if os.system('%s /machine:%s /def:%s' % (lib_cmd, arch, def_file)) != 0:
-    print 'LIB failed'
+command = '%s /machine:%s /def:%s' % (lib_cmd, arch, def_file)
+print(command)
+if os.system(command) != 0:
+    print('LIB failed')
+
 
