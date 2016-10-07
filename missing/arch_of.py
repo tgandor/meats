@@ -11,14 +11,14 @@ def arch_of(dll_file):
         doshdr = f.read(64)
         magic, padding, offset = struct.unpack('2s58si', doshdr)
         # print magic, offset
-        if magic != 'MZ':
+        if magic != b'MZ':
             return None
         f.seek(offset, os.SEEK_SET)
         pehdr = f.read(6)
         # careful! H == unsigned short, x64 is negative with signed
         magic, padding, machine = struct.unpack('2s2sH', pehdr) 
         # print magic, hex(machine)
-        if magic != 'PE':
+        if magic != b'PE':
             return None
         if machine == 0x014c:
             return 'i386'
