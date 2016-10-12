@@ -2,7 +2,7 @@
 
 if [ -z "$1" ]; then
 	echo "Usage: $0 <file_to_recompress> [options]"
-	echo "Option example: -vf transpose=1 etc.
+	echo "Option example: -vf transpose=1 -s 960x540 etc."
 	exit
 fi
 
@@ -11,4 +11,4 @@ shift 1
 mkdir -p original
 mv "$infile" original
 
-time avconv -i "original/$1" "$@" -c:a copy "$1"
+time avconv -i "original/$infile" "$@" -c:a copy "$infile"
