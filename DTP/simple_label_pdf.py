@@ -30,7 +30,7 @@ top_margin = 0.0*cm
 line_width = 0.25
 default_length = None
 default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.pdf')
-fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial']
+fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial', 'DejaVuSans']
 
 
 
@@ -50,6 +50,8 @@ def _setup_canvas(outfile=default_output_file):
     if font_to_use:
         c.setFont(font_to_use, font_size)
         last_font.append(font_to_use)
+    else:
+        sys.stderr.write('No TTF font found from list: {}\n'.format(', '.join(fonts_to_try)))
     c.setTitle(outfile)
     return c
 
