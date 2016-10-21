@@ -28,9 +28,8 @@ IF NOT %ERRORLEVEL% == 0 (
         exit /B
     )
 
-    rem Program will now start again automatically with admin rights! 
-    rem pause
-    goto :eof
+    echo You have an old OS, without UAC.
+    echo Some commands below will probably not work anyway.
 )
 
 rem Now we're in C:\Windows\System32
