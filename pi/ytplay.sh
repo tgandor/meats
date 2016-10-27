@@ -7,5 +7,5 @@ if [ -z "$1" ] ; then
 	exit
 fi
 
-omxplayer -o local `youtube-dl -g $1`
+omxplayer -o local `youtube-dl -f best -g $1`
 
