@@ -54,6 +54,8 @@ try:
         dirs += 1
         for f in filenames:
             filename = os.path.join(dirpath, f)
+            if os.path.islink(filename):
+                continue
             try:
                 t = (md5sum(filename), os.stat(filename).st_size, filename)
                 files.append(t)
