@@ -10,8 +10,6 @@ class FileStats:
         self.stats_b = defaultdict(int)
         self.stats_4K = defaultdict(int)
         self.counted_files = set()
-        self.total_b = 0
-        self.total_4K = 0
 
     def process_file(self, filepath):
         if filepath in self.counted_files or os.path.islink(filepath):
@@ -21,9 +19,9 @@ class FileStats:
         size = os.stat(filepath).st_size
         blocks = (size + 2**12 - 1) // (2 ** 12)
         self.stats_b[ext] += size
-        self.total_b += size
+        self.stats_b['Total'] += size
         self.stats_4K[ext] += blocks
-        self.total_4K += blocks
+        self.stats_4K['Total'] += blocks
 
     def process_dir(self, directory):
         for dirpath, _, filenames in os.walk(directory):
@@ -44,20 +42,25 @@ class FileStats:
 
     def summary_b(self):
         print('Summary of size in bytes:')
+        max_ext = max(len(x) for x in self.stats_b.keys()) + 1
+        total_b = max(self.stats_b.values())
+        max_size = len('{:,}'.format(total_b))
         for ext, size in self.get_stats_b():
-            print('{:4s}: {:16,} B ({:4.1f}%)'.format(ext, size, 100.0 * size / self.total_b))
-        print('Total:{:16,} B\n{}'.format(self.total_b, '-'*40))
+            print('{:{}s} {:{},} B ({:3.1f}%)'.format(
+                ext + ':', max_ext, size, max_size, 100.0 * size / total_b))
 
     def summary_4K(self):
         print('Summary of size in KB, assuming ceil(size/4KB):')
+        max_ext = max(len(x) for x in self.stats_4K.keys()) + 1
+        total_4K = max(self.stats_4K.values())
+        max_blocks = len('{:,}'.format(total_4K * 4))
         for ext, blocks in self.get_stats_4K():
-            print('{:4s}: {:12,} KB ({:4.1f}%)'.format(ext, blocks * 4, 100.0 * blocks / self.total_4K))
-        print('Total:{:12,} KB\n{}'.format(self.total_4K * 4, '-'*40))
+            print('{:{}s} {:{},} KB ({:3.1f}%)'.format(
+                ext + ':', max_ext, blocks * 4, max_blocks, 100.0 * blocks / total_4K))
 
 
 def main():
     paths = sys.argv[1:]
-
 
     if not paths:
         paths.append('.')
