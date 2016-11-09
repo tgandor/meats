@@ -1,5 +1,7 @@
 #!/bin/bash
 
+shopt -s nullglob
+
 for d in */.git ; do
 	pushd $d/.. >/dev/null
 	pwd
