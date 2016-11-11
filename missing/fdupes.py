@@ -64,14 +64,15 @@ try:
 finally:
     cancel_update()
 
+processing_start = time.time()
 print('Done in {:.1f} s. ({} dirs, {} files){}'.format(
     time.time() - walk_start, dirs, len(files), ' '*32))
 
 total_waste = 0
 total_by4kb = 0
 total_files = 0
-group_count = 0
 
+groups = []
 
 for (md5, size), dup_files in itertools.groupby(sorted(files), lambda t: t[:2]):
     group = list(dup_files)
@@ -80,12 +81,18 @@ for (md5, size), dup_files in itertools.groupby(sorted(files), lambda t: t[:2]):
         continue
 
     # some statistics
-    group_count += 1
     total_files += len(group)-1
     total_waste += (len(group)-1) * size
-    total_by4kb += ((len(group)-1) * size + 2**12 - 1) / (2**12)
+    total_by4kb += ((len(group)-1) * size + 2**12 - 1) // (2**12)
 
     filenames = sorted((g[2] for g in group), key = suitability_max_len_penalize_spaces)
+    groups.append((md5, size, filenames))
+
+groups.sort(key=lambda x: x[1] * (len(x[2]) - 1))
+group_count = 0
+
+for md5, size, filenames in groups:
+    group_count += 1
     print('{}. {} {}\n{}\n'.format(group_count, md5, size, '\n'.join(filenames)))
 
     if do_delete:
@@ -97,3 +104,6 @@ for (md5, size), dup_files in itertools.groupby(sorted(files), lambda t: t[:2]):
 
 print('Total waste: {:,} Bytes; {:,} KB (4KB-blocks) in {} extra files.'.format(
     total_waste, total_by4kb * 4, total_files))
+
+print('Processed in {:.1f} s. ({:.1f} s total)'.format(
+    time.time() - processing_start, time.time() - walk_start))
