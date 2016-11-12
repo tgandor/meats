@@ -6,7 +6,7 @@ import time
 import re
 
 if len(sys.argv) < 2:
-    print "Usage: %s IFACE" % sys.argv[0]
+    print("Usage: %s IFACE" % sys.argv[0])
     exit()
 
 interface = sys.argv[1]
@@ -21,11 +21,12 @@ def get_bytes():
 
 try:
     rxb0, txb0 = get_bytes()
-except Exception, e:
-    print "Error getting data (see other messages)"
+except Exception as e:
+    print("Error getting data (see other messages)")
+    print(e)
     exit()
 
-print "If you see this, it's working. Exit with Ctrl-C."
+print("If you see this, it's working. Exit with Ctrl-C.")
 
 def human_format(n):
     if n > 2**20:
@@ -36,32 +37,40 @@ def human_format(n):
 
 idle_secs = 0
 maxtx, maxrx = 0, 0
+next_report = 1
 
 while True:
     try:
         time.sleep(1)
+        os.system('xset -led 3')
     except:
-        print
+        print()
         break
 
     try:
         rxb, txb = get_bytes()
     except:
-        print "Error retrieving data, quitting!"
+        print("Error retrieving data, quitting!")
         break
 
     if (rxb, txb) == (rxb0, txb0):
         idle_secs += 1
-        if idle_secs % 10 == 0:
-            print "%d seconds idle" % idle_secs
+        if idle_secs == next_report:
+            print(time.strftime('%H:%M:%S') + " %d seconds idle" % idle_secs)
+            next_report *= 2
         continue
     else:
+        if idle_secs > 0:
+            print(time.strftime('%H:%M:%S') + " resume after %d seconds" % idle_secs)
         idle_secs = 0
-    print "Recv %s/s, Send %s/s. Total: %s, %s." % tuple(
-            map(human_format, (rxb-rxb0, txb-txb0, rxb, txb)))
+        next_report = 1
+    os.system('xset led 3')
+    print(time.strftime('%H:%M:%S') 
+        + " Recv %s/s, Send %s/s. Total: %s, %s." % tuple(
+            map(human_format, (rxb-rxb0, txb-txb0, rxb, txb))))
     maxtx = max(maxtx, txb-txb0)
     maxrx = max(maxrx, rxb-rxb0)
     rxb0, txb0 = rxb, txb
 
-print "Bye, max speeds were: %s/s, %s/s." % (
-                human_format(maxrx), human_format(maxtx))
+print("Bye, max speeds were: %s/s, %s/s." % (
+                human_format(maxrx), human_format(maxtx)))
