@@ -14,7 +14,7 @@ def repo_name(repo_url):
 
 def make_repo_url(fetch_url):
     if 'git@' in fetch_url:
-        fetch_url = fetch_url.replace('git@', 'https://').replace(':', '/')
+        fetch_url = fetch_url.replace(':', '/').replace('git@', 'https://')
     return fetch_url[:-4] if fetch_url.endswith('.git') else fetch_url
 
 
