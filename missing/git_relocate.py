@@ -8,7 +8,7 @@ try:
 except ImportError:
     from urllib.parse import urlparse
 
-    
+
 def echo_exec(cmd):
     print('CMD> ' + cmd)
     if '-n' not in sys.argv[1:]:
