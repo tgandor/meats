@@ -6,6 +6,10 @@ if ! jmtp/mount.sh ; then
 	echo "Error: not able to mount phone (nothing installed)"
 	exit
 fi
-cp -v $source mnt/Phone/com.hipipal.qpyplus/scripts/
+if [ -z "$1" ] ; then
+	mc mnt/Phone/com.hipipal.qpyplus/scripts/
+else
+	cp -v $source mnt/Phone/com.hipipal.qpyplus/scripts/
+fi
 jmtp/umount.sh
 popd
