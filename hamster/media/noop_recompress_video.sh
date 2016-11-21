@@ -6,9 +6,18 @@ if [ -z "$1" ]; then
 	exit
 fi
 
+if which ffmpeg >/dev/null ; then
+	converter=ffmpeg
+elif which avconv >/dev/null ; then
+	converter=avconv
+else
+	echo Missing either ffmpeg or avconv
+	exit 1
+fi
+
 infile="$1"
 shift 1
 mkdir -p original
 mv "$infile" original
 
-time avconv -i "original/$infile" "$@" -c:a copy "$infile"
+time $converter -i "original/$infile" "$@" -c:a copy "$infile"

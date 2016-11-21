@@ -10,6 +10,14 @@ mkdir -p $ffmpeg_build
 
 num_jobs=`grep processor /proc/cpuinfo | wc -l`
 
+if ! which cmake > /dev/null ; then
+    sudo apt-get install cmake
+fi
+
+if ! which hg > /dev/null ; then
+    sudo apt-get install mercurial
+fi
+
 echo Dependencies from APT
 
 # sudo apt-get update
@@ -55,7 +63,7 @@ popd
 # vid.stab
 git clone https://github.com/georgmartius/vid.stab.git
 pushd vid.stab/
-cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$ffmpeg_build" -DENABLE_SHARED:bool=off .
+cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$ffmpeg_build" -DBUILD_SHARED_LIBS:bool=off .
 make -j $num_jobs
 make install
 popd
