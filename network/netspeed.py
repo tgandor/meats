@@ -27,6 +27,7 @@ except Exception as e:
     exit()
 
 print("If you see this, it's working. Exit with Ctrl-C.")
+sys.stdout.flush()
 
 def human_format(n):
     if n > 2**20:
@@ -57,6 +58,7 @@ while True:
         idle_secs += 1
         if idle_secs == next_report:
             print(time.strftime('%H:%M:%S') + " %d seconds idle" % idle_secs)
+            sys.stdout.flush()
             next_report *= 2
         continue
     else:
@@ -68,6 +70,7 @@ while True:
     print(time.strftime('%H:%M:%S') 
         + " Recv %s/s, Send %s/s. Total: %s, %s." % tuple(
             map(human_format, (rxb-rxb0, txb-txb0, rxb, txb))))
+    sys.stdout.flush()
     maxtx = max(maxtx, txb-txb0)
     maxrx = max(maxrx, rxb-rxb0)
     rxb0, txb0 = rxb, txb
