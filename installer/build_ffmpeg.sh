@@ -8,14 +8,18 @@ ffmpeg_build=$ffmpeg_sources/build
 
 mkdir -p $ffmpeg_build
 
+if [ -z "$1" ] ; then
 num_jobs=`grep processor /proc/cpuinfo | wc -l`
+else
+num_jobs=$1
+fi
 
 if ! which cmake > /dev/null ; then
-    sudo apt-get install cmake
+    sudo apt-get install -y cmake
 fi
 
 if ! which hg > /dev/null ; then
-    sudo apt-get install mercurial
+    sudo apt-get install -y mercurial
 fi
 
 echo Dependencies from APT
@@ -30,7 +34,7 @@ sudo apt-get -y install autoconf automake build-essential libass-dev libfreetype
 echo Done
 
 # libx264
-sudo apt-get install libx264-dev
+sudo apt-get install -y libx264-dev || exit 1
 
 # libx265
 hg clone https://bitbucket.org/multicoreware/x265
@@ -42,16 +46,26 @@ make distclean
 popd
 
 # libfdk-aac
-sudo apt-get install libfdk-aac-dev
+sudo apt-get install -y libfdk-aac-dev || (
+	git clone https://github.com/mstorsjo/fdk-aac.git
+	pushd fdk-aac/
+	time ./configure --prefix="$ffmpeg_build" --disable-shared
+	autoreconf -fiv
+	make -j $num_jobs
+	make install
+	make clean
+)
 
 # libmp3lame
-sudo apt-get install libmp3lame-dev
+sudo apt-get install -y libmp3lame-dev || exit 1
 
 # libopus
-sudo apt-get install libopus-dev
+sudo apt-get install -y libopus-dev || exit 1
 
 # libvpx
+if [ ! -f libvpx-1.5.0.tar.bz2 ] ; then
 wget http://storage.googleapis.com/downloads.webmproject.org/releases/webm/libvpx-1.5.0.tar.bz2
+fi
 tar xjvf libvpx-1.5.0.tar.bz2
 pushd libvpx-1.5.0
 ./configure --prefix="$ffmpeg_build" --disable-examples --disable-unit-tests
@@ -69,7 +83,9 @@ make install
 popd
 
 # ffmpeg
+if [ ! -f ffmpeg-snapshot.tar.bz2 ] ; then
 wget http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2
+fi
 tar xjvf ffmpeg-snapshot.tar.bz2
 cd ffmpeg
 PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$ffmpeg_build/lib/pkgconfig" ./configure \
