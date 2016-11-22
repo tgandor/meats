@@ -10,6 +10,7 @@ if len(sys.argv) < 2:
     exit()
 
 interval = 1
+max_idle = 600
 interface = sys.argv[1]
 
 if len(sys.argv) > 2:
@@ -63,7 +64,10 @@ while True:
         if idle_secs == next_report:
             print(time.strftime('%H:%M:%S') + " %d seconds idle" % idle_secs)
             sys.stdout.flush()
-            next_report *= 2
+            if next_report < max_idle: 
+                next_report *= 2
+            else:
+                next_report += max_idle
         continue
     else:
         if idle_secs > 0:
