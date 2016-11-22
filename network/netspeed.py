@@ -6,10 +6,14 @@ import time
 import re
 
 if len(sys.argv) < 2:
-    print("Usage: %s IFACE" % sys.argv[0])
+    print("Usage: %s IFACE [INTERVAL]" % sys.argv[0])
     exit()
 
+interval = 1
 interface = sys.argv[1]
+
+if len(sys.argv) > 2:
+    interval = int(sys.argv[2])
 
 def get_bytes():
     data = os.popen('ifconfig '+interface).read()
@@ -38,11 +42,11 @@ def human_format(n):
 
 idle_secs = 0
 maxtx, maxrx = 0, 0
-next_report = 1
+next_report = interval
 
 while True:
     try:
-        time.sleep(1)
+        time.sleep(interval)
         os.system('xset -led 3')
     except:
         print()
@@ -55,7 +59,7 @@ while True:
         break
 
     if (rxb, txb) == (rxb0, txb0):
-        idle_secs += 1
+        idle_secs += interval
         if idle_secs == next_report:
             print(time.strftime('%H:%M:%S') + " %d seconds idle" % idle_secs)
             sys.stdout.flush()
@@ -65,10 +69,10 @@ while True:
         if idle_secs > 0:
             print(time.strftime('%H:%M:%S') + " resume after %d seconds" % idle_secs)
         idle_secs = 0
-        next_report = 1
+        next_report = interval
     os.system('xset led 3')
     print(time.strftime('%H:%M:%S') 
-        + " Recv %s/s, Send %s/s. Total: %s, %s." % tuple(
+        + " Recv %s, Send %s. Total: %s, %s." % tuple(
             map(human_format, (rxb-rxb0, txb-txb0, rxb, txb))))
     sys.stdout.flush()
     maxtx = max(maxtx, txb-txb0)
@@ -76,4 +80,4 @@ while True:
     rxb0, txb0 = rxb, txb
 
 print("Bye, max speeds were: %s/s, %s/s." % (
-                human_format(maxrx), human_format(maxtx)))
+                human_format(maxrx/interval), human_format(maxtx/interval)))
