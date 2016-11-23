@@ -8,6 +8,8 @@ try:
 except ImportError:
     from urllib.parse import urlparse
 
+print('This script is deprecated.')
+exit()
 
 def echo_exec(cmd):
     print('CMD> ' + cmd)
