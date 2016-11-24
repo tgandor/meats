@@ -9,6 +9,7 @@ if [ -z "$1" ] ; then
 fi
 
 if [ ! -f $usbreset_bin ] ; then
+	mkdir -p `dirname $usbreset_bin`
 	gcc `dirname $0`/usbreset.c -o $usbreset_bin 
 fi
 
