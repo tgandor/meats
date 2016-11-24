@@ -1,7 +1,13 @@
 #!/bin/bash
-subdir=`date +'%Y-%m-%d_%H-%M-%S'`
-mkdir $subdir
-cd $subdir
+
+if [ -z "$1" ] ; then
+	subdir=`date +'%Y-%m-%d_%H-%M-%S'`
+	mkdir $subdir
+	cd $subdir
+else
+	cd $1
+fi
+
 if [ -z $device ]
   then device=`ls /dev/video? | head -n 1`
 elif [ $device == 0 ]
