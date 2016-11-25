@@ -4,6 +4,7 @@ import base64
 import os
 import getpass
 import hashlib
+import sys
 
 try:
     import readline
@@ -17,23 +18,23 @@ if os.path.exists('.htaccess'):
 template = """
 Authtype Basic
 AuthName "{}"
-AuthUserFile .htpasswd
+AuthUserFile {}/.htpasswd
 Require valid-user
 """
 
 if sys.version_info[0] == 2:
     input = raw_input
 
-auth_name = input('AuthName (Please login):')
+auth_name = input('AuthName (Please login): ')
 if not auth_name:
     auth_name = 'Please login'
 
 with open('.htaccess', 'w') as f:
-    f.write(template.format(auth_name))
+    f.write(template.format(auth_name, os.getcwd()))
 
 with open('.htpasswd', 'w') as f:
     while True:
-        username = input('Username (empty to quit):')
+        username = input('Username (empty to quit): ')
         if not username:
             break
         password = getpass.getpass()
