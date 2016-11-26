@@ -27,6 +27,7 @@ default_text = 'Example label'
 default_width = 21*cm
 default_height = 28.5*cm
 top_margin = 0.0*cm
+bottom_margin = 1.0*cm
 line_width = 0.25
 default_length = None
 default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.pdf')
@@ -130,7 +131,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
 
     # date subscript
     c.setFontSize(date_font)
-    c.drawCentredString(width/2, inv(height)+.5*cm, datetime.datetime.now().strftime('%Y-%m-%d (%a) %H:%M'))
+    c.drawCentredString(width/2, max(inv(height)+.5*cm, bottom_margin), datetime.datetime.now().strftime('%Y-%m-%d (%a) %H:%M'))
 
     # final cleanup
     c.restoreState()
