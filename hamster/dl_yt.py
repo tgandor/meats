@@ -3,7 +3,6 @@
 import androidhelper
 import atexit
 import os
-import youtube_dl
 
 target = '/mnt/sdcard/Download'
 
@@ -22,6 +21,7 @@ if not android.checkWifiState().result:
 the_url = android.getClipboard().result
 the_url = the_url.split()[-1]
 
+
 def after_download():
     # module has no member 'statvfs'
     '''
@@ -36,4 +36,7 @@ def after_download():
     android.vibrate(2000)
 
 atexit.register(after_download)
+
+print('Starting download of: ' + the_url)
+import youtube_dl
 youtube_dl.main([the_url])
