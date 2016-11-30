@@ -5,17 +5,37 @@ import cv2
 import time
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-o", "--output", help="output file", default='webcam.jpg')
+parser.add_argument("-o", "--output", help="output file (include '%d' for number sequence)", default='cam_%d.jpg')
 parser.add_argument("-d", "--device", help="increase output verbosity", default=0, type=int)
 parser.add_argument("-p", "--delay", help="delay period between captures", default=1, type=float)
 parser.add_argument("-q", "--quiet", help="print less messages", action='store_true')
 parser.add_argument("-n", "--count", help="frame capture limit", default=-1, type=int)
+parser.add_argument("-t", "--timestamp", help="add timestamp to image", action='store_true')
 args = parser.parse_args()
 
 cap = cv2.VideoCapture(args.device)
 counter = 0
 frame_counter = 0
-next_capture = time.time()
+next_capture = then = time.time()
+
+
+class Average:
+    def __init__(self):
+        self.sum = 0
+        self.count = 0
+
+    def sample(self, val):
+        self.sum += val
+        self.count += 1
+
+    def get(self):
+        if not self.count:
+            return None
+        return self.sum / self.count
+
+
+avg_period = Average()
+
 
 try:
     while True:
@@ -24,12 +44,25 @@ try:
         if not ret:
             break
         counter += 1
-        if time.time() >= next_capture:
-            cv2.imwrite(args.output, frame)
+        now = time.time()
+        avg_period.sample(now - then)
+        then = now
+
+        if args.delay <= 0 or now >= next_capture:
+            if args.timestamp:
+                cv2.putText(frame,
+                            time.strftime("%Y-%m-%d %H:%M:%S") + ' {:.1f} fps'.format(1/avg_period.get()),
+                            (0, 20),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            0.5,
+                            (0, 255, 0)
+                )
             frame_counter += 1
+            output = args.output % (frame_counter,) if '%' in args.output else args.output
+            cv2.imwrite(output, frame)
             if not args.quiet:
-                print('Stored frame {} (input frame {}) to {}'.format(frame_counter, counter, args.output))
-            next_capture = time.time() + args.delay
+                print('Stored frame {} (input frame {}) to {}'.format(frame_counter, counter, output))
+            next_capture = now + args.delay
             if frame_counter == args.count:
                 break
 finally:
