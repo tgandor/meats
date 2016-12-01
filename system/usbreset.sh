@@ -13,5 +13,12 @@ if [ ! -f $usbreset_bin ] ; then
 	gcc `dirname $0`/usbreset.c -o $usbreset_bin 
 fi
 
-sudo $usbreset_bin "$@"
+if [ -e $1 ]; then
+	device=$1
+else
+	device=`lsusb | awk "/$@/"' { sub(":", ""); print "/dev/bus/usb/" $2 "/" $4 }'`
+	echo Inferred device: $device
+fi
+
+sudo $usbreset_bin $device
 
