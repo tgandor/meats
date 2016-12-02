@@ -17,6 +17,7 @@ options = {
         '-d': '.',
 }
 
+
 def parseopts():
     args = []
     i = 1
@@ -33,24 +34,26 @@ def parseopts():
     return args
 
 def _filename(fileinfo):
-    return fileinfo.filename.decode(options['-e'])
+    print(repr(fileinfo.filename))
+    print(hex(fileinfo.flag_bits), bin(fileinfo.flag_bits))
+    return fileinfo.filename # .decode(options['-e'])
 
 def _print_short(fi):
     try:
-        print "%9d  %d-%02d-%02d %02d:%02d   %s" % (
+        print("%9d  %d-%02d-%02d %02d:%02d   %s" % (
             (fi.file_size,) + fi.date_time[:-1] + (_filename(fi),)
-        )
+        ))
     except:
-        print "%9d  %d-%02d-%02d %02d:%02d   %s(ERR)" % (
+        print("%9d  %d-%02d-%02d %02d:%02d   %s(ERR)" % (
             (fi.file_size,) + fi.date_time[:-1] + (fi.filename,)
-        )
-     
+        ))
+
 def _full_info(fileinfo):
-    print _filename(fileinfo)
+    print(_filename(fileinfo))
     for f in dir(fileinfo):
         if not f.startswith('__'):
-            print f, getattr(fileinfo, f)
-    print '-'*40
+            print(f, getattr(fileinfo, f))
+    print('-'*40)
 
 def _extract(fi, z):
     name = _filename(fi)
@@ -68,16 +71,16 @@ def _extract(fi, z):
         open(name, 'wb').write(data)
         if not flags['-q'] and fi.compress_type:
             try:
-                print "%11s: %s" % ('inflating', name)
+                print("%11s: %s" % ('inflating', name))
             except:
-                print "%11s: %s(ERR)" % ('inflating', fi.filename)
+                print("%11s: %s(ERR)" % ('inflating', fi.filename))
         elif not flags['-q']:
             try:
-                print "%11s: %s" % ('extracting', name)
+                print("%11s: %s" % ('extracting', name))
             except:
-                print "%11s: %s(ERR)" % ('extracting', name)
+                print("%11s: %s(ERR)" % ('extracting', name))
     elif not flags['-q']:
-        print "%11s: %s" % ('creating', name)
+        print("%11s: %s" % ('creating', name))
 
 def process_single(fileinfo, zipfile):
     if flags['-l']:
@@ -98,20 +101,20 @@ def process(z, files):
 
 def _footer(total, num):
     if flags['-l']:
-        print """---------                     %s------
-%9d                     %d files""" % ('-'*len(str(num)), total, num)
+        print("""---------                     %s------
+%9d                     %d files""" % ('-'*len(str(num)), total, num))
 
 def _header(arg):
-    print "Archive:  %s" % arg
+    print("Archive:  %s" % arg)
     if flags['-l']:
-        print """ Length      Date    Time    Name
----------  ---------- -----   ----"""
+        print(""" Length      Date    Time    Name
+---------  ---------- -----   ----""")
 
 def main():
     args = parseopts()
     _header(args[0])
     z = zipfile.ZipFile(args[0])
-    process(z, map(unicode, args[1:]))
+    process(z, list(map(str, args[1:])))
 
 if __name__=='__main__':
     main()
