@@ -13,7 +13,9 @@ flags = {
 }
 
 options = {
-        '-e': 'cp1250',
+        # 'cp949, cp891' Windows Korean
+        #'-e': 'cp1250', # Windows ANSI CE
+        '-e': 'cp852', # Windows console CE
         '-d': '.',
 }
 
@@ -33,10 +35,47 @@ def parseopts():
             i += 1
     return args
 
-def _filename(fileinfo):
-    print(repr(fileinfo.filename))
-    print(hex(fileinfo.flag_bits), bin(fileinfo.flag_bits))
-    return fileinfo.filename # .decode(options['-e'])
+
+def _sanitize(s):
+    """Replace 'bad' characters in string with underscore."""
+    return ''.join(map(lambda c: c if 31 < ord(c) < 128 else '_', s))
+
+
+def _filename2(fileinfo):
+    if (fileinfo.flag_bits & 0x800):
+        # unicode
+        return fileinfo.filename
+    try:
+        return fileinfo.filename.decode(options['-e'])
+    except UnicodeDecodeError:
+        gelded = _sanitize(fileinfo.filename)
+        sys.stderr.write('Error decoding {}, using {} instead\n'.format(repr(fileinfo.filename), gelded))
+        return gelded
+
+
+def _filename3(fileinfo):
+    # print(fileinfo.filename, fileinfo.flag_bits)
+    if (fileinfo.flag_bits & 0x800):
+        # unicode
+        return fileinfo.filename
+    try:
+        # https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
+        filename_bin = fileinfo.filename.encode('cp437')
+        # print(repr(fileinfo.filename), ' -> ', filename_bin)
+        filename_str = filename_bin.decode(options['-e'])
+        # print(filename_bin, ' -> ', filename_str, fileinfo.flag_bits)
+        return filename_str
+    except UnicodeDecodeError:
+        gelded = _sanitize(fileinfo.filename)
+        sys.stderr.write('Error decoding {}, using {} instead\n'.format(repr(fileinfo.filename), gelded))
+        return gelded
+
+
+if sys.version_info.major == 2:
+    _filename = _filename2
+else:
+    _filename = _filename3
+
 
 def _print_short(fi):
     try:
