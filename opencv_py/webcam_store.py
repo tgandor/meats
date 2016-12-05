@@ -36,6 +36,9 @@ class Average:
 
 avg_period = Average()
 
+prev_frame = None
+same_frames = 0
+same_frames_max = 1
 
 try:
     while True:
@@ -65,5 +68,17 @@ try:
             next_capture = now + args.delay
             if frame_counter == args.count:
                 break
+
+        if prev_frame is not None and (frame == prev_frame).all():
+            print('Same frame again')
+            same_frames += 1
+            if same_frames >= same_frames_max:
+                print('Max same frames ({}) reached, exiting.'.format(same_frames_max))
+                break
+        else:
+            same_frames = 0
+
+        prev_frame = frame
+
 finally:
     cap.release()
