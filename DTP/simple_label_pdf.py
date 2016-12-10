@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import datetime
 import locale
 import os
@@ -208,13 +209,13 @@ def save_label(text, width, height, length):
     if label_id is None:
         print('Creating label')
         cursor.execute("insert into labels (text, width, height, length) values (?,?,?,?)",
-                       (text, width, height, length, ))
+                       (text, width / cm, height / cm, length, ))
         label_id = cursor.lastrowid
     else:
         label_id = label_id[0]
         print('Updating label {}'.format(label_id))
         cursor.execute("update labels set width=?, height=?, length=? where id=?",
-                       (width, height, length, label_id))
+                       (width / cm, height / cm, length, label_id))
     # log the generation
     cursor.execute("insert into outprints(label_id, outprint_date) values (?,?)",
                    (label_id, datetime.datetime.now()))
