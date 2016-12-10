@@ -206,6 +206,8 @@ def save_label(text, width, height, length):
     cursor.execute(u"select id from labels where text = ?", (text,))
     # create or update label
     label_id = cursor.fetchone()
+    if length is not None:
+        length /= cm
     if label_id is None:
         print('Creating label')
         cursor.execute("insert into labels (text, width, height, length) values (?,?,?,?)",
