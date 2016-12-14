@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import sys
 import glob
+import os
+import sys
 
 
 def analyze(filename):
@@ -20,6 +21,8 @@ def analyze(filename):
 
 def stats_all(tabs, spaces, none, empty):
     total = tabs + spaces + none + empty
+    if total == 0:
+        return 'empty file'
     return 'tabs {} ({}%), spaces {} ({}%), none {} ({}%), empty {} ({}%)'.format(
         tabs, tabs * 100 / total,
         spaces, spaces * 100 / total,
@@ -30,6 +33,8 @@ def stats_all(tabs, spaces, none, empty):
 
 def stats_indented(tabs, spaces, none, empty):
     total = tabs + spaces
+    if total == 0:
+        return 'empty file'
     return 'tabs {} ({}%), spaces {} ({}%)'.format(
         tabs, tabs * 100 / total,
         spaces, spaces * 100 / total
@@ -38,6 +43,8 @@ def stats_indented(tabs, spaces, none, empty):
 
 def stats_nonempty(tabs, spaces, none, empty):
     total = tabs + spaces + none
+    if total == 0:
+        return 'empty file'
     return 'tabs {} ({}%), spaces {} ({}%), none {} ({}%)'.format(
         tabs, tabs * 100 / total,
         spaces, spaces * 100 / total,
@@ -46,6 +53,10 @@ def stats_nonempty(tabs, spaces, none, empty):
 
 
 stat_format = stats_nonempty
+if os.getenv('KIND') == 'indented':
+    stat_format = stats_indented
+elif os.getenv('KIND') == 'all':
+    stat_format = stats_all
 
 total_stats = [0] * 4
 
