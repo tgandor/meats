@@ -1,33 +1,43 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import threading
 
 try:
-    import Tkinter as tk
+    if sys.version_info.major == 2:
+        import Tkinter as tk
+        from Tkinter import Frame, Tk, Button, BOTH, Label, Entry, StringVar, Spinbox, NORMAL, DISABLED
+        import tkMessageBox
+    else:
+        import tkinter as tk
+        from tkinter import Frame, Tk, Button, BOTH, Label, Entry, StringVar, Spinbox, NORMAL, DISABLED
+        from tkinter import messagebox as tkMessageBox
 except ImportError:
     os.system('sudo apt-get install python-tk')
     print('Please re-run to use Tkinter')
     exit()
 
-from Tkinter import Frame, Tk, Button, BOTH, Label, Entry, StringVar, Spinbox, NORMAL, DISABLED
-import tkMessageBox
+
 
 try:
     import sane
 except ImportError:
-    os.system('sudo apt-get install sane sane-utils python-imaging-sane')
+    print('Could not load sane')
+    cmd = 'sudo apt-get install sane sane-utils python{}-imaging-sane'.format('3' if sys.version_info.major == 3 else '')
+    print(cmd)
+    os.system(cmd)
     print('Please re-run to use sane scanners')
     exit()
 
-import sane
-print 'SANE version:', sane.init()
+version = sane.init()
+print('SANE version: {}'.format(version))
 
 available = sane.get_devices()
-print 'Available devices =', available
+print('Available devices = {}'.format(available))
 
 if not available:
-    print "NO DEVICES FOUND."
+    print("NO DEVICES FOUND.")
     s = None
 else:
     s = sane.open(available[0][0])
@@ -35,7 +45,7 @@ else:
 
 class Settings(object):
     def __init__(self, tk_root):
-        self.resolution = 150
+        self.resolution = tk.StringVar(tk_root, value='300') # 300
         self.width = 210.0
         self.height = 297.0
         self.scale = tk.DoubleVar(tk_root, value=1.0)
@@ -61,7 +71,7 @@ class Settings(object):
             device.mode = 'gray'
         else:
             device.mode = self.mode()
-        device.resolution = self.resolution
+        device.resolution = int(self.resolution.get())
 
     def postprocess(self, image):
         if self.mode() == 'gray+otsu':
@@ -169,6 +179,12 @@ class ScanDialog(Frame):
         tk.Radiobutton(panel, text="Gray+Otsu", value='gray+otsu', variable=self.settings.scan_mode).pack(anchor=tk.W)
         panel.pack(side=tk.LEFT, anchor=tk.N)
 
+        panel = tk.Frame(settings_panel)
+        tk.Label(panel, text="DPI").pack()
+        tk.Radiobutton(panel, text="300", value='300', variable=self.settings.resolution).pack(anchor=tk.W)
+        tk.Radiobutton(panel, text="150", value='150', variable=self.settings.resolution).pack(anchor=tk.W)
+        panel.pack(side=tk.LEFT, anchor=tk.N)
+
         settings_panel.grid(row=r, column=0, columnspan=2)
         r += 1
 
@@ -197,18 +213,18 @@ class ScanDialog(Frame):
         target = '%s%03d%s' % (self.newName.get(), int(self.numberSuffix.get()), self._ext(), )
         if os.path.exists(target):
             if not tkMessageBox.askokcancel(title='Scan Images', message='File exists. Overwrite?'):
-                print 'Not scanning: %s - file exists!' % target
+                print('Not scanning: %s - file exists!' % target)
                 new_name = self.newName.get()
                 for i in xrange(int(self.numberSuffix.get()), 1000):
                     new_target = '%s%03d.%s' % (new_name, int(self.numberSuffix.get()), self._ext(), )
                     if not os.path.exists(new_target):
-                        print 'Next available filename: %s' % (new_target, )
+                        print('Next available filename: %s' % (new_target, ))
                         self.numberSuffix.delete(0, 'end')
                         self.numberSuffix.insert(0, i)
                         break
                 return
 
-        print "Scanning to filename '%s' ..." % (target, )
+        print("Scanning to filename '%s' ..." % (target,))
 
         if s is None:
             print('No scanner present. Connect and restart application.')
@@ -222,11 +238,10 @@ class ScanDialog(Frame):
             self.okButton.config(state=DISABLED)
             self.statusLabel.config(text='Scanning, please wait...')
         else:
-            print "Error - not started, worker exists."
+            print("Error - not started, worker exists.")
 
 
 root = Tk()
 ex = ScanDialog(root)
 root.geometry("+300+300")
 root.mainloop()
-
