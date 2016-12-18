@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cat /sys/class/power_supply/BAT0/uevent
+cat /sys/class/power_supply/BAT?/uevent

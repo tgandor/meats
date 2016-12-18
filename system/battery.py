@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 
+import glob
 import os
 
 fields_of_interest = ['POWER_SUPPLY_ENERGY_FULL', 'POWER_SUPPLY_ENERGY_NOW', None, None, None, 'POWER_SUPPLY_POWER_NOW']
 
 
 def power_supply_data():
-    raw = open('/sys/class/power_supply/BAT0/uevent').read()
+    batteries = glob.glob('/sys/class/power_supply/BAT?/uevent')
+    if not batteries:
+        print('Batteries not found.')
+        exit(1)
+    raw = open(batteries[0]).read()
     result = {}
     for line in raw.split('\n'):
         parts = line.split('=')
