@@ -41,6 +41,7 @@ else:
 
 cap = cv2.VideoCapture(device)
 cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
+first_frame = True
 
 while(True):
     # Capture frame-by-frame
@@ -66,6 +67,9 @@ while(True):
 
     # Display the resulting frame
     cv2.imshow('frame', frame)
+    if first_frame:
+        cv2.resizeWindow('frame', frame.shape[1], frame.shape[0])
+        first_frame = False
 
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
@@ -83,6 +87,8 @@ while(True):
         mean = not mean
     elif key == ord('M'):
         median = not median
+    elif key == ord('/'):
+        cv2.resizeWindow('frame', frame.shape[1], frame.shape[0])
     elif key == ord('-'):
         kernel = max(kernel-2, min_kernel)
     elif key == ord('+') or key == ord('='):
