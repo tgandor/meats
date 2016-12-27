@@ -18,7 +18,8 @@ try:
     from reportlab.pdfbase.ttfonts import TTFont
 except ImportError:
     print('Missing reportlab, trying to install...')
-    os.system("sudo apt-get install python-reportlab")
+    os.system("sudo apt-get install python{}-reportlab".format(
+        '3' if sys.version_info.major == 3 else ''))
     exit()
 
 
@@ -141,6 +142,8 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
 
 
 def get_parameters():
+    if sys.version_info.major == 3:
+        raw_input = input
     if len(sys.argv) < 2:
         text = raw_input('Enter label text: ') or default_text
     else:
