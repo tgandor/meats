@@ -60,8 +60,3 @@ while(True):
             print("{}: {}".format(k, shorthands[k]))
         continue
     modcmd(expand(cmd))
-    # copy log...
-    open('/mnt/sdcard/Download/pip.log', 'w').write(
-        open('/sdcard/com.hipipal.qpyplus/.pip/pip.log').read()
-    )
-

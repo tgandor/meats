@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source=`realpath $1`
 pushd `dirname $0`/..
 if ! jmtp/mount.sh ; then
 	echo "Error: not able to mount phone (nothing installed)"
@@ -22,11 +21,15 @@ if [ ! -d $target_dir ] ; then
 	exit
 fi
 
+target_dir=`realpath $target_dir`
+popd
+
 if [ -z "$1" ] ; then
-	mc $target_dir
+	mc "$target_dir"
 else
-	cp -v $source $target_dir
+	cp -v "$@" "$target_dir"
 fi
 
+pushd `dirname $0`/..
 jmtp/umount.sh
 popd
