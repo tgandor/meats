@@ -34,6 +34,7 @@ SCREEN_WIDTH, SCREEN_HEIGHT = get_screen_res()
 
 
 def show_fit(img, name='preview', expand=False, rotate=False):
+    # partially deprecated: cv2.WINDOW_NORMAL flag
     w, h = cv_size(img)
     W, H = SCREEN_WIDTH, SCREEN_HEIGHT
     if w <= W and h <= H and not expand:
@@ -55,9 +56,13 @@ def show_fit(img, name='preview', expand=False, rotate=False):
     scale = 1.0
     while True:
         cv2.imshow(name, to_show)
-        key = cv2.waitKey(0)
+        key = cv2.waitKey(1500)
+        if key == -1:
+            break
         char_code = key % 256
         if char_code == ord(' '):
+            # 'pause'
+            cv2.waitKey(0)
             break
         if char_code == ord('+'):
             scale *= 2
@@ -101,7 +106,8 @@ def process(filename):
             print('The angle is too small. No action taken.')
     else:
         print('The angle is too radical. No action taken.')
-    # show_fit(gray, rotate=False)
+    show_fit(edges, rotate=False)
+    show_fit(gray, rotate=False)
 
 
 def main():

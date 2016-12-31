@@ -1,6 +1,5 @@
 #qpy:console
 import os
-import os.path
 import sys
 #sys.dont_write_bytecode = True
 
@@ -21,8 +20,11 @@ def history_expand(cmd):
 
 
 def modcmd(arg):
-    arg = 'pip ' + history_expand(arg)
-    cmd = sys.executable + " " + sys.prefix + "/bin/" + arg
+    arg = history_expand(arg)
+    pip_script = sys.prefix + "/bin/pip"
+    if not os.path.exists(pip_script):
+        print('Error: {} - file not found'.format(pip_script))
+    cmd = sys.executable + " " + pip_script + " " + arg
     print(cmd)
     os.system(cmd)
 

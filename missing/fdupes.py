@@ -2,6 +2,7 @@
 
 import hashlib
 import itertools
+import json
 import os
 import sys
 import time
@@ -90,6 +91,15 @@ for (md5, size), dup_files in itertools.groupby(sorted(files), lambda t: t[:2]):
 
 groups.sort(key=lambda x: x[1] * (len(x[2]) - 1))
 group_count = 0
+
+json_dump = 'fdupes_groups.json'
+suffix = 0
+while os.path.exists(json_dump):
+    suffix += 1
+    json_dump = 'fdupes_groups_{}.json'.format(suffix)
+
+with open(json_dump, 'w') as dump:
+    json.dump(groups, dump, indent=2)
 
 for md5, size, filenames in groups:
     group_count += 1

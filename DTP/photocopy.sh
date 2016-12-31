@@ -34,7 +34,7 @@ fi
 
 echo "Scanning to: $tmpdf"
 
-scanimage -p --format=tiff > $tmpdf
+scanimage --progress --format=tiff > $tmpdf
 if [ "$1"=="-e" -o "$2"=="-e" -o "$3"=="-e" ] ; then
 	# leaving all modifications to the user
 	gimp $tmpdf
