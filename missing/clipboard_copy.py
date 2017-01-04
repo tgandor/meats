@@ -3,6 +3,12 @@
 import sys
 
 
+def read(prompt):
+    if sys.version_info.major == 2:
+        return raw_input(prompt)
+    return input(prompt)
+
+
 def copy(data, wait_gui=False):
     try:
         import Tkinter as Tk
@@ -10,7 +16,6 @@ def copy(data, wait_gui=False):
     except ImportError:
         # welcome to Python3
         import tkinter as tk
-        raw_input = input
 
     r = tk.Tk()
     r.withdraw()
@@ -19,7 +24,7 @@ def copy(data, wait_gui=False):
 
     if sys.platform != 'win32':
         if not wait_gui:
-            raw_input('Data was copied into clipboard. Paste and press ENTER to exit...')
+            read('Data was copied into clipboard. Paste and press ENTER to exit...')
             r.destroy()
         else:
             # stdin already read; use GUI to exit
