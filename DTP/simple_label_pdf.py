@@ -25,6 +25,7 @@ except ImportError:
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--font-size', type=int, default=20)
+parser.add_argument('--repeat', type=int, default=1, help="Times to epeat each label verbatim (without series)")
 parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
 
 settings = dict(
@@ -257,10 +258,12 @@ def main():
     text, width, height, length = get_parameters()
     save_label(text, width, height, length)
     c = _setup_canvas()
-    label(c, text, width, height)
+    for _ in range(args.repeat):
+        label(c, text, width, height)
     if length:
-        label(c, text, length, height)
-        label(c, text, width, length)
+        for _ in range(args.repeat):
+            label(c, text, length, height)
+            label(c, text, width, length)
     _finish_rendering(c)
 
 
