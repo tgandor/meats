@@ -23,7 +23,13 @@ except ImportError:
     exit()
 
 
-font_size = 20
+parser = argparse.ArgumentParser()
+parser.add_argument('--font-size', type=int, default=20)
+parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
+
+settings = dict(
+    font_size = 20
+)
 date_font = 12
 default_text = 'Example label'
 default_width = 21*cm
@@ -33,6 +39,7 @@ bottom_margin = 1.0*cm
 line_width = 0.25
 default_length = None
 default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.pdf')
+
 fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial', 'DejaVuSans']
 
 
@@ -51,7 +58,7 @@ def _setup_canvas(outfile=default_output_file):
 
     c = canvas.Canvas(outfile)
     if font_to_use:
-        c.setFont(font_to_use, font_size)
+        c.setFont(font_to_use, settings['font_size'])
         last_font.append(font_to_use)
     else:
         sys.stderr.write('No TTF font found from list: {}\n'.format(', '.join(fonts_to_try)))
@@ -62,7 +69,7 @@ def _setup_canvas(outfile=default_output_file):
 def new_page(c):
     c.showPage()
     if last_font:
-        c.setFont(last_font[0], font_size)
+        c.setFont(last_font[0], settings['font_size'])
 
 
 class LabelState:
@@ -122,6 +129,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
         c.line(width, inv(0), width, inv(height))
 
     # text breaking...
+    font_size = settings['font_size']
     lines = text.split('\n')
     extra_h = len(lines) / 2 * font_size * (-1)
     for line, i in zip(lines, range(len(lines))):
@@ -140,36 +148,8 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     state.height_left -= height
     return True
 
-
-def get_parameters():
-    if sys.version_info.major == 3:
-        raw_input = input
-    if len(sys.argv) < 2:
-        text = raw_input('Enter label text: ') or default_text
-    else:
-        text = sys.argv[1]
-
-    if len(sys.argv) < 3:
-        in_width = raw_input('Width (%.1f): ' % (default_width/cm))
-    else:
-        in_width = sys.argv[2]
-    width = float(in_width)*cm if in_width else default_width
-
-    if len(sys.argv) < 4:
-        in_height = raw_input('Height (%.1f): ' % (default_height/cm))
-    else:
-        in_height = sys.argv[3]
-    height = float(in_height)*cm if in_height else default_height
-
-    if len(sys.argv) >= 5:
-        length = float(sys.argv[4]) * cm
-    else:
-        length = default_length
-
-    return text, width, height, length
-
-
 # label persistance
+
 
 def open_database():
     labels_file = os.path.expanduser("~/labels.db")
@@ -244,6 +224,35 @@ def multi_label(text, width, height, count):
     _finish_rendering(c)
 
 
+def get_parameters():
+    if sys.version_info.major == 3:
+        raw_input = input
+
+    if len(argv) < 1:
+        text = raw_input('Enter label text: ') or default_text
+    else:
+        text = argv[0]
+
+    if len(argv) < 2:
+        in_width = raw_input('Width (%.1f): ' % (default_width/cm))
+    else:
+        in_width = argv[1]
+    width = float(in_width)*cm if in_width else default_width
+
+    if len(argv) < 3:
+        in_height = raw_input('Height (%.1f): ' % (default_height/cm))
+    else:
+        in_height = argv[2]
+    height = float(in_height)*cm if in_height else default_height
+
+    if len(argv) >= 4:
+        length = float(argv[3]) * cm
+    else:
+        length = default_length
+
+    return text, width, height, length
+
+
 def main():
     text, width, height, length = get_parameters()
     save_label(text, width, height, length)
@@ -257,7 +266,10 @@ def main():
 
 if __name__ == '__main__':
     locale.setlocale(locale.LC_ALL, '')
-    if len(sys.argv) == 5 and sys.argv[4].startswith('x'):
-        multi_label(sys.argv[1], float(sys.argv[2])*cm, float(sys.argv[3])*cm, int(sys.argv[4][1:]))
+    args = parser.parse_args(sys.argv[1:])
+    argv = args.args
+    settings['font_size'] = args.font_size
+    if len(argv) == 4 and sys.argv[2].startswith('x'):
+        multi_label(argv[0], float(argv[1])*cm, float(argv[2])*cm, int(argv[3][1:]))
     else:
         main()
