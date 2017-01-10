@@ -4,7 +4,7 @@ session_start();
 
 if (isset($_POST['to_print']))
 {
-    file_put_contents('/tmp/print.txt', $_POST['to_print']);
+    file_put_contents('/tmp/print.txt', wordwrap($_POST['to_print']));
     system('lp /tmp/print.txt');
     unlink('/tmp/print.txt');
     $_SESSION['last_printed'] = $_POST['to_print'];
