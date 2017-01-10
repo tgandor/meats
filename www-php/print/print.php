@@ -27,6 +27,9 @@ $printed = isset($_GET['printed']);
 <?php endif ?>
 <form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post">
 <div>
+<button type="button" onclick="document.getElementById('to_print').select()">Select all</button>
+</div>
+<div>
 <textarea rows="20" cols="80" id="to_print" name="to_print"><?php if (!$printed): ?>Enter or paste text to print...
 <?php else: ?><?php echo $_SESSION['last_printed'] ?>
 <?php endif ?>
