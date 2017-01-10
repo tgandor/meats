@@ -26,6 +26,7 @@ except ImportError:
 parser = argparse.ArgumentParser()
 parser.add_argument('--font-size', type=int, default=20)
 parser.add_argument('--repeat', type=int, default=1, help="Times to epeat each label verbatim (without series)")
+parser.add_argument('--print', action='store_true', help="Try to print directly, instead of opening")
 parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
 
 settings = dict(
@@ -211,10 +212,14 @@ def save_label(text, width, height, length):
 def _finish_rendering(canvas):
     canvas.showPage()
     canvas.save()
+    print_ = getattr(args, 'print')
     if sys.platform.startswith('linux'):
-        os.system('xdg-open "%s"' % default_output_file)
+        if print_:
+            os.system('lp "%s"' % default_output_file)
+        else:
+            os.system('xdg-open "%s"' % default_output_file)
     else:
-        os.system('start "" "%s"' % default_output_file)
+        os.startfile(default_output_file, 'print' if print_ else 'open')
 
 
 def multi_label(text, width, height, count):

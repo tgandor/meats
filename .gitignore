@@ -1,0 +1,4 @@
+# byproducts
+*.pyc
+__pycache__
+
