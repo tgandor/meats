@@ -6,12 +6,12 @@ if ! jmtp/mount.sh ; then
 	exit
 fi
 
-target_dir=mnt/Phone/com.hipipal.qpyplus/scripts
-if [ ! -d $target_dir ] ; then
-	target_dir=mnt/*/com.hipipal.qpyplus/scripts
-fi
+target_dir=mnt/*/qpython/scripts3
 if [ ! -d $target_dir ] ; then
 	target_dir=mnt/*/qpython/scripts
+fi
+if [ ! -d $target_dir ] ; then
+	target_dir=mnt/*/com.hipipal.qpyplus/scripts
 fi
 
 if [ ! -d $target_dir ] ; then
@@ -25,6 +25,7 @@ target_dir=`realpath $target_dir`
 popd
 
 if [ -z "$1" ] ; then
+	which mc &> /dev/null || sudo apt-get install mc
 	mc "$target_dir"
 else
 	cp -v "$@" "$target_dir"

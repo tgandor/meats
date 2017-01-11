@@ -12,5 +12,7 @@ if [ ! -d mnt ] ; then
     mkdir mnt
 fi
 
+which jmtpfs &>/dev/null || sudo apt-get install jmtpfs
+
 jmtpfs mnt
 
