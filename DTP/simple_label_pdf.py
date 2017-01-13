@@ -230,10 +230,12 @@ def multi_label(text, width, height, count):
     _finish_rendering(c)
 
 
-def get_parameters():
-    if sys.version_info.major == 3:
-        raw_input = input
+# local variable, because of binding, doesn't work
+if sys.version_info.major == 3:
+    raw_input = input
 
+
+def get_parameters():
     if len(argv) < 1:
         text = raw_input('Enter label text: ') or default_text
     else:
