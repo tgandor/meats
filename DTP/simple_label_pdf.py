@@ -80,6 +80,9 @@ class LabelState:
 
 
 def label(c, text, width=default_width, height=default_height, state=LabelState()):
+    # convenience hack
+    width, height = [min(x, max(A4)) for x in (width, height)]
+
     # validate
     if min(width, height) > min(A4) or max(width, height) > max(A4):
         sys.stderr.write('Error: label too big: {}x{} - not generating.\n'.format(width, height))
