@@ -1,22 +1,37 @@
 #!/usr/bin/env python
 
-# install youtube_dl and fake ctypes in lib/python2.7/site-packages
-
-import os
-import youtube_dl
 import androidhelper
+import atexit
+import os
 
-print "trying to retrieve from clipboard"
+target = os.path.dirname(__file__) + '/../../Download'
 
 try:
-    os.chdir('/mnt/sdcard/Download')
+    os.chdir(target)
 except:
-    print 'failed chdir /mnt/sdcard/Download'
-
-print 'working in', os.getcwd()
+    print 'failed chdir', target
+os.system('df .')
 
 android = androidhelper.Android()
+
+if not android.checkWifiState().result:
+    print('Not on WiFi, exiting.')
+    exit()
+
 the_url = android.getClipboard().result
 the_url = the_url.split()[-1]
-youtube_dl.main(['--format', 'm4a', the_url])
-android.vibrate(2000)
+
+
+def after_download():
+    os.system('df .')
+    android.vibrate(2000)
+
+atexit.register(after_download)
+
+print('Starting download of: ' + the_url)
+import youtube_dl
+youtube_dl.main([
+    '--no-check-certificate',
+    '--format', 'm4a',
+    the_url
+    ])

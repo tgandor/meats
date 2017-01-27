@@ -40,7 +40,7 @@ def downloader(download_queue):
         pid = os.fork()
         if not pid:
             print('Downloading... ({})'.format(url))
-            youtube_dl.main([url.split()[-1]])
+            youtube_dl.main(['--no-check-certificate', url.split()[-1]])
             exit()
         os.wait()
         print('Download finished')
@@ -50,7 +50,7 @@ def downloader(download_queue):
 
 print('Starting clipboard watcher...')
 threading.Thread(target=clipboard_watcher, args=(download_queue,)).start()
-os.chdir('/mnt/sdcard/Download')
+os.chdir(os.path.dirname(__file__) + '/../../Download')
 os.system('df .')
 print('Entering get/fork/download/wait loop...')
 downloader(download_queue)

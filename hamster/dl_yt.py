@@ -4,7 +4,7 @@ import androidhelper
 import atexit
 import os
 
-target = '/mnt/sdcard/Download'
+target = os.path.dirname(__file__) + '/../../Download'
 
 try:
     os.chdir(target)
@@ -39,4 +39,7 @@ atexit.register(after_download)
 
 print('Starting download of: ' + the_url)
 import youtube_dl
-youtube_dl.main([the_url])
+youtube_dl.main([
+    '--no-check-certificate',
+    the_url
+    ])
