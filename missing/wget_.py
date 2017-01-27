@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 
-# OK, the target platform has no 'env'...
+from __future__ import print_function
+import sys
+import os
+import time
 
-import sys, urllib, os, time
+try:
+    from urllib import urlopen
+except ImportError:
+    from urllib.request import urlopen
 
 CHUNK = 1024 * 1024
 
@@ -22,34 +28,31 @@ def dot_report(total, elapsed):
 
 def download(URL, report = dot_report):
     f = os.path.basename(URL)
-    print "downloading", f
+    print("downloading", f)
     start = time.time()
     size = 0
-    with open(f, "w") as fp:
-        resp = urllib.urlopen(URL)
-        for data in iter(lambda: resp.read(CHUNK), ''):
+    with open(f, "wb") as fp:
+        resp = urlopen(URL)
+        for data in iter(lambda: resp.read(CHUNK), b''):
             fp.write(data)
             size += len(data)
             elap = time.time() - start
             report(size, elap)
-    print "\ngot %sB in %.1f s (%sB/s), saved" % (human(size), elap, human(size/elap))
+    print("\ngot %sB in %.1f s (%sB/s), saved" % (human(size), elap, human(size/elap)))
 
 if len(sys.argv) > 1:
     for URL in sys.argv[1:]:
         download(URL)
 else:
-    print "trying to retrieve from clipboard"
+    print("trying to retrieve from clipboard")
     try:
         import androidhelper
     except:
-        print "Error: couldn't find androidhelper"
+        print("Error: couldn't find androidhelper")
         exit()
     try:
-        os.chdir('/mnt/sdcard/external_sd/')
+        os.chdir(os.path.dirname(__file__) + '/../../Download')
     except:
-        try:
-            os.chdir('/mnt/sdcard/')
-        except:
-            pass
+        pass
     URL = androidhelper.Android().getClipboard().result
     download(URL)
