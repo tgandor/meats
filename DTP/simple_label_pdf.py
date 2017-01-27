@@ -176,7 +176,7 @@ create table outprints
 (
     id integer not null primary key autoincrement,
     label_id integer not null references labels(id),
-    outprint_date datetime not null 
+    outprint_date datetime not null
 );
 """)
     conn.text_factory = str # which == unicode on Py3, and works!
@@ -238,6 +238,16 @@ if sys.version_info.major == 3:
     raw_input = input
 
 
+def parse_s(s, full_s, max_s=A4[1]):
+    if s.endswith('%'):
+        return float(s[:-1]) / 100 * full_s
+    val = float(s) * cm
+    if val > max_s:
+        print('Warning: value', val/cm, '>=', max_s/cm, '(clamped)')
+        return max_s
+    return val
+
+
 def get_parameters():
     if len(argv) < 1:
         text = raw_input('Enter label text: ') or default_text
@@ -248,16 +258,17 @@ def get_parameters():
         in_width = raw_input('Width (%.1f): ' % (default_width/cm))
     else:
         in_width = argv[1]
-    width = float(in_width)*cm if in_width else default_width
+    width = parse_s(in_width, A4[0]) if in_width else default_width
 
     if len(argv) < 3:
         in_height = raw_input('Height (%.1f): ' % (default_height/cm))
     else:
         in_height = argv[2]
-    height = float(in_height)*cm if in_height else default_height
+    height = parse_s(in_height, A4[1]) if in_height else default_height
 
     if len(argv) >= 4:
-        length = float(argv[3]) * cm
+        # A4[0], because length is like width
+        length = parse_s(argv[3], A4[0])
     else:
         length = default_length
 
@@ -282,7 +293,7 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
     argv = args.args
     settings['font_size'] = args.font_size
-    if len(argv) == 4 and sys.argv[2].startswith('x'):
-        multi_label(argv[0], float(argv[1])*cm, float(argv[2])*cm, int(argv[3][1:]))
+    if len(argv) == 4 and argv[3].startswith('x'):
+        multi_label(argv[0], parse_s(argv[1], A4[0]), parse_s(argv[2], A4[1]), int(argv[3][1:]))
     else:
         main()
