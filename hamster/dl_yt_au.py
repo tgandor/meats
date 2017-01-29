@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+from __future__ import print_function
 
 import androidhelper
 import atexit
@@ -8,8 +8,10 @@ target = os.path.dirname(__file__) + '/../../Download'
 
 try:
     os.chdir(target)
-except:
-    print 'failed chdir', target
+except OSError:
+    print('failed changing directory:', target)
+    exit()
+
 os.system('df .')
 
 android = androidhelper.Android()

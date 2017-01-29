@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import androidhelper
 import os
 import time
@@ -17,7 +19,8 @@ if not _a.checkWifiState().result:
     print('Not on WiFi, exiting.')
     exit()
 
-download_queue = Queue()
+_download_queue = Queue()
+
 
 def clipboard_watcher(download_queue):
     old_clipboard = get_clipboard()
@@ -30,6 +33,7 @@ def clipboard_watcher(download_queue):
             _a.makeToast('Copied: {}...'.format(new_clipboard[:16]))
             old_clipboard = new_clipboard
             download_queue.put(new_clipboard)
+
 
 def downloader(download_queue):
     # importing locally, this takes forever, while script is silent
@@ -49,8 +53,8 @@ def downloader(download_queue):
         os.system('df .')
 
 print('Starting clipboard watcher...')
-threading.Thread(target=clipboard_watcher, args=(download_queue,)).start()
+threading.Thread(target=clipboard_watcher, args=(_download_queue,)).start()
 os.chdir(os.path.dirname(__file__) + '/../../Download')
 os.system('df .')
 print('Entering get/fork/download/wait loop...')
-downloader(download_queue)
+downloader(_download_queue)
