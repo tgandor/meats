@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 
-# from http://docs.opencv.org/
-# no PIL, pygame or anything.
+from __future__ import print_function
+
+"""
+Script to show a webcam or a video file and overlay simple effects.
+
+from http://docs.opencv.org/
+no PIL, pygame or anything.
+"""
 
 import numpy as np
 import cv2
+import re
 import sys
-
+import time
 
 
 def reset():
@@ -19,8 +26,10 @@ def reset():
     global gaussian
     global mean
     global median
+    global mirror
     # other
     global fullscreen
+    global info
     # params
     kernel = 9
     min_kernel = 3
@@ -30,18 +39,25 @@ def reset():
     gaussian = False
     mean = False
     median = False
+    mirror = False
     # other
     fullscreen = False
+    info = False
 reset()
 
 if len(sys.argv) > 1:
-    device = int(sys.argv[1])
+    device = sys.argv[1]
+    if re.match(r'\d+$', device):
+        # int for webcam capture, string -> video filename
+        device = int(sys.argv[1])
 else:
     device = 0
 
 cap = cv2.VideoCapture(device)
 cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
 first_frame = True
+frame_idx = 0
+start_time = time.time()
 
 while(True):
     # Capture frame-by-frame
@@ -49,9 +65,12 @@ while(True):
 
     if not ret:
         print('Error grabbing.')
+        if type(device) == int:
+            print('Probably EOF ;)')
         break
 
     # Our operations on the frame come here
+    frame_idx += 1
 
     if grayscale:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -64,6 +83,21 @@ while(True):
 
     if median:
         frame = cv2.medianBlur(frame, kernel)
+
+    if mirror:
+        frame = cv2.flip(frame, 1)
+
+    if info:
+        fps = frame_idx / (time.time() - start_time)
+        message = 'Frame {}, ~fps: {:.2f}'.format(frame_idx, fps)
+        cv2.putText(frame,
+            message,
+            (0, 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.8,  # font scale
+            (0, 255, 255),  # yellow
+            2  # thickness
+        )
 
     # Display the resulting frame
     cv2.imshow('frame', frame)
@@ -83,6 +117,11 @@ while(True):
         grayscale = not grayscale
     elif key == ord('g'):
         gaussian = not gaussian
+    elif key == ord('i'):
+        info = not info
+    elif key == ord('l'):
+        # mirror, as in 'looking glass'
+        mirror = not mirror
     elif key == ord('m'):
         mean = not mean
     elif key == ord('M'):
