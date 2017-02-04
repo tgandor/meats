@@ -8,5 +8,3 @@ while True:
         break
     line[0] = '/'.join(line[0].split('/')[::-1])
     print(' '.join(line))
-
-    
