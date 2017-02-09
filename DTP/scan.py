@@ -129,14 +129,16 @@ class ScanDialog(tk.Frame):
         r += 1
 
         self.newName = tk.StringVar()
-        self.newName.set('Scan_')
+        self.newName.set(time.strftime('%Y%m%d_'))
         new_name = tk.Entry(self, textvariable=self.newName, width=60)
         new_name.grid(row=1, column=0)
         new_name.bind("<Return>", lambda event: self.scan())
         new_name.bind("<KP_Enter>", lambda event: self.scan())
         new_name.bind("<Escape>", lambda event: self.parent.destroy())
         new_name.select_from(0)
-        new_name.select_to(len(self.newName.get())-1)
+        n = len(self.newName.get()) - 1
+        new_name.select_to(n)
+        new_name.icursor(n)
         new_name.focus_set()
         self.newNameEntry = new_name
 
