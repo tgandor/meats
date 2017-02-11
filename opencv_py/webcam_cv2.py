@@ -54,6 +54,11 @@ else:
     device = 0
 
 cap = cv2.VideoCapture(device)
+
+if len(sys.argv) > 2:
+    fps = int(sys.argv[2])
+    cap.set(cv2.CAP_PROP_FPS, fps)
+
 cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
 first_frame = True
 frame_idx = 0
