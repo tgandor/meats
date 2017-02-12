@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import argparse
 import datetime
 import locale
@@ -15,7 +17,7 @@ try:
     from reportlab.lib.units import cm
     from reportlab.lib.pagesizes import A4, landscape
     from reportlab.pdfbase import pdfmetrics
-    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.pdfbase.ttfonts import TTFont, TTFError
 except ImportError:
     print('Missing reportlab, trying to install...')
     os.system("sudo apt-get install python{}-reportlab".format(
@@ -27,6 +29,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--font-size', type=int, default=20)
 parser.add_argument('--repeat', type=int, default=1, help="Times to epeat each label verbatim (without series)")
 parser.add_argument('--print', action='store_true', help="Try to print directly, instead of opening")
+parser.add_argument('--gui', action='store_true', help="Open a tkinter GUI to create labels")
 parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
 
 settings = dict(
@@ -44,9 +47,8 @@ default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.p
 
 fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial', 'DejaVuSans']
 
-
-
 last_font = []  # needs to be reloaded after new page
+
 
 def _setup_canvas(outfile=default_output_file):
     for font_name in fonts_to_try:
@@ -55,7 +57,7 @@ def _setup_canvas(outfile=default_output_file):
             pdfmetrics.registerFont(font)
             font_to_use = font_name
             break
-        except:
+        except TTFError:
             font_to_use = None
 
     c = canvas.Canvas(outfile)
@@ -288,12 +290,37 @@ def main():
     _finish_rendering(c)
 
 
+def win_main():
+    try:
+        import Tkinter as tk
+    except ImportError:
+        import tkinter as tk
+
+    def generate(text, width, height):
+        c = _setup_canvas()
+        # import code; code.interact(local=locals())
+        label(c, text.get('1.0', 'end').strip())
+        _finish_rendering(c)
+
+    root = tk.Tk()
+    root.title('Simple Label')
+    dialog = tk.Frame(root)
+    tk.Label(dialog, text='Label text:').pack(anchor=tk.N)
+    text = tk.Text(dialog)
+    text.pack(anchor=tk.N)
+    tk.Button(dialog, text='Generate', command=lambda: generate(text, None, None)).pack(anchor=tk.N)
+    dialog.pack(fill=tk.BOTH, expand=1)
+    root.mainloop()
+
+
 if __name__ == '__main__':
     locale.setlocale(locale.LC_ALL, '')
     args = parser.parse_args(sys.argv[1:])
     argv = args.args
     settings['font_size'] = args.font_size
-    if len(argv) == 4 and argv[3].startswith('x'):
+    if args.gui:
+        win_main()
+    elif len(argv) == 4 and argv[3].startswith('x'):
         multi_label(argv[0], parse_s(argv[1], A4[0]), parse_s(argv[2], A4[1]), int(argv[3][1:]))
     else:
         main()
