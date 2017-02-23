@@ -2,15 +2,24 @@
 <head>
 	<title>The Path Editor</title>
 	<script>
+    // https://software.intel.com/en-us/articles/limitation-to-the-length-of-the-system-path-variable
+    function upSemiLenght()
+    {
+        let length = document.getElementById("semi").value.length
+        document.getElementById("len_semicoloned").innerText = length;
+        document.getElementById("len_warning").innerText = length >= 2048 ? "(too long)" : "";
+    }
 	function upNewlined()
 	{
         var splitter = new RegExp(document.getElementById("separator").value, "g");
 		document.getElementById("newl").value = document.getElementById("semi").value.replace(splitter, "\n");
-	}
+        upSemiLenght();
+    }
 	function upSemi()
 	{
         var separator = document.getElementById("separator").value;
 		document.getElementById("semi").value = document.getElementById("newl").value.replace(/\n/g, separator);
+        upSemiLenght();
 	}
     function addBackslashes()
     {
@@ -28,6 +37,7 @@
 	<h1>Path Editor</h1>
 	<p>Semicoloned:</p>
 	<textarea id="semi" rows="2" style="width: 100%;" onchange="upNewlined()" onkeyup="upNewlined()" onclick="upNewlined();this.select()"></textarea>
+    <p>Length: <span id="len_semicoloned">0</span> <span id="len_warning" style="color: orange; font-weight: bold;"></span></p>
 	<p>Newlined:</p>
 	<textarea id="newl" rows="15" style="width: 100%;" onchange="upSemi()" onkeyup="upSemi()" onclick="upSemi()"></textarea>
     <p> 
