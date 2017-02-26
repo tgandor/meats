@@ -29,26 +29,24 @@ def get_usage(paths):
 
 
 def print_header(f, paths):
-    headers = ['Timestamp', 'Comment']
+    headers = ['Timestamp']
     for p in paths:
         headers.append('')
         headers.append('Used ' + p)
         headers.append('Free ' + p)
-        headers.append('d(Used) ' + p)
-        headers.append('D(Used) ' + p)
-
+    headers.append('')
+    headers.append('Comment')
     f.write(','.join(headers)+'\n')
 
 
 def print_data(f, comment, current, previous, initial):
-    data = [time.strftime('%Y-%m-%d %H:%M:%S'), comment]
-    for c, p, i in zip(current, previous, initial):
+    data = [time.strftime('%Y-%m-%d %H:%M:%S')]
+    for c, _, _ in zip(current, previous, initial):
         data.append('')
         data.append(str(c.used))
         data.append(str(c.free))
-        data.append(str(c.used - p.used))
-        data.append(str(c.used - i.used))
-
+    data.append('')
+    data.append(comment)
     f.write(','.join(data)+'\n')
     print(', '.join(data))
 
