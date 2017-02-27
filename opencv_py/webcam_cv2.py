@@ -9,6 +9,7 @@ from http://docs.opencv.org/
 no PIL, pygame or anything.
 """
 
+import argparse
 import numpy as np
 import cv2
 import re
@@ -45,6 +46,8 @@ def reset():
     info = False
 reset()
 
+parser = argparse.ArgumentParser()
+
 if len(sys.argv) > 1:
     device = sys.argv[1]
     if re.match(r'\d+$', device):
@@ -68,9 +71,9 @@ while(True):
     # Capture frame-by-frame
     ret, frame = cap.read()
 
-    if not ret:
+    if not ret and False:
         print('Error grabbing.')
-        if type(device) == int:
+        if type(device) != int:
             print('Probably EOF ;)')
         break
 

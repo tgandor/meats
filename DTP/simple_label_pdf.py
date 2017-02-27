@@ -11,7 +11,6 @@ import sqlite3
 import sys
 import tempfile
 
-
 try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.units import cm
@@ -24,7 +23,6 @@ except ImportError:
         '3' if sys.version_info.major == 3 else ''))
     exit()
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--font-size', type=int, default=20)
 parser.add_argument('--repeat', type=int, default=1, help="Times to epeat each label verbatim (without series)")
@@ -33,14 +31,14 @@ parser.add_argument('--gui', action='store_true', help="Open a tkinter GUI to cr
 parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
 
 settings = dict(
-    font_size = 20
+    font_size=20
 )
 date_font = 12
 default_text = 'Example label'
-default_width = 21*cm
-default_height = 28.5*cm
-top_margin = 0.0*cm
-bottom_margin = 1.0*cm
+default_width = 21 * cm
+default_height = 28.5 * cm
+top_margin = 0.0 * cm
+bottom_margin = 1.0 * cm
 line_width = 0.25
 default_length = None
 default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.pdf')
@@ -53,7 +51,7 @@ last_font = []  # needs to be reloaded after new page
 def _setup_canvas(outfile=default_output_file):
     for font_name in fonts_to_try:
         try:
-            font = TTFont(font_name, font_name+'.ttf')
+            font = TTFont(font_name, font_name + '.ttf')
             pdfmetrics.registerFont(font)
             font_to_use = font_name
             break
@@ -118,14 +116,14 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
         sys.stderr.write('Warning: switched to vertical.\n')
 
     # coordinates inversion
-    inv = lambda x: page_height-x
+    inv = lambda x: page_height - x
 
     c.saveState()
     c.setDash(4, 8)
     c.setLineWidth(line_width)
 
     # seems like transform IS part of state
-    if line_width > 0 and state.height_left < page_height: #  - top_margin:
+    if line_width > 0 and state.height_left < page_height:  # - top_margin:
         c.line(0, state.height_left, page_width, state.height_left)
     h_offset = state.height_left - page_height
     c.translate(0, h_offset)
@@ -143,17 +141,19 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
         # serial label: last line should be with date font
         if i == len(lines) - 1 and re.match(r'\d+/\d+$', line):
             c.setFontSize(date_font)
-        c.drawCentredString(width/2, inv((height+font_size)/2 + extra_h), line)
+        c.drawCentredString(width / 2, inv((height + font_size) / 2 + extra_h), line)
         extra_h += font_size
 
     # date subscript
     c.setFontSize(date_font)
-    c.drawCentredString(width/2, max(inv(height)+.5*cm, bottom_margin), datetime.datetime.now().strftime('%Y-%m-%d (%a) %H:%M'))
+    c.drawCentredString(width / 2, max(inv(height) + .5 * cm, bottom_margin),
+                        datetime.datetime.now().strftime('%Y-%m-%d (%a) %H:%M'))
 
     # final cleanup
     c.restoreState()
     state.height_left -= height
     return True
+
 
 # label persistance
 
@@ -181,7 +181,7 @@ create table outprints
     outprint_date datetime not null
 );
 """)
-    conn.text_factory = str # which == unicode on Py3, and works!
+    conn.text_factory = str  # which == unicode on Py3, and works!
     return conn, cursor
 
 
@@ -193,23 +193,23 @@ def close_database(conn, cursor):
 
 def save_label(text, width, height, length):
     conn, cursor = open_database()
-    cursor.execute(u"select id from labels where text = ?", (text,))
+    cursor.execute(u"SELECT id FROM labels WHERE text = ?", (text,))
     # create or update label
     label_id = cursor.fetchone()
     if length is not None:
         length /= cm
     if label_id is None:
         print('Creating label')
-        cursor.execute("insert into labels (text, width, height, length) values (?,?,?,?)",
-                       (text, width / cm, height / cm, length, ))
+        cursor.execute("INSERT INTO labels (text, width, height, length) VALUES (?,?,?,?)",
+                       (text, width / cm, height / cm, length,))
         label_id = cursor.lastrowid
     else:
         label_id = label_id[0]
         print('Updating label {}'.format(label_id))
-        cursor.execute("update labels set width=?, height=?, length=? where id=?",
+        cursor.execute("UPDATE labels SET width=?, height=?, length=? WHERE id=?",
                        (width / cm, height / cm, length, label_id))
     # log the generation
-    cursor.execute("insert into outprints(label_id, outprint_date) values (?,?)",
+    cursor.execute("INSERT INTO outprints(label_id, outprint_date) VALUES (?,?)",
                    (label_id, datetime.datetime.now()))
     close_database(conn, cursor)
 
@@ -231,7 +231,7 @@ def multi_label(text, width, height, count):
     save_label(text, width, height, None)
     c = _setup_canvas()
     for i in range(count):
-        label(c, '{}\n{}/{}'.format(text, i+1, count), width, height)
+        label(c, '{}\n{}/{}'.format(text, i + 1, count), width, height)
     _finish_rendering(c)
 
 
@@ -245,7 +245,7 @@ def parse_s(s, full_s, max_s=A4[1]):
         return float(s[:-1]) / 100 * full_s
     val = float(s) * cm
     if val > max_s:
-        print('Warning: value', val/cm, '>=', max_s/cm, '(clamped)')
+        print('Warning: value', val / cm, '>=', max_s / cm, '(clamped)')
         return max_s
     return val
 
@@ -257,13 +257,13 @@ def get_parameters():
         text = argv[0]
 
     if len(argv) < 2:
-        in_width = raw_input('Width (%.1f): ' % (default_width/cm))
+        in_width = raw_input('Width (%.1f): ' % (default_width / cm))
     else:
         in_width = argv[1]
     width = parse_s(in_width, A4[0]) if in_width else default_width
 
     if len(argv) < 3:
-        in_height = raw_input('Height (%.1f): ' % (default_height/cm))
+        in_height = raw_input('Height (%.1f): ' % (default_height / cm))
     else:
         in_height = argv[2]
     height = parse_s(in_height, A4[1]) if in_height else default_height
