@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from __future__ import division
 
 import argparse
 import datetime
@@ -155,7 +156,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     return True
 
 
-# label persistance
+# label persistence
 
 
 def open_database():
@@ -231,7 +232,7 @@ def multi_label(text, width, height, count):
     save_label(text, width, height, None)
     c = _setup_canvas()
     for i in range(count):
-        label(c, '{}\n{}/{}'.format(text, i + 1, count), width, height)
+        label(c, u'{}\n{}/{}'.format(text, i + 1, count), width, height)
     _finish_rendering(c)
 
 
@@ -296,11 +297,16 @@ def win_main():
     except ImportError:
         import tkinter as tk
 
-    def generate(text, width, height):
-        c = _setup_canvas()
-        # import code; code.interact(local=locals())
-        label(c, text.get('1.0', 'end').strip())
-        _finish_rendering(c)
+    def generate(text_widget, width_input, height_input, is_serial, num_serial):
+        label_text = text_widget.get('1.0', 'end').strip()
+        w = float(width_input.get()) * cm
+        h = float(height_input.get()) * cm
+        if is_serial.get():
+            multi_label(label_text, w, h, int(num_serial.get()))
+        else:
+            c = _setup_canvas()
+            label(c, label_text, w, h)
+            _finish_rendering(c)
 
     root = tk.Tk()
     root.title('Simple Label')
@@ -308,7 +314,23 @@ def win_main():
     tk.Label(dialog, text='Label text:').pack(anchor=tk.N)
     text = tk.Text(dialog)
     text.pack(anchor=tk.N)
-    tk.Button(dialog, text='Generate', command=lambda: generate(text, None, None)).pack(anchor=tk.N)
+    width = tk.Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
+    width.delete(0, tk.END)
+    width.insert(0, "21.0")
+    width.pack(anchor=tk.N)
+    height = tk.Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
+    height.delete(0, tk.END)
+    height.insert(0, "8.0")
+    height.pack(anchor=tk.N)
+    serial_flag = tk.IntVar()
+    serial = tk.Checkbutton(dialog, variable=serial_flag)
+    serial.pack(anchor=tk.N)
+    serial_count = tk.Spinbox(dialog, from_=1, to=100)
+    serial_count.pack(anchor=tk.N)
+    tk.Button(dialog,
+              text='Generate',
+              command=lambda: generate(text, width, height, serial_flag, serial_count)
+              ).pack(anchor=tk.N)
     dialog.pack(fill=tk.BOTH, expand=1)
     root.mainloop()
 
