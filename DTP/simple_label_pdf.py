@@ -231,8 +231,9 @@ def _finish_rendering(canvas):
 def multi_label(text, width, height, count):
     save_label(text, width, height, None)
     c = _setup_canvas()
+    state = LabelState()
     for i in range(count):
-        label(c, u'{}\n{}/{}'.format(text, i + 1, count), width, height)
+        label(c, u'{}\n{}/{}'.format(text, i + 1, count), width, height, state=state)
     _finish_rendering(c)
 
 
