@@ -237,11 +237,6 @@ def multi_label(text, width, height, count):
     _finish_rendering(c)
 
 
-# local variable, because of binding, doesn't work
-if sys.version_info.major == 3:
-    raw_input = input
-
-
 def parse_s(s, full_s, max_s=A4[1]):
     if s.endswith('%'):
         return float(s[:-1]) / 100 * full_s
@@ -253,21 +248,14 @@ def parse_s(s, full_s, max_s=A4[1]):
 
 
 def get_parameters():
-    if len(argv) < 1:
-        text = raw_input('Enter label text: ') or default_text
-    else:
-        text = argv[0]
-
-    if len(argv) < 2:
-        in_width = raw_input('Width (%.1f): ' % (default_width / cm))
-    else:
-        in_width = argv[1]
-    width = parse_s(in_width, A4[0]) if in_width else default_width
-
     if len(argv) < 3:
-        in_height = raw_input('Height (%.1f): ' % (default_height / cm))
-    else:
-        in_height = argv[2]
+        print('Not enough arguments. Usage: simple_label_pdf.py text W H [L]')
+        exit()
+
+    text = argv[0]
+    in_width = argv[1]
+    in_height = argv[2]
+    width = parse_s(in_width, A4[0]) if in_width else default_width
     height = parse_s(in_height, A4[1]) if in_height else default_height
 
     if len(argv) >= 4:
@@ -285,8 +273,7 @@ def main():
     c = _setup_canvas()
     for _ in range(args.repeat):
         label(c, text, width, height)
-    if length:
-        for _ in range(args.repeat):
+        if length:
             label(c, text, length, height)
             label(c, text, width, length)
     _finish_rendering(c)
@@ -297,6 +284,25 @@ def win_main():
         import Tkinter as tk
     except ImportError:
         import tkinter as tk
+
+    ui_font = ('TkDefaultFont', 12)
+
+    class Spinbox(tk.Spinbox):
+        def __init__(self, *args, **kwargs):
+            kwargs['font'] = ui_font
+            tk.Spinbox.__init__(self, *args, **kwargs)
+            self.bind('<MouseWheel>', self.mouse_wheel)
+            self.bind('<Button-4>', self.mouse_wheel)
+            self.bind('<Button-5>', self.mouse_wheel)
+
+        def mouse_wheel(self, event):
+            if event.num == 5 or event.delta == -120:
+                self.invoke('buttondown')
+            elif event.num == 4 or event.delta == 120:
+                self.invoke('buttonup')
+
+    def ui_label(parent, text):
+        tk.Label(parent, text=text, font=ui_font).pack(anchor=tk.N)
 
     def generate(text_widget, width_input, height_input, is_serial, num_serial):
         label_text = text_widget.get('1.0', 'end').strip()
@@ -312,26 +318,39 @@ def win_main():
     root = tk.Tk()
     root.title('Simple Label')
     dialog = tk.Frame(root)
-    tk.Label(dialog, text='Label text:').pack(anchor=tk.N)
+
+    ui_label(dialog, 'Label text:')
     text = tk.Text(dialog)
+    text.focus_set()
+    text.tag_config('label', justify='center', font=(fonts_to_try[0], settings['font_size']))
+    text.insert(tk.INSERT, ' ')
+    text.mark_set(tk.INSERT, '1.1')
+    text.tag_add('label', '1.0', tk.END)
     text.pack(anchor=tk.N)
-    width = tk.Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
+
+    ui_label(dialog, text='Width: [cm]')
+    width = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f", justify='right')
     width.delete(0, tk.END)
     width.insert(0, "21.0")
     width.pack(anchor=tk.N)
-    height = tk.Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
+
+    ui_label(dialog, text='Height: [cm]')
+    height = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f", justify='right')
     height.delete(0, tk.END)
     height.insert(0, "8.0")
     height.pack(anchor=tk.N)
+
     serial_flag = tk.IntVar()
-    serial = tk.Checkbutton(dialog, variable=serial_flag)
-    serial.pack(anchor=tk.N)
-    serial_count = tk.Spinbox(dialog, from_=1, to=100)
+    tk.Checkbutton(
+        dialog, variable=serial_flag, font=ui_font,
+        text='Generate serial labels:').pack(anchor=tk.N)
+    serial_count = Spinbox(dialog, from_=1, to=100, justify='right')
     serial_count.pack(anchor=tk.N)
-    tk.Button(dialog,
-              text='Generate',
-              command=lambda: generate(text, width, height, serial_flag, serial_count)
-              ).pack(anchor=tk.N)
+
+    tk.Button(
+        dialog, text='Generate', font=ui_font, width=50, height=3,
+        command=lambda: generate(text, width, height, serial_flag, serial_count)
+    ).pack(anchor=tk.N)
     dialog.pack(fill=tk.BOTH, expand=1)
     root.mainloop()
 
@@ -341,7 +360,7 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
     argv = args.args
     settings['font_size'] = args.font_size
-    if args.gui:
+    if args.gui or len(argv) == 0:
         win_main()
     elif len(argv) == 4 and argv[3].startswith('x'):
         multi_label(argv[0], parse_s(argv[1], A4[0]), parse_s(argv[2], A4[1]), int(argv[3][1:]))
