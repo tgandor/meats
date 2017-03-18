@@ -26,7 +26,7 @@ except ImportError:
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--font-size', type=int, default=20)
-parser.add_argument('--repeat', type=int, default=1, help="Times to epeat each label verbatim (without series)")
+parser.add_argument('--repeat', type=int, default=1, help="Times to repeat each label verbatim (without series)")
 parser.add_argument('--print', action='store_true', help="Try to print directly, instead of opening")
 parser.add_argument('--gui', action='store_true', help="Open a tkinter GUI to create labels")
 parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
@@ -290,10 +290,16 @@ def win_main():
     class Spinbox(tk.Spinbox):
         def __init__(self, *args, **kwargs):
             kwargs['font'] = ui_font
+            kwargs['justify'] = 'right'
             tk.Spinbox.__init__(self, *args, **kwargs)
             self.bind('<MouseWheel>', self.mouse_wheel)
             self.bind('<Button-4>', self.mouse_wheel)
             self.bind('<Button-5>', self.mouse_wheel)
+
+        def set(self, value):
+            self.delete(0, tk.END)
+            self.insert(0, value)
+            return self
 
         def mouse_wheel(self, event):
             if event.num == 5 or event.delta == -120:
@@ -324,32 +330,41 @@ def win_main():
     ui_label(dialog, 'Label text:')
     text = tk.Text(dialog)
     text.focus_set()
+
+    def modified(event):
+        text.tag_add('label', '1.0', tk.END)
+
     text.tag_config('label', justify='center', font=(fonts_to_try[0], settings['font_size']))
-    text.insert(tk.INSERT, ' ')
-    text.mark_set(tk.INSERT, '1.1')
-    text.tag_add('label', '1.0', tk.END)
+    text.bind('<Key>', modified)
+    text.bind('<<Modified>>', modified)
     text.pack(anchor=tk.N)
 
     ui_label(dialog, text='Width: [cm]')
-    width = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f", justify='right')
-    width.delete(0, tk.END)
-    width.insert(0, "21.0")
-    width.pack(anchor=tk.N)
+    width = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
+    width.set("21.0").pack(anchor=tk.N)
 
     ui_label(dialog, text='Height: [cm]')
-    height = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f", justify='right')
-    height.delete(0, tk.END)
-    height.insert(0, "8.0")
-    height.pack(anchor=tk.N)
+    height = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
+    height.set("8.0").pack(anchor=tk.N)
 
     ui_label(dialog, 'Repeat count:')
-    serial_count = Spinbox(dialog, from_=1, to=100, justify='right')
+    serial_count = Spinbox(dialog, from_=1, to=100)
     serial_count.pack(anchor=tk.N)
 
     serial_flag = tk.IntVar()
     tk.Checkbutton(
         dialog, variable=serial_flag, font=ui_font,
         text='Generate serial labels').pack(anchor=tk.N)
+
+    def change_font(font_variable):
+        settings['font_size'] = int(font_variable.get())
+        text.tag_config('label', font=(fonts_to_try[0], settings['font_size']))
+
+    ui_label(dialog, 'Font size [pt]:')
+
+    font_size = tk.IntVar(dialog, value=settings['font_size'])
+    Spinbox(dialog, values=range(20, 74, 2), textvariable=font_size).pack(anchor=tk.N)
+    font_size.trace('w', lambda *_: change_font(font_size))
 
     tk.Button(
         dialog, text='Generate', font=ui_font, width=50, height=3,
