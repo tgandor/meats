@@ -312,7 +312,9 @@ def win_main():
             multi_label(label_text, w, h, int(num_serial.get()))
         else:
             c = _setup_canvas()
-            label(c, label_text, w, h)
+            state = LabelState()
+            for _ in range(int(num_serial.get())):
+                label(c, label_text, w, h, state)
             _finish_rendering(c)
 
     root = tk.Tk()
@@ -340,12 +342,14 @@ def win_main():
     height.insert(0, "8.0")
     height.pack(anchor=tk.N)
 
+    ui_label(dialog, 'Repeat count:')
+    serial_count = Spinbox(dialog, from_=1, to=100, justify='right')
+    serial_count.pack(anchor=tk.N)
+
     serial_flag = tk.IntVar()
     tk.Checkbutton(
         dialog, variable=serial_flag, font=ui_font,
-        text='Generate serial labels:').pack(anchor=tk.N)
-    serial_count = Spinbox(dialog, from_=1, to=100, justify='right')
-    serial_count.pack(anchor=tk.N)
+        text='Generate serial labels').pack(anchor=tk.N)
 
     tk.Button(
         dialog, text='Generate', font=ui_font, width=50, height=3,

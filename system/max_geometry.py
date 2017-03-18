@@ -6,7 +6,7 @@ import sys
 
 
 if __name__ == '__main__':
-    xrandr_output = os.popen('xrandr').readlines()
+    xrandr_output = os.popen('xrandr 2> /dev/null').readlines()
     if len([l for l in xrandr_output if 'connected' in l]) == 1:
         print('-f')
         exit()
