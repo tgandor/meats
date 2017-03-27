@@ -4,9 +4,10 @@
 	html5up.net | @ajlkn
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
+<?php $title = basename(dirname($_SERVER['PHP_SELF'])); ?>
 <html>
 	<head>
-		<title><?php echo dirname($_SERVER['PHP_SELF']) ?> - Music Folder</title>
+		<title><?php echo $title ?> - Music Folder</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
@@ -19,14 +20,14 @@
 		<!-- Header -->
 			<header id="header">
 				<div class="content">
-					<h1><a href="#"><?php echo dirname($_SERVER['PHP_SELF']) ?></a></h1>
+					<h1><a href="#"><?php echo $title ?></a></h1>
 					<p>Listing music files in folder, choose your action:</p>
 					<ul class="actions">
 						<li><a href="#download" class="button special icon fa-download">Download</a></li>
 						<li><a href="#listen" class="button icon fa-chevron-down scrolly">Listen</a></li>
 					</ul>
 					<p></p>
-					<p>Layout is &quot;Fractal&quot;: Just a simple, single page responsive<br />
+					<p>Using &quot;Fractal&quot; layout: Just a simple, single page responsive<br />
 					template brought to you by <a href="http://html5up.net">HTML5 UP</a></p>
 				</div>
 				<div class="image phone"><div class="inner"><img src="images/screen.jpg" alt="" /></div></div>
