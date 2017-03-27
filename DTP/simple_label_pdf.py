@@ -318,6 +318,7 @@ def win_main():
             multi_label(label_text, w, h, int(num_serial.get()))
         else:
             c = _setup_canvas()
+            save_label(label_text, w, h, None)
             state = LabelState()
             for _ in range(int(num_serial.get())):
                 label(c, label_text, w, h, state)
