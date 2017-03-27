@@ -55,7 +55,7 @@
 									<td><?php echo $i + 1; ?></td>
 									<td><?php echo $music_file ?></td>
 									<td>
-										<audio controls>
+										<audio controls="controls" preload="none">
 											<source src="<?php echo $music_file ?>" type="audio/mpeg">
 											<!-- <source src="<?php echo $music_file ?>.ogg" type="audio/ogg"> -->
 											Your browser does not support the audio element.
