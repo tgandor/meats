@@ -1,6 +1,12 @@
 # byproducts
 *.pyc
 __pycache__
+df_log.csv
+*.bak
 
 # configs
 *.conf
+
+# project artifacts etc.
+.idea
+
