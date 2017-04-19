@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import os
+import sys
 from collections import deque
 
 # Pre-checks for dependencies
@@ -9,15 +12,32 @@ missing = []
 try:
     import matplotlib
 except ImportError:
-    missing.append('python-matplotlib')
+    if sys.version_info[0] == 2:
+        missing.append('python-matplotlib')
+    else:
+        missing.append('python3-matplotlib')
+
+if sys.version_info[0] == 2:
+    try:
+        # TkAgg
+        import Tkinter
+    except ImportError:
+        missing.append('python-tk')
+else:
+    xrange = range
+    try:
+        # TkAgg
+        import tkinter
+    except ImportError:
+        missing.append('python3-tk')
 
 if os.system('which sensors') != 0:
     missing.append('lm-sensors')
 
 if missing:
     packages = ' '.join(missing)
-    print 'Missing some packages:', packages
-    print 'Install them and run again.'
+    print('Missing some packages:', packages)
+    print('Install them and run again.')
     os.system('sudo apt-get install '+packages)
     exit()
 
@@ -28,7 +48,7 @@ def cpu_temps():
     from re import findall
     dta = popen('sensors').read()
     #print(dta)
-    return map(float, findall(':\s*\+([\d\.]+)', dta))
+    return list(map(float, findall(':\s*\+([\d\.]+)', dta)))
 
 
 def cpu_freq():
