@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import sys
+import atexit
 from collections import deque
 
 # Pre-checks for dependencies
@@ -33,6 +34,11 @@ else:
 
 if os.system('which sensors') != 0:
     missing.append('lm-sensors')
+else:
+    sensors = [line.strip()
+        for line in os.popen('sensors').read().split('\n')
+        if ':' not in line and line.strip() and line[0] != ' ']
+    print(' '.join(sensors))
 
 if missing:
     packages = ' '.join(missing)
@@ -77,12 +83,17 @@ def temp_graph():
 
     def update():
         if update.live and fig.canvas.manager.window:
+            temps = cpu_temps()
+            print('Current temperatures: '
+                + ', '.join('{:4.1f}'.format(t) for t in temps), end='\r')
+            sys.stdout.flush()
             for i in xrange(len(init_temps)):
-                window[i].append(cpu_temps()[i])
+                window[i].append(temps[i])
                 window[i].popleft()
                 lines[i].set_ydata(window[i])
             fig.canvas.draw()
             fig.canvas.manager.window.after(1000, update)
+
     update.live = True
     fig.canvas.manager.window.after(1000, update)
 
@@ -94,7 +105,8 @@ def temp_graph():
             fig.canvas.manager.window.after(100, update)
 
     fig.canvas.mpl_connect('key_press_event', toggle)
-    show()    
-        
+    atexit.register(print)  # prevent last temperature wipeout
+    show()
+
 if __name__=='__main__':
     temp_graph()
