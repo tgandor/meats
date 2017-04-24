@@ -71,7 +71,7 @@ while(True):
     # Capture frame-by-frame
     ret, frame = cap.read()
 
-    if not ret and False:
+    if not ret or frame is None:
         print('Error grabbing.')
         if type(device) != int:
             print('Probably EOF ;)')
@@ -108,7 +108,12 @@ while(True):
         )
 
     # Display the resulting frame
-    cv2.imshow('frame', frame)
+    if all(dim > 0 for dim in frame.shape):
+        cv2.imshow('frame', frame)
+    else:
+        print('Empty frame!')
+        continue
+
     if first_frame:
         cv2.resizeWindow('frame', frame.shape[1], frame.shape[0])
         first_frame = False
