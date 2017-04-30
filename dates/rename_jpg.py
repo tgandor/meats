@@ -10,6 +10,7 @@ import time
 
 strftime_format = '%y%m%d_%H%M%S.jpg'
 
+
 def classify(iterable, func):
     results = {False: [], True: []}
     for i in iterable:

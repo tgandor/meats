@@ -7,4 +7,8 @@ if [ -z "$1" ]; then
 	exit
 fi
 
+if ! which exiftool >/dev/null ; then
+	sudo apt install libimage-exiftool-perl
+fi
+
 exiftool '-filename<CreateDate' -d %y%m%d_%H%M%S%%-c.%%le "$@"
