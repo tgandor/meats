@@ -18,6 +18,7 @@ fi
 infile="$1"
 shift 1
 mkdir -p original
+mkdir -p converted
 mv "$infile" original
 
-time $converter -i "original/$infile" "$@" -c:a copy "$infile"
+time nice $converter -i "original/$infile" "$@" -c:a copy -map_metadata 0 -crf 26 -preset veryslow "converted/$infile"
