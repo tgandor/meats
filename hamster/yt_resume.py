@@ -3,10 +3,9 @@
 # install youtube_dl from pip
 
 import androidhelper
-import atexit
 import os
-import youtube_dl
 import glob
+import time
 
 target = '/mnt/sdcard/Download'
 
@@ -18,20 +17,25 @@ if not pending:
 print('---\nFound {} pending files:\n---'.format(len(pending)))
 print('\n---\n'.join(pending))
 
-the_url = pending[0][:-5]
-filename, _ = os.path.splitext(the_url)
-the_url = filename[-11:]
-print('---\nTo download: {}\n---'.format(the_url))
+os.system('df .')
+
+start = time.time()
+print('Importing youtube_dl...')
+import youtube_dl
+print('Done in {:.1f} s'.format(time.time() - start))
 
 android = androidhelper.Android()
-os.system('df .')
-print('---')
 
+for pending_file in pending:
+    the_url = pending_file[:-5]
+    filename, _ = os.path.splitext(the_url)
+    the_url = filename[-11:]
+    print('---\nTo download: {}\n---'.format(the_url))
+    if not os.fork():
+        youtube_dl.main(['--no-check-certificate', the_url])
+    os.wait()
 
-def after_download():
-    # os module has no member 'statvfs'
     os.system('df .')
-    android.vibrate(2000)
+    android.vibrate(1000)
+    print('---')
 
-atexit.register(after_download)
-youtube_dl.main([the_url])
