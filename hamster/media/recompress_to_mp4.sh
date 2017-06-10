@@ -27,3 +27,4 @@ mv "$infile" original
 
 time nice $converter -i "original/$filename" "$@" -c:a aac -c:v h264 -map_metadata 0 \
 	-pix_fmt yuv420p -crf 26 -preset veryslow -strict -2 "converted/$barename.mp4"
+date
