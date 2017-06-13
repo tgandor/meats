@@ -1,35 +1,43 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sys
 
+
 def print_secs(secs):
-	h, s = divmod(secs, 3600)
-	m, s = divmod(s, 60)
-	print "%d seconds - %02d:%02d:%02d" % (secs, h, m, s)
+    h, s = divmod(secs, 3600)
+    m, s = divmod(s, 60)
+    print("%d seconds - %02d:%02d:%02d" % (secs, h, m, s))
+
 
 if len(sys.argv) != 2:
-    print "Usage:"
-    print "  %s SECONDS" % sys.argv[0]
-    print "  %s H:M:S" % sys.argv[0]
+    print("Usage:")
+    print("  %s [[H:]M:]S[.sss]      hours, minutes, seconds; M and S can be greater than 60" % sys.argv[0])
+    print("                              examples: 10 - 10s, 2:65 - 3m5s, 641 - 10m41s")
+    print("  %s -                    read time expression from standard input" % sys.argv[0])
     exit()
 
-hms = sys.argv[1].split(':')
-secs = int(hms[0])
+if sys.argv[1] == '-':
+    data = sys.stdin.readline().strip()
+else:
+    data = sys.argv[1]
+
+hms = data.split(':')
+secs = float(hms[0])
 for limb in hms[1:]:
     secs *= 60
-    secs += int(limb)
+    secs += float(limb)
 
 print_secs(secs)
 
 if secs > 24 * 3600:
-	days, rest = divmod(secs, 24 * 3600)
-	print days, 'days',
-	print_secs(rest)
-	if days > 7:
-		weeks, rdays = divmod(days, 7)
-		print weeks, 'weeks', rdays, 'days',
-		print_secs(rest)
-		if weeks > 52: # rough!
-			years, rweeks = divmod(weeks, 52)
-			print years, 'years', rweeks, 'weeks', rdays, 'days',
-			print_secs(rest)
-
+    days, rest = divmod(secs, 24 * 3600)
+    print(days, 'days', end=' ')
+    print_secs(rest)
+    if days > 7:
+        weeks, rdays = divmod(days, 7)
+        print(weeks, 'weeks', rdays, 'days', end=' ')
+        print_secs(rest)
+        if weeks > 52:  # rough!
+            years, rweeks = divmod(weeks, 52)
+            print(years, 'years', rweeks, 'weeks', rdays, 'days', end=' ')
+            print_secs(rest)
