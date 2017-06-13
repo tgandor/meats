@@ -3,6 +3,7 @@
 __pycache__
 df_log.csv
 *.bak
+.ipynb_checkpoints
 
 # configs
 *.conf
