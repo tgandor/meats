@@ -13,6 +13,8 @@ if len(sys.argv) != 2:
     print("Usage:")
     print("  %s [[H:]M:]S[.sss]      hours, minutes, seconds; M and S can be greater than 60" % sys.argv[0])
     print("                              examples: 10 - 10s, 2:65 - 3m5s, 641 - 10m41s")
+    print("  %s <M>m<S.sss>s         <M> minutes <S.sss> seconds, <M> can be greater than 60" % sys.argv[0])
+    print("                              examples: 0m1.000s, 234m57.234s")
     print("  %s -                    read time expression from standard input" % sys.argv[0])
     exit()
 
@@ -21,7 +23,11 @@ if sys.argv[1] == '-':
 else:
     data = sys.argv[1]
 
-hms = data.split(':')
+if data.endswith('s'):
+    hms = data[:-1].split('m')
+else:
+    hms = data.split(':')
+
 secs = float(hms[0])
 for limb in hms[1:]:
     secs *= 60

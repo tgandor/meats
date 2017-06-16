@@ -5,7 +5,21 @@ if [ -z "$1" ]; then
 	exit
 fi
 
-mkdir -p original
-mv "$1" original
+if which ffmpeg >/dev/null ; then
+	converter=ffmpeg
+elif which avconv >/dev/null ; then
+	converter=avconv
+else
+	echo Missing either ffmpeg or avconv
+	exit 1
+fi
 
-time avconv -i "original/$1" -vf transpose=1 -c:a copy "$1"
+infile="$1"
+filename=$(basename "$infile")
+shift 1
+
+mkdir -p original
+mv "$infile" original
+mkdir -p converted
+
+time nice $converter -i "original/$filename" -vf transpose=1 -c:a copy -preset veryslow -map_metadata 0  "$@" "converted/$filename"
