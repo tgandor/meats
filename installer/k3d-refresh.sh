@@ -4,7 +4,12 @@ cd `dirname $0`
 
 [ $VIRTUAL_ENV ] || source ../venv36/bin/activate
 
-pip install -e .
+function die() {
+  echo "ERROR $*"
+  exit
+}
 
-jupyter nbextension install --py --sys-prefix k3d
-jupyter nbextension enable --py --sys-prefix k3d
+pip install -e . || die pip
+
+jupyter nbextension install --py --sys-prefix k3d || die install
+jupyter nbextension enable --py --sys-prefix k3d || die enable
