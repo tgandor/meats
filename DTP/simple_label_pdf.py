@@ -20,8 +20,12 @@ try:
     from reportlab.pdfbase.ttfonts import TTFont, TTFError
 except ImportError:
     print('Missing reportlab, trying to install...')
-    os.system("sudo apt-get install python{}-reportlab".format(
-        '3' if sys.version_info.major == 3 else ''))
+    if os.getenv('VIRTUAL_ENV') or os.getenv('CONDA_DEFAULT_ENV'):
+        # assume no problems with permissions/sudo etc.
+        os.system("pip install reportlab")
+    else:
+        os.system("sudo apt-get install python{}-reportlab".format(
+            '3' if sys.version_info.major == 3 else ''))
     exit()
 
 parser = argparse.ArgumentParser()
@@ -364,7 +368,7 @@ def win_main():
     ui_label(dialog, 'Font size [pt]:')
 
     font_size = tk.IntVar(dialog, value=settings['font_size'])
-    Spinbox(dialog, values=range(20, 74, 2), textvariable=font_size).pack(anchor=tk.N)
+    Spinbox(dialog, values=list(range(20, 74, 2)), textvariable=font_size).pack(anchor=tk.N)
     font_size.trace('w', lambda *_: change_font(font_size))
 
     tk.Button(
