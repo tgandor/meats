@@ -118,7 +118,8 @@ while(True):
         cv2.resizeWindow('frame', frame.shape[1], frame.shape[0])
         first_frame = False
 
-    key = cv2.waitKey(1) & 0xFF
+    raw_key = cv2.waitKey(1)
+    key = raw_key & 0xFF
     if key == ord('q'):
         break
     elif key == ord('f'):
@@ -151,6 +152,8 @@ while(True):
             key = cv2.waitKey(1000) & 0xFF
             if key == ord(' '):
                 break
+    elif raw_key != -1:
+        print('Unhandled key: {k}, 0x{k:x}, {char}, raw: {r}'.format(k=key, r=raw_key, char=repr(chr(key))))
 
 # When everything done, release the capture
 cap.release()
