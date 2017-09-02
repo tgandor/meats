@@ -13,5 +13,17 @@ fi
 
 if [ -n $HOME/.vimrc ] ; then
     echo Creating $HOME/.vimrc
-    echo syn on | tee $HOME/.vimrc
+    tee $HOME/.vimrc <<EOF
+let _curfile = expand("%:t")
+if _curfile =~ "Makefile" || _curfile =~ "makefile" || _curfile =~ ".*\.mk"
+	set noexpandtab
+else
+	set expandtab
+	set tabstop=4
+	set shiftwidth=4
+endif
+
+set laststatus=2
+syn on
+EOF
 fi
