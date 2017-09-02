@@ -16,7 +16,7 @@ if ( ssh -o PasswordAuthentication=no $1 pwd ) ; then
     exit
 fi
 
-cat $HOME/.ssh/id_rsa.pub | ssh $1 tee -a .ssh/authorized_keys
+cat $HOME/.ssh/id_rsa.pub | ssh $1 "mkdir -p .ssh ; tee -a .ssh/authorized_keys"
 
 if ( ssh -o PasswordAuthentication=no $1 pwd ) ; then
     echo "Success!"
