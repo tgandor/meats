@@ -5,6 +5,7 @@ df_log.csv
 *.bak
 .ipynb_checkpoints
 *~
+*.egg-info
 
 # configs
 *.conf
