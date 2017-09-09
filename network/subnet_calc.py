@@ -83,7 +83,7 @@ def go():
             if not query2:
                 break
             # print 'Processing more:', query2
-            mnums = map(int, re.findall('\d+', query2))
+            mnums = [int(x) for x in re.findall('\d+', query2)]
             mask = _ip_by_bytes(mnums)
             ip = _ip_by_bytes(nums)
             print_mask_info(mask)
