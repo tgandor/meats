@@ -11,7 +11,7 @@ while True:
     sys.stdout.write(line)
     sys.stdout.flush()
     for f in forks:
-        f.write(line)
+        f.write(line.encode())
 
 for f in forks:
     f.close()
