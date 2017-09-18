@@ -6,7 +6,7 @@ import glob
 from itertools import chain
 
 try:
-    from shutil import  which
+    from shutil import which
 except ImportError:
     def which(program):
         # https://stackoverflow.com/a/377028/1338797

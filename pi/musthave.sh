@@ -25,6 +25,7 @@ if [ ! -e $HOME/.vimrc ] ; then
     tee $HOME/.vimrc <<EOF
 set tabstop=4
 set shiftwidth=4
+set expandtab
 
 " let _curfile = expand("%:t")
 " if _curfile =~ "Makefile" || _curfile =~ "makefile" || _curfile =~ ".*\.mk"
