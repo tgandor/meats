@@ -67,7 +67,7 @@ first_frame = True
 frame_idx = 0
 start_time = time.time()
 
-while(True):
+while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
 
@@ -97,7 +97,7 @@ while(True):
 
     if info:
         fps = frame_idx / (time.time() - start_time)
-        message = 'Frame {}, ~fps: {:.2f}'.format(frame_idx, fps)
+        message = 'Frame {}, ~fps: {:.2f}, {}'.format(frame_idx, fps, frame.shape)
         cv2.putText(frame,
             message,
             (0, 20),
@@ -152,7 +152,7 @@ while(True):
             key = cv2.waitKey(1000) & 0xFF
             if key == ord(' '):
                 break
-    elif raw_key != -1:
+    elif raw_key not in (-1, 0xff):
         print('Unhandled key: {k}, 0x{k:x}, {char}, raw: {r}'.format(k=key, r=raw_key, char=repr(chr(key))))
 
 # When everything done, release the capture
