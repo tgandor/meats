@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import socket
 import struct
@@ -7,7 +9,7 @@ try:
     import dpkt  # , dpkt.dns
 except ImportError:
     import os
-    os.system('pip install dpkt')
+    os.system('{}pip install dpkt'.format('sudo ' if sys.platform.startswith('linux') else ''))
     exit()
 
 parser = argparse.ArgumentParser()
