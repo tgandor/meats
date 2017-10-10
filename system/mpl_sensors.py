@@ -36,15 +36,15 @@ if os.system('which sensors') != 0:
     missing.append('lm-sensors')
 else:
     sensors = [line.strip()
-        for line in os.popen('sensors').read().split('\n')
-        if ':' not in line and line.strip() and line[0] != ' ']
+               for line in os.popen('sensors').read().split('\n')
+               if ':' not in line and line.strip() and line[0] != ' ']
     print(' '.join(sensors))
 
 if missing:
     packages = ' '.join(missing)
     print('Missing some packages:', packages)
     print('Install them and run again.')
-    os.system('sudo apt-get install '+packages)
+    os.system('sudo apt-get install ' + packages)
     exit()
 
 
@@ -53,7 +53,7 @@ def cpu_temps():
     from os import popen
     from re import findall
     dta = popen('sensors').read()
-    #print(dta)
+    # print(dta)
     return list(map(float, findall(':\s*\+([\d\.]+)', dta)))
 
 
@@ -61,7 +61,7 @@ def cpu_freq():
     from os import popen
     from re import findall
     dta = open('/proc/cpuinfo').read()
-    #print(dta)
+    # print(dta)
     return map(float, findall('cpu MHz\s*:\s*([\d\.]+)', dta))
 
 
@@ -73,19 +73,20 @@ def temp_graph():
     from time import time, sleep
     from threading import Thread
     init_temps = cpu_temps()
-    window = [deque([i]*300) for i in init_temps]
+    window = [deque([i] * 300) for i in init_temps]
     fig = figure()
     ax = fig.add_subplot(111)
-    lines = [ax.plot(win)[0] for win in window]
+    lines = [ax.plot(win, label=sensor)[0] for win, sensor in zip(window, sensors)]
     ax.axis([0, 300,
-             min(30, min(init_temps)-10),
-             max(60, max(init_temps)+10)])
+             min(30, min(init_temps) - 10),
+             max(60, max(init_temps) + 10)])
+    ax.legend(handles=lines, loc='lower left')
 
     def update():
         if update.live and fig.canvas.manager.window:
             temps = cpu_temps()
             print('Current temperatures: '
-                + ', '.join('{:4.1f}'.format(t) for t in temps), end='\r')
+                  + ', '.join('{:4.1f}'.format(t) for t in temps), end='\r')
             sys.stdout.flush()
             for i in xrange(len(init_temps)):
                 window[i].append(temps[i])
@@ -98,6 +99,7 @@ def temp_graph():
     fig.canvas.manager.window.after(1000, update)
 
     def toggle(event):
+
         if update.live:
             update.live = False
         else:
@@ -108,5 +110,6 @@ def temp_graph():
     atexit.register(print)  # prevent last temperature wipeout
     show()
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     temp_graph()
