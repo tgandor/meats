@@ -15,18 +15,23 @@ import struct
 import sys
 import time
 
-chunk = 2**14
+chunk = 2**16
 
 
 def info(f):
     with open(f) as file_:
         file_.seek(-chunk, os.SEEK_END)
         sample = file_.read()
-    dt = datetime.datetime.fromtimestamp(
-        float(struct.unpack('>I', re.search(b'mvhd.{4}(.{4})', sample).group(1))[0])
-        + time.mktime(datetime.datetime(1903, 12, 31, 23, 24).timetuple())
-    )
-    print('{} ; {}'.format(f, time.strftime("%Y-%m-%d (%a) %H:%M:%S", dt.timetuple())))
+    try:
+        dt = datetime.datetime.fromtimestamp(
+            float(struct.unpack('>I', re.search(b'mvhd.{4}(.{4})', sample).group(1))[0])
+            + time.mktime(datetime.datetime(1903, 12, 31, 23, 24).timetuple())
+        )
+    except AttributeError as e:
+        print(e, file=sys.stderr)
+        print('{} - not found'.format(f))
+    else:
+        print('{} ; {}'.format(f, time.strftime("%Y-%m-%d (%a) %H:%M:%S", dt.timetuple())))
 
 if __name__=='__main__':
     list(map(info, sys.argv[1:]))

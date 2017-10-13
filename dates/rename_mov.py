@@ -13,8 +13,8 @@ import sys
 import time
 
 dry_run = False
-strftime_format = '%y%m%d_%H%M%S.mov'
-sample_len = 2**14
+strftime_format = '%Y%m%d_%H%M%S.mov'
+sample_len = 2**16
 
 def classify(iterable, func):
     results = {False: [], True: []}
