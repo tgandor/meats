@@ -5,14 +5,15 @@
 
 # usage: date_jpg.py dscn0001.jpg...
 
+import glob
+import os
 import re
 import sys
-import datetime
 import time
 
 
 def grep_date(filename):
-    some_data = open(filename, 'rb').read(2**12)
+    some_data = open(filename, 'rb').read(2 ** 12)
     match = re.search(b'\d{4}([ :]\d\d){5}', some_data)
     if match:
         return match.group().decode()
@@ -20,6 +21,11 @@ def grep_date(filename):
 
 
 def info(f):
+    if not os.path.exists(f) and '*' in f:
+        for i in glob.glob(f):
+            info(i)
+        return
+
     match = grep_date(f)
     if not match:
         print('{} - not found'.format(f))
@@ -28,5 +34,5 @@ def info(f):
     print('{} ; {}'.format(f, time.strftime("%Y-%m-%d (%a) %H:%M:%S", parsed)))
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     list(map(info, sys.argv[1:]))
