@@ -74,3 +74,15 @@ QString DirectoryFeeder::prev()
     return currentDirectory + QDir::separator() +  files[currentIndex];
 }
 
+QString DirectoryFeeder::current()
+{
+    if (files.empty() || currentIndex < 0 || currentIndex >= files.size())
+        return QString();
+    return currentDirectory + QDir::separator() +  files[currentIndex];
+}
+
+void DirectoryFeeder::rewind()
+{
+    currentIndex = -1;
+}
+

@@ -41,6 +41,8 @@ public:
     void reload(const QString& filename);
     QString next();
     QString prev();
+    QString current();
+    void rewind();
 private:
     QStringList files;
     QString currentDirectory;

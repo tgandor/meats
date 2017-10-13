@@ -40,8 +40,10 @@
 ****************************************************************************/
 
 #include <QtGui>
+#include <QInputDialog>
 
 #include "imageviewer.h"
+#include "organize.h"
 
 ImageViewer::ImageViewer()
 {
@@ -126,6 +128,34 @@ void ImageViewer::fitToWindow()
     double heightRatio = 1.0 * scrollArea->height() / imageLabel->height();
     scaleImage(std::min(widthRatio, heightRatio));
     updateActions();
+}
+
+void ImageViewer::moveGroup()
+{
+    bool ok;
+    // QMessageBox::information(this, "Test", "It works");
+
+    QString eventName = QInputDialog::getText(this, "Move pictures to subfolder",
+                                              "Event name:", QLineEdit::Normal, "", &ok);
+
+    if (ok && !eventName.isEmpty())
+    {
+        createEvent(feeder, eventName);
+
+        QString nextCandidate = feeder.next();
+        QFile nextFile(nextCandidate);
+        if (nextFile.exists())
+        {
+            displayFile(nextCandidate);
+        }
+        else
+        {
+            imageLabel->clear();
+        }
+        // works when not exists too
+        feeder.reload(nextCandidate);
+    }
+
 }
 
 void ImageViewer::about()
@@ -220,6 +250,10 @@ void ImageViewer::createActions()
     autoFitAct->setEnabled(true);
     autoFitAct->setCheckable(true);
 
+    moveGroupAct = new QAction(tr("&Move group to subfolder"), this);
+    moveGroupAct->setShortcut(tr("Ctrl+M"));
+    connect(moveGroupAct, SIGNAL(triggered()), this, SLOT(moveGroup()));
+
     aboutAct = new QAction(tr("&About"), this);
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 
@@ -235,6 +269,8 @@ void ImageViewer::createMenus()
     fileMenu = new QMenu(tr("&File"), this);
     fileMenu->addAction(openAct);
     fileMenu->addAction(prevAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(moveGroupAct);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 

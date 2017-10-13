@@ -72,6 +72,7 @@ private slots:
     void zoomOut();
     void normalSize();
     void fitToWindow();
+    void moveGroup();
     void about();
 
 private:
@@ -101,6 +102,7 @@ private:
     QAction *normalSizeAct;
     QAction *fitToWindowAct;
     QAction *autoFitAct;
+    QAction *moveGroupAct;
     QAction *aboutAct;
     QAction *aboutQtAct;
 
