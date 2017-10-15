@@ -10,3 +10,5 @@ SOURCES = imageviewer.cpp \
 # install
 target.path = /usr/local/bin
 INSTALLS += target
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

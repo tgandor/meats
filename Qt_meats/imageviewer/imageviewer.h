@@ -43,7 +43,6 @@
 #define IMAGEVIEWER_H
 
 #include <QMainWindow>
-#include <QPrinter>
 
 #include "directoryfeeder.h"
 
@@ -88,10 +87,6 @@ private:
     double scaleFactor;
 
     QToolBar* toolBar;
-
-#ifndef QT_NO_PRINTER
-    QPrinter printer;
-#endif
 
     QAction *openAct;
     QAction *nextAct;

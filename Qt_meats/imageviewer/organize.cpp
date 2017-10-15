@@ -54,7 +54,7 @@ void createEvent(DirectoryFeeder &feeder, const QString &name)
 
         QFile nextFile(next);
         QFileInfo nextFileInfo(next);
-        nextFile.rename(subdir + nextFileInfo.baseName());
+        nextFile.rename(subdir + nextFileInfo.fileName());
 
         if (next == lastOne)
         {

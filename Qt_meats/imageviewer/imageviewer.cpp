@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui>
+#include <QtWidgets>
 #include <QInputDialog>
 
 #include "imageviewer.h"
