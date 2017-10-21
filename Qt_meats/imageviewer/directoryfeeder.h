@@ -43,6 +43,7 @@ public:
     QString prev();
     QString current();
     void rewind();
+    void remove();
 private:
     QStringList files;
     QString currentDirectory;

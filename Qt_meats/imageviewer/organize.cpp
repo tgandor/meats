@@ -63,3 +63,21 @@ void createEvent(DirectoryFeeder &feeder, const QString &name)
     }
     qDebug() << name;
 }
+
+void deleteCurrent(DirectoryFeeder &feeder)
+{
+    QFile toDelete(feeder.current());
+    if (!toDelete.exists())
+        return;
+    QFileInfo toDeleteInfo(toDelete);
+    QDir parent = toDeleteInfo.absoluteDir();
+    QDir trash(parent.absolutePath() + QDir::separator() + "_trash");
+    if (!trash.exists())
+    {
+        trash.mkpath(".");
+    }
+    QString target = trash.absolutePath() + QDir::separator() + toDeleteInfo.fileName();
+    qDebug() << "Moving" << toDeleteInfo.canonicalFilePath() << "to" << target;
+    toDelete.rename(target);
+    feeder.remove();
+}

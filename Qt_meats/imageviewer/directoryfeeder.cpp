@@ -86,3 +86,13 @@ void DirectoryFeeder::rewind()
     currentIndex = -1;
 }
 
+void DirectoryFeeder::remove()
+{
+    if (files.empty() || currentIndex < 0 || currentIndex >= files.size())
+        return;
+    files.removeAt(currentIndex);
+    if (files.empty())
+        currentIndex = -1;
+    else
+        (void) prev();
+}

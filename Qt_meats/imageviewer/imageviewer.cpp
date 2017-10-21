@@ -165,6 +165,12 @@ void ImageViewer::moveGroup()
 
 }
 
+void ImageViewer::deleteCurrent()
+{
+    ::deleteCurrent(feeder);
+    displayFile(feeder.next());
+}
+
 void ImageViewer::about()
 {
     QMessageBox::about(this, tr("About Image Sorter"),
@@ -188,6 +194,15 @@ void ImageViewer::about()
 
 void ImageViewer::displayFile(const QString &fileName)
 {
+    if (fileName.isEmpty() || !QFile(fileName).exists())
+    {
+        imageLabel->clear();
+        statusBar()->showMessage("No file loaded.");
+        setWindowTitle("Image Sorter");
+        resetActions();
+        return;
+    }
+
     QImage image(fileName);
     if (image.isNull())
     {
@@ -259,7 +274,13 @@ void ImageViewer::createActions()
 
     moveGroupAct = new QAction(tr("&Move group to subfolder"), this);
     moveGroupAct->setShortcut(tr("Ctrl+M"));
+    moveGroupAct->setEnabled(false);
     connect(moveGroupAct, SIGNAL(triggered()), this, SLOT(moveGroup()));
+
+    deleteAction = new QAction(tr("&Delete current image"), this);
+    deleteAction->setShortcut(tr("Ctrl+D"));
+    deleteAction->setEnabled(false);
+    connect(deleteAction, SIGNAL(triggered()), this,SLOT(deleteCurrent()));
 
     aboutAct = new QAction(tr("&About"), this);
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
@@ -278,6 +299,7 @@ void ImageViewer::createMenus()
     fileMenu->addAction(prevAct);
     fileMenu->addSeparator();
     fileMenu->addAction(moveGroupAct);
+    fileMenu->addAction(deleteAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 
@@ -309,6 +331,23 @@ void ImageViewer::updateActions()
     normalSizeAct->setEnabled(true);
     zoomInAct->setEnabled(scaleFactor < 3.0);
     zoomOutAct->setEnabled(scaleFactor > 0.05);
+    moveGroupAct->setEnabled(true);
+    deleteAction->setEnabled(true);
+}
+
+
+
+void ImageViewer::resetActions()
+
+{
+    nextAct->setEnabled(false);
+    prevAct->setEnabled(false);
+    fitToWindowAct->setEnabled(false);
+    normalSizeAct->setEnabled(false);
+    zoomInAct->setEnabled(false);
+    zoomOutAct->setEnabled(false);
+    moveGroupAct->setEnabled(false);
+    deleteAction->setEnabled(false);
 }
 
 
@@ -334,4 +373,3 @@ void ImageViewer::adjustScrollBar(QScrollBar *scrollBar, double factor)
     scrollBar->setValue(int(factor * scrollBar->value()
                             + ((factor - 1) * scrollBar->pageStep()/2)));
 }
-

@@ -72,6 +72,7 @@ private slots:
     void normalSize();
     void fitToWindow();
     void moveGroup();
+    void deleteCurrent();
     void about();
 
 private:
@@ -79,6 +80,7 @@ private:
     void createActions();
     void createMenus();
     void updateActions();
+    void resetActions();
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
@@ -98,6 +100,7 @@ private:
     QAction *fitToWindowAct;
     QAction *autoFitAct;
     QAction *moveGroupAct;
+    QAction *deleteAction;
     QAction *aboutAct;
     QAction *aboutQtAct;
 
