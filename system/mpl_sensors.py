@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import os
+import re
 import sys
 import atexit
 from collections import deque
@@ -34,11 +35,6 @@ else:
 
 if os.system('which sensors') != 0:
     missing.append('lm-sensors')
-else:
-    sensors = [line.strip()
-               for line in os.popen('sensors').read().split('\n')
-               if ':' not in line and line.strip() and line[0] != ' ']
-    print(' '.join(sensors))
 
 if missing:
     packages = ' '.join(missing)
@@ -47,22 +43,32 @@ if missing:
     os.system('sudo apt-get install ' + packages)
     exit()
 
+number_with_plus_after_colon = ':\s*\+([\d\.]+)'
+
+
+def sensor_names():
+    last_sensor = None
+    sensors = []
+
+    for line in os.popen('sensors').read().split('\n'):
+        if ':' not in line and line.strip() and line[0] != ' ':
+            last_sensor = line.strip()
+            continue
+        if last_sensor and re.findall(number_with_plus_after_colon, line):
+            sensors.append(last_sensor)
+
+    return sensors
+
 
 def cpu_temps():
     """Run sensors program and parse temperatures."""
-    from os import popen
-    from re import findall
-    dta = popen('sensors').read()
-    # print(dta)
-    return list(map(float, findall(':\s*\+([\d\.]+)', dta)))
+    dta = os.popen('sensors').read()
+    return list(map(float, re.findall(number_with_plus_after_colon, dta)))
 
 
 def cpu_freq():
-    from os import popen
-    from re import findall
     dta = open('/proc/cpuinfo').read()
-    # print(dta)
-    return map(float, findall('cpu MHz\s*:\s*([\d\.]+)', dta))
+    return map(float, re.findall('cpu MHz\s*:\s*([\d\.]+)', dta))
 
 
 def temp_graph():
@@ -72,6 +78,8 @@ def temp_graph():
     from matplotlib.pyplot import plot, show, figure, draw, axis
     from time import time, sleep
     from threading import Thread
+    sensors = sensor_names()
+    print(' '.join(sensors))
     init_temps = cpu_temps()
     window = [deque([i] * 300) for i in init_temps]
     fig = figure()
