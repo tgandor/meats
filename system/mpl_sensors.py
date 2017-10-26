@@ -88,10 +88,10 @@ def temp_graph():
             print('Current temperatures: '
                   + ', '.join('{:4.1f}'.format(t) for t in temps), end='\r')
             sys.stdout.flush()
-            for i in xrange(len(init_temps)):
-                window[i].append(temps[i])
-                window[i].popleft()
-                lines[i].set_ydata(window[i])
+            for win, temp, line in zip(window, temps, lines):
+                win.append(temp)
+                win.popleft()
+                line.set_ydata(win)
             fig.canvas.draw()
             fig.canvas.manager.window.after(1000, update)
 
