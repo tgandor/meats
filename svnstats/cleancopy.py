@@ -87,7 +87,7 @@ def main():
 
     status = svn.close()
 
-    if status == None:
+    if status is None:
         files_generator = get_alien_files__pipe()
     else: 
         files_generator = get_alien_files__entries() 
@@ -113,15 +113,16 @@ def main():
                 log("Exception:")
                 log("\t"+str(e))
 
+
 if __name__ == '__main__':
     args = set(sys.argv[1:])
-    if set(['-t', '-n', '--dry-run']) & args:
+    if {'-t', '-n', '--dry-run'} & args:
         g_delete = False
-    if set(['-v', '--verbose']) & args:
+    if {'-v', '--verbose'} & args:
         g_verbose = True
-    if set(['-q', '--quiet']) & args:
+    if {'-q', '--quiet'} & args:
         g_quiet = True
-    if set(['-l', '--log']) & args:
+    if {'-l', '--log'} & args:
         g_logfile = True
 
     if not g_delete:
@@ -129,8 +130,8 @@ if __name__ == '__main__':
 
     try:
         main()
-    except Exception as e:
-        print "Some problems occurred:\n---------\n%s\n----------\n" % traceback.format_exc()
+    except:
+        print("Some problems occurred:\n---------\n%s\n----------\n" % traceback.format_exc())
         log("Exception:")
         log(traceback.format_exc())
 
