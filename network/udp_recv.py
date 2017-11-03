@@ -31,7 +31,7 @@ try:
         print("received message: >%s<" % data)
         print("  received from:", addr)
         if args.echo:
-            prefix = platform.uname().node.encode() + b' echoing: '
+            prefix = platform.uname()[1].encode() + b' echoing: '
             print('Sending back:', prefix+data)
             sock.sendto(prefix+data, addr)
         if data == b'bye':
