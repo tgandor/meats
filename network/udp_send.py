@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import socket
 import argparse
+import socket
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument('message', help='String to broadcast', default='Where RU?', nargs='?')
@@ -25,7 +26,19 @@ try:
     sock = socket.socket(socket.AF_INET,  # Internet
                          socket.SOCK_DGRAM)  # UDP
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
+
+    broken_global = (UDP_IP == '255.255.255.255' and sys.platform.startswith('win'))
+
+    if not broken_global:
+        sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
+    else:
+        print('Sorry, but 255.255.255.255 is broken on Windows.')
+        import netifaces
+        for interface in netifaces.interfaces():
+            for ipv4 in netifaces.ifaddresses(interface).get(netifaces.AF_INET, []):
+                UDP_IP = ipv4['broadcast']
+                print('Broadcasting instead to', UDP_IP)
+                sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
 
     if args.listen:
         sock.settimeout(args.timeout)
