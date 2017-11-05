@@ -19,14 +19,7 @@ try:
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont, TTFError
 except ImportError:
-    print('Missing reportlab, trying to install...')
-    if os.getenv('VIRTUAL_ENV') or os.getenv('CONDA_DEFAULT_ENV'):
-        # assume no problems with permissions/sudo etc.
-        os.system("pip install reportlab")
-    else:
-        os.system("sudo apt-get install python{}-reportlab".format(
-            '3' if sys.version_info.major == 3 else ''))
-    exit()
+    _install_and_die('reportlab')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--font-size', type=int, default=20)
@@ -52,6 +45,16 @@ fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial', 'DejaVuSans']
 
 last_font = []  # needs to be reloaded after new page
 
+
+def _install_and_die(package):
+    print('Missing reportlab, trying to install...')
+    if os.getenv('VIRTUAL_ENV') or os.getenv('CONDA_DEFAULT_ENV'):
+        # assume no problems with permissions/sudo etc.
+        os.system('pip install {}'.format(package))
+    else:
+        os.system('sudo apt-get install python{}-{}'.format(
+            '3' if sys.version_info.major == 3 else '', package))
+    exit()
 
 def _setup_canvas(outfile=default_output_file):
     for font_name in fonts_to_try:
@@ -287,7 +290,10 @@ def win_main():
     try:
         import Tkinter as tk
     except ImportError:
-        import tkinter as tk
+        try:
+            import tkinter as tk
+        except ImportError:
+            _install_and_die('tk')
 
     ui_font = ('TkDefaultFont', 12)
 
@@ -371,8 +377,9 @@ def win_main():
     Spinbox(dialog, values=list(range(20, 74, 2)), textvariable=font_size).pack(anchor=tk.N)
     font_size.trace('w', lambda *_: change_font(font_size))
 
+    print_ = getattr(args, 'print')
     tk.Button(
-        dialog, text='Generate', font=ui_font, width=50, height=3,
+        dialog, text='Print' if print_ else 'Generate', font=ui_font, width=50, height=3,
         command=lambda: generate(text, width, height, serial_flag, serial_count)
     ).pack(anchor=tk.N)
     dialog.pack(fill=tk.BOTH, expand=1)
