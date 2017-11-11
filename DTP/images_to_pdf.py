@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
+import argparse
+import glob
 import os
 import sys
 
@@ -22,8 +26,8 @@ def update_settings():
         footer_y = margin_y - 1*cm
 
 
-def create_image_pdf(images, output="images.pdf"):
-    c = canvas.Canvas(output)
+def create_image_pdf(images, args):
+    c = canvas.Canvas(args.output)
     num_pages = len(images)
     for filename in images:
         image = ImageReader(filename)
@@ -37,30 +41,39 @@ def create_image_pdf(images, output="images.pdf"):
         target_y = margin_y + (avail_h - target_h) / 2
         c.drawImage(image, target_x, target_y, target_w, target_h)
         page_num = c.getPageNumber()
-        text = '{0} / {1:d}'.format(page_num, num_pages)
-        c.drawCentredString(A4[0] / 2, footer_y, text)
+        if not args.no_footer:
+            text = str(page_num) if args.no_total else '{0} / {1:d}'.format(page_num, num_pages)
+            c.drawCentredString(A4[0] / 2, footer_y, text)
         c.showPage()
         print('Processed {} - page {}'.format(filename, page_num))
     c.save()
     if sys.platform.startswith('linux'):
-        os.system('xdg-open "%s"' % output)
+        os.system('xdg-open "%s"' % args.output)
     else:
-        os.system('start "" "%s"' % output)
+        os.system('start "" "%s"' % args.output)
+
+
+def get_files(image_files):
+    for path in image_files:
+        if os.path.isfile(path):
+            yield path
+        elif '*' in path:
+            # yield from glob.glob(path)
+            for image in sorted(glob.glob(path)):
+                yield image
+        else:
+            print('Path not found:', path, file=sys.stderr)
 
 
 def main():
-    if len(sys.argv) < 2:
-        print('Usage: {} [-o OUTPUT.pdf] IMAGE_FILE...'.format(sys.argv[0]))
-        exit()
-    else:
-        images = sys.argv[1:]
-        if '-o' in images:
-            idx = images.index('-o')
-            output = images.pop(idx+1)
-            images.pop(idx)
-            create_image_pdf(images, output)
-        else:
-            create_image_pdf(images)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output', '-o', help='Output PDF file', default='images.pdf')
+    parser.add_argument('--no-total', '-n', help='Supress total page count', action='store_true')
+    parser.add_argument('--no-footer', '-N', help='Supress page numbers alltogether', action='store_true')
+    parser.add_argument('image_files', nargs='+', help='Input images')
+    args = parser.parse_args()
+    images = list(get_files(args.image_files))
+    create_image_pdf(images, args)
 
 
 if __name__ == "__main__":
