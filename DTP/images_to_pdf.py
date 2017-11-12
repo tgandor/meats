@@ -12,8 +12,8 @@ from reportlab.lib.units import cm
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
 
-margin_x = 2*cm  # horizontal; margins are on both sides
-margin_y = 3*cm  # includes footer
+margin_x = 0*cm  # horizontal; margins are on both sides
+margin_y = 0*cm  # includes footer
 footer_y = 2*cm  # where page numbers go
 
 
@@ -32,13 +32,13 @@ def create_image_pdf(images, args):
     for filename in images:
         image = ImageReader(filename)
         img_w, img_h = image.getSize()
-        avail_w = A4[0] - 2 * margin_x
-        avail_h = A4[1] - 2 * margin_y
+        avail_w = A4[0] - 2 * args.margin_x * cm
+        avail_h = A4[1] - 2 * args.margin_y * cm
         scale = min(avail_w/img_w, avail_h/img_h)
         target_w = img_w * scale
         target_h = img_h * scale
-        target_x = margin_x + (avail_w - target_w) / 2
-        target_y = margin_y + (avail_h - target_h) / 2
+        target_x = args.margin_x * cm + (avail_w - target_w) / 2
+        target_y = args.margin_y * cm + (avail_h - target_h) / 2
         c.drawImage(image, target_x, target_y, target_w, target_h)
         page_num = c.getPageNumber()
         if not args.no_footer:
@@ -68,8 +68,10 @@ def get_files(image_files):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', '-o', help='Output PDF file', default='images.pdf')
-    parser.add_argument('--no-total', '-n', help='Supress total page count', action='store_true')
-    parser.add_argument('--no-footer', '-N', help='Supress page numbers alltogether', action='store_true')
+    parser.add_argument('--margin-x', help='Left and right margin in cm', type=float, default=margin_x / cm)
+    parser.add_argument('--margin-y', help='Top and bottom margin in cm', type=float, default=margin_y / cm)
+    parser.add_argument('--no-total', '-n', help='Suppress total page count', action='store_true')
+    parser.add_argument('--no-footer', '-N', help='Suppress page numbers altogether', action='store_true')
     parser.add_argument('image_files', nargs='+', help='Input images')
     args = parser.parse_args()
     images = list(get_files(args.image_files))
