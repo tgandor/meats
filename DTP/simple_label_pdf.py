@@ -12,6 +12,18 @@ import sqlite3
 import sys
 import tempfile
 
+
+def _install_and_die(package):
+    print('Missing reportlab, trying to install...')
+    if os.getenv('VIRTUAL_ENV') or os.getenv('CONDA_DEFAULT_ENV'):
+        # assume no problems with permissions/sudo etc.
+        os.system('pip install {}'.format(package))
+    else:
+        os.system('sudo apt-get install python{}-{}'.format(
+            '3' if sys.version_info.major == 3 else '', package))
+    exit()
+
+
 try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.units import cm
@@ -26,6 +38,7 @@ parser.add_argument('--font-size', type=int, default=20)
 parser.add_argument('--repeat', type=int, default=1, help="Times to repeat each label verbatim (without series)")
 parser.add_argument('--print', action='store_true', help="Try to print directly, instead of opening")
 parser.add_argument('--gui', action='store_true', help="Open a tkinter GUI to create labels")
+parser.add_argument('--db-shell', action='store_true', help="Open a connection do DB and query from console")
 parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
 
 settings = dict(
@@ -45,16 +58,6 @@ fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial', 'DejaVuSans']
 
 last_font = []  # needs to be reloaded after new page
 
-
-def _install_and_die(package):
-    print('Missing reportlab, trying to install...')
-    if os.getenv('VIRTUAL_ENV') or os.getenv('CONDA_DEFAULT_ENV'):
-        # assume no problems with permissions/sudo etc.
-        os.system('pip install {}'.format(package))
-    else:
-        os.system('sudo apt-get install python{}-{}'.format(
-            '3' if sys.version_info.major == 3 else '', package))
-    exit()
 
 def _setup_canvas(outfile=default_output_file):
     for font_name in fonts_to_try:
@@ -386,12 +389,35 @@ def win_main():
     root.mainloop()
 
 
+def db_shell_main():
+    try:
+        import readline
+    except ImportError:
+        print('Sorry, no readline')
+
+    import six
+    try:
+        conn, cursor = open_database()
+        while True:
+            query = six.moves.input('sqlite> ')
+            if len(query) == 0 or query == 'exit':
+                break
+            cursor.execute(query)
+            for row in cursor.fetchall():
+                print(row)
+            print('-' * 50)
+    finally:
+        close_database(conn, cursor)
+
+
 if __name__ == '__main__':
     locale.setlocale(locale.LC_ALL, '')
     args = parser.parse_args(sys.argv[1:])
     argv = args.args
     settings['font_size'] = args.font_size
-    if args.gui or len(argv) == 0:
+    if args.db_shell:
+        db_shell_main()
+    elif args.gui or len(argv) == 0:
         win_main()
     elif len(argv) == 4 and argv[3].startswith('x'):
         multi_label(argv[0], parse_s(argv[1], A4[0]), parse_s(argv[2], A4[1]), int(argv[3][1:]))
