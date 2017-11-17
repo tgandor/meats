@@ -289,6 +289,20 @@ def main():
     _finish_rendering(c)
 
 
+def get_previous_label(current : int):
+    try:
+        conn, cursor = open_database()
+        if current == 0:
+            cursor.execute('select id, text, width, height from labels order by id desc limit 1')
+        else:
+            cursor.execute('select id, text, width, height from labels WHERE id < ? order by id desc limit 1',
+                           (current,))
+        row = cursor.fetchone()
+        return row
+    finally:
+        close_database(conn, cursor)
+
+
 def win_main():
     try:
         import Tkinter as tk
@@ -315,13 +329,18 @@ def win_main():
             return self
 
         def mouse_wheel(self, event):
-            if event.num == 5 or event.delta == -120:
+            # print('Delta:', event.delta)
+            if event.num == 5 or event.delta < 0:
                 self.invoke('buttondown')
-            elif event.num == 4 or event.delta == 120:
+            elif event.num == 4 or event.delta > 0:
                 self.invoke('buttonup')
 
     def ui_label(parent, text):
         tk.Label(parent, text=text, font=ui_font).pack(anchor=tk.N)
+
+    def set_text(widget, value):
+        widget.delete('1.0', tk.END)
+        widget.insert(tk.END, value)
 
     def generate(text_widget, width_input, height_input, is_serial, num_serial):
         label_text = text_widget.get('1.0', 'end').strip()
@@ -336,6 +355,22 @@ def win_main():
             for _ in range(int(num_serial.get())):
                 label(c, label_text, w, h, state)
             _finish_rendering(c)
+
+    def load_previous(text_widget, width_input, height_input, last_id):
+        row = get_previous_label(current=last_id.get())
+        if row is None:
+            print('No [more] previous records')
+            return
+        previous_id, text, width, height = row
+        set_text(text_widget, text)
+        width_input.set(width)
+        height_input.set(height)
+        modified(None)
+        last_id.set(previous_id)
+
+    def load_next(text_widget, width_input, height_input, last_id):
+        if last_id.get() == 0:
+            return
 
     root = tk.Tk()
     root.title('Simple Label')
@@ -380,11 +415,19 @@ def win_main():
     Spinbox(dialog, values=list(range(20, 74, 2)), textvariable=font_size).pack(anchor=tk.N)
     font_size.trace('w', lambda *_: change_font(font_size))
 
+    last_id = tk.IntVar()
     print_ = getattr(args, 'print')
+    panel = tk.Frame(dialog)
+    tk.Button(panel, text='<', width='3', height='3',
+              command=lambda: load_previous(text, width, height, last_id)).grid(row=0, column=0)
     tk.Button(
-        dialog, text='Print' if print_ else 'Generate', font=ui_font, width=50, height=3,
+        panel, text='Print' if print_ else 'Generate', font=ui_font, width=47, height=3,
         command=lambda: generate(text, width, height, serial_flag, serial_count)
-    ).pack(anchor=tk.N)
+    ).grid(row=0, column=1)
+    tk.Button(panel, text='>', width='3', height='3',
+              command=lambda: load_next(text, width, height, last_id)).grid(row=0, column=2)
+    panel.pack(anchor=tk.N)
+
     dialog.pack(fill=tk.BOTH, expand=1)
     root.mainloop()
 
