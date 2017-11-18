@@ -289,7 +289,7 @@ def main():
     _finish_rendering(c)
 
 
-def get_previous_label(current : int):
+def get_previous_label(current):
     try:
         conn, cursor = open_database()
         if current == 0:
@@ -297,8 +297,17 @@ def get_previous_label(current : int):
         else:
             cursor.execute('select id, text, width, height from labels WHERE id < ? order by id desc limit 1',
                            (current,))
-        row = cursor.fetchone()
-        return row
+        return cursor.fetchone()
+    finally:
+        close_database(conn, cursor)
+
+
+def get_next_label(current):
+    try:
+        conn, cursor = open_database()
+        cursor.execute('select id, text, width, height from labels WHERE id > ? order by id limit 1',
+                       (current,))
+        return cursor.fetchone()
     finally:
         close_database(conn, cursor)
 
@@ -356,21 +365,28 @@ def win_main():
                 label(c, label_text, w, h, state)
             _finish_rendering(c)
 
-    def load_previous(text_widget, width_input, height_input, last_id):
-        row = get_previous_label(current=last_id.get())
-        if row is None:
-            print('No [more] previous records')
-            return
-        previous_id, text, width, height = row
+    def set_current_label(height, height_input, last_id, previous_id, text, text_widget, width, width_input):
         set_text(text_widget, text)
         width_input.set(width)
         height_input.set(height)
         modified(None)
         last_id.set(previous_id)
 
-    def load_next(text_widget, width_input, height_input, last_id):
-        if last_id.get() == 0:
+    def load_previous(text_widget, width_input, height_input, last_id):
+        row = get_previous_label(current=last_id.get())
+        if row is None:
+            print('No [more] previous records')
             return
+        previous_id, text, width, height = row
+        set_current_label(height, height_input, last_id, previous_id, text, text_widget, width, width_input)
+
+    def load_next(text_widget, width_input, height_input, last_id):
+        row = get_next_label(current=last_id.get())
+        if row is None:
+            print('No [more] records')
+            return
+        next_id, text, width, height = row
+        set_current_label(height, height_input, last_id, next_id, text, text_widget, width, width_input)
 
     root = tk.Tk()
     root.title('Simple Label')
