@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import sys
 import os
 import re
 
 files = sys.argv[1:]
 
-with_num = sorted([ (int(re.search('\d+', f).group()), f) for f in files])
+with_num = sorted([(int(re.search('\d+', f).group()), f) for f in files])
 
 maxnum = with_num[-1][0]
 format_chars = len(str(maxnum))
@@ -16,7 +18,7 @@ for n, f in with_num:
     newf = re.sub('\d+', fmt%n, f, 1)
     if newf != f:
         if os.path.exists(newf):
-            print "Error: %s - file already exists!" % newf
+            print("Error: %s - file already exists!" % newf)
             continue
-        print f, '->', newf
+        print(f, '->', newf)
         os.rename(f, newf)

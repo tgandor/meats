@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('message', help='String to broadcast', default='Where RU?', nargs='?')
 parser.add_argument('--addr', default='255.255.255.255', help='IP to send to, may be broadcast')
 parser.add_argument('--port', default=5005, help='Target UDP port to send to')
+parser.add_argument('--all', '-a', action='store_true', help='Send broadcast on all interfaces (default on Windows)')
 parser.add_argument('--listen', '-l', action='store_true', help='Listen for replies after broadcast')
 parser.add_argument('--timeout', '-t', type=float, help='Socket operation timeout', default=10.0)
 args = parser.parse_args()
@@ -29,15 +30,19 @@ try:
 
     broken_global = (UDP_IP == '255.255.255.255' and sys.platform.startswith('win'))
 
-    if not broken_global:
+    if not broken_global and not args.all:
         sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
     else:
-        print('Sorry, but 255.255.255.255 is broken on Windows.')
+        if not args.all:
+            print('Sorry, but 255.255.255.255 is broken on Windows.')
         import netifaces
         for interface in netifaces.interfaces():
             for ipv4 in netifaces.ifaddresses(interface).get(netifaces.AF_INET, []):
-                UDP_IP = ipv4['broadcast']
-                print('Broadcasting instead to', UDP_IP)
+                UDP_IP = ipv4.get('broadcast')
+                if UDP_IP is None:
+                    print('Missing broadcast in:', ipv4)
+                    continue
+                print('Broadcasting {}to {}'.format('' if args.all else 'instead ', UDP_IP))
                 sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
 
     if args.listen:
