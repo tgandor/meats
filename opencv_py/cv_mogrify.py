@@ -3,6 +3,7 @@
 import cv2
 import inspect
 import sys
+import glob
 
 # specific operations: begin
 
@@ -18,6 +19,11 @@ def adaptive_gauss(target):
     image = cv2.imread(target, cv2.IMREAD_GRAYSCALE)
     # last 2 parameters: window size, bias from mean
     return cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 25, 25)
+
+
+def rotate(target):
+    image = cv2.imread(target)
+    return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
 
 
 # specific operations: end
@@ -40,7 +46,8 @@ def _main():
     if not command:
         exit()
 
-    for target in sys.argv[2:]:
+    for target in (name for pattern in sys.argv[2:] for name in glob.glob(pattern)):
+        print(target)
         result = command(target)
         cv2.imwrite(target, result)
 
