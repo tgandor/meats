@@ -26,6 +26,11 @@ def rotate(target):
     return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
 
 
+def rotate_ccw(target):
+    image = cv2.imread(target)
+    return cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+
 # specific operations: end
 
 

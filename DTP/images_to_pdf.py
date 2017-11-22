@@ -9,7 +9,7 @@ import sys
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.utils import ImageReader
 
 margin_x = 0*cm  # horizontal; margins are on both sides
@@ -28,17 +28,23 @@ def update_settings():
 
 def create_image_pdf(images, args):
     c = canvas.Canvas(args.output)
+
+    format = A4
+    if args.landscape:
+        c.setPageSize(landscape(A4))
+        format = landscape(A4)
+
     num_pages = len(images)
     for filename in images:
         image = ImageReader(filename)
         img_w, img_h = image.getSize()
-        avail_w = A4[0] - 2 * args.margin_x * cm
-        avail_h = A4[1] - 2 * args.margin_y * cm
+        avail_w = format[0] - 2 * args.margin_x * cm
+        avail_h = format[1] - 2 * args.margin_y * cm
         scale = min(avail_w/img_w, avail_h/img_h)
         target_w = img_w * scale
         target_h = img_h * scale
-        target_x = args.margin_x * cm + (avail_w - target_w) / 2
-        target_y = args.margin_y * cm + (avail_h - target_h) / 2
+        target_x = args.margin_x * cm + (0 if args.no_center else (avail_w - target_w) / 2)
+        target_y = args.margin_y * cm + (0 if args.no_center else (avail_h - target_h) / 2)
         c.drawImage(image, target_x, target_y, target_w, target_h)
         page_num = c.getPageNumber()
         if not args.no_footer:
@@ -54,12 +60,18 @@ def create_image_pdf(images, args):
 
 
 def get_files(image_files):
+    try:
+        from natsort import natsorted as sort_function
+    except ImportError:
+        print('Warning: missing natsort')
+        sort_function = sorted
+
     for path in image_files:
         if os.path.isfile(path):
             yield path
         elif '*' in path:
             # yield from glob.glob(path)
-            for image in sorted(glob.glob(path)):
+            for image in sort_function(glob.glob(path)):
                 yield image
         else:
             print('Path not found:', path, file=sys.stderr)
@@ -72,6 +84,8 @@ def main():
     parser.add_argument('--margin-y', help='Top and bottom margin in cm', type=float, default=margin_y / cm)
     parser.add_argument('--no-total', '-n', help='Suppress total page count', action='store_true')
     parser.add_argument('--no-footer', '-N', help='Suppress page numbers altogether', action='store_true')
+    parser.add_argument('--landscape', '-w', action='store_true', help='Use landscape orientation')
+    parser.add_argument('--no-center', action='store_true', help='No centering on page, just margins')
     parser.add_argument('image_files', nargs='+', help='Input images')
     args = parser.parse_args()
     images = list(get_files(args.image_files))
