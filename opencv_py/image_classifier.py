@@ -21,7 +21,9 @@ from keras.preprocessing import image
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=1000)
 parser.add_argument('--epochs', type=int, default=100)
+parser.add_argument('--batch', type=int, default=10, help='Batch size for training')
 parser.add_argument('--gray', action='store_true')
+parser.add_argument('--generator', '-g', action='store_true')
 args = parser.parse_args()
 
 
@@ -30,15 +32,18 @@ size = (128, 128)
 # For reproducibility
 np.random.seed(args.seed)
 
-if __name__ == '__main__':
+# Fixed classes - subfolders of CWD
+classes = sorted(d.replace(os.path.sep, '') for d in glob.glob('*/'))
+num_classes = len(classes)
+
+
+def get_training_set():
     # Load the dataset
-    classes = sorted(d.replace(os.path.sep, '') for d in glob.glob('*/'))
-    num_classes = len(classes)
     X = []
     Y = []
 
     for index, d in enumerate(classes):
-        for image_filename in glob.glob(d+'/*.png'):
+        for image_filename in glob.glob(d+'/*.*'):
             img = image.img_to_array(image.load_img(image_filename, target_size=size, grayscale=args.gray))
             # import code; code.interact(local=locals())
             # cv2.imshow('train', img)
@@ -48,9 +53,10 @@ if __name__ == '__main__':
             X.append(img)
 
     X = np.asarray(X)
-    print(Y)
+    return X, Y
 
-    # Create the model
+
+def create_network():
     model = Sequential()
 
     model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=size + (1 if args.gray else 3,)))
@@ -75,27 +81,56 @@ if __name__ == '__main__':
                   , metrics=['accuracy']
                   )
 
-    # Train the model
-    model.fit(X, to_categorical(Y),
-              batch_size=10,
-              shuffle=True,
-              epochs=args.epochs
-              # , callbacks=[EarlyStopping(min_delta=0.001, patience=3)]
-              )
+    return model
 
-    to_classify = glob.glob('*.png')
+
+def get_training_generator():
+    generator = image.ImageDataGenerator(
+            rescale=1 / 255.,
+            # rotation_range=180.0,
+            # width_shift_range=0.05,
+            # height_shift_range=0.05,
+            # zoom_range=0.1,
+            horizontal_flip=True,
+            vertical_flip=True,
+            preprocessing_function=lambda x: x - 127.5
+        ).flow_from_directory(
+            '.',
+            target_size=size,
+            batch_size=args.batch,
+            color_mode='grayscale' if args.gray else 'rgb'
+        )
+    return generator
+
+
+if __name__ == '__main__':
+    if args.generator:
+        generator = get_training_generator()
+    else:
+        X, Y = get_training_set()
+
+    model = create_network()
+
+    # Train the model
+    if args.generator:
+        model.fit_generator(generator, steps_per_epoch=args.batch, epochs=args.epochs)
+    else:
+        model.fit(
+            X, to_categorical(Y), batch_size=args.batch, shuffle=True, epochs=args.epochs
+            # , callbacks=[EarlyStopping(min_delta=0.001, patience=3)]
+        )
+
+    to_classify = glob.glob('*.*')
 
     print('Training done, loading images...')
     X_test = np.asarray([
-        image.img_to_array(image.load_img(image_filename, target_size=size)).astype(np.float32) / 256.0 - 0.5
+        image.img_to_array(image.load_img(image_filename, target_size=size, grayscale=args.gray)).astype(np.float32) / 256.0 - 0.5
         for image_filename in to_classify
     ])
 
-    print('Classifying...')
+    print('Classifying...', classes)
     Y_test = model.predict(X_test)
 
     print('Done.')
     for preds, filename in zip(Y_test, to_classify):
-        print(preds, filename)
-        if preds[1] > preds[0]:
-            print('-'*50)
+        print(preds, filename, classes[np.argmax(preds)])

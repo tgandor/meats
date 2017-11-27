@@ -16,11 +16,6 @@ args = parser.parse_args()
 
 
 def crop_by_average(img):
-    y0 = 0
-    y1 = img.shape[0]
-    x0 = 0
-    x1 = img.shape[1]
-
     def make_slices(array):
         return slice(*array[:2]), slice(*array[2:])
 
