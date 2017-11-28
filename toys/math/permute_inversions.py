@@ -2,10 +2,10 @@
 
 from __future__ import print_function
 
-from itertools import permutations
-import numpy as np
-import sys
 from argparse import ArgumentParser
+from itertools import permutations
+
+import numpy as np
 
 parser = ArgumentParser()
 parser.add_argument('--table', '-t', action='store_true', help='Calculate and print permutation table')

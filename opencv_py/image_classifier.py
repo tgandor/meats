@@ -4,6 +4,8 @@ from __future__ import print_function
 
 import glob
 import os
+import shutil
+
 import numpy as np
 import argparse
 
@@ -23,7 +25,12 @@ parser.add_argument('--seed', type=int, default=1000)
 parser.add_argument('--epochs', type=int, default=100)
 parser.add_argument('--batch', type=int, default=10, help='Batch size for training')
 parser.add_argument('--gray', action='store_true')
+parser.add_argument('--retrain', action='store_true', help='Retrain model even when loaded')
 parser.add_argument('--generator', '-g', action='store_true')
+parser.add_argument('--rename', '-w', action='store_true', help='Move files to predicted classes')
+parser.add_argument('--threshold', '-t', type=float, default=0.8)
+parser.add_argument('--save', '-o', type=str)
+parser.add_argument('--load', '-i', type=str)
 args = parser.parse_args()
 
 
@@ -104,29 +111,38 @@ def get_training_generator():
 
 
 if __name__ == '__main__':
-    if args.generator:
-        generator = get_training_generator()
-    else:
-        X, Y = get_training_set()
-
     model = create_network()
 
-    # Train the model
-    if args.generator:
-        model.fit_generator(generator, steps_per_epoch=args.batch, epochs=args.epochs)
-    else:
-        model.fit(
-            X, to_categorical(Y), batch_size=args.batch, shuffle=True, epochs=args.epochs
-            # , callbacks=[EarlyStopping(min_delta=0.001, patience=3)]
-        )
+    if args.load:
+        model.load_weights(args.load)
+
+    if not args.load or args.retrain:
+        if args.generator:
+            generator = get_training_generator()
+        else:
+            X, Y = get_training_set()
+
+        # Train the model
+
+        if args.generator:
+            model.fit_generator(generator, steps_per_epoch=args.batch, epochs=args.epochs)
+        else:
+            model.fit(
+                X, to_categorical(Y), batch_size=args.batch, shuffle=True, epochs=args.epochs
+                # , callbacks=[EarlyStopping(min_delta=0.001, patience=3)]
+            )
+
+    if args.save:
+        model.save(args.save, overwrite=True)
 
     to_classify = glob.glob('*.*')
 
-    print('Training done, loading images...')
+    print('Done, loading images...')
     X_test = np.asarray([
         image.img_to_array(image.load_img(image_filename, target_size=size, grayscale=args.gray)).astype(np.float32) / 256.0 - 0.5
-        for image_filename in to_classify
+        for image_filename in to_classify if os.path.splitext(image_filename.lower())[1] in ('.png', '.jpg', '.bmp', '.gif')
     ])
+
 
     print('Classifying...', classes)
     Y_test = model.predict(X_test)
@@ -134,3 +150,9 @@ if __name__ == '__main__':
     print('Done.')
     for preds, filename in zip(Y_test, to_classify):
         print(preds, filename, classes[np.argmax(preds)])
+        if args.rename:
+            idx = np.argmax(preds)
+            class_ = classes[idx]
+            folder = ('pred_' if preds[idx] > args.threshold else 'maybe_') + class_
+            os.makedirs(folder, exist_ok=True)
+            os.rename(filename, os.path.join(folder, filename))

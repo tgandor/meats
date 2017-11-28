@@ -25,7 +25,7 @@ try:
 except ImportError:
     sane = None
     print('Could not load sane')
-    cmd = 'sudo apt-get install sane sane-utils python{}-imaging-sane'.format('3' if sys.version_info.major == 3 else '')
+    cmd = 'sudo apt-get install sane sane-utils python{}-sane'.format('3' if sys.version_info.major == 3 else '')
     print(cmd)
     os.system(cmd)
     print('Please re-run to use sane scanners')
