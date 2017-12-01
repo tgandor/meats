@@ -29,6 +29,7 @@ parser.add_argument('--retrain', action='store_true', help='Retrain model even w
 parser.add_argument('--generator', '-g', action='store_true')
 parser.add_argument('--rename', '-w', action='store_true', help='Move files to predicted classes')
 parser.add_argument('--threshold', '-t', type=float, default=0.8)
+parser.add_argument('--validation', '-v', type=float, default=0.0, help="Fraction of training to take as validation")
 parser.add_argument('--save', '-o', type=str)
 parser.add_argument('--load', '-i', type=str)
 args = parser.parse_args()
@@ -55,7 +56,7 @@ def get_training_set():
             # import code; code.interact(local=locals())
             # cv2.imshow('train', img)
             # cv2.waitKey(0)
-            img = img.astype(np.float32) / 256.0 - 0.5
+            img = img.astype(np.float32) / 255.0 - 0.5
             Y.append(index)
             X.append(img)
 
@@ -93,14 +94,13 @@ def create_network():
 
 def get_training_generator():
     generator = image.ImageDataGenerator(
-            rescale=1 / 255.,
             # rotation_range=180.0,
             # width_shift_range=0.05,
             # height_shift_range=0.05,
             # zoom_range=0.1,
             horizontal_flip=True,
             vertical_flip=True,
-            preprocessing_function=lambda x: x - 127.5
+            preprocessing_function=lambda x: (x - 127.5) / 127.5
         ).flow_from_directory(
             '.',
             target_size=size,
@@ -128,7 +128,8 @@ if __name__ == '__main__':
             model.fit_generator(generator, steps_per_epoch=args.batch, epochs=args.epochs)
         else:
             model.fit(
-                X, to_categorical(Y), batch_size=args.batch, shuffle=True, epochs=args.epochs
+                X, to_categorical(Y), batch_size=args.batch, shuffle=True, epochs=args.epochs,
+                validation_split=args.validation
                 # , callbacks=[EarlyStopping(min_delta=0.001, patience=3)]
             )
 
@@ -142,7 +143,6 @@ if __name__ == '__main__':
         image.img_to_array(image.load_img(image_filename, target_size=size, grayscale=args.gray)).astype(np.float32) / 256.0 - 0.5
         for image_filename in to_classify if os.path.splitext(image_filename.lower())[1] in ('.png', '.jpg', '.bmp', '.gif')
     ])
-
 
     print('Classifying...', classes)
     Y_test = model.predict(X_test)

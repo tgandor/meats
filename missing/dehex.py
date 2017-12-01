@@ -21,6 +21,7 @@ def get_streams():
         in_ = open(args[0])
     return in_, out_
 
+
 in_, out_ = get_streams()
 prefix = in_.read(2)
 if prefix.lower() != '0x':
