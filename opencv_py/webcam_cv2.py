@@ -72,7 +72,7 @@ while True:
     ret, frame = cap.read()
 
     if not ret or frame is None:
-        print('Error grabbing.')
+        print('Error grabbing:', ret, frame)
         if type(device) != int:
             print('Probably EOF ;)')
         break
