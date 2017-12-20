@@ -3,7 +3,6 @@
 # from http://docs.opencv.org/
 # no PIL, pygame or anything.
 
-import numpy as np
 import cv2
 
 # BGR, so blue = 0, green = 1, red = 2
@@ -37,7 +36,7 @@ while ret:
         break
     elif in_key == ord('n'):
         channel = (channel + 1) % 3
-        print 'Next channel:', channel
+        print('Next channel:', channel)
 
 # When everything done, release the capture
 cap.release()

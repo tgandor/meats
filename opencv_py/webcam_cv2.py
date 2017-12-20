@@ -10,8 +10,8 @@ no PIL, pygame or anything.
 """
 
 import argparse
-import numpy as np
 import cv2
+import os
 import re
 import sys
 import time
@@ -44,6 +44,8 @@ def reset():
     # other
     fullscreen = False
     info = False
+
+
 reset()
 
 parser = argparse.ArgumentParser()
@@ -140,6 +142,10 @@ while True:
         mean = not mean
     elif key == ord('M'):
         median = not median
+    elif key in (ord('s'), ord('S')):
+        filename = time.strftime('%Y%m%d_%H%M%S') + ('.jpg' if key == ord('s') else '.png')
+        cv2.imwrite(filename, frame)
+        print('Screenshot saved:', os.path.abspath(filename))
     elif key == ord('/'):
         cv2.resizeWindow('frame', frame.shape[1], frame.shape[0])
     elif key == ord('-'):
