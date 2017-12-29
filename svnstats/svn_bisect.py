@@ -5,8 +5,8 @@ import logging
 
 
 def arguments():
-    parser = argparse.ArgumentParser(description="Search through file's or directory's SVN history: logs and diffs")
-    parser.add_argument('--limit', '-l', type=int, help='Script to execute to check if correct revision', default=100)
+    parser = argparse.ArgumentParser(description="Search through SVN history to verify a scripted condition")
+    parser.add_argument('--limit', '-l', type=int, help='Revision limit, default=100, 0 - no limit', default=100)
     parser.add_argument('-b', '--branch', action='store_true', help='Stay on current branch')
     parser.add_argument('--log', type=str, help='Path to log file')
     parser.add_argument('script', type=str, help='Script to execute to check if correct revision')
@@ -48,8 +48,13 @@ def main():
     logger.debug('%d revisions to check: %s', len(revisions), list_summary(revisions))
     for revision in revisions:
         logger.debug(revision)
+        os.system('svn up -r {} {}'.format(revision, args.path))
+        # res = os.popen(args.script).read()
         res = os.system(args.script)
         logger.debug('Result for %s : %s', revision, res)
+        if res == 0:
+            logger.debug('Found!')
+            break
 
 
 if __name__ == '__main__':
