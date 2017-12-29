@@ -2,7 +2,6 @@
 
 import os
 import re
-import sys
 import argparse
 
 
@@ -48,13 +47,13 @@ def report_diff(diff, args):
     diff_lines = diff.split('\n')
     for line in diff_lines:
         if args.diff in line and (not args.new or line.startswith('+')):
-            print line
+            print(line)
 
             
 def main():
     args = arguments()
     revisions = revisions_for_path(args.path, args.branch)
-    print len(revisions), 'revisions to check', list_summary(revisions)
+    print(len(revisions), 'revisions to check', list_summary(revisions))
     for revision in revisions:
         diff_ok, log_ok = True, True
         diff = revision_diff(args.path, revision)
@@ -64,12 +63,13 @@ def main():
         if args.diff and diff.find(args.diff) == -1:
             diff_ok = False
         if log_ok and diff_ok:
-            print revision
-            print '-' * len(str(revision))
+            print(revision)
+            print('-' * len(str(revision)))
             report_diff(diff, args)
             if args.log:
-                print log
-            print
-        
+                print(log)
+            print()
+
+
 if __name__ == '__main__':  
     main()
