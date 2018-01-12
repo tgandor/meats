@@ -14,7 +14,8 @@ import time
 
 dry_run = False
 strftime_format = '%Y%m%d_%H%M%S.mov'
-sample_len = 2**16
+sample_len = 2**20
+mov_epoch = datetime.datetime(1904, 1, 1, 0, 0)
 
 def classify(iterable, func):
     results = {False: [], True: []}
@@ -41,10 +42,14 @@ def rename(f):
     # print(len(some_data), date_match.span())
     # return
 
-    parsed = datetime.datetime.fromtimestamp(
-        float(struct.unpack(">I", date_match.group(1))[0])
-        + time.mktime(datetime.datetime(1903, 12, 31, 23, 24).timetuple())
-    ).timetuple()
+    time_delta = datetime.timedelta(seconds=struct.unpack('>I', date_match.group(1))[0])
+    parsed = (mov_epoch + time_delta).timetuple()
+
+    # Problem on Windows; funnily timedelta needs no 36 min hack...
+    # parsed = datetime.datetime.fromtimestamp(
+    #     float(struct.unpack(">I", date_match.group(1))[0])
+    #     + time.mktime(datetime.datetime(1903, 12, 31, 23, 24).timetuple())
+    # ).timetuple()
 
     new_name = time.strftime(strftime_format, parsed)
 

@@ -25,7 +25,7 @@ fi
 
 # This finally works +- OK:
 # ( watch with MRL: http://<YOUR_IP>:8080/ )
-raspivid -o - -t 0 -n -w 1296 -h 927 -fps 15 | cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=0.0.0.0:8080}' :demux=h264
+raspivid -o - -t 0 -n -w 1296 -h 972 -fps 15 $* | cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=0.0.0.0:8080}' :demux=h264
 
 # mplayer also plays it, but there are MV errors in I frames... 
 # (and visual artifacts in the bottom 1/4 of the frame)
