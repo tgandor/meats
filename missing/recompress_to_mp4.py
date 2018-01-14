@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from __future__ import division
 
 import os
 import glob
@@ -15,18 +16,23 @@ parser.add_argument('--quality', '-q', type=int, default=24)
 parser.add_argument('files_or_globs', type=str, nargs='+')
 
 
-def time_format(duration):
+def duration_format(duration):
     """Format a float of seconds as number and H:M:S string.
 
     For example:
-    >>> time_format(123)
+    >>> duration_format(123)
     '123.00 s (00:02:03)'
 
-    >>> time_format(12345.67)
+    >>> duration_format(12345.67)
     '12345.67 s (03:25:45)'
     """
     duration_tuple = time.gmtime(duration)
     return '{:.2f} s ({})'.format(float(duration), time.strftime('%H:%M:%S', duration_tuple))
+
+
+def time_format(timestamp):
+    time_tuple = time.gmtime(timestamp)
+    return time.strftime('%H:%M:%S', time_tuple)
 
 
 class TimedSystem:
@@ -40,9 +46,39 @@ class TimedSystem:
         os.system(command)
         finish = time.time()
         elapsed = finish - start
-        print(time.strftime('%H:%M:%S'), 'finished in: ', time_format(elapsed))
+        print(time.strftime('%H:%M:%S'), 'finished in: ', duration_format(elapsed))
         self.total += elapsed
         self.log.append((command, start, finish, elapsed))
+
+    def report(self):
+        for command, start, finish, elapsed in self.log:
+            print(time_format(start), command)
+            print(time_format(finish), 'took:', duration_format(elapsed))
+        print(time.strftime('%H:%M:%S'), 'Finished in: ', duration_format(self.total))
+
+
+def ratio_format(pre, post):
+    return '{:,}\t{:,}\t{:.1f}%\t{:.1f}x\t{:,}'.format(pre, post, 100*post/pre, pre/post, post-pre)
+
+
+class CompressionStats:
+    def __init__(self):
+        self.items = []
+        self.total_pre = 0
+        self.total_post = 0
+
+    def add(self, before, after):
+        size_pre = os.path.getsize(before)
+        size_post = os.path.getsize(after)
+        self.total_pre += size_pre
+        self.total_post += size_post
+        self.items.append((os.path.basename(before), size_pre, size_post))
+        return size_pre / size_post
+
+    def report(self):
+        for name, before, after in self.items:
+            print('{}\t{}'.format(name, ratio_format(before, after)))
+        print('Total:\t{}'.format(ratio_format(self.total_pre, self.total_post)))
 
 
 try:
@@ -89,6 +125,7 @@ if __name__ == '__main__':
     print('Using:', converter)
 
     ts = TimedSystem()
+    stats = CompressionStats()
 
     for filename in chain.from_iterable(map(glob.glob, args.files_or_globs)):
         basename = os.path.basename(filename)
@@ -113,4 +150,13 @@ if __name__ == '__main__':
             converted)
         ts.run(commandline)
 
-    print('Finished in: ', time_format(ts.total))
+        ratio = stats.add(original, converted)
+
+        if ratio < 1.25:
+            dump_dir = 'placebo' if ratio > 1 else 'nocebo'
+            print(basename, 'compressed {:.1f}x'.format(ratio), 'which is', dump_dir)
+            os.makedirs(dump_dir, exist_ok=True)
+            os.rename(converted, os.path.join(dump_dir, basename))
+
+    ts.report()
+    stats.report()
