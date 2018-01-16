@@ -17,6 +17,7 @@ strftime_format = '%Y%m%d_%H%M%S.mov'
 sample_len = 2**20
 mov_epoch = datetime.datetime(1904, 1, 1, 0, 0)
 
+
 def classify(iterable, func):
     results = {False: [], True: []}
     for i in iterable:
@@ -59,6 +60,7 @@ def rename(f):
             os.rename(f, new_name)
     else:
         print('{} -!> {} (file exists)'.format(f, new_name))
+
 
 if __name__=='__main__':
     args, flags = classify(sys.argv[1:], lambda x: x.startswith('-'))

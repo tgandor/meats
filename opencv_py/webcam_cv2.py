@@ -49,20 +49,24 @@ def reset():
 reset()
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--fps', '-fps', type=float)
+parser.add_argument('--fourcc', type=str, help='Set FourCC for video source (hack)')
+parser.add_argument('device', type=str, nargs='?',
+                    help='device number, video file name or network stream URL', default='0')
+args = parser.parse_args()
 
-if len(sys.argv) > 1:
-    device = sys.argv[1]
-    if re.match(r'\d+$', device):
-        # int for webcam capture, string -> video filename
-        device = int(sys.argv[1])
-else:
-    device = 0
+device = int(args.device) if re.match(r'\d+$', args.device) else args.device
 
 cap = cv2.VideoCapture(device)
 
-if len(sys.argv) > 2:
-    fps = int(sys.argv[2])
-    cap.set(cv2.CAP_PROP_FPS, fps)
+print('Opened with FPS:', cap.get(cv2.CAP_PROP_FPS))
+
+if args.fps:
+    cap.set(cv2.CAP_PROP_FPS, args.fps)
+    print('After setting to', args.fps, 'we get', cap.get(cv2.CAP_PROP_FPS))
+
+if args.fourcc:
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*args.fourcc))
 
 cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
 first_frame = True
