@@ -2,13 +2,14 @@
 
 service_file=/etc/systemd/system/udprecv.service
 
-if [ -f $service_file ] ; then
+if [ -f $service_file -a "$1"!="-f" ] ; then
     echo "You seem to have it already"
     systemctl status udprecv.service
     exit
 fi
 
 udp_recv=$(realpath $(dirname $0)/udp_recv.py)
+user=$(whoami)
 
 echo "Setting executable: $udp_recv"
 
@@ -20,7 +21,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=pi
+User=$user
 ExecStart=$udp_recv -e
 Restart=on-abort
 
