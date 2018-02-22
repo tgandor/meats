@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import glob
 import hashlib
 import sys
 
@@ -35,8 +36,17 @@ def md5(filename):
     print('{}  {}'.format(digest, filename))
 
 
-if __name__ == '__main__':
+def _main():
     if len(args.files) < 1:
         md5('-')
     else:
-        list(map(md5, args.files))
+        for expr in args.files:
+            if '*' in expr:
+                for filename in glob.glob(expr):
+                    md5(filename)
+            else:
+                md5(expr)
+
+
+if __name__ == '__main__':
+    _main()
