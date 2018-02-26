@@ -4,8 +4,17 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-import sys, six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error, os, re, time, socket, errno, \
-    six.moves.urllib.parse
+
+import os
+import re
+import socket
+import sys
+import time
+
+import six.moves.urllib.error
+import six.moves.urllib.parse
+import six.moves.urllib.parse
+import six.moves.urllib.request
 
 
 def human(x):
@@ -16,11 +25,11 @@ def human(x):
     return "%.1f P" % x
 
 
-def get(URL):
+def get(url):
     """Stubborn retrieve data."""
     while True:
         try:
-            return six.moves.urllib.request.urlopen(URL).read()
+            return six.moves.urllib.request.urlopen(url).read()
         except socket.timeout:
             print("Timed out. Retrying.")
         except socket.error as e:
@@ -40,7 +49,7 @@ def down(url):
     size = len(data)
     elapsed = time.time() - start
     print("got %sB in %.1f s (%sB/s), saving" % (human(size), elapsed, human(size / elapsed)))
-    open(f, "w").write(data)
+    open(f, 'wb').write(data)
     return size
 
 
@@ -105,15 +114,9 @@ if __name__ == '__main__':
         print("trying to retrieve from clipboard")
         try:
             import androidhelper
-        except:
+        except ImportError:
             print("Error: couldn't find androidhelper")
             exit()
-        try:
-            os.chdir('/mnt/sdcard/external_sd/Music/')
-        except:
-            try:
-                os.chdir('/mnt/sdcard/')
-            except:
-                pass
+
         URL = androidhelper.Android().getClipboard().result
         download_all(URL)
