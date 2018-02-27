@@ -92,28 +92,33 @@ for (md5, size), dup_files in itertools.groupby(sorted(files), lambda t: t[:2]):
 groups.sort(key=lambda x: x[1] * (len(x[2]) - 1))
 group_count = 0
 
-json_dump = 'fdupes_groups.json'
-suffix = 0
-while os.path.exists(json_dump):
-    suffix += 1
-    json_dump = 'fdupes_groups_{}.json'.format(suffix)
+if len(groups) > 0:
+    json_dump = 'fdupes_groups.json'
+    suffix = 0
+    while os.path.exists(json_dump):
+        suffix += 1
+        json_dump = 'fdupes_groups_{}.json'.format(suffix)
 
-with open(json_dump, 'w') as dump:
-    json.dump(groups, dump, indent=2)
+    with open(json_dump, 'w') as dump:
+        json.dump(groups, dump, indent=2)
 
-for md5, size, filenames in groups:
-    group_count += 1
-    print('{}. {} {}\n{}\n'.format(group_count, md5, size, '\n'.join(filenames)))
+    print('Groups saved in:', json_dump)
 
-    if do_delete:
-        if size == 0:
-            print('Not deleting empty files.')
-            continue
-        for f in filenames[1:]:
-            os.unlink(f)
+    for md5, size, filenames in groups:
+        group_count += 1
+        print('{}. {} {}\n{}\n'.format(group_count, md5, size, '\n'.join(filenames)))
 
-print('Total waste: {:,} Bytes; {:,} KB (4KB-blocks) in {} extra files.'.format(
-    total_waste, total_by4kb * 4, total_files))
+        if do_delete:
+            if size == 0:
+                print('Not deleting empty files.')
+                continue
+            for f in filenames[1:]:
+                os.unlink(f)
+
+    print('Total waste: {:,} Bytes; {:,} KB (4KB-blocks) in {} extra files.'.format(
+        total_waste, total_by4kb * 4, total_files))
+else:
+    print('No duplicates found.')
 
 print('Processed in {:.1f} s. ({:.1f} s total)'.format(
     time.time() - processing_start, time.time() - walk_start))

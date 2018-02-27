@@ -70,7 +70,8 @@ def main():
             exit()
         output(sol)
     else:
-        for sol in pycosat.itersolve(clauses):
+        for i, sol in enumerate(pycosat.itersolve(clauses)):
+            print(i+1)
             output(sol)
             print('=' * 10)
 
