@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!-- Based on: https://developer.mozilla.org/en-US/docs/Web/API/notification -->
+
+<html>
+<head>
+    <title>Notification example</title>
+    <script type="text/javascript">
+
+function askAndMaybeDisplay(notification) {
+  console.log('Trying to ask politely ;)');
+  Notification.requestPermission(function (permission) {
+    // If the user accepts, let's create a notification
+    if (permission === "granted") {
+      var notification = new Notification(notification);
+    }
+	else {
+	  console.log('Not granted: ' + Notification.permission);
+	}
+  });	
+}
+
+	
+function notifyMe() {
+  console.log('Trying to display notification...');
+  // Let's check if the browser supports notifications
+  if (!("Notification" in window)) {
+    alert("This browser does not support desktop notification");
+  }
+  // Let's check whether notification permissions have already been granted
+  else if (Notification.permission === "granted") {
+	console.log('Notification permission seems granted...');
+    // If it's okay let's create a notification
+    var notification = new Notification("Hi there!");
+  }
+  else {
+   	console.log('Notification permission is: ' + Notification.permission);
+	askAndMaybeDisplay("Hi there, thanks for the permission!");
+  }
+}
+    </script>
+</head>
+<body>
+<p>Probably this needs to go through a webserver (not from disk).</p>
+<button onclick="notifyMe()">Notify me!</button>
+</body>
+</html>
+

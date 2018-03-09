@@ -60,6 +60,10 @@ device = int(args.device) if re.match(r'\d+$', args.device) else args.device
 cap = cv2.VideoCapture(device)
 
 print('Opened with FPS:', cap.get(cv2.CAP_PROP_FPS))
+print('FourCC:', cap.get(cv2.CAP_PROP_FOURCC))
+print('Format:', cap.get(cv2.CAP_PROP_FORMAT))
+print('Width:', cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+print('Height:', cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
 if args.fps:
     cap.set(cv2.CAP_PROP_FPS, args.fps)
@@ -67,6 +71,7 @@ if args.fps:
 
 if args.fourcc:
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*args.fourcc))
+    print('After setting FourCC:', cap.get(cv2.CAP_PROP_FOURCC))
 
 cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
 first_frame = True
