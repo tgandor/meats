@@ -27,12 +27,13 @@ def ensure_resolver():
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ip', '-a', action='store_true', help='Only output IP address')
+parser.add_argument('--no-config', '-n', action='store_true', help='Don\'t use resolv.conf even if it exists.')
 parser.add_argument('url', type=str, help='The name to look up')
 args = parser.parse_args(sys.argv[1:])
 
 conf = os.path.join(os.path.dirname(__file__), 'resolv.conf')
 
-if os.path.exists(conf):
+if os.path.exists(conf) and not args.no_config:
     res = ensure_resolver().Resolver(conf)
 else:
     res = ensure_resolver().Resolver()
