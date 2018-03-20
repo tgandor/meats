@@ -38,7 +38,8 @@ parser.add_argument('--font-size', type=int, default=20)
 parser.add_argument('--repeat', type=int, default=1, help="Times to repeat each label verbatim (without series)")
 parser.add_argument('--print', action='store_true', help="Try to print directly, instead of opening")
 parser.add_argument('--gui', action='store_true', help="Open a tkinter GUI to create labels")
-parser.add_argument('--db-shell', action='store_true', help="Open a connection do DB and query from console")
+parser.add_argument('--db-shell', action='store_true', help="Import a labels.db file to default database")
+parser.add_argument('--import', '-i', type=str, help="Open a connection do DB and query from console")
 parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
 
 settings = dict(
@@ -174,12 +175,13 @@ def open_database():
     initialize = not os.path.exists(labels_file)
     conn = sqlite3.connect(labels_file)
     cursor = conn.cursor()
+    # initialization
     if initialize:
         cursor.executescript("""
 create table labels
 (
     id integer not null primary key autoincrement,
-    text contents not null,
+    text text not null,
     width decimal not null,
     height decimal not null,
     length decimal null
@@ -189,10 +191,17 @@ create table outprints
 (
     id integer not null primary key autoincrement,
     label_id integer not null references labels(id),
-    outprint_date datetime not null
+    outprint_date datetime not null,
+    settings text null
 );
 """)
     conn.text_factory = str  # which == unicode on Py3, and works!
+    # migrations:
+    # 1. settings field for outprints
+    cursor.execute('PRAGMA table_info(outprints)')
+    if 'settings' not in [r[1] for r in cursor.fetchall()]:
+        print('Migration 1: create settings column in outprint.')
+        cursor.execute('alter table outprints add column settings text null')
     return conn, cursor
 
 
@@ -455,6 +464,8 @@ def db_shell_main():
         print('Sorry, no readline')
 
     import six
+    conn = cursor = None
+
     try:
         conn, cursor = open_database()
         while True:
@@ -466,7 +477,31 @@ def db_shell_main():
                 print(row)
             print('-' * 50)
     finally:
-        close_database(conn, cursor)
+        if conn and cursor:
+            close_database(conn, cursor)
+
+
+def import_database():
+    to_import = getattr(args, 'import')
+    in_connection = sqlite3.connect(to_import)
+    in_cursor = in_connection.cursor()
+    out_connection = out_cursor = None
+    try:
+        out_connection, out_cursor = open_database()
+        in_cursor.execute('select id, text, width, height, length from labels')
+        for id_, text, width, height, length in in_cursor.fetchall():
+            out_cursor.execute(u'select id from labels WHERE text=?', (text,))
+            local_id = out_cursor.fetchone()
+            if local_id is None:
+                print('Importing label:', text)
+            else:
+                print('Label', local_id[0], 'found.')
+        # for row in in_cursor.execute('select * fro')
+    finally:
+        if out_connection and out_cursor:
+            close_database(out_connection, out_cursor)
+    in_cursor.close()
+    in_connection.close()
 
 
 if __name__ == '__main__':
@@ -474,8 +509,11 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
     argv = args.args
     settings['font_size'] = args.font_size
+
     if args.db_shell:
         db_shell_main()
+    elif getattr(args, 'import'):
+        import_database()
     elif args.gui or len(argv) == 0:
         win_main()
     elif len(argv) == 4 and argv[3].startswith('x'):
