@@ -2,7 +2,7 @@
 
 cd `dirname $0`
 
-[ $VIRTUAL_ENV ] || source ../venv36/bin/activate
+[ $VIRTUAL_ENV ] || [ $CONDA_DEFAULT_ENV ] || source ../venv36/bin/activate
 
 function die() {
   echo "ERROR $*"

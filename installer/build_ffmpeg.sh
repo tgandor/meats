@@ -103,9 +103,10 @@ PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$ffmpeg_build/lib/pkgconfig" ./configure
   --enable-libvorbis \
   --enable-libvpx \
   --enable-libx264 \
-  --enable-libx265 \
   --enable-libvidstab \
   --enable-nonfree
+  # temporary disabled
+  # --enable-libx265 \
 
 make -j $num_jobs
 # make install

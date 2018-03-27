@@ -13,7 +13,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--stabilize', '-stab', action='store_true')
 parser.add_argument('--copy-audio', '-c', action='store_true')
 parser.add_argument('--quality', '-q', type=int, default=24)
+parser.add_argument('--converter', type=str, help='Manually specify [full path to] ffmpeg or avconv')
 parser.add_argument('files_or_globs', type=str, nargs='+')
+
+
+def makedirs(path, exist_ok=True):
+    # Py 2.7 planned obsolescence (not including trivial feature improvements)
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 def duration_format(duration):
@@ -43,12 +50,15 @@ class TimedSystem:
     def run(self, command):
         start = time.time()
         print(time.strftime('%H:%M:%S'), 'starting', command)
-        os.system(command)
+        status = os.system(command)
         finish = time.time()
         elapsed = finish - start
         print(time.strftime('%H:%M:%S'), 'finished in: ', duration_format(elapsed))
         self.total += elapsed
         self.log.append((command, start, finish, elapsed))
+        if status != 0:
+            raise RuntimeError('Error (status={}) executing command: {}'.format(status, command))
+        return status
 
     def report(self):
         for command, start, finish, elapsed in self.log:
@@ -70,6 +80,8 @@ class CompressionStats:
     def add(self, before, after):
         size_pre = os.path.getsize(before)
         size_post = os.path.getsize(after)
+        if size_post == 0:
+            raise ValueError('Empty output file: {}'.format(after))
         self.total_pre += size_pre
         self.total_post += size_post
         self.items.append((os.path.basename(before), size_pre, size_post))
@@ -112,10 +124,12 @@ if __name__ == '__main__':
         args.quality
     )
 
-    os.makedirs('original', exist_ok=True)
-    os.makedirs('converted', exist_ok=True)
+    makedirs('original', exist_ok=True)
+    makedirs('converted', exist_ok=True)
 
-    converter = which('ffmpeg')
+    converter = args.converter
+    if converter is None:
+        converter = which('ffmpeg')
     if converter is None:
         converter = which('avconv')
     if converter is None:
@@ -155,7 +169,7 @@ if __name__ == '__main__':
         if ratio < 1.25:
             dump_dir = 'placebo' if ratio > 1 else 'nocebo'
             print(basename, 'compressed {:.1f}x'.format(ratio), 'which is', dump_dir)
-            os.makedirs(dump_dir, exist_ok=True)
+            makedirs(dump_dir, exist_ok=True)
             os.rename(converted, os.path.join(dump_dir, basename))
 
     ts.report()
