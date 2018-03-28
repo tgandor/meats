@@ -65,7 +65,7 @@ def format_fields_of_interest(data):
 def main():
     data = power_supply_data()
     # print(data)
-    print format_fields_of_interest(data)
+    print(format_fields_of_interest(data))
 
 
 if __name__ == '__main__':

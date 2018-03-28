@@ -12,6 +12,8 @@ import time
 parser = argparse.ArgumentParser()
 parser.add_argument('--stabilize', '-stab', action='store_true')
 parser.add_argument('--copy-audio', '-c', action='store_true')
+parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. for cutting or remuxing')
+parser.add_argument('--start', '-ss', type=float, help='Start time for encoding')
 parser.add_argument('--quality', '-q', type=int, default=24)
 parser.add_argument('--converter', type=str, help='Manually specify [full path to] ffmpeg or avconv')
 parser.add_argument('files_or_globs', type=str, nargs='+')
@@ -155,12 +157,15 @@ if __name__ == '__main__':
             ts.run(preprocessing)
             filters += ' -vf vidstabtransform,unsharp=5:5:0.8:3:3:0.4'
 
-        commandline = '{} -i "{}" {} -c:a {} -c:v h264 {} "{}"'.format(
+        if args.start:
+            filters += ' -ss {:.2f}'.format(args.start)
+
+        commandline = '{} -i "{}" {} -c:a {} -c:v {} "{}"'.format(
             converter,
             original,
             filters,
-            'copy' if args.copy_audio else 'aac',
-            options,
+            'copy' if args.copy_audio or args.copy else 'aac',
+            'copy' if args.copy else 'h264 ' + options,
             converted)
         ts.run(commandline)
 
