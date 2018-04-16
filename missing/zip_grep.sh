@@ -6,5 +6,5 @@ pattern=$1
 shift 1
 
 for i in "$@"; do
-    zipgrep $pattern $i
+    zipgrep $pattern "$i"
 done
