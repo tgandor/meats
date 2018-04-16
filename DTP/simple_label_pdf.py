@@ -5,6 +5,7 @@ from __future__ import division
 
 import argparse
 import datetime
+import json
 import locale
 import os
 import re
@@ -197,12 +198,16 @@ create table outprints
 """)
     conn.text_factory = str  # which == unicode on Py3, and works!
     # migrations:
+    run_migrations(cursor)
+    return conn, cursor
+
+
+def run_migrations(cursor):
     # 1. settings field for outprints
     cursor.execute('PRAGMA table_info(outprints)')
     if 'settings' not in [r[1] for r in cursor.fetchall()]:
         print('Migration 1: create settings column in outprint.')
         cursor.execute('alter table outprints add column settings text null')
-    return conn, cursor
 
 
 def close_database(conn, cursor):
@@ -211,7 +216,7 @@ def close_database(conn, cursor):
     conn.close()
 
 
-def save_label(text, width, height, length):
+def save_label(text, width, height, length, label_settings={}):
     conn, cursor = open_database()
     cursor.execute(u"SELECT id FROM labels WHERE text = ?", (text,))
     # create or update label
@@ -229,8 +234,8 @@ def save_label(text, width, height, length):
         cursor.execute("UPDATE labels SET width=?, height=?, length=? WHERE id=?",
                        (width / cm, height / cm, length, label_id))
     # log the generation
-    cursor.execute("INSERT INTO outprints(label_id, outprint_date) VALUES (?,?)",
-                   (label_id, datetime.datetime.now()))
+    cursor.execute("INSERT INTO outprints(label_id, outprint_date, settings) VALUES (?,?,?)",
+                   (label_id, datetime.datetime.now(), json.dumps(label_settings)))
     close_database(conn, cursor)
 
 
@@ -248,7 +253,7 @@ def _finish_rendering(canvas):
 
 
 def multi_label(text, width, height, count):
-    save_label(text, width, height, None)
+    save_label(text, width, height, None, label_settings(count=count))
     c = _setup_canvas()
     state = LabelState()
     for i in range(count):
@@ -286,9 +291,16 @@ def get_parameters():
     return text, width, height, length
 
 
+def label_settings(count=1):
+    return {
+        'count': count,
+        'font_size': settings['font_size']
+    }
+
+
 def main():
     text, width, height, length = get_parameters()
-    save_label(text, width, height, length)
+    save_label(text, width, height, length, label_settings())
     c = _setup_canvas()
     for _ in range(args.repeat):
         label(c, text, width, height)
@@ -302,6 +314,8 @@ def get_previous_label(current):
     try:
         conn, cursor = open_database()
         if current == 0:
+            # should be more like:
+            # select l.* from labels l join outprints o on o.label_id = l.id group by (l.id) order by outprint_date desc
             cursor.execute('select id, text, width, height from labels order by id desc limit 1')
         else:
             cursor.execute('select id, text, width, height from labels WHERE id < ? order by id desc limit 1',
@@ -368,7 +382,7 @@ def win_main():
             multi_label(label_text, w, h, int(num_serial.get()))
         else:
             c = _setup_canvas()
-            save_label(label_text, w, h, None)
+            save_label(label_text, w, h, None, label_settings())
             state = LabelState()
             for _ in range(int(num_serial.get())):
                 label(c, label_text, w, h, state)
@@ -485,6 +499,7 @@ def import_database():
     to_import = getattr(args, 'import')
     in_connection = sqlite3.connect(to_import)
     in_cursor = in_connection.cursor()
+    run_migrations(in_cursor)
     out_connection = out_cursor = None
     try:
         out_connection, out_cursor = open_database()
