@@ -12,6 +12,7 @@ import re
 import sqlite3
 import sys
 import tempfile
+import time
 
 
 def _install_and_die(package):
@@ -44,15 +45,16 @@ parser.add_argument('--import', '-i', type=str, help="Open a connection do DB an
 parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
 
 settings = dict(
-    font_size=20
+    font_size=20,
+    date_font=12,
+    round_label=True,
+    top_margin=0.0 * cm,
+    bottom_margin=1.0 * cm,
+    line_width = 0.25
 )
-date_font = 12
 default_text = 'Example label'
 default_width = 21 * cm
 default_height = 28.5 * cm
-top_margin = 0.0 * cm
-bottom_margin = 1.0 * cm
-line_width = 0.25
 default_length = None
 default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.pdf')
 
@@ -89,7 +91,7 @@ def new_page(c):
 
 class LabelState:
     horizontal = False
-    height_left = A4[1] - top_margin
+    height_left = A4[1] - settings['top_margin']
 
 
 def label(c, text, width=default_width, height=default_height, state=LabelState()):
@@ -107,7 +109,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     # new page if can't fit
     if height > state.height_left:
         new_page(c)
-        state.height_left = page_height - top_margin
+        state.height_left = page_height - settings['top_margin']
 
     # maybe switch to landscape
     if width > page_width:
@@ -116,7 +118,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
         c.setPageSize(landscape(A4))
         page_width, page_height = landscape(A4)
         state.horizontal = True
-        state.height_left = page_height - top_margin
+        state.height_left = page_height - settings['top_margin']
         sys.stderr.write('Warning: switched to horizontal.\n')
 
     # maybe switch back to portrait
@@ -125,7 +127,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
         c.setPageSize(A4)
         page_width, page_height = A4
         state.horizontal = False
-        state.height_left = page_height - top_margin
+        state.height_left = page_height - settings['top_margin']
         sys.stderr.write('Warning: switched to vertical.\n')
 
     # coordinates inversion
@@ -133,16 +135,16 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
 
     c.saveState()
     c.setDash(4, 8)
-    c.setLineWidth(line_width)
+    c.setLineWidth(settings['line_width'])
 
     # seems like transform IS part of state
-    if line_width > 0 and state.height_left < page_height:  # - top_margin:
+    if settings['line_width'] > 0 and state.height_left < page_height:
         c.line(0, state.height_left, page_width, state.height_left)
     h_offset = state.height_left - page_height
     c.translate(0, h_offset)
 
     # borders
-    if line_width > 0:
+    if settings['line_width'] > 0 and not settings['round_label']:
         c.line(0, inv(height), width, inv(height))
         c.line(width, inv(0), width, inv(height))
 
@@ -153,14 +155,23 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     for line, i in zip(lines, range(len(lines))):
         # serial label: last line should be with date font
         if i == len(lines) - 1 and re.match(r'\d+/\d+$', line):
-            c.setFontSize(date_font)
+            c.setFontSize(settings['date_font'])
         c.drawCentredString(width / 2, inv((height + font_size) / 2 + extra_h), line)
         extra_h += font_size
 
     # date subscript
-    c.setFontSize(date_font)
-    c.drawCentredString(width / 2, max(inv(height) + .5 * cm, bottom_margin),
-                        datetime.datetime.now().strftime('%Y-%m-%d (%a) %H:%M'))
+    c.setFontSize(settings['date_font'])
+    x = width / 2
+    y = max(inv(height) + .5 * cm, settings['bottom_margin'])
+    if settings['round_label']:
+        # hoping to fit the date
+        y = inv(height * 0.75)
+    date_text = datetime.datetime.now().strftime('%Y-%m-%d (%a) %H:%M')
+    c.drawCentredString(x, y, date_text)
+
+    # round border - not looking at line width...
+    if settings['round_label']:
+        c.ellipse(0, inv(0), width, inv(height))
 
     # final cleanup
     c.restoreState()
@@ -224,15 +235,15 @@ def save_label(text, width, height, length, label_settings={}):
     if length is not None:
         length /= cm
     if label_id is None:
-        print('Creating label')
         cursor.execute("INSERT INTO labels (text, width, height, length) VALUES (?,?,?,?)",
                        (text, width / cm, height / cm, length,))
         label_id = cursor.lastrowid
+        print('{} Created label {}'.format(time.strftime('%H:%M'), label_id))
     else:
         label_id = label_id[0]
-        print('Updating label {}'.format(label_id))
         cursor.execute("UPDATE labels SET width=?, height=?, length=? WHERE id=?",
                        (width / cm, height / cm, length, label_id))
+        print('{} Updated label {}'.format(time.strftime('%H:%M'), label_id))
     # log the generation
     cursor.execute("INSERT INTO outprints(label_id, outprint_date, settings) VALUES (?,?,?)",
                    (label_id, datetime.datetime.now(), json.dumps(label_settings)))
@@ -291,11 +302,13 @@ def get_parameters():
     return text, width, height, length
 
 
-def label_settings(count=1):
-    return {
+def label_settings(count=1, **kwargs):
+    result = {
         'count': count,
-        'font_size': settings['font_size']
     }
+    result.update(settings)
+    result.update(kwargs)
+    return result
 
 
 def main():
@@ -367,6 +380,14 @@ def win_main():
             elif event.num == 4 or event.delta > 0:
                 self.invoke('buttonup')
 
+    class LabelFormModel:
+        def __init__(self):
+            # self.height = tk.DoubleVar()
+            # self.width = tk.DoubleVar()
+            self.is_serial = tk.IntVar()
+            # self.num_serial = tk.IntVar()
+            self.is_round = tk.IntVar()
+
     def ui_label(parent, text):
         tk.Label(parent, text=text, font=ui_font).pack(anchor=tk.N)
 
@@ -374,12 +395,17 @@ def win_main():
         widget.delete('1.0', tk.END)
         widget.insert(tk.END, value)
 
-    def generate(text_widget, width_input, height_input, is_serial, num_serial):
+    def generate(text_widget, width_input, height_input, num_serial):
         label_text = text_widget.get('1.0', 'end').strip()
         w = float(width_input.get()) * cm
         h = float(height_input.get()) * cm
-        if is_serial.get():
+        # w = LabelModel.width.get() * cm
+        # h = LabelModel.height.get() * cm
+        settings['round_label'] = label_model.is_round.get() != 0
+
+        if label_model.is_serial.get():
             multi_label(label_text, w, h, int(num_serial.get()))
+            # multi_label(label_text, w, h, LabelModel.num_serial.get())
         else:
             c = _setup_canvas()
             save_label(label_text, w, h, None, label_settings())
@@ -415,6 +441,8 @@ def win_main():
     root.title('Simple Label')
     dialog = tk.Frame(root)
 
+    label_model = LabelFormModel()
+
     ui_label(dialog, 'Label text:')
     text = tk.Text(dialog)
     text.focus_set()
@@ -439,10 +467,13 @@ def win_main():
     serial_count = Spinbox(dialog, from_=1, to=100)
     serial_count.pack(anchor=tk.N)
 
-    serial_flag = tk.IntVar()
     tk.Checkbutton(
-        dialog, variable=serial_flag, font=ui_font,
+        dialog, variable=label_model.is_serial, font=ui_font,
         text='Generate serial labels').pack(anchor=tk.N)
+
+    tk.Checkbutton(
+        dialog, variable=label_model.is_round, font=ui_font,
+        text='Generate round labels').pack(anchor=tk.N)
 
     def change_font(font_variable):
         settings['font_size'] = int(font_variable.get())
@@ -461,7 +492,7 @@ def win_main():
               command=lambda: load_previous(text, width, height, last_id)).grid(row=0, column=0)
     tk.Button(
         panel, text='Print' if print_ else 'Generate', font=ui_font, width=47, height=3,
-        command=lambda: generate(text, width, height, serial_flag, serial_count)
+        command=lambda: generate(text, width, height, serial_count)
     ).grid(row=0, column=1)
     tk.Button(panel, text='>', width='3', height='3',
               command=lambda: load_next(text, width, height, last_id)).grid(row=0, column=2)
@@ -490,8 +521,11 @@ def db_shell_main():
             for row in cursor.fetchall():
                 print(row)
             print('-' * 50)
+    except EOFError:
+        print('EOF exit.')
     finally:
         if conn and cursor:
+            print('Closing database.')
             close_database(conn, cursor)
 
 
