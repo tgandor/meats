@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import argparse
 import hashlib
 import itertools
@@ -10,12 +12,6 @@ import time
 from operator import attrgetter
 from threading import Event, Thread
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates')
-parser.add_argument('--basename', '-n', action='store_true', help='Group by basename (first)')
-parser.add_argument('--basename-only', '-N', action='store_true', help='Group by basename (only)')
-args = parser.parse_args()
-
 
 def md5sum(fname):
     hash_md5 = hashlib.md5()
@@ -23,10 +19,6 @@ def md5sum(fname):
         for chunk in iter(lambda: fileobj.read(2**12), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
-
-
-def suitability_max_len_penalize_spaces(x):
-    return -len(x.replace(' ', '').replace('(', '').replace(')', ''))
 
 
 def call_repeatedly(interval, func):
@@ -68,124 +60,222 @@ class lazy_property(object):
 
 
 class File:
-    def __init__(self, filepath, filename):
-        self.basename = filename
-        self.filepath = filepath
-        self.size = os.stat(filepath).st_size
+    def __init__(self, file_path):
+        self.file_path = file_path
 
     def __repr__(self):
-        return 'File({}; {:,} B; {})'.format(self.filepath, self.size, self.md5)
+        return 'File({})'.format(self.file_path)
+
+    @lazy_property
+    def basename(self):
+        return os.path.basename(self.file_path)
+
+    @lazy_property
+    def size(self):
+        try:
+            return os.stat(self.file_path).st_size
+        except IOError:
+            return -1
 
     @lazy_property
     def md5(self):
-        return md5sum(self.filepath)
+        return md5sum(self.file_path)
 
     def as_dict(self):
-        return {'filepath': self.filepath, 'filename': self.basename, 'size': self.size, 'md5': self.md5}
+        return {'path': self.file_path}
 
 
-def group_files(files, key=attrgetter('basename')):
+def suitability_max_len_penalize_spaces(file_):
+    """
+    Key function for files, negative length with spaces and parentheses removed.
+    :param file_: `File` file object to evaluate
+    :return: `int` suitability score
+    """
+    return -len(file_.file_path.replace(' ', '').replace('(', '').replace(')', ''))
+
+
+class Group:
+    def __init__(self, files, features={}):
+        self.files = files
+        self.features = features
+
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self, item):
+        return self.files[item]
+
+    def __getattr__(self, item):
+        try:
+            return self.features[item]
+        except KeyError as keyError:
+            raise AttributeError(keyError.args)
+
+    def __repr__(self):
+        return 'Group({}, {})'.format(self.features, self.files)
+
+    def as_dict(self):
+        return {
+            'features': self.features,
+            'files': [file.as_dict() for file in self.files]
+        }
+
+
+def group_files(files, attr='basename'):
+    """
+    Group files into lists with identical value of attr.
+    :param files: Union[List[File], Group] list of files to sort
+    :param attr: str Attribute to group by the files
+    :return: Generator[List[File]]
+
+    >>> list(group_files([]))
+    []
+    >>> list(group_files([File('a/b'), File('c/b')]))
+    [Group({'basename': 'b'}, [File(a/b), File(c/b)])]
+    """
+    key = attrgetter(attr)
+    features = files.features if hasattr(files, 'features') else {}
     for key_value, group in itertools.groupby(sorted(files, key=key), key):
         candidate = list(group)
         if len(candidate) > 1:
-            yield candidate
+            new_features = features.copy()
+            new_features[attr] = key_value
+            yield Group(candidate, new_features)
+
+
+def regroup(group_list, attr='basename'):
+    """
+    Group all lists by attribute `attr` and return a list of the nen groups.
+    :rtype: List[Group]
+    """
+    return [new_group for group in group_list for new_group in group_files(group, attr=attr)]
+
+
+def group_summary(group):
+    if hasattr(group, 'size'):
+        return 'files: {}, waste: {:,} B'.format(len(group), group_waste(group))
+    else:
+        return 'files: {}'.format(len(group))
 
 
 def process_groups(group_list):
     for group in group_list:
-        print(group[0].basename)
+        print(group.features)
         for file in group:
             print(file)
-        print('-' * 20)
+        print('-' * 20, group_summary(group), '-' * 20)
 
     if len(groups) == 0:
         print('No duplicates found.')
 
 
-def save_groups(group_list):
+def _as_dict(group):
+    if hasattr(group, 'as_dict'):
+        return group.as_dict()
+    return [file.as_dict() for file in group]
+
+
+def group_total(group):
+    return len(group) * group.size
+
+
+def group_waste(group):
+    return (len(group) - 1) * group.size
+
+
+def groups_summary(groups):
+    return '{:,} groups, {:,} files, {:,} B total, {:,} B waste'.format(
+        len(groups),
+        sum(map(len, groups)),
+        sum(map(group_total, groups)),
+        sum(map(group_waste, groups))
+    )
+
+
+def sort_members(group, key=suitability_max_len_penalize_spaces):
+    """
+    Sort files inside group by some criterion.
+    :param key: Callable[[File], Any]
+    :type group: Group
+    """
+    group.files.sort(key=key)
+
+
+def save_groups(group_list, prefix=''):
     if len(group_list) == 0:
         print('Not saving empty groups.')
         return
 
-    json_dump = 'fdupes_groups_{}.json'.format(time.strftime('%Y%m%d_%H%M%S'))
+    print('Saving {} groups...'.format(len(group_list)))
+    json_dump = prefix + 'fdupes_groups_{}.json'.format(time.strftime('%Y%m%d_%H%M%S'))
     with open(json_dump, 'w') as dump:
-        json.dump([
-            [file.as_dict() for file in group]
-            for group in group_list
-        ], dump, indent=2)
+        json.dump([_as_dict(group) for group in group_list], dump, indent=2)
     print('Groups saved in:', json_dump)
 
 
-all_files = []
-dirs = 0
-walk_start = time.time()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates')
+    parser.add_argument('--basename', '-n', action='store_true', help='Group by basename (first)')
+    parser.add_argument('--basename-only', '-N', action='store_true', help='Group by basename (only)')
+    parser.add_argument('--no-md5', '-5', action='store_true', help='Skip grouping by md5 sum')
+    parser.add_argument('--no-print', '-P', action='store_true', help='Skip printing the groups')
+    parser.add_argument('--no-save', '-S', action='store_true', help='Skip saving the groups as JSON')
+    parser.add_argument('--prefix', '-p', help='Prefix for saving the groups', default='')
+    parser.add_argument('directories', nargs='*', help='Directories to scan for duplicates', default=['.'])
+    args = parser.parse_args()
 
-cancel_update = call_repeatedly(1.0, lambda ctr: show_update(walk_start, dirs, all_files, ctr))
+    all_files = []
+    dirs = 0
+    walk_start = time.time()
 
-try:
-    for dirpath, dirnames, filenames in os.walk('.'):
-        dirs += 1
-        for f in filenames:
-            filename = os.path.join(dirpath, f)
-            if os.path.islink(filename):
-                continue
-            try:
-                all_files.append(File(filename, f))
-            except IOError:
-                sys.stderr.write('IOError: {}\n'.format(filename))
-finally:
-    cancel_update()
+    cancel_update = call_repeatedly(1.0, lambda ctr: show_update(walk_start, dirs, all_files, ctr))
 
-processing_start = time.time()
-print('Done in {:.1f} s. ({} dirs, {} files){}'.format(
-    time.time() - walk_start, dirs, len(all_files), ' '*32))
+    try:
+        for directory in args.directories:
+            for dirpath, dirnames, filenames in os.walk(directory   ):
+                dirs += 1
+                for f in filenames:
+                    filename = os.path.join(dirpath, f)
+                    if os.path.islink(filename):
+                        continue
+                    all_files.append(File(filename))
+    finally:
+        cancel_update()
 
-total_waste = 0
-total_by4kb = 0
-total_files = 0
+    processing_start = time.time()
+    print('Done in {:.1f} s. ({} dirs, {} files){}'.format(
+        time.time() - walk_start, dirs, len(all_files), ' '*32))
 
-if args.basename or args.basename_only:
-    groups = list(group_files(all_files))
-    print('After grouping by basename: {} groups'.format(len(groups)))
-else:
-    groups = [all_files]
+    if args.basename or args.basename_only:
+        groups = list(group_files(all_files))
+        print('After grouping by basename: {} groups'.format(len(groups)))
+    else:
+        groups = [all_files]
 
-if not args.basename_only:
-    groups = [new_group for group in groups for new_group in group_files(group, key=attrgetter('size'))]
-    print('After grouping by size: {} groups'.format(len(groups)))
-    groups = [new_group for group in groups for new_group in group_files(group, key=attrgetter('md5'))]
-    print('After grouping by md5: {} groups'.format(len(groups)))
+    if not args.basename_only:
+        groups = regroup(groups, 'size')
+        print('After grouping by size: ' + groups_summary(groups))
+        if not args.no_md5:
+            groups = regroup(groups, 'md5')
+            print('After grouping by md5: ' + groups_summary(groups))
 
-process_groups(groups)
-save_groups(groups)
+    if len(groups) == 0:
+        print('No duplicate groups found.')
+        exit()
 
-'''
-if len(groups) > 0:
-    json_dump = 'fdupes_groups.json'
-    suffix = 0
-    while os.path.exists(json_dump):
-        suffix += 1
-        json_dump = 'fdupes_groups_{}.json'.format(suffix)
+    if any(hasattr(group, 'size') for group in groups):
+        groups.sort(key=group_waste)
+    else:
+        groups.sort(key=len)
 
-    with open(json_dump, 'w') as dump:
-        json.dump(groups, dump, indent=2)
+    for group in groups:
+        sort_members(group)
 
-    for md5, size, filenames in groups:
-        group_count += 1
-        print('{}. {} {}\n{}\n'.format(group_count, md5, size, '\n'.join(filenames)))
+    if not args.no_print:
+        process_groups(groups)
+    if not args.no_save:
+        save_groups(groups, args.prefix)
 
-        if args.delete:
-            if size == 0:
-                print('Not deleting empty files.')
-                continue
-            for f in filenames[1:]:
-                os.unlink(f)
-
-    print('Total waste: {:,} Bytes; {:,} KB (4KB-blocks) in {} extra files.'.format(
-        total_waste, total_by4kb * 4, total_files))
-else:
-    print('No duplicates found.')
-'''
-
-print('Processed in {:.1f} s. ({:.1f} s total)'.format(
-    time.time() - processing_start, time.time() - walk_start))
+    print('Processed in {:.1f} s. ({:.1f} s total)'.format(
+        time.time() - processing_start, time.time() - walk_start))
