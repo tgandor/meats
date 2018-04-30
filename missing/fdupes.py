@@ -84,6 +84,10 @@ class File:
     def as_dict(self):
         return {'path': self.file_path}
 
+    @staticmethod
+    def from_dict(data):
+        return File(data['path'])
+
 
 def suitability_max_len_penalize_spaces(file_):
     """
@@ -120,6 +124,14 @@ class Group:
             'files': [file.as_dict() for file in self.files]
         }
 
+    @staticmethod
+    def load(filename):
+        with open(filename) as stream:
+            data = json.load(stream)
+
+        group = Group(data['files'], data['features'])
+        return group
+
 
 def group_files(files, attr='basename'):
     """
@@ -146,6 +158,8 @@ def group_files(files, attr='basename'):
 def regroup(group_list, attr='basename'):
     """
     Group all lists by attribute `attr` and return a list of the nen groups.
+    :param attr: str name of file attribute to use for regrouping
+    :type group_list: List[Group]
     :rtype: List[Group]
     """
     return [new_group for group in group_list for new_group in group_files(group, attr=attr)]
@@ -164,9 +178,6 @@ def process_groups(group_list):
         for file in group:
             print(file)
         print('-' * 20, group_summary(group), '-' * 20)
-
-    if len(groups) == 0:
-        print('No duplicates found.')
 
 
 def _as_dict(group):
@@ -213,7 +224,7 @@ def save_groups(group_list, prefix=''):
     print('Groups saved in:', json_dump)
 
 
-if __name__ == '__main__':
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates')
     parser.add_argument('--basename', '-n', action='store_true', help='Group by basename (first)')
@@ -223,14 +234,17 @@ if __name__ == '__main__':
     parser.add_argument('--no-save', '-S', action='store_true', help='Skip saving the groups as JSON')
     parser.add_argument('--prefix', '-p', help='Prefix for saving the groups', default='')
     parser.add_argument('directories', nargs='*', help='Directories to scan for duplicates', default=['.'])
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
 
     all_files = []
     dirs = 0
     walk_start = time.time()
 
     cancel_update = call_repeatedly(1.0, lambda ctr: show_update(walk_start, dirs, all_files, ctr))
-
     try:
         for directory in args.directories:
             for dirpath, dirnames, filenames in os.walk(directory   ):
@@ -274,8 +288,16 @@ if __name__ == '__main__':
 
     if not args.no_print:
         process_groups(groups)
+
     if not args.no_save:
         save_groups(groups, args.prefix)
 
+    if args.delete:
+        pass
+
     print('Processed in {:.1f} s. ({:.1f} s total)'.format(
         time.time() - processing_start, time.time() - walk_start))
+
+
+if __name__ == '__main__':
+    main()
