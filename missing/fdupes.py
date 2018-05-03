@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import itertools
 import json
+import logging
 import os
 import sys
 import time
@@ -13,10 +14,11 @@ from operator import attrgetter
 from threading import Event, Thread
 
 
-def md5sum(fname):
+def md5sum(filename):
+    # print('MD5', filename)
     hash_md5 = hashlib.md5()
-    with open(fname, "rb") as fileobj:
-        for chunk in iter(lambda: fileobj.read(2**12), b""):
+    with open(filename, "rb") as file_obj:
+        for chunk in iter(lambda: file_obj.read(2**12), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
@@ -31,12 +33,6 @@ def call_repeatedly(interval, func):
             func(ctr)
     Thread(target=loop).start()
     return stopped.set
-
-
-def show_update(since, dirs, files, ctr):
-    sys.stdout.write('Processing... {} {:.1f} s ({} dirs, {} files)\r'.format(
-        '|/-\\'[ctr % 4], time.time()-since, dirs, len(files)))
-    sys.stdout.flush()
 
 
 class lazy_property(object):
@@ -99,9 +95,9 @@ def suitability_max_len_penalize_spaces(file_):
 
 
 class Group:
-    def __init__(self, files, features={}):
+    def __init__(self, files, features=None):
         self.files = files
-        self.features = features
+        self.features = features or dict()
 
     def __len__(self):
         return len(self.files)
@@ -113,6 +109,8 @@ class Group:
         try:
             return self.features[item]
         except KeyError as keyError:
+            # below seemed a good idea, but is fatal:
+            # if item == 'size': return float('nan')
             raise AttributeError(keyError.args)
 
     def __repr__(self):
@@ -152,17 +150,30 @@ def group_files(files, attr='basename'):
         if len(candidate) > 1:
             new_features = features.copy()
             new_features[attr] = key_value
+            # print('new features:', new_features)
             yield Group(candidate, new_features)
 
 
 def regroup(group_list, attr='basename'):
     """
-    Group all lists by attribute `attr` and return a list of the nen groups.
+    Group all lists by attribute `attr` and return a list of the new groups.
     :param attr: str name of file attribute to use for regrouping
     :type group_list: List[Group]
     :rtype: List[Group]
     """
-    return [new_group for group in group_list for new_group in group_files(group, attr=attr)]
+
+    def _regroup():
+        for group in group_list:
+            if hasattr(group, attr):
+                yield group
+                continue
+
+            for new_group in group_files(group, attr=attr):
+                yield new_group
+
+    new_groups = list(_regroup())
+    print('After grouping by {}: {}'.format(attr, groups_summary(new_groups)))
+    return new_groups
 
 
 def group_summary(group):
@@ -195,6 +206,15 @@ def group_waste(group):
 
 
 def groups_summary(groups):
+    if len(groups) == 0:
+        return '0 groups'
+
+    if not hasattr(groups[0], 'size'):
+        return '{:,} groups, {:,} files, size and waste unknown'.format(
+            len(groups),
+            sum(map(len, groups)),
+        )
+
     return '{:,} groups, {:,} files, {:,} B total, {:,} B waste'.format(
         len(groups),
         sum(map(len, groups)),
@@ -233,58 +253,49 @@ def parse_args():
     parser.add_argument('--no-print', '-P', action='store_true', help='Skip printing the groups')
     parser.add_argument('--no-save', '-S', action='store_true', help='Skip saving the groups as JSON')
     parser.add_argument('--prefix', '-p', help='Prefix for saving the groups', default='')
+    parser.add_argument('--groups', '-i', help='Saved group files to load instead of scanning')
     parser.add_argument('directories', nargs='*', help='Directories to scan for duplicates', default=['.'])
     return parser.parse_args()
 
 
+class Profiler:
+    def __init__(self):
+        self.times = [time.time()]
+
+    def finish_phase(self, phase=None):
+        self.times.append(time.time())
+        print('Finished {} in {:.1f} s. ({:.1f} s total)'.format(
+            phase or '',
+            self.times[-1] - self.times[-2],
+            self.times[-1] - self.times[0]))
+
+
 def main():
     args = parse_args()
+    profiler = Profiler()
 
-    all_files = []
-    dirs = 0
-    walk_start = time.time()
-
-    cancel_update = call_repeatedly(1.0, lambda ctr: show_update(walk_start, dirs, all_files, ctr))
-    try:
-        for directory in args.directories:
-            for dirpath, dirnames, filenames in os.walk(directory   ):
-                dirs += 1
-                for f in filenames:
-                    filename = os.path.join(dirpath, f)
-                    if os.path.islink(filename):
-                        continue
-                    all_files.append(File(filename))
-    finally:
-        cancel_update()
-
-    processing_start = time.time()
-    print('Done in {:.1f} s. ({} dirs, {} files){}'.format(
-        time.time() - walk_start, dirs, len(all_files), ' '*32))
+    if args.groups:
+        groups = Group.load(args.groups)
+        profiler.finish_phase('loading groups')
+    else:
+        all_files = scan_directories(args)
+        groups = [Group(all_files)]
+        profiler.finish_phase('scanning directories')
 
     if args.basename or args.basename_only:
-        groups = list(group_files(all_files))
-        print('After grouping by basename: {} groups'.format(len(groups)))
-    else:
-        groups = [all_files]
+        groups = regroup(groups)
 
     if not args.basename_only:
         groups = regroup(groups, 'size')
-        print('After grouping by size: ' + groups_summary(groups))
+        # process_groups(groups)
         if not args.no_md5:
             groups = regroup(groups, 'md5')
-            print('After grouping by md5: ' + groups_summary(groups))
 
     if len(groups) == 0:
         print('No duplicate groups found.')
         exit()
 
-    if any(hasattr(group, 'size') for group in groups):
-        groups.sort(key=group_waste)
-    else:
-        groups.sort(key=len)
-
-    for group in groups:
-        sort_members(group)
+    sort_groups(groups)
 
     if not args.no_print:
         process_groups(groups)
@@ -295,8 +306,41 @@ def main():
     if args.delete:
         pass
 
-    print('Processed in {:.1f} s. ({:.1f} s total)'.format(
-        time.time() - processing_start, time.time() - walk_start))
+
+def scan_directories(args):
+    def show_update(since, dirs, files, ctr):
+        sys.stdout.write('Processing... {} {:.1f} s ({} dirs, {} files)\r'.format(
+            '|/-\\'[ctr % 4], time.time() - since, dirs, len(files)))
+        sys.stdout.flush()
+
+    all_files = []
+    dirs = 0
+    walk_start = time.time()
+    cancel_update = call_repeatedly(1.0, lambda ctr: show_update(walk_start, dirs, all_files, ctr))
+    try:
+        for directory in args.directories:
+            for dir_path, dir_names, filenames in os.walk(directory):
+                # print('Processing directory:', dir_path)
+                dirs += 1
+                for f in filenames:
+                    # print('File:', f)
+                    filename = os.path.join(dir_path, f)
+                    if os.path.islink(filename):
+                        continue
+                    all_files.append(File(filename))
+    finally:
+        cancel_update()
+
+    return all_files
+
+
+def sort_groups(groups):
+    if any(hasattr(group, 'size') for group in groups):
+        groups.sort(key=group_waste)
+    else:
+        groups.sort(key=len)
+    for group in groups:
+        sort_members(group)
 
 
 if __name__ == '__main__':
