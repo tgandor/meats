@@ -293,6 +293,31 @@ def delete_interactive(groups):
             os.unlink(file_.file_path)
 
 
+def delete_unattended(groups, min_size=1024*1024):
+    total_cleared = 0
+    for group in groups[::-1]:
+        print(group.features)
+        if group.size < min_size:
+            print('Size limit ({}) reached.'.format(min_size))
+            break
+
+        for i, file_ in enumerate(group.files):
+            if not os.path.exists(file_.file_path):
+                print('Critical: {} not found'.format(file_.file_path))
+                raise ValueError('One of group files does not exist')
+
+            if i == 0:
+                print('Leaving behind:', file_.file_path)
+                continue
+
+            print('Deleting:', file_.file_path)
+            os.unlink(file_.file_path)
+
+        waste = group_waste(group)
+        total_cleared += waste
+        print('--- {:,} B cleared ({:,} B total) ---'.format(waste, total_cleared))
+
+
 def main():
     args = parse_args()
     profiler = Profiler()
@@ -316,6 +341,8 @@ def main():
         if not args.no_md5:
             groups = regroup(groups, 'md5')
 
+    profiler.finish_phase('grouping files')
+
     if len(groups) == 0:
         print('No duplicate groups found.')
         exit()
@@ -324,12 +351,19 @@ def main():
 
     if not args.no_print:
         process_groups(groups)
+        profiler.finish_phase('printing groups')
 
     if not args.no_save:
         save_groups(groups, args.prefix)
+        profiler.finish_phase('saving groups')
 
     if args.delete:
         delete_interactive(groups)
+        profiler.finish_phase('interactive processing')
+    elif args.delete_now:
+        groups.sort(key=attrgetter('size'))  # stabilizing min_size
+        delete_unattended(groups)
+        profiler.finish_phase('deleting duplicates')
 
 
 def scan_directories(args):
