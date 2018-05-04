@@ -248,7 +248,8 @@ def load_groups(filename):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates')
+    parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates interactively')
+    parser.add_argument('--delete-now', '-D', action='store_true', help='Delete the duplicates automatically')
     parser.add_argument('--basename', '-n', action='store_true', help='Group by basename (first)')
     parser.add_argument('--basename-only', '-N', action='store_true', help='Group by basename (only)')
     parser.add_argument('--no-md5', '-5', action='store_true', help='Skip grouping by md5 sum')
@@ -273,6 +274,25 @@ class Profiler:
             self.times[-1] - self.times[0]))
 
 
+def delete_interactive(groups):
+    for group in groups[::-1]:
+        print(group.features)
+        for i, file_ in enumerate(group.files):
+            print(i, file_)
+        print(group_summary(group))
+        print('Which file to preserve (0-{}, a - all, q - quit)?'.format(len(group) - 1))
+        answer = sys.stdin.readline().strip()
+        if answer == 'q':
+            break
+        if answer in ('a', ''):
+            continue
+        idx = int(answer)
+        for i, file_ in enumerate(group.files):
+            if i == idx:
+                continue
+            os.unlink(file_.file_path)
+
+
 def main():
     args = parse_args()
     profiler = Profiler()
@@ -293,7 +313,6 @@ def main():
 
     if not args.basename_only:
         groups = regroup(groups, 'size')
-        # process_groups(groups)
         if not args.no_md5:
             groups = regroup(groups, 'md5')
 
@@ -310,7 +329,7 @@ def main():
         save_groups(groups, args.prefix)
 
     if args.delete:
-        pass
+        delete_interactive(groups)
 
 
 def scan_directories(args):
