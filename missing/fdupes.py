@@ -15,7 +15,7 @@ from threading import Event, Thread
 
 
 def md5sum(filename):
-    # print('MD5', filename)
+    logging.getLogger().debug('MD5 %s', filename)
     hash_md5 = hashlib.md5()
     with open(filename, "rb") as file_obj:
         for chunk in iter(lambda: file_obj.read(2**12), b""):
@@ -121,14 +121,6 @@ class Group:
             'features': self.features,
             'files': [file.as_dict() for file in self.files]
         }
-
-    @staticmethod
-    def load(filename):
-        with open(filename) as stream:
-            data = json.load(stream)
-
-        group = Group(data['files'], data['features'])
-        return group
 
 
 def group_files(files, attr='basename'):
@@ -244,6 +236,16 @@ def save_groups(group_list, prefix=''):
     print('Groups saved in:', json_dump)
 
 
+def load_groups(filename):
+    with open(filename) as stream:
+        data = json.load(stream)
+
+    groups = [Group([File(data['path']) for data in data['files']],
+                    data['features'])
+              for data in data]
+    return groups
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates')
@@ -252,6 +254,7 @@ def parse_args():
     parser.add_argument('--no-md5', '-5', action='store_true', help='Skip grouping by md5 sum')
     parser.add_argument('--no-print', '-P', action='store_true', help='Skip printing the groups')
     parser.add_argument('--no-save', '-S', action='store_true', help='Skip saving the groups as JSON')
+    parser.add_argument('--debug', '-v', action='store_true', help='Show verbose debugging output')
     parser.add_argument('--prefix', '-p', help='Prefix for saving the groups', default='')
     parser.add_argument('--groups', '-i', help='Saved group files to load instead of scanning')
     parser.add_argument('directories', nargs='*', help='Directories to scan for duplicates', default=['.'])
@@ -274,8 +277,11 @@ def main():
     args = parse_args()
     profiler = Profiler()
 
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+
     if args.groups:
-        groups = Group.load(args.groups)
+        groups = load_groups(args.groups)
         profiler.finish_phase('loading groups')
     else:
         all_files = scan_directories(args)
@@ -320,10 +326,10 @@ def scan_directories(args):
     try:
         for directory in args.directories:
             for dir_path, dir_names, filenames in os.walk(directory):
-                # print('Processing directory:', dir_path)
+                logging.getLogger().debug('Processing directory: %s', dir_path)
                 dirs += 1
                 for f in filenames:
-                    # print('File:', f)
+                    logging.getLogger().debug('File: %s', f)
                     filename = os.path.join(dir_path, f)
                     if os.path.islink(filename):
                         continue
