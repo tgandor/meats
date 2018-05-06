@@ -14,11 +14,11 @@ from operator import attrgetter
 from threading import Event, Thread
 
 
-def md5sum(filename):
+def md5sum(filename, chunk_size=2**12):
     logging.getLogger().debug('MD5 %s', filename)
     hash_md5 = hashlib.md5()
     with open(filename, "rb") as file_obj:
-        for chunk in iter(lambda: file_obj.read(2**12), b""):
+        for chunk in iter(lambda: file_obj.read(chunk_size), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
@@ -31,7 +31,9 @@ def call_repeatedly(interval, func):
         while not stopped.wait(interval):  # the first call is in `interval` secs
             ctr += 1
             func(ctr)
-    Thread(target=loop).start()
+    thread = Thread(target=loop)
+    thread.daemon = True  # be careful whan interrupting while processing...
+    thread.start()
     return stopped.set
 
 
@@ -154,8 +156,16 @@ def regroup(group_list, attr='basename'):
     :rtype: List[Group]
     """
 
+    def show_update(since, worked, total, ctr):
+        sys.stdout.write('Processing... {} {}/{} {:.1f} s\r'.format(
+            '|/-\\'[ctr % 4], worked, total, time.time() - since))
+        sys.stdout.flush()
+
+
     def _regroup():
         for group in group_list:
+            done[0] += 1
+
             if hasattr(group, attr):
                 yield group
                 continue
@@ -163,7 +173,15 @@ def regroup(group_list, attr='basename'):
             for new_group in group_files(group, attr=attr):
                 yield new_group
 
+    done = [0]
+    start = time.time()
+    total = len(group_list)
+
+    cancel = call_repeatedly(1.0, lambda ctr: show_update(start, done[0], total, ctr))
     new_groups = list(_regroup())
+    cancel()
+    print()
+
     print('After grouping by {}: {}'.format(attr, groups_summary(new_groups)))
     return new_groups
 
@@ -240,9 +258,9 @@ def load_groups(filename):
     with open(filename) as stream:
         data = json.load(stream)
 
-    groups = [Group([File(data['path']) for data in data['files']],
-                    data['features'])
-              for data in data]
+    groups = [Group([File(file_dict['path']) for file_dict in group_dict['files']],
+                    group_dict['features'])
+              for group_dict in data]
     return groups
 
 
@@ -250,6 +268,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates interactively')
     parser.add_argument('--delete-now', '-D', action='store_true', help='Delete the duplicates automatically')
+    parser.add_argument('--hardlink', '-H', action='store_true', help='Hardlink the duplicate files')
     parser.add_argument('--basename', '-n', action='store_true', help='Group by basename (first)')
     parser.add_argument('--basename-only', '-N', action='store_true', help='Group by basename (only)')
     parser.add_argument('--no-md5', '-5', action='store_true', help='Skip grouping by md5 sum')
@@ -294,12 +313,23 @@ def delete_interactive(groups):
 
 
 def delete_unattended(groups, min_size=1024*1024):
+    """
+    Delete non-first files from every group, no smaller than min_size.
+
+    :param groups: List[Group]
+    :param min_size: int smallest size of deleted duplicate in bytes
+    :return: List[Group] groups which where not deleted due to size.
+    """
+    groups.sort(key=attrgetter('size'))  # stabilizing min_size
+
     total_cleared = 0
-    for group in groups[::-1]:
+    iterator = iter(groups[::-1])
+    for group in iterator:
         print(group.features)
+        ensure_deletable(group)
         if group.size < min_size:
             print('Size limit ({}) reached.'.format(min_size))
-            break
+            return list(iterator)
 
         for i, file_ in enumerate(group.files):
             if not os.path.exists(file_.file_path):
@@ -316,6 +346,29 @@ def delete_unattended(groups, min_size=1024*1024):
         waste = group_waste(group)
         total_cleared += waste
         print('--- {:,} B cleared ({:,} B total) ---'.format(waste, total_cleared))
+        return []
+
+
+def ensure_deletable(group):
+    if not hasattr(group, 'size') or not hasattr(group, 'md5'):
+        raise ValueError('Group is not specific enough for members to be safely deleted')
+
+
+def link_groups_hard(groups):
+    for group in groups:
+        ensure_deletable(group)
+        single = group[0] # type: File
+        if not os.path.exists(single.file_path):
+            raise ValueError('Main file of group ({}) not found'.format(single.file_path))
+
+        print('Leaving behind:', single.file_path)
+
+        for file_ in group[1:]: # type: File
+            if not os.path.exists(file_.file_path):
+                raise ValueError('A file in group ({}) not found'.format(single.file_path))
+            print('Relinking:', file_.file_path)
+            os.unlink(file_.file_path)
+            os.link(single.file_path, file_.file_path)
 
 
 def main():
@@ -361,9 +414,13 @@ def main():
         delete_interactive(groups)
         profiler.finish_phase('interactive processing')
     elif args.delete_now:
-        groups.sort(key=attrgetter('size'))  # stabilizing min_size
-        delete_unattended(groups)
+        rest = delete_unattended(groups)
+        if rest:
+            print('Remaining groups:', groups_summary(rest))
+            save_groups(rest, args.prefix + 'left_')
         profiler.finish_phase('deleting duplicates')
+    elif args.hardlink:
+        link_groups_hard(groups)
 
 
 def scan_directories(args):
