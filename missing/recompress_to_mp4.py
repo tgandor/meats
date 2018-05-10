@@ -11,18 +11,20 @@ import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--stabilize', '-stab', action='store_true')
+parser.add_argument('--nvenc', '-nv', action='store_true')
 parser.add_argument('--copy-audio', '-c', action='store_true')
 parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. for cutting or remuxing')
 parser.add_argument('--start', '-ss', type=float, help='Start time for encoding')
-parser.add_argument('--quality', '-q', type=int, default=24)
+parser.add_argument('--quality', '-q', type=int, default=23)
 parser.add_argument('--converter', type=str, help='Manually specify [full path to] ffmpeg or avconv')
 parser.add_argument('files_or_globs', type=str, nargs='+')
 
 
 def makedirs(path, exist_ok=True):
     # Py 2.7 planned obsolescence (not including trivial feature improvements)
-    if not os.path.exists(path):
-        os.makedirs(path)
+    if exist_ok and os.path.exists(path):
+        return
+    os.makedirs(path)
 
 
 def duration_format(duration):
@@ -102,8 +104,8 @@ except ImportError:
         # https://stackoverflow.com/a/377028/1338797
         import os
 
-        def is_exe(fpath):
-            return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+        def is_exe(file_path):
+            return os.path.isfile(file_path) and os.access(file_path, os.X_OK)
 
         fpath, fname = os.path.split(program)
         if fpath:
@@ -122,9 +124,11 @@ except ImportError:
 if __name__ == '__main__':
     args = parser.parse_args()
 
-    options = '-map_metadata 0 -pix_fmt yuv420p -crf {} -preset veryslow -strict -2'.format(
-        args.quality
-    )
+    common_options = ' -map_metadata 0 -pix_fmt yuv420p  -strict -2'
+    if args.nvenc:
+        encoder_options = 'h264_nvenc -cq {} -preset slow {}'.format(args.quality, common_options)
+    else:
+        encoder_options = 'h264 -crf {} -preset veryslow {}'.format(args.quality, common_options)
 
     makedirs('original', exist_ok=True)
     makedirs('converted', exist_ok=True)
@@ -165,7 +169,7 @@ if __name__ == '__main__':
             original,
             filters,
             'copy' if args.copy_audio or args.copy else 'aac',
-            'copy' if args.copy else 'h264 ' + options,
+            'copy' if args.copy else encoder_options,
             converted)
         ts.run(commandline)
 
