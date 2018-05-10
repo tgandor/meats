@@ -11,11 +11,16 @@ import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--stabilize', '-stab', action='store_true')
-parser.add_argument('--nvenc', '-nv', action='store_true')
+parser.add_argument('--nv', '-nv', action='store_true', help='Enable both nvdec and nvenc for transcoding')
+parser.add_argument('--nvenc', '-nve', action='store_true')
+parser.add_argument('--nvdec', '-nvd', action='store_true')
+parser.add_argument('--hwaccel', '-hw', help='specify input hardware acceleration')
 parser.add_argument('--copy-audio', '-c', action='store_true')
 parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. for cutting or remuxing')
-parser.add_argument('--start', '-ss', type=float, help='Start time for encoding')
+parser.add_argument('--start', '-ss', type=float, help='Start time for encoding in seconds')
+parser.add_argument('--duration', '-t', help='Duration limit for encoding')
 parser.add_argument('--quality', '-q', type=int, default=23)
+parser.add_argument('--bitrate', '-b', help='specify output bitrate for video')
 parser.add_argument('--converter', type=str, help='Manually specify [full path to] ffmpeg or avconv')
 parser.add_argument('files_or_globs', type=str, nargs='+')
 
@@ -124,11 +129,27 @@ except ImportError:
 if __name__ == '__main__':
     args = parser.parse_args()
 
+    input_options = ''
+    if args.nv or args.nvdec:
+        input_options += '-hwaccel nvdec'
+    if args.hwaccel:
+        input_options += '-hwaccel {}'.format(args.hwaccel)
+
     common_options = ' -map_metadata 0 -pix_fmt yuv420p  -strict -2'
-    if args.nvenc:
+    if args.nv or args.nvenc:
         encoder_options = 'h264_nvenc -cq {} -preset slow {}'.format(args.quality, common_options)
+        # this looks promising, but for now produces overkill
+        # https://superuser.com/a/1236387/269542
+        # encoder_options = ('h264_nvenc -preset llhq -rc:v vbr_minqp -qmin:v 19 -qmax:v 21 -b:v 2500k '
+        #                    '-maxrate:v 5000k -profile:v high ' + common_options)
     else:
         encoder_options = 'h264 -crf {} -preset veryslow {}'.format(args.quality, common_options)
+
+    if args.bitrate:
+        encoder_options += ' -b:v {}'.format(args.bitrate)
+
+    if args.duration:
+        encoder_options += ' -t {}'.format(args.duration)
 
     makedirs('original', exist_ok=True)
     makedirs('converted', exist_ok=True)
@@ -164,8 +185,9 @@ if __name__ == '__main__':
         if args.start:
             filters += ' -ss {:.2f}'.format(args.start)
 
-        commandline = '{} -i "{}" {} -c:a {} -c:v {} "{}"'.format(
+        commandline = '{} {} -i "{}" {} -c:a {} -c:v {} "{}"'.format(
             converter,
+            input_options,
             original,
             filters,
             'copy' if args.copy_audio or args.copy else 'aac',
