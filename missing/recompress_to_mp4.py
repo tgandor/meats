@@ -21,6 +21,7 @@ parser.add_argument('--start', '-ss', type=float, help='Start time for encoding 
 parser.add_argument('--duration', '-t', help='Duration limit for encoding')
 parser.add_argument('--quality', '-q', type=int, default=23)
 parser.add_argument('--bitrate', '-b', help='specify output bitrate for video')
+parser.add_argument('--framerate', '-r', help='specify output FPS for video')
 parser.add_argument('--converter', type=str, help='Manually specify [full path to] ffmpeg or avconv')
 parser.add_argument('files_or_globs', type=str, nargs='+')
 
@@ -147,6 +148,9 @@ if __name__ == '__main__':
 
     if args.bitrate:
         encoder_options += ' -b:v {}'.format(args.bitrate)
+
+    if args.framerate:
+        encoder_options += ' -r {}'.format(args.framerate)
 
     if args.duration:
         encoder_options += ' -t {}'.format(args.duration)

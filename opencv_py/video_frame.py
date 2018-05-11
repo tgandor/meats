@@ -2,8 +2,9 @@
 
 import argparse
 import cv2
-import re
 import glob
+import os
+import re
 import time
 
 parser = argparse.ArgumentParser()
@@ -43,7 +44,8 @@ for source in videos(args.videos):
         file_name = ''
         if args.timestamp:
             file_name += time.strftime('%Y%m%d_%H%M%S_')
-        file_name += str(source) + '.' + args.format
+        source_basename = os.path.splitext(str(source))[0]
+        file_name += source_basename + '.' + args.format
         cv2.imwrite(file_name, frame)
         print('Source: {} - Saved frame to: {}'.format(source, file_name))
     finally:
