@@ -12,6 +12,7 @@ ping -c4 $ip > /dev/null
 
 if [ $? != 0 ] ; then
 	echo Rebooting due to network failure.
+	date >> $HOME/reboot.log
 	sudo /sbin/reboot
 fi
 
