@@ -106,10 +106,14 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     # starting page width
     page_width, page_height = landscape(A4) if state.horizontal else A4
 
+    # some extra margin for round label
+    if settings['round_label']:
+        state.height_left -= 1*cm
+
     # new page if can't fit
     if height > state.height_left:
         new_page(c)
-        state.height_left = page_height - settings['top_margin']
+        state.height_left = page_height - settings['top_margin'] - (1*cm if settings['round_label'] else 0.0)
 
     # maybe switch to landscape
     if width > page_width:
@@ -141,7 +145,7 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     if settings['line_width'] > 0 and state.height_left < page_height:
         c.line(0, state.height_left, page_width, state.height_left)
     h_offset = state.height_left - page_height
-    c.translate(0, h_offset)
+    c.translate(1*cm if settings['round_label'] else 0.0, h_offset)
 
     # borders
     if settings['line_width'] > 0 and not settings['round_label']:
