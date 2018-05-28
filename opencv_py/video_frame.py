@@ -10,7 +10,7 @@ import time
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", "--skip", help="initial frames to skip", default=0, type=int)
 parser.add_argument("-f", "--format", help="file format (extension) to use", default="jpg")
-parser.add_argument("-t", "--timestamp", help="initial frames to skip", action="store_true")
+parser.add_argument("-t", "--timestamp", help="prepend timestamp to filename", action="store_true")
 parser.add_argument("videos", help="videos to extract frame from", nargs='*')
 args = parser.parse_args()
 
@@ -35,6 +35,7 @@ def videos(videos_args):
 for source in videos(args.videos):
     cap = None
     try:
+        print('Opening video: {}'.format(source))
         cap = cv2.VideoCapture(source)
         for _ in range(args.skip):
             cap.read()
