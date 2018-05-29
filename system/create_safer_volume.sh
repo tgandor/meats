@@ -21,9 +21,15 @@ else
     file="$1"
 fi
 
+if [ -f $file ] ; then
+    echo "File '$file' exists. Please use open_safer_volume.sh $file."
+    exit
+fi
+
 # echo "Generating $gb GB image... (this may take some time)"
 # dd if=/dev/urandom of=$file bs=1G count=$gb iflag=fullblock
 
+# wow, this is quite safe, and won't actually destroy $file accidentally
 dd if=/dev/zero of=$file bs=1G count=0 seek=$gb
 
 sudo cryptsetup luksFormat $file --use-urandom

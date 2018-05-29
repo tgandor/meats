@@ -21,5 +21,5 @@ sudo mkdir /mnt/$file
 
 me=`whoami`
 echo "Mounting for user $me"
-sudo mount /dev/mapper/$file /mnt/$file -o uid=$UID
+sudo mount /dev/mapper/$file /mnt/$file
 sudo chown $me /mnt/$mnt
