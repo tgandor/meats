@@ -8,7 +8,7 @@ rm /tmp/power_now.dat
 query_data() {
 	for i in {1..60}  # 1 minute
 	do 
-		awk 'BEGIN{FS="="} /POWER_NOW/ { print $2 / 1e6; }' /sys/class/power_supply/BAT0/uevent >> /tmp/power_now.dat
+		awk 'BEGIN{FS="="} /POWER_NOW|CURRENT_NOW/ { print $2 / 1e6; }' /sys/class/power_supply/BAT0/uevent >> /tmp/power_now.dat
 	sleep 1
 	done	
 }
