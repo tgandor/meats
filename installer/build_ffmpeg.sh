@@ -104,6 +104,7 @@ PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$ffmpeg_build/lib/pkgconfig" ./configure
   --enable-libvpx \
   --enable-libx264 \
   --enable-libvidstab \
+  --enable-vaapi \
   --enable-nonfree
   # temporary disabled
   # --enable-libx265 \
