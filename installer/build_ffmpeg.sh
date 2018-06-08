@@ -37,13 +37,16 @@ echo Done
 sudo apt-get install -y libx264-dev || exit 1
 
 # libx265
-hg clone https://bitbucket.org/multicoreware/x265
-pushd $ffmpeg_sources/x265/build/linux
-cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$ffmpeg_build" -DENABLE_SHARED:bool=off ../../source
-make -j $num_jobs
-make install
-make distclean
-popd
+# may be missing here and there
+# sudo apt-get install -y libx265-dev || exit 1
+
+# hg clone https://bitbucket.org/multicoreware/x265
+# pushd $ffmpeg_sources/x265/build/linux
+# cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$ffmpeg_build" -DENABLE_SHARED:bool=off ../../source
+# make -j $num_jobs
+# make install
+# make distclean
+# popd
 
 # libfdk-aac
 sudo apt-get install -y libfdk-aac-dev || (
@@ -105,11 +108,12 @@ PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$ffmpeg_build/lib/pkgconfig" ./configure
   --enable-libx264 \
   --enable-libvidstab \
   --enable-vaapi \
-  --enable-nonfree
+  --enable-nonfree \
   # temporary disabled
   # --enable-libx265 \
 
 make -j $num_jobs
-# make install
-# make distclean
+make install
+make distclean
+
 hash -r

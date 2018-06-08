@@ -11,4 +11,4 @@ if ! which exiftool >/dev/null ; then
 	sudo apt install libimage-exiftool-perl
 fi
 
-exiftool '-filename<CreateDate' -d %y%m%d_%H%M%S%%-c.%%le "$@"
+exiftool '-filename<CreateDate' -d %Y%m%d_%H%M%S%%-c.%%le "$@"
