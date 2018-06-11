@@ -11,6 +11,7 @@ import sys
 parser = argparse.ArgumentParser()
 parser.add_argument('files', nargs='+')
 parser.add_argument('--player', default='mplayer')
+parser.add_argument('--infix', '-i', default='VID-')
 args = parser.parse_args()
 
 # queue = []
@@ -32,9 +33,14 @@ def move(name, target_directory):
 for filename in sorted(itertools.chain.from_iterable(map(glob.glob, args.files))):
     os.system(args.player + ' ' + filename)
 
-    print('Event name (empty = {})'.format(event_name))
+    print('Event name (empty = {}, delete/rm/del/- = move to _trash)'.format(event_name))
 
     answer = sys.stdin.readline().strip()
+
+    if answer in ('delete', 'rm', 'del', '-'):
+        move(filename, '_trash')
+        continue
+
     if answer:
         event_name = answer.replace(' ', '-')
         event_date = None
@@ -42,4 +48,4 @@ for filename in sorted(itertools.chain.from_iterable(map(glob.glob, args.files))
     if not event_date:
         event_date = get_date(filename)
 
-    move(filename, event_date + '-' + event_name)
+    move(filename, event_date + '-' + args.infix + event_name)

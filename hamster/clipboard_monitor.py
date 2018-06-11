@@ -15,13 +15,6 @@ _a = androidhelper.Android()
 get_clipboard = lambda: _a.getClipboard().result
 
 
-if not _a.checkWifiState().result:
-    print('Not on WiFi, exiting.')
-    exit()
-
-_download_queue = Queue()
-
-
 def clipboard_watcher(download_queue):
     old_clipboard = get_clipboard()
 
@@ -52,9 +45,17 @@ def downloader(download_queue):
         _a.vibrate(1000)
         os.system('df .')
 
-print('Starting clipboard watcher...')
-threading.Thread(target=clipboard_watcher, args=(_download_queue,)).start()
+
 os.chdir(os.path.dirname(__file__) + '/../../Download')
 os.system('df .')
+
+if not _a.checkWifiState().result:
+    print('Not on WiFi, exiting.')
+    exit()
+print('Starting clipboard watcher...')
+
+_download_queue = Queue()
+threading.Thread(target=clipboard_watcher, args=(_download_queue,)).start()
+
 print('Entering get/fork/download/wait loop...')
 downloader(_download_queue)

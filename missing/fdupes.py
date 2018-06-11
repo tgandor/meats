@@ -277,6 +277,8 @@ def parse_args():
     parser.add_argument('--debug', '-v', action='store_true', help='Show verbose debugging output')
     parser.add_argument('--prefix', '-p', help='Prefix for saving the groups', default='')
     parser.add_argument('--groups', '-i', help='Saved group files to load instead of scanning')
+    parser.add_argument('--min-size', '-m', help='Min size of deleted duplicates for automatic deletion',
+                        type=int, default=1024*1024)
     parser.add_argument('directories', nargs='*', help='Directories to scan for duplicates', default=['.'])
     return parser.parse_args()
 
@@ -320,6 +322,7 @@ def delete_unattended(groups, min_size=1024*1024):
     :param min_size: int smallest size of deleted duplicate in bytes
     :return: List[Group] groups which where not deleted due to size.
     """
+    print('Deleting up to {} groups:'.format(len(groups)))
     groups.sort(key=attrgetter('size'))  # stabilizing min_size
 
     total_cleared = 0
@@ -346,7 +349,7 @@ def delete_unattended(groups, min_size=1024*1024):
         waste = group_waste(group)
         total_cleared += waste
         print('--- {:,} B cleared ({:,} B total) ---'.format(waste, total_cleared))
-        return []
+    return []
 
 
 def ensure_deletable(group):
@@ -414,7 +417,7 @@ def main():
         delete_interactive(groups)
         profiler.finish_phase('interactive processing')
     elif args.delete_now:
-        rest = delete_unattended(groups)
+        rest = delete_unattended(groups, args.min_size)
         if rest:
             print('Remaining groups:', groups_summary(rest))
             save_groups(rest, args.prefix + 'left_')
