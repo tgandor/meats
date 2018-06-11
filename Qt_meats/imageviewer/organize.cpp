@@ -9,6 +9,7 @@
 
 QString extractDate(const QString& path)
 {
+    // 1. try formatted datetime in image headers
     QRegExp datetime("\\d{4}([ :]\\d\\d){5}");
     QFile file(path);
     file.open(QIODevice::ReadOnly);
@@ -28,6 +29,18 @@ QString extractDate(const QString& path)
         raw.replace(":", "-");
         return raw + "-";
     }
+
+    // 2. try eight digits in file name
+    QFileInfo info(path);
+    QRegExp date("\\d{8}");
+    QString basename = info.baseName();
+    if (date.indexIn(basename, 0) != -1)
+    {
+        QString raw = date.cap();
+        return raw.left(4) + "-" + raw.mid(4, 2) + "-" + raw.right(2) + "-";
+    }
+
+    // 3. give up
     return QString();
 }
 
