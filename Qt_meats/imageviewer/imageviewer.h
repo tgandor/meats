@@ -67,6 +67,8 @@ private slots:
     void open();
     void next();
     void prev();
+    void first();
+    void last();
     void zoomIn();
     void zoomOut();
     void normalSize();
@@ -93,6 +95,8 @@ private:
     QAction *openAct;
     QAction *nextAct;
     QAction *prevAct;
+    QAction *firstAct;
+    QAction *lastAct;
     QAction *exitAct;
     QAction *zoomInAct;
     QAction *zoomOutAct;

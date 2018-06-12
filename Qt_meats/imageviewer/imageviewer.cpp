@@ -48,6 +48,7 @@
 #endif
 
 #include <QInputDialog>
+#include <QShortcut>
 
 #include "imageviewer.h"
 #include "organize.h"
@@ -108,6 +109,19 @@ void ImageViewer::next()
 void ImageViewer::prev()
 {
     displayFile(feeder.prev());
+}
+
+void ImageViewer::first()
+{
+    feeder.rewind();
+    next();
+}
+
+void ImageViewer::last()
+{
+    feeder.rewind();
+    feeder.next();
+    prev();
 }
 
 void ImageViewer::zoomIn()
@@ -239,10 +253,36 @@ void ImageViewer::createActions()
     nextAct->setEnabled(false);
     connect(nextAct, SIGNAL(triggered()), this, SLOT(next()));
 
+    QShortcut *nextArrow = new QShortcut(QKeySequence(Qt::Key_Right), this);
+    connect(nextArrow, SIGNAL(activated()), this, SLOT(next()));
+    QShortcut *nextSpace = new QShortcut(QKeySequence(Qt::Key_Space), this);
+    connect(nextSpace, SIGNAL(activated()), this, SLOT(next()));
+
     prevAct = new QAction(tr("&Prev..."), this);
     prevAct->setShortcut(tr("Ctrl+P"));
     prevAct->setEnabled(false);
     connect(prevAct, SIGNAL(triggered()), this, SLOT(prev()));
+
+    QShortcut *prevArrow = new QShortcut(QKeySequence(Qt::Key_Left), this);
+    connect(prevArrow, SIGNAL(activated()), this, SLOT(prev()));
+    QShortcut *prevBackspace = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
+    connect(prevBackspace, SIGNAL(activated()), this, SLOT(prev()));
+
+    firstAct = new QAction(tr("&First"), this);
+    firstAct->setShortcut(tr("Ctrl+A"));
+    firstAct->setEnabled(false);
+    connect(firstAct, SIGNAL(triggered()), this, SLOT(first()));
+
+    lastAct = new QAction(tr("&Last"), this);
+    lastAct->setShortcut(tr("Ctrl+E"));
+    lastAct->setEnabled(false);
+    connect(lastAct, SIGNAL(triggered()), this, SLOT(last()));
+
+    QShortcut* firstShortcut = new QShortcut(QKeySequence(Qt::Key_Home), this);
+    connect(firstShortcut, SIGNAL(activated()), this, SLOT(first()));
+
+    QShortcut* lastShortcut = new QShortcut(QKeySequence(Qt::Key_End), this);
+    connect(lastShortcut, SIGNAL(activated()), this, SLOT(last()));
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcut(tr("Ctrl+Q"));
@@ -327,6 +367,8 @@ void ImageViewer::updateActions()
 {
     nextAct->setEnabled(true);
     prevAct->setEnabled(true);
+    firstAct->setEnabled(true);
+    lastAct->setEnabled(true);
     fitToWindowAct->setEnabled(true);
     normalSizeAct->setEnabled(true);
     zoomInAct->setEnabled(scaleFactor < 3.0);
@@ -342,6 +384,8 @@ void ImageViewer::resetActions()
 {
     nextAct->setEnabled(false);
     prevAct->setEnabled(false);
+    firstAct->setEnabled(false);
+    lastAct->setEnabled(false);
     fitToWindowAct->setEnabled(false);
     normalSizeAct->setEnabled(false);
     zoomInAct->setEnabled(false);
