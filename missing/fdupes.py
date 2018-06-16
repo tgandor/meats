@@ -37,7 +37,7 @@ def call_repeatedly(interval, func):
     return stopped.set
 
 
-class lazy_property(object):
+class LazyProperty(object):
     """
     meant to be used for lazy evaluation of an object attribute.
     property should represent non-mutable data, as it replaces itself.
@@ -45,15 +45,15 @@ class lazy_property(object):
     https://stackoverflow.com/a/6849299/1338797
     """
 
-    def __init__(self, fget):
-        self.fget = fget
-        self.func_name = fget.__name__
+    def __init__(self, real_getter):
+        self.real_getter = real_getter
+        self.attribute_name = real_getter.__name__
 
     def __get__(self, obj, cls):
         if obj is None:
             return None
-        value = self.fget(obj)
-        setattr(obj, self.func_name, value)
+        value = self.real_getter(obj)
+        setattr(obj, self.attribute_name, value)
         return value
 
 
@@ -64,27 +64,38 @@ class File:
     def __repr__(self):
         return 'File({})'.format(self.file_path)
 
-    @lazy_property
+    @LazyProperty
     def basename(self):
         return os.path.basename(self.file_path)
 
-    @lazy_property
+    @LazyProperty
     def size(self):
         try:
             return os.stat(self.file_path).st_size
         except IOError:
             return -1
 
-    @lazy_property
+    @LazyProperty
     def md5(self):
         return md5sum(self.file_path)
 
     def as_dict(self):
-        return {'path': self.file_path}
+        result = self.__dict__.copy()
+        all_keys = list(result.keys())
+        for key in all_keys:
+            if hasattr(result[key], 'real_getter'):
+                del result[key]
+        return result
 
     @staticmethod
     def from_dict(data):
         return File(data['path'])
+
+
+def custom_dumper(obj):
+    if hasattr(obj, 'as_dict'):
+        return obj.as_dict()
+    return obj.__dict__
 
 
 def suitability_max_len_penalize_spaces(file_):
@@ -125,11 +136,12 @@ class Group:
         }
 
 
-def group_files(files, attr='basename'):
+def group_files(files, attr='basename', out_unique=None):
     """
     Group files into lists with identical value of attr.
     :param files: Union[List[File], Group] list of files to sort
     :param attr: str Attribute to group by the files
+    :param out_unique: List[File] output argument for unique files discarded in regroup
     :return: Generator[List[File]]
 
     >>> list(group_files([]))
@@ -146,13 +158,16 @@ def group_files(files, attr='basename'):
             new_features[attr] = key_value
             # print('new features:', new_features)
             yield Group(candidate, new_features)
+        elif out_unique is not None:
+            out_unique.extend(candidate)
 
 
-def regroup(group_list, attr='basename'):
+def regroup(group_list, attr='basename', out_unique=None):
     """
     Group all lists by attribute `attr` and return a list of the new groups.
     :param attr: str name of file attribute to use for regrouping
     :type group_list: List[Group]
+    :param out_unique: List[File] output argument for unique files discarded in regroup
     :rtype: List[Group]
     """
 
@@ -170,7 +185,7 @@ def regroup(group_list, attr='basename'):
                 yield group
                 continue
 
-            for new_group in group_files(group, attr=attr):
+            for new_group in group_files(group, attr=attr, out_unique=out_unique):
                 yield new_group
 
     done = [0]
@@ -242,15 +257,18 @@ def sort_members(group, key=suitability_max_len_penalize_spaces):
     group.files.sort(key=key)
 
 
-def save_groups(group_list, prefix=''):
+def save_groups(group_list, prefix='', unique_files=None):
     if len(group_list) == 0:
         print('Not saving empty groups.')
         return
 
-    print('Saving {} groups...'.format(len(group_list)))
+    print('Saving {} groups and {} unique files...'.format(len(group_list), len(unique_files or [])))
     json_dump = prefix + 'fdupes_groups_{}.json'.format(time.strftime('%Y%m%d_%H%M%S'))
     with open(json_dump, 'w') as dump:
-        json.dump([_as_dict(group) for group in group_list], dump, indent=2)
+        json.dump({
+            'groups': [_as_dict(group) for group in group_list],
+            'unique': unique_files
+        }, dump, default=custom_dumper, indent=2)
     print('Groups saved in:', json_dump)
 
 
@@ -260,25 +278,26 @@ def load_groups(filename):
 
     groups = [Group([File(file_dict['path']) for file_dict in group_dict['files']],
                     group_dict['features'])
-              for group_dict in data]
+              for group_dict in data['groups']]
     return groups
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates interactively')
-    parser.add_argument('--delete-now', '-D', action='store_true', help='Delete the duplicates automatically')
-    parser.add_argument('--hardlink', '-H', action='store_true', help='Hardlink the duplicate files')
     parser.add_argument('--basename', '-n', action='store_true', help='Group by basename (first)')
     parser.add_argument('--basename-only', '-N', action='store_true', help='Group by basename (only)')
+    parser.add_argument('--debug', '-v', action='store_true', help='Show verbose debugging output')
+    parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates interactively')
+    parser.add_argument('--delete-now', '-D', action='store_true', help='Delete the duplicates automatically')
+    parser.add_argument('--groups', '-i', help='Saved group files to load instead of scanning')
+    parser.add_argument('--hardlink', '-H', action='store_true', help='Hardlink the duplicate files')
+    parser.add_argument('--min-size', '-m', help='Min size of deleted duplicates for automatic deletion',
+                        type=int, default=1024*1024)
     parser.add_argument('--no-md5', '-5', action='store_true', help='Skip grouping by md5 sum')
     parser.add_argument('--no-print', '-P', action='store_true', help='Skip printing the groups')
     parser.add_argument('--no-save', '-S', action='store_true', help='Skip saving the groups as JSON')
-    parser.add_argument('--debug', '-v', action='store_true', help='Show verbose debugging output')
     parser.add_argument('--prefix', '-p', help='Prefix for saving the groups', default='')
-    parser.add_argument('--groups', '-i', help='Saved group files to load instead of scanning')
-    parser.add_argument('--min-size', '-m', help='Min size of deleted duplicates for automatic deletion',
-                        type=int, default=1024*1024)
+    parser.add_argument('--unique', '-u', action='store_true', help='Keep track of unique files')
     parser.add_argument('directories', nargs='*', help='Directories to scan for duplicates', default=['.'])
     return parser.parse_args()
 
@@ -389,18 +408,22 @@ def main():
         groups = [Group(all_files)]
         profiler.finish_phase('scanning directories')
 
+    unique_files = [] if args.unique else None
+
     if args.basename or args.basename_only:
-        groups = regroup(groups)
+        groups = regroup(groups, out_unique=unique_files)
 
     if not args.basename_only:
-        groups = regroup(groups, 'size')
+        groups = regroup(groups, 'size', unique_files)
         if not args.no_md5:
-            groups = regroup(groups, 'md5')
+            groups = regroup(groups, 'md5', unique_files)
 
     profiler.finish_phase('grouping files')
 
     if len(groups) == 0:
         print('No duplicate groups found.')
+        if unique_files:
+            print('{} unique files found.'.format(len(unique_files)))
         exit()
 
     sort_groups(groups)
@@ -410,7 +433,7 @@ def main():
         profiler.finish_phase('printing groups')
 
     if not args.no_save:
-        save_groups(groups, args.prefix)
+        save_groups(groups, args.prefix, unique_files)
         profiler.finish_phase('saving groups')
 
     if args.delete:
