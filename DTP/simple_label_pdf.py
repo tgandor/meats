@@ -37,6 +37,7 @@ except ImportError:
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--font-size', type=int, default=20)
+parser.add_argument('--round', action='store_true', help='Set default shape to round (mostly for commandline)')
 parser.add_argument('--repeat', type=int, default=1, help="Times to repeat each label verbatim (without series)")
 parser.add_argument('--print', action='store_true', help="Try to print directly, instead of opening")
 parser.add_argument('--gui', action='store_true', help="Open a tkinter GUI to create labels")
@@ -47,7 +48,7 @@ parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
 settings = dict(
     font_size=20,
     date_font=12,
-    round_label=True,
+    round_label=False,
     top_margin=0.0 * cm,
     bottom_margin=1.0 * cm,
     line_width = 0.25
@@ -58,8 +59,8 @@ default_height = 28.5 * cm
 default_length = None
 default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.pdf')
 
+# region rendering
 fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial', 'DejaVuSans']
-
 last_font = []  # needs to be reloaded after new page
 
 
@@ -183,7 +184,22 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     return True
 
 
-# label persistence
+def _finish_rendering(canvas):
+    canvas.showPage()
+    canvas.save()
+    print_ = getattr(args, 'print')
+    if sys.platform.startswith('linux'):
+        if print_:
+            os.system('lp "%s"' % default_output_file)
+        else:
+            os.system('xdg-open "%s"' % default_output_file)
+    else:
+        os.startfile(default_output_file, 'print' if print_ else 'open')
+
+
+#endregion
+
+# region label persistence
 
 
 def open_database():
@@ -254,17 +270,7 @@ def save_label(text, width, height, length, label_settings={}):
     close_database(conn, cursor)
 
 
-def _finish_rendering(canvas):
-    canvas.showPage()
-    canvas.save()
-    print_ = getattr(args, 'print')
-    if sys.platform.startswith('linux'):
-        if print_:
-            os.system('lp "%s"' % default_output_file)
-        else:
-            os.system('xdg-open "%s"' % default_output_file)
-    else:
-        os.startfile(default_output_file, 'print' if print_ else 'open')
+# endregion
 
 
 def multi_label(text, width, height, count):
@@ -508,7 +514,7 @@ def win_main():
 
 def db_shell_main():
     try:
-        import readline
+        import readline  # pylint disable=unused-import
     except ImportError:
         print('Sorry, no readline')
 
@@ -562,6 +568,7 @@ if __name__ == '__main__':
     args = parser.parse_args(sys.argv[1:])
     argv = args.args
     settings['font_size'] = args.font_size
+    settings['round_label'] = args.round
 
     if args.db_shell:
         db_shell_main()
