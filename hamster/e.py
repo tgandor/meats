@@ -39,17 +39,24 @@ def get(url):
 
 
 def down(url):
-    f = six.moves.urllib.parse.unquote(os.path.basename(url))
-    if os.path.exists(f):
-        print("skipped", f)
+    filename = os.path.basename(six.moves.urllib.parse.unquote(url))
+    print('Downloading "{}" to "{}" file...'.format(url, filename))
+
+    if os.path.exists(filename):
+        print("skipped {}, '{}' (exists)".format(url, filename))
         return 0
-    print("getting", f)
+
+    if not filename:
+        print('Skipping "{}" (probably a directory)'.format(url))
+        return 0
+
+    print("getting", filename)
     start = time.time()
     data = get(url)
     size = len(data)
     elapsed = time.time() - start
     print("got %sB in %.1f s (%sB/s), saving" % (human(size), elapsed, human(size / elapsed)))
-    open(f, 'wb').write(data)
+    open(filename, 'wb').write(data)
     return size
 
 
@@ -82,9 +89,13 @@ def enter_folder(name):
 def download_all(url, search='mp3$'):
     total = 0
     try:
-        content = get(url).decode()
+        content_bin = get(url)
+        content = content_bin.decode('utf-8')
+        with open('last_content.html', 'wb') as dump:
+            dump.write(content_bin)
+
         links = sorted(set([link
-                            for link in re.findall('href="([^"]+)"', content)
+                            for link in re.findall('href="([^"]+)"', content, re.IGNORECASE)
                             if re.search(search, link)]))
         links = [six.moves.urllib.parse.urljoin(url, link)
                  if not link.startswith('http')
