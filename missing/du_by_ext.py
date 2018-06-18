@@ -2,13 +2,16 @@
 
 import os
 import sys
-from collections import defaultdict
+from collections import defaultdict, Counter
+
+TOTAL = 'Total'  # magic summary key
 
 
 class FileStats:
     def __init__(self):
         self.stats_b = defaultdict(int)
         self.stats_4K = defaultdict(int)
+        self.extension_counter = Counter()
         self.counted_files = set()
 
     def process_file(self, filepath):
@@ -19,9 +22,11 @@ class FileStats:
         size = os.stat(filepath).st_size
         blocks = (size + 2**12 - 1) // (2 ** 12)
         self.stats_b[ext] += size
-        self.stats_b['Total'] += size
+        self.stats_b[TOTAL] += size
+        self.extension_counter[ext] += 1
+        self.extension_counter[TOTAL] += 1
         self.stats_4K[ext] += blocks
-        self.stats_4K['Total'] += blocks
+        self.stats_4K[TOTAL] += blocks
 
     def process_dir(self, directory):
         for dirpath, _, filenames in os.walk(directory):
@@ -45,9 +50,12 @@ class FileStats:
         max_ext = max(len(x) for x in self.stats_b.keys()) + 1
         total_b = max(self.stats_b.values())
         max_size = len('{:,}'.format(total_b))
+        max_count = len('{:,}'.format(max(self.extension_counter.values())))
         for ext, size in self.get_stats_b():
-            print('{:{}s} {:{},} B ({:3.1f}%)'.format(
-                ext + ':', max_ext, size, max_size, 100.0 * size / total_b))
+            print('{:{}s} {:{},} B ({:5.1f}%), count: {:{},}, average {:,} B'.format(
+                ext + ':', max_ext, size, max_size, 100.0 * size / total_b,
+                self.extension_counter[ext], max_count, size // self.extension_counter[ext]
+            ))
 
     def summary_4K(self):
         print('Summary of size in KB, assuming ceil(size/4KB):')
@@ -71,7 +79,7 @@ def main():
         file_stats.process(path)
 
     file_stats.summary_b()
-    file_stats.summary_4K()
+    # file_stats.summary_4K()
 
 
 if __name__ == '__main__':
