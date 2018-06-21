@@ -13,8 +13,12 @@ if [ ! -f $file ] ; then
     exit
 fi
 
+if [ "$2" = "old" ] ; then
+    options="--type plain -c aes-cbc-plain"
+fi
+
 echo "Opening file as /dev/mapper/$file"
-sudo cryptsetup open $file $file
+sudo cryptsetup open $file $file $options
 
 echo "Preparing mount point /mnt/$file"
 sudo mkdir /mnt/$file
