@@ -3,9 +3,10 @@
 # very rudimentary
 
 import argparse
-import os
 import glob
 import itertools
+import os
+import re
 import sys
 
 parser = argparse.ArgumentParser()
@@ -20,6 +21,8 @@ event_date = None
 
 
 def get_date(name):
+    """Naive date extractor from filename, it must already be there in big endian (e.g. ISO) format."""
+    name = re.sub(r'\D', '', name)  # remove non-digits
     return name[:4] + '-' + name[4:6] + '-' + name[6:8]
 
 
@@ -31,11 +34,13 @@ def move(name, target_directory):
 
 
 for filename in sorted(itertools.chain.from_iterable(map(glob.glob, args.files))):
-    os.system(args.player + ' ' + filename)
+    while True:
+        os.system(args.player + ' ' + filename)
+        print('Event name (empty = {}, delete/rm/del/- = move to _trash)'.format(event_name))
+        answer = sys.stdin.readline().strip()
 
-    print('Event name (empty = {}, delete/rm/del/- = move to _trash)'.format(event_name))
-
-    answer = sys.stdin.readline().strip()
+        if answer not in ('re', 'replay', '<'):
+            break
 
     if answer in ('delete', 'rm', 'del', '-'):
         move(filename, '_trash')

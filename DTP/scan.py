@@ -256,6 +256,8 @@ def _init_sane(dialog):
         s = None
         dialog.statusLabel.config(text='Idle (no sane devices found) {:.1f} s'.format(time.time() - start))
     else:
+        print('Found devices:', available)
+        print('Opening first device:', available[0])
         s = sane.open(available[0][0])
         dialog.statusLabel.config(text='Idle (sane loaded in {:.1f} s)'.format(time.time() - start))
 
