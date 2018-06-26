@@ -15,7 +15,6 @@ parser.add_argument('--player', default='mplayer')
 parser.add_argument('--infix', '-i', default='VID-')
 args = parser.parse_args()
 
-# queue = []
 event_name = ''
 event_date = None
 

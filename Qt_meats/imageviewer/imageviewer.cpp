@@ -47,11 +47,14 @@
 #  include <QtGui>
 #endif
 
+#include <QCoreApplication>
 #include <QInputDialog>
 #include <QShortcut>
 
 #include "imageviewer.h"
 #include "organize.h"
+
+const QString LAST_DIRECTORY("last_directory");
 
 ImageViewer::ImageViewer()
 {
@@ -84,11 +87,37 @@ ImageViewer::ImageViewer()
 
     scaleFactor = 1.0;
     statusBar()->show();
+
+    if (QCoreApplication::arguments().length() > 1)
+    {
+        QSettings mySettings;
+        const QDir directory;
+        QString target = QCoreApplication::arguments().at(1);
+        QFileInfo info(target);
+        if (info.isDir())
+        {
+            qDebug() << "Setting last directory to:" << QCoreApplication::arguments().at(1);
+            mySettings.setValue(LAST_DIRECTORY, info.absolutePath());
+            openAct->trigger();
+        }
+        else if (info.isFile())
+        {
+            qDebug() << "Loading first argument:" << QCoreApplication::arguments().at(1);
+            displayFile(target);
+            feeder.reload(target);
+        }
+        else
+        {
+            if (info.exists())
+                qDebug() << "Neither dir nor file:" << info.absolutePath();
+            else
+                qDebug() << "File or directory does not exist:" << info.absolutePath();
+        }
+    }
 }
 
 void ImageViewer::open()
 {
-    const QString LAST_DIRECTORY("last_directory");
     QSettings mySettings; // http://stackoverflow.com/a/3598245/1338797
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
                                                     mySettings.value(LAST_DIRECTORY).toString());
