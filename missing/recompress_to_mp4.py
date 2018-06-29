@@ -22,8 +22,9 @@ parser.add_argument('--duration', '-t', help='Duration limit for encoding')
 parser.add_argument('--quality', '-q', type=int, default=23)
 parser.add_argument('--bitrate', '-b', help='specify output bitrate for video')
 parser.add_argument('--framerate', '-r', help='specify output FPS for video')
-parser.add_argument('--converter', type=str, help='Manually specify [full path to] ffmpeg or avconv')
-parser.add_argument('files_or_globs', type=str, nargs='+')
+parser.add_argument('--deinterlace', '-d', action='store_true', help='deinterlace with yadif (requires recoding)')
+parser.add_argument('--converter', help='Manually specify [full path to] ffmpeg or avconv')
+parser.add_argument('files_or_globs', nargs='+')
 
 
 def makedirs(path, exist_ok=True):
@@ -137,6 +138,10 @@ if __name__ == '__main__':
         input_options += '-hwaccel {}'.format(args.hwaccel)
 
     common_options = ' -map_metadata 0 -pix_fmt yuv420p  -strict -2'
+
+    if args.deinterlace:
+        common_options += ' -vf yadif'
+
     if args.nv or args.nvenc:
         encoder_options = 'h264_nvenc -cq {} -preset slow {}'.format(args.quality, common_options)
         # this looks promising, but for now produces overkill
@@ -205,7 +210,7 @@ if __name__ == '__main__':
             dump_dir = 'placebo' if ratio > 1 else 'nocebo'
             print(basename, 'compressed {:.1f}x'.format(ratio), 'which is', dump_dir)
             makedirs(dump_dir, exist_ok=True)
-            os.rename(converted, os.path.join(dump_dir, basename))
+            os.rename(converted, os.path.join(dump_dir, os.path.basename(converted)))
 
     ts.report()
     stats.report()
