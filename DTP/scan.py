@@ -65,7 +65,10 @@ class Settings(object):
         if self.mode() == 'gray+otsu':
             device.mode = 'gray'
         else:
-            device.mode = self.mode()
+            if self.mode() in device['mode'].constraint:
+                device.mode = self.mode()
+            else:
+                print("Mode '{}' not supported. Possible are: {}".format(self.mode(), device['mode'].constraint))
         device.resolution = int(self.resolution.get())
 
     def postprocess(self, image):
@@ -215,7 +218,7 @@ class ScanDialog(tk.Frame):
             if not tkMessageBox.askokcancel(title='Scan Images', message='File exists. Overwrite?'):
                 print('Not scanning: %s - file exists!' % target)
                 new_name = self.newName.get()
-                for i in xrange(int(self.numberSuffix.get()), 1000):
+                for i in range(int(self.numberSuffix.get()), 1000):
                     new_target = '%s%03d.%s' % (new_name, int(self.numberSuffix.get()), self._ext(), )
                     if not os.path.exists(new_target):
                         print('Next available filename: %s' % (new_target, ))
