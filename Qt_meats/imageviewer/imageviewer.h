@@ -79,6 +79,7 @@ private slots:
 
 private:
     void displayFile(const QString &fileName);
+    void updateStatus();
     void createActions();
     void createMenus();
     void updateActions();
@@ -114,6 +115,7 @@ private:
 
     DirectoryFeeder feeder;
     QString currentFilename;
+    bool imageLoaded;
 };
 
 

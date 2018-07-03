@@ -44,10 +44,22 @@ public:
     QString current();
     void rewind();
     void remove();
+    int size() const;
+    int pos() const;
 private:
     QStringList files;
     QString currentDirectory;
     int currentIndex;
 };
+
+inline int DirectoryFeeder::size() const
+{
+    return files.size();
+}
+
+inline int DirectoryFeeder::pos() const
+{
+    return currentIndex + 1;
+}
 
 #endif // DIRECTORYFEEDER_H

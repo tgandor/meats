@@ -56,7 +56,9 @@
 
 const QString LAST_DIRECTORY("last_directory");
 
-ImageViewer::ImageViewer()
+ImageViewer::ImageViewer() :
+    scaleFactor(1.0),
+    imageLoaded(false)
 {
     imageLabel = new QLabel;
     imageLabel->setBackgroundRole(QPalette::Base);
@@ -85,7 +87,6 @@ ImageViewer::ImageViewer()
     setWindowTitle(tr("Image Sorter"));
     resize(1200, 800);
 
-    scaleFactor = 1.0;
     statusBar()->show();
 
     if (QCoreApplication::arguments().length() > 1)
@@ -127,17 +128,20 @@ void ImageViewer::open()
         mySettings.setValue(LAST_DIRECTORY, currentDirectory.absoluteFilePath(fileName));
         displayFile(fileName);
         feeder.reload(fileName);
+        updateStatus();
     }
 }
 
 void ImageViewer::next()
 {
     displayFile(feeder.next());
+    updateStatus();
 }
 
 void ImageViewer::prev()
 {
     displayFile(feeder.prev());
+    updateStatus();
 }
 
 void ImageViewer::first()
@@ -204,14 +208,15 @@ void ImageViewer::moveGroup()
         }
         // works when not exists too
         feeder.reload(nextCandidate);
+        updateStatus();
     }
-
 }
 
 void ImageViewer::deleteCurrent()
 {
     ::deleteCurrent(feeder);
     displayFile(feeder.next());
+    updateStatus();
 }
 
 void ImageViewer::about()
@@ -240,8 +245,8 @@ void ImageViewer::displayFile(const QString &fileName)
     if (fileName.isEmpty() || !QFile(fileName).exists())
     {
         imageLabel->clear();
-        statusBar()->showMessage("No file loaded.");
-        setWindowTitle("Image Sorter");
+        imageLoaded = false;
+        currentFilename = "";
         resetActions();
         return;
     }
@@ -265,8 +270,25 @@ void ImageViewer::displayFile(const QString &fileName)
         fitToWindow();
     }
 
-    statusBar()->showMessage(QString("Loaded: ") + fileName);
-    setWindowTitle(fileName + " - Image Sorter");
+    imageLoaded = true;
+    currentFilename = fileName;
+}
+
+void ImageViewer::updateStatus()
+{
+    if (!imageLoaded)
+    {
+        statusBar()->showMessage("No file loaded.");
+        setWindowTitle("Image Sorter");
+    }
+    else
+    {
+        statusBar()->showMessage(
+                    QString("Loaded: ") + currentFilename +
+                    " (" + QString::number(feeder.pos()) +
+                    " / " + QString::number(feeder.size()) + ")");
+        setWindowTitle(currentFilename + " - Image Sorter");
+    }
 }
 
 
