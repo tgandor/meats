@@ -7,7 +7,10 @@ else
 fi
 
 for f in "$@"; do
-	new_name=`echo $f | sed 's/.ogg$\|.m4a$\|.flv$\|.mp4$\|.opus$\|.mkv$/.mp3/'`
+	basename="${f%.*}"
+	new_name=${basename}.mp3
+# this approach was limited:
+# new_name=`echo $f | sed 's/.ogg$\|.m4a$\|.flv$\|.mp4$\|.opus$\|.mkv$/.mp3/'`
 	if [ "$f" == "$new_name" ] ; then
 		echo "$f - target same as source"
 	else
