@@ -8,7 +8,7 @@ import urllib
 import random
 
 CHUNK = 512 * 1024
-user_agent = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)'
+user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
 
 try:
 	import cStringIO
@@ -84,7 +84,7 @@ def get_content(url, cache=[True]):
 def clean_name(dirty):
     def parse_uft8(starred):
         starred = starred.group()
-        codes = [starred[i:i+2] for i in xrange(1, len(starred), 3)]
+        codes = [starred[i:i+2] for i in range(1, len(starred), 3)]
         starred = ''.join(chr(int(o, 16)) for o in codes)
         return starred.decode('utf-8')
 
@@ -178,7 +178,7 @@ def _get_inner_content(the_url):
 
 
 def _gather_contents(the_url):
-    host_path = re.match('http://[^/]+(/.*)', the_url).group(1)
+    host_path = re.match('https?://[^/]+(/.*)', the_url).group(1)
     contents = [_get_inner_content(the_url)]
     page = 2
     while True:
@@ -198,7 +198,7 @@ def _gather_contents(the_url):
 
 
 def command_dl(the_url):
-    hostname = re.match('http://([^/]+)/', the_url).group(1)
+    hostname = re.match('https?://([^/]+)/', the_url).group(1)
     dir_name = clean_name(the_url[the_url.rfind('/')+1:])
     if not os.path.exists(dir_name):
         info("Creating directory: " + dir_name)

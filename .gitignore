@@ -12,4 +12,5 @@ df_log.csv
 
 # project artifacts etc.
 .idea
+.vscode
 missing/*.exe
