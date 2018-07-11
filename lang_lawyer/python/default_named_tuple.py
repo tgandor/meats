@@ -7,3 +7,6 @@ class Stats(typing.NamedTuple):
 
 s = Stats(average=1.0)
 print(s)
+
+s = Stats(**{'stdev': 1.0})
+print(s)

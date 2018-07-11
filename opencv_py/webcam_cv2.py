@@ -60,6 +60,7 @@ device = int(args.device) if re.match(r'\d+$', args.device) else args.device
 cap = cv2.VideoCapture(device)
 
 print('Opened with FPS:', cap.get(cv2.CAP_PROP_FPS))
+print('Frame count:', cap.get(cv2.CAP_PROP_FRAME_COUNT))
 print('FourCC:', cap.get(cv2.CAP_PROP_FOURCC))
 print('Format:', cap.get(cv2.CAP_PROP_FORMAT))
 print('Width:', cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
