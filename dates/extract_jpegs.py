@@ -6,6 +6,7 @@ import argparse
 import glob
 import mmap
 import os
+import platform
 
 WHOLE_FILE = 0
 
@@ -14,6 +15,22 @@ def get_size(buffer, idx):
     s1 = buffer[idx + 2]
     s2 = buffer[idx + 3]
     return s1 * 256 + s2
+
+
+def get_marker(buffer, idx):
+    return buffer[idx]
+
+
+if platform.python_version_tuple()[0] == '2':
+    # bad mmap, returns characters...
+
+    def get_size(buffer, idx):
+        s1 = buffer[idx + 2]
+        s2 = buffer[idx + 3]
+        return ord(s1) * 256 + ord(s2)
+
+    def get_marker(buffer, idx):
+        return ord(buffer[idx])
 
 
 def save_jpeg(orig_filename, jpeg_number, data):
@@ -36,7 +53,8 @@ def extract_jpegs(filename):
                 print('No more FFs')
                 break
 
-            marker = mapped_file[idx+1]
+            marker = get_marker(mapped_file, idx+1)
+
             # https://stackoverflow.com/questions/4585527/detect-eof-for-jpg-images
             if 0xd0 <= marker <= 0xd9 or marker <= 1:
                 if marker == 0xd8:
@@ -66,6 +84,7 @@ def extract_jpegs(filename):
             if marker == 0xe0:
                 segment_type = str(mapped_file[idx+4:idx+8])
                 print('- which is', segment_type, 'at', idx, 'size', size)
+
             idx += size + 1
 
         mapped_file.close()
