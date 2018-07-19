@@ -11,16 +11,16 @@ import os
 import time
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--stabilize', '-stab', action='store_true')
-parser.add_argument('--nvenc', '-nv', action='store_true')
-parser.add_argument('--quality', '-q', default=22)
 parser.add_argument('--bitrate', '-b', help='specify output bitrate for video')
-parser.add_argument('--framerate', '-r', help='specify input and output FPS for video', default=25)
-parser.add_argument('--deinterlace', '-d', action='store_true', help='deinterlace with yadif')
 parser.add_argument('--converter', help='manually specify [full path to] ffmpeg or avconv')
-parser.add_argument('--output', '-o', help='output file', default='images.mp4')
-parser.add_argument('--start', '-ss', help='start time for encoding in seconds')
+parser.add_argument('--deinterlace', '-d', action='store_true', help='deinterlace with yadif')
 parser.add_argument('--duration', '-t', help='duration limit for encoding')
+parser.add_argument('--framerate', '-r', help='specify input and output FPS for video', default=25)
+parser.add_argument('--nvenc', '-nv', action='store_true')
+parser.add_argument('--output', '-o', help='output file', default='images.mp4')
+parser.add_argument('--quality', '-q', default=22)
+parser.add_argument('--stabilize', '-stab', action='store_true')
+parser.add_argument('--start', '-ss', help='start time for encoding in seconds')
 parser.add_argument('files_glob', help='glob expression (not expanded) for input files')
 
 

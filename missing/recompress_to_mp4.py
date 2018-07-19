@@ -1,29 +1,29 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
 
-import os
-import glob
-from itertools import chain
 import argparse
+import glob
+import os
 import time
+from itertools import chain
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--stabilize', '-stab', action='store_true')
-parser.add_argument('--nv', '-nv', action='store_true', help='Enable both nvdec and nvenc for transcoding')
-parser.add_argument('--nvenc', '-nve', action='store_true')
-parser.add_argument('--nvdec', '-nvd', action='store_true')
-parser.add_argument('--hwaccel', '-hw', help='specify input hardware acceleration')
-parser.add_argument('--copy-audio', '-c', action='store_true')
-parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. for cutting or remuxing')
-parser.add_argument('--start', '-ss', type=float, help='Start time for encoding in seconds')
-parser.add_argument('--duration', '-t', help='Duration limit for encoding')
-parser.add_argument('--quality', '-q', type=int, default=23)
 parser.add_argument('--bitrate', '-b', help='specify output bitrate for video')
-parser.add_argument('--framerate', '-r', help='specify output FPS for video')
-parser.add_argument('--deinterlace', '-d', action='store_true', help='deinterlace with yadif (requires recoding)')
 parser.add_argument('--converter', help='Manually specify [full path to] ffmpeg or avconv')
+parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. for cutting or remuxing')
+parser.add_argument('--copy-audio', '-c', action='store_true')
+parser.add_argument('--deinterlace', '-d', action='store_true', help='deinterlace with yadif (requires recoding)')
+parser.add_argument('--duration', '-t', help='Duration limit for encoding')
+parser.add_argument('--framerate', '-r', help='specify output FPS for video')
+parser.add_argument('--hwaccel', '-hw', help='specify input hardware acceleration')
+parser.add_argument('--nv', '-nv', action='store_true', help='Enable both nvdec and nvenc for transcoding')
+parser.add_argument('--nvdec', '-nvd', action='store_true')
+parser.add_argument('--nvenc', '-nve', action='store_true')
+parser.add_argument('--quality', '-q', type=int, default=23)
+parser.add_argument('--stabilize', '-stab', action='store_true')
+parser.add_argument('--start', '-ss', type=float, help='Start time for encoding in seconds')
 parser.add_argument('files_or_globs', nargs='+')
 
 
