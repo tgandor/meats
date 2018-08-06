@@ -241,7 +241,7 @@ def command_rls(the_url, level = 2, verbose=False):
     contents = _get_inner_content(the_url)
     base_dir = re.search('/.*$', the_url.replace('http://', '')).group()
     print(' '*level + "Searching %s" % base_dir)
-    pos = contents.rfind('FilesList')
+    pos = contents.rfind(b'FilesList')
     subfolder_content = contents[:pos]
     subdirs = []
     for subf in sorted(set(re.findall('<a href="(/[^"]+)"', subfolder_content))):
