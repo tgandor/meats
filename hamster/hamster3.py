@@ -348,7 +348,7 @@ def main():
         command = sys.argv[1]
         the_url = sys.argv[2]
     else:
-        command = 'rdl'
+        command = 'dl'
         the_url = sys.argv[1]
 
     if command == 'dl':
