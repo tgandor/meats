@@ -14,5 +14,8 @@ if [ $? != 0 ] ; then
 	echo Rebooting due to network failure.
 	date >> $HOME/reboot.log
 	sudo /sbin/reboot
+#else
+#	date >> $HOME/noreboot.log
+#	echo Seemed fine... >> $HOME/noreboot.log
 fi
 
