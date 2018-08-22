@@ -46,7 +46,7 @@ void DirectoryFeeder::reload(const QString &filename)
     }
     QDir parent = info.isDir() ? QDir(filename) : info.dir();
     parent.setSorting(QDir::Name);
-    files = parent.entryList(QStringList() << "*.jpg");
+    files = parent.entryList(QStringList() << "*.jpg" << "*.jpeg");
     currentDirectory = parent.absolutePath();
     if (files.contains(info.fileName()))
     {
