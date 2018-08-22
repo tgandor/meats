@@ -384,7 +384,6 @@ def win_main():
             return self
 
         def mouse_wheel(self, event):
-            # print('Delta:', event.delta)
             if event.num == 5 or event.delta < 0:
                 self.invoke('buttondown')
             elif event.num == 4 or event.delta > 0:
@@ -392,10 +391,7 @@ def win_main():
 
     class LabelFormModel:
         def __init__(self):
-            # self.height = tk.DoubleVar()
-            # self.width = tk.DoubleVar()
             self.is_serial = tk.IntVar()
-            # self.num_serial = tk.IntVar()
             self.is_round = tk.IntVar()
 
     def ui_label(parent, text):
@@ -407,15 +403,12 @@ def win_main():
 
     def generate(text_widget, width_input, height_input, num_serial):
         label_text = text_widget.get('1.0', 'end').strip()
-        w = float(width_input.get()) * cm
-        h = float(height_input.get()) * cm
-        # w = LabelModel.width.get() * cm
-        # h = LabelModel.height.get() * cm
+        w = float(width_input.get().replace(',', '.')) * cm
+        h = float(height_input.get().replace(',', '.')) * cm
         settings['round_label'] = label_model.is_round.get() != 0
 
         if label_model.is_serial.get():
             multi_label(label_text, w, h, int(num_serial.get()))
-            # multi_label(label_text, w, h, LabelModel.num_serial.get())
         else:
             c = _setup_canvas()
             save_label(label_text, w, h, None, label_settings())
