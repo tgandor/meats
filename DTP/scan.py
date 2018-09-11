@@ -10,9 +10,11 @@ try:
     if sys.version_info.major == 2:
         import Tkinter as tk
         import tkMessageBox
+        import ttk
     else:
         import tkinter as tk
         from tkinter import messagebox as tkMessageBox
+        from tkinter import ttk
 except ImportError:
     tk, tkMessageBox = None, None
     os.system('sudo apt-get install python-tk')
@@ -244,24 +246,62 @@ class ScanDialog(tk.Frame):
             print("Error - not started, worker exists.")
 
 
+class DeviceDialog(tk.Toplevel):
+    def __init__(self, scan_dialog, available, start_time=None):
+        self.scan_dialog = scan_dialog
+        self.parent = scan_dialog.parent
+        self.init_time = time.time()
+        self.start_time = start_time or time.time()
+        tk.Toplevel.__init__(self, self.parent)
+        self.title('Scan Images - Device Selection')
+        self.geometry('200x150')
+        tk.Label(self, text='Choose device:').pack()
+        self.chosen = tk.StringVar()
+        self.devices_combo = ttk.Combobox(self, textvariable=self.chosen, values=available)
+        self.devices_combo.insert(0, available[0])
+        self.devices_combo.pack()
+        tk.Button(self, text='OK', command=self.choose).pack()
+        print('{} Device choice initialized'.format(time.time() - self.start_time))
+
+    def choose(self):
+        global s
+        print('{} Choice made = {} (took {:.1f} s)'.format(
+            time.time() - self.start_time,
+            self.chosen.get(),
+            time.time() - self.init_time
+        ))
+        start_open = time.time()
+        s = sane.open(self.chosen.get())
+        stop_open = time.time()
+        print('{} Device opened. (took {:.1f} s)'.format(stop_open - self.start_time, stop_open - start_open))
+        total = self.init_time - self.start_time + time.time() - start_open
+        self.scan_dialog.statusLabel.config(text='Idle (sane loaded in {:.1f} s)'.format(total))
+        self.destroy()
+
+
 def _init_sane(dialog):
     global s
     s = None
     start = time.time()
     version = sane.init()
-    print('SANE version: {}'.format(version))
+    print('{} SANE version: {}, scanning devices...'.format(time.time() - start, version))
 
     available = sane.get_devices()
-    print('Available devices = {}'.format(available))
+    print('{} Available devices = {}'.format(time.time() - start, available))
 
     if not available:
         print("NO DEVICES FOUND.")
         s = None
         dialog.statusLabel.config(text='Idle (no sane devices found) {:.1f} s'.format(time.time() - start))
     else:
-        print('Found devices:', available)
-        print('Opening first device:', available[0])
+        if len(available) > 1:
+            DeviceDialog(dialog, [row[0] for row in available], start_time=start)
+            return
+
+        print('{} Opening first device: {}'.format(time.time() - start, available[0]))
+        open_start = time.time()
         s = sane.open(available[0][0])
+        print('{} Device opened in {:.1f} s'.format(time.time() - start, time.time() - open_start))
         dialog.statusLabel.config(text='Idle (sane loaded in {:.1f} s)'.format(time.time() - start))
 
 
