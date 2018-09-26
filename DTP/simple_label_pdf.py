@@ -233,12 +233,60 @@ create table outprints
     return conn, cursor
 
 
+def _fetch_one(cursor, query, params=()):
+    """Helper for single result queries.
+    Arguments:
+        cursor: `sqlite3.Cursor`
+        query: `str`
+        params: `tuple`
+    """
+    cursor.execute(query, params)
+    return cursor.fetchone()
+
+
 def run_migrations(cursor):
     # 1. settings field for outprints
     cursor.execute('PRAGMA table_info(outprints)')
     if 'settings' not in [r[1] for r in cursor.fetchall()]:
         print('Migration 1: create settings column in outprint.')
-        cursor.execute('alter table outprints add column settings text null')
+        cursor.execute('alter table outprints add column settings text null;')
+    # 2. initialize version table
+    if _fetch_one(cursor, 'PRAGMA table_info(schema_version)') is None:
+        print('Migration 2: create schema_version.')
+        cursor.execute("""
+            create table schema_version (
+                version integer not null primary key,
+                updated datetime not null
+            );
+        """)
+        cursor.execute('insert into schema_version values (?, ?);', (2, datetime.datetime.now()))
+
+    file_version = _fetch_one(cursor, 'select max(version) from schema_version;')[0]
+    # 3. prev / next after, with views
+    if file_version < 3:
+        print('Migration 3: create next_label / prev_label.')
+        cursor.executescript("""
+            create view last_outprint as
+            select label_id, max(id) as max_id
+            from outprints group by label_id;
+
+            create view next_label as
+            select
+                label_id,
+                (
+                    select min(label_id) from last_outprint where max_id > lo.max_id
+                ) as next_label_id
+            from last_outprint lo;
+
+            create view prev_label as
+            select
+                label_id,
+                (
+                    select max(label_id) from last_outprint where max_id < lo.max_id
+                ) as prev_label_id
+            from last_outprint lo;
+        """)
+        cursor.execute('insert into schema_version values (?, ?);', (3, datetime.datetime.now()))
 
 
 def close_database(conn, cursor):
@@ -270,6 +318,47 @@ def save_label(text, width, height, length, label_settings={}):
     close_database(conn, cursor)
 
 
+def _load_label(cursor, label_id):
+    """Helper for loading labels.
+    Arguments:
+        cursor: `sqlite3.Cursor`
+        label_id: `tuple` 1-element tuple containing label_id
+    """
+    return _fetch_one(cursor, 'select id, text, width, height from labels WHERE id=?', label_id)
+
+
+def get_previous_label(current):
+    conn = cursor = None
+    try:
+        conn, cursor = open_database()
+        if current == 0:
+            prev_id = _fetch_one(cursor, 'select label_id from last_outprint order by max_id desc limit 1')
+        else:
+            prev_id = _fetch_one(cursor, 'select prev_label_id from prev_label where label_id=?', (current,))
+        if not prev_id:
+            return None
+
+        return _load_label(cursor, prev_id)
+    finally:
+        if conn and cursor:
+            close_database(conn, cursor)
+
+
+def get_next_label(current):
+    conn = cursor = None
+    try:
+        conn, cursor = open_database()
+        if current == 0:
+            next_id = _fetch_one(cursor, 'select label_id from last_outprint order by max_id limit 1')
+        else:
+            next_id = _fetch_one(cursor, 'select next_label_id from next_label where label_id=?', (current,))
+        if not next_id:
+            return None
+
+        return _load_label(cursor, next_id)
+    finally:
+        if conn and cursor:
+            close_database(conn, cursor)
 # endregion
 
 
@@ -331,31 +420,6 @@ def main():
             label(c, text, length, height)
             label(c, text, width, length)
     _finish_rendering(c)
-
-
-def get_previous_label(current):
-    try:
-        conn, cursor = open_database()
-        if current == 0:
-            # should be more like:
-            # select l.* from labels l join outprints o on o.label_id = l.id group by (l.id) order by outprint_date desc
-            cursor.execute('select id, text, width, height from labels order by id desc limit 1')
-        else:
-            cursor.execute('select id, text, width, height from labels WHERE id < ? order by id desc limit 1',
-                           (current,))
-        return cursor.fetchone()
-    finally:
-        close_database(conn, cursor)
-
-
-def get_next_label(current):
-    try:
-        conn, cursor = open_database()
-        cursor.execute('select id, text, width, height from labels WHERE id > ? order by id limit 1',
-                       (current,))
-        return cursor.fetchone()
-    finally:
-        close_database(conn, cursor)
 
 
 def win_main():
@@ -511,7 +575,11 @@ def db_shell_main():
     except ImportError:
         print('Sorry, no readline')
 
-    import six
+    try:
+        import six
+    except ImportError:
+        _install_and_die('six')
+
     conn = cursor = None
 
     try:
