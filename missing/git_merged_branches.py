@@ -36,7 +36,9 @@ if __name__ == '__main__':
         for f in itertools.chain(
             glob.glob(os.path.join(git_directory, 'refs', 'heads', '*')),
             glob.glob(os.path.join(git_directory, 'refs', 'remotes', '*', '*'))
-        ))
+        )
+        if os.path.isfile(f)
+    )
 
     parents = set()
     for line in os.popen('git rev-list --all --parents'):
