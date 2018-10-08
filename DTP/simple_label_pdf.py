@@ -245,6 +245,12 @@ def _fetch_one(cursor, query, params=()):
 
 
 def run_migrations(cursor):
+    def log_migration(number):
+        cursor.execute(
+            'insert into schema_version values (?, ?);',
+            (number, datetime.datetime.now())
+        )
+
     # 1. settings field for outprints
     cursor.execute('PRAGMA table_info(outprints)')
     if 'settings' not in [r[1] for r in cursor.fetchall()]:
@@ -262,6 +268,7 @@ def run_migrations(cursor):
         cursor.execute('insert into schema_version values (?, ?);', (2, datetime.datetime.now()))
 
     file_version = _fetch_one(cursor, 'select max(version) from schema_version;')[0]
+
     # 3. prev / next after, with views
     if file_version < 3:
         print('Migration 3: create next_label / prev_label.')
@@ -286,7 +293,39 @@ def run_migrations(cursor):
                 ) as prev_label_id
             from last_outprint lo;
         """)
-        cursor.execute('insert into schema_version values (?, ?);', (3, datetime.datetime.now()))
+        log_migration(3)
+    # 4. time-based prev / next views
+    if file_version < 4:
+        print('Migration 4: create newer_label / older_label.')
+        cursor.executescript("""
+            create view newest_outprint as
+            select label_id, max(outprint_date) as last_date, id
+            from outprints group by label_id
+            order by last_date;
+
+            create view newer_label as
+            select label_id,
+                (
+                    select label_id
+                    from newest_outprint
+                    where last_date > no.last_date
+                    order by last_date
+                    limit 1
+                ) as next_label_id
+            from newest_outprint no;
+
+            create view older_label as
+            select label_id,
+                (
+                    select label_id
+                    from newest_outprint
+                    where last_date < no.last_date
+                    order by last_date desc
+                    limit 1
+                ) as prev_label_id
+            from newest_outprint no;
+        """)
+        log_migration(4)
 
 
 def close_database(conn, cursor):
@@ -334,7 +373,7 @@ def get_previous_label(current):
         if current == 0:
             prev_id = _fetch_one(cursor, 'select label_id from last_outprint order by max_id desc limit 1')
         else:
-            prev_id = _fetch_one(cursor, 'select prev_label_id from prev_label where label_id=?', (current,))
+            prev_id = _fetch_one(cursor, 'select prev_label_id from older_label where label_id=?', (current,))
         if not prev_id:
             return None
 
@@ -351,7 +390,7 @@ def get_next_label(current):
         if current == 0:
             next_id = _fetch_one(cursor, 'select label_id from last_outprint order by max_id limit 1')
         else:
-            next_id = _fetch_one(cursor, 'select next_label_id from next_label where label_id=?', (current,))
+            next_id = _fetch_one(cursor, 'select next_label_id from newer_label where label_id=?', (current,))
         if not next_id:
             return None
 
