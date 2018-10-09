@@ -37,7 +37,7 @@ class CamHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-type', 'image/jpeg')
                 self.send_header('Content-length', len(buffer))
                 self.end_headers()
-                self.wfile.write(buffer)
+                self.wfile.write(buffer.tostring())
                 time.sleep(0.25)
                 if args.verbose:
                     print('frame (shape {}) sent'.format(img.shape))
