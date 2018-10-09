@@ -19,7 +19,7 @@ import numpy as np
 parser = argparse.ArgumentParser()
 parser.add_argument('--global', '-g', action='store_true', help='Bind to 0.0.0.0 instead of localhost')
 parser.add_argument('--port', '-p', type=int, default=8080, help='Port to bind to')
-parser.add_argument('--verbose', '-v', action='store_true', help='Report every frame sent')
+parser.add_argument('--verbose', '-v', action='count', help='Increase verbosity level', default=0)
 parser.add_argument('--delay', '-s', type=float, default=1./30, help='Seconds to sleep between frames')
 parser.add_argument('--mse', type=float, help='Min MSE between frames to send update')
 args = parser.parse_args()
@@ -47,26 +47,27 @@ class CamHandler(BaseHTTPRequestHandler):
                 rc, img = capture.read()
                 if not rc:
                     print('Error reading frame!')
-                    continue
+                    break
                 status, buffer = cv2.imencode('.jpg', img)  # type: bool, np.ndarray
                 if not status:
                     print('Error encoding frame!')
                     break
                 counter += 1
 
-                if args.mse:
+                if args.mse is not None:
                     if prev is None:
                         prev = img
                     else:
                         mse_value = mse(prev, img)
-                        prev = img
 
                         if mse_value < args.mse:
-                            if args.verbose:
-                                print('[{}] frame {} (shape {}) - too low MSE: {}'.format(
+                            if args.verbose >= 2:
+                                print('[{:.5f}] frame {} (shape {}) - too low MSE: {:.3f}'.format(
                                     time.time() - start, counter, img.shape, mse_value
                                 ))
                             continue
+
+                        prev = img
 
                 self.wfile.write(b'\r\n--boundary\r\n')
                 self.send_header('Content-type', 'image/jpeg')
@@ -75,7 +76,7 @@ class CamHandler(BaseHTTPRequestHandler):
                 self.wfile.write(buffer.tostring())
                 time.sleep(args.delay)
                 if args.verbose:
-                    print('[{}] frame {} (shape {}, compressed {:,}) sent{}'.format(
+                    print('[{:.5f}] frame {} (shape {}, compressed {:,}) sent{}'.format(
                         time.time() - start, counter, img.shape, len(buffer),
                         mse_value and ' MSE: {:.3f}'.format(mse_value) or ''
                     ))
