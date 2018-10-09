@@ -648,11 +648,14 @@ def import_database():
     try:
         out_connection, out_cursor = open_database()
         in_cursor.execute('select id, text, width, height, length from labels')
-        for id_, text, width, height, length in in_cursor.fetchall():
+        for id_, text, width_cm, height_cm, length_cm in in_cursor.fetchall():
             out_cursor.execute(u'select id from labels WHERE text=?', (text,))
             local_id = out_cursor.fetchone()
             if local_id is None:
                 print('Importing label:', text)
+                out_cursor.execute("INSERT INTO labels (text, width, height, length) VALUES (?,?,?,?)",
+                    (text, width_cm, height_cm, length_cm,))
+                out_label_id = cursor.lastrowid
             else:
                 print('Label', local_id[0], 'found.')
         # for row in in_cursor.execute('select * fro')
