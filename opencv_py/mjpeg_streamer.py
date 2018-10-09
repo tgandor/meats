@@ -21,19 +21,27 @@ parser.add_argument('--global', '-g', action='store_true', help='Bind to 0.0.0.0
 parser.add_argument('--port', '-p', type=int, default=8080, help='Port to bind to')
 parser.add_argument('--verbose', '-v', action='store_true', help='Report every frame sent')
 parser.add_argument('--delay', '-s', type=float, default=1./30, help='Seconds to sleep between frames')
+parser.add_argument('--mse', type=float, help='Min MSE between frames to send update')
 args = parser.parse_args()
 
 capture = None
 
 
-class CamHandler(BaseHTTPRequestHandler):
+def mse(img1, img2):
+    return np.average((img1 - img2) ** 2)
 
+
+class CamHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=--boundary')
         self.end_headers()
+
         counter = 0
         start = time.time()
+        prev = None
+        mse_value = None
+
         while True:
             try:
                 rc, img = capture.read()
@@ -45,6 +53,21 @@ class CamHandler(BaseHTTPRequestHandler):
                     print('Error encoding frame!')
                     break
                 counter += 1
+
+                if args.mse:
+                    if prev is None:
+                        prev = img
+                    else:
+                        mse_value = mse(prev, img)
+                        prev = img
+
+                        if mse_value < args.mse:
+                            if args.verbose:
+                                print('[{}] frame {} (shape {}) - too low MSE: {}'.format(
+                                    time.time() - start, counter, img.shape, mse_value
+                                ))
+                            continue
+
                 self.wfile.write(b'\r\n--boundary\r\n')
                 self.send_header('Content-type', 'image/jpeg')
                 self.send_header('Content-length', len(buffer))
@@ -52,8 +75,9 @@ class CamHandler(BaseHTTPRequestHandler):
                 self.wfile.write(buffer.tostring())
                 time.sleep(args.delay)
                 if args.verbose:
-                    print('[{}] frame {} (shape {}, compressed {:,}) sent'.format(
-                        time.time() - start, counter, img.shape, len(buffer)
+                    print('[{}] frame {} (shape {}, compressed {:,}) sent{}'.format(
+                        time.time() - start, counter, img.shape, len(buffer),
+                        mse_value and ' MSE: {:.3f}'.format(mse_value) or ''
                     ))
             except KeyboardInterrupt:
                 print('keyboard interrupt')
