@@ -244,6 +244,17 @@ def _fetch_one(cursor, query, params=()):
     return cursor.fetchone()
 
 
+def _fetch_all(cursor, query, params=()):
+    """Helper for single result queries.
+    Arguments:
+        cursor: `sqlite3.Cursor`
+        query: `str`
+        params: `tuple`
+    """
+    cursor.execute(query, params)
+    return cursor.fetchall()
+
+
 def run_migrations(cursor):
     def log_migration(number):
         cursor.execute(
@@ -252,8 +263,7 @@ def run_migrations(cursor):
         )
 
     # 1. settings field for outprints
-    cursor.execute('PRAGMA table_info(outprints)')
-    if 'settings' not in [r[1] for r in cursor.fetchall()]:
+    if 'settings' not in [r[1] for r in _fetch_all(cursor, 'PRAGMA table_info(outprints)')]:
         print('Migration 1: create settings column in outprint.')
         cursor.execute('alter table outprints add column settings text null;')
     # 2. initialize version table
@@ -363,6 +373,7 @@ def _load_label(cursor, label_id):
         cursor: `sqlite3.Cursor`
         label_id: `tuple` 1-element tuple containing label_id
     """
+    print('Loading label: {}'.format(label_id[0]))
     return _fetch_one(cursor, 'select id, text, width, height from labels WHERE id=?', label_id)
 
 
@@ -371,7 +382,7 @@ def get_previous_label(current):
     try:
         conn, cursor = open_database()
         if current == 0:
-            prev_id = _fetch_one(cursor, 'select label_id from last_outprint order by max_id desc limit 1')
+            prev_id = _fetch_one(cursor, 'select label_id from newest_outprint order by last_date desc limit 1')
         else:
             prev_id = _fetch_one(cursor, 'select prev_label_id from older_label where label_id=?', (current,))
         if not prev_id:
@@ -388,7 +399,7 @@ def get_next_label(current):
     try:
         conn, cursor = open_database()
         if current == 0:
-            next_id = _fetch_one(cursor, 'select label_id from last_outprint order by max_id limit 1')
+            next_id = _fetch_one(cursor, 'select label_id from newest_outprint order by last_date limit 1')
         else:
             next_id = _fetch_one(cursor, 'select next_label_id from newer_label where label_id=?', (current,))
         if not next_id:
@@ -627,8 +638,7 @@ def db_shell_main():
             query = six.moves.input('sqlite> ')
             if len(query) == 0 or query == 'exit':
                 break
-            cursor.execute(query)
-            for row in cursor.fetchall():
+            for row in _fetch_all(cursor, query):
                 print(row)
             print('-' * 50)
     except EOFError:
@@ -647,18 +657,36 @@ def import_database():
     out_connection = out_cursor = None
     try:
         out_connection, out_cursor = open_database()
-        in_cursor.execute('select id, text, width, height, length from labels')
-        for id_, text, width_cm, height_cm, length_cm in in_cursor.fetchall():
-            out_cursor.execute(u'select id from labels WHERE text=?', (text,))
-            local_id = out_cursor.fetchone()
+        for id_, text, width_cm, height_cm, length_cm in _fetch_all(
+                in_cursor, 'select id, text, width, height, length from labels'):
+            local_id = _fetch_one(out_cursor, u'select id from labels WHERE text=?', (text,))
             if local_id is None:
                 print('Importing label:', text)
-                out_cursor.execute("INSERT INTO labels (text, width, height, length) VALUES (?,?,?,?)",
-                    (text, width_cm, height_cm, length_cm,))
-                out_label_id = cursor.lastrowid
+                out_cursor.execute("INSERT INTO labels (text, width, height, length) VALUES (?, ?, ?, ?)",
+                                   (text, width_cm, height_cm, length_cm,))
+                out_label_id = out_cursor.lastrowid
+                my_outprints = set()
             else:
-                print('Label', local_id[0], 'found.')
-        # for row in in_cursor.execute('select * fro')
+                print('Label {} found.'.format(local_id[0]))
+                out_label_id = local_id[0]
+                my_outprints = set(
+                    date for (date,) in
+                    _fetch_all(out_cursor, "select outprint_date from outprints where label_id=?", local_id)
+                )
+
+            for outprint_date, settings in _fetch_all(
+                    in_cursor,
+                    "select outprint_date, settings from outprints where label_id=?",
+                    (id_,)
+            ):
+                if outprint_date in my_outprints:
+                    print('Outprint at {} with settings {} exists.'.format(outprint_date, settings))
+                else:
+                    print('Outprint at {} with settings {} migrated.'.format(outprint_date, settings))
+                    out_cursor.execute(
+                        "insert into outprints (label_id, outprint_date, settings) values (?, ?, ?)",
+                        (out_label_id, outprint_date, settings)
+                    )
     finally:
         if out_connection and out_cursor:
             close_database(out_connection, out_cursor)
