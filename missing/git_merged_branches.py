@@ -16,7 +16,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--script', '-s', action='store_true', help='Output commands for deleting remote branches')
     parser.add_argument('--limit', '-n', type=int, help='Max branches to delete')
-    parser.add_argument('--exclude', '-x', help='ignore branches containing a regular expression')
+    parser.add_argument('--include', '-i', help='only consider branches matching regular expression')
+    parser.add_argument('--exclude', '-x', help='ignore branches matching regular expression')
 
     args = parser.parse_args()
 
@@ -46,6 +47,10 @@ if __name__ == '__main__':
             parents.add(commit)
 
     candidates = [name for commit, name in branches.items() if commit in parents]
+
+    if args.include:
+        candidates = list(filter(re.compile(args.include).search, candidates))
+
     if args.exclude:
         excluded = list(filter(re.compile(args.exclude).search, candidates))
         if not args.script:
@@ -73,6 +78,7 @@ if __name__ == '__main__':
 
             if '/' in name:
                 print('git push {} --delete {}'.format(*name.split('/', 1)))
-                print('git branch -dr {}'.format(name))
+                # this seems to never be required lately.
+                # print('git branch -dr {}'.format(name))
             else:
                 print('git branch -d {}'.format(name))
