@@ -1,29 +1,52 @@
 #!/usr/bin/env python
 
+import datetime
 import os
-import sys
+import sqlite3
 
 
-def used_free(path):
-    st = os.statvfs(path)
-    return 4 * (st.f_blocks - st.f_bfree), 4 * st.f_bavail
+# Filesystem     1M-blocks   Used Available Use% Mounted on
+# udev                7900      0      7900   0% /dev
+# tmpfs               1587      2      1586   1% /run
+# ...
 
 
-human = False
-if '-h' in sys.argv:
-    human = True
-    sys.argv.pop(sys.argv.index('-h'))
+def open_database():
+    labels_file = os.path.expanduser("~/usage.db")
+    initialize = not os.path.exists(labels_file)
+    conn = sqlite3.connect(labels_file)
+    cursor = conn.cursor()
+    # initialization
+    if initialize:
+        cursor.executescript("""
+create table df
+(
+    id integer not null primary key autoincrement,
+    filesystem varchar not null,
+    size integer not null,
+    used integer not null,
+    available integer not null,
+    use varchar not null,
+    mountpoint varchar not null,
+    df_date datetime not null
+);
+""")
+    conn.text_factory = str  # which == unicode on Py3, and works!
+    return conn, cursor
 
-if len(sys.argv) < 2:
-    print("Usage: {} [-h] PATH...".format(sys.argv[0]))
-    exit()
 
-data = []
+data = os.popen('df -m').read().split('\n')[1:]
 
-for path in sys.argv[1:]:
-    data += list(used_free(path))
+conn, cursor = open_database()
 
-if human:
-    print(' '.join('{:,}'.format(num) for num in data))
-else:
-    print('\t'.join(str(num) for num in data))
+for row in data:
+    columns = row.split(None, 6)
+    if len(columns) != 6:
+        continue
+    cursor.execute(
+        'insert into df (filesystem, size, used, available, use, mountpoint, df_date) values (?,?,?,?,?,?,?)',
+        columns + [datetime.datetime.now()]
+    )
+conn.commit()
+cursor.close()
+conn.close()
