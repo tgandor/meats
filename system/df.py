@@ -36,6 +36,7 @@ create table df
 
 
 data = os.popen('df -m').read().split('\n')[1:]
+df_date = datetime.datetime.now()
 
 conn, cursor = open_database()
 
@@ -45,7 +46,7 @@ for row in data:
         continue
     cursor.execute(
         'insert into df (filesystem, size, used, available, use, mountpoint, df_date) values (?,?,?,?,?,?,?)',
-        columns + [datetime.datetime.now()]
+        columns + [df_date]
     )
 conn.commit()
 cursor.close()
