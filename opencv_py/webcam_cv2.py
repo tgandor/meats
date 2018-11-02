@@ -31,6 +31,7 @@ def reset():
     # other
     global fullscreen
     global info
+    global record
     # params
     kernel = 9
     min_kernel = 3
@@ -44,6 +45,7 @@ def reset():
     # other
     fullscreen = False
     info = False
+    record = False
 
 
 reset()
@@ -119,6 +121,11 @@ while True:
             2  # thickness
         )
 
+    if record:
+        filename = time.strftime('%Y%m%d_%H%M%S_') + str(frame_idx) + '.jpg'
+        cv2.imwrite(filename, frame)
+        print('frame saved:', os.path.abspath(filename))
+
     # Display the resulting frame
     if all(dim > 0 for dim in frame.shape):
         cv2.imshow('frame', frame)
@@ -156,6 +163,9 @@ while True:
         filename = time.strftime('%Y%m%d_%H%M%S') + ('.jpg' if key == ord('s') else '.png')
         cv2.imwrite(filename, frame)
         print('Screenshot saved:', os.path.abspath(filename))
+    elif key == ord('v'):
+        record = not record
+        print('Recoding:', record)
     elif key == ord('/'):
         cv2.resizeWindow('frame', frame.shape[1], frame.shape[0])
     elif key == ord('-'):
