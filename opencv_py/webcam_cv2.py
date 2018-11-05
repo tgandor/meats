@@ -52,6 +52,8 @@ reset()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--fps', '-fps', type=float)
+parser.add_argument('--width', '-W', type=int)
+parser.add_argument('--height', '-H', type=int)
 parser.add_argument('--fourcc', type=str, help='Set FourCC for video source (hack)')
 parser.add_argument('device', type=str, nargs='?',
                     help='device number, video file name or network stream URL', default='0')
@@ -60,6 +62,10 @@ args = parser.parse_args()
 device = int(args.device) if re.match(r'\d+$', args.device) else args.device
 
 cap = cv2.VideoCapture(device)
+if args.width:
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, args.width)
+if args.height:
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, args.height)
 
 print('Opened with FPS:', cap.get(cv2.CAP_PROP_FPS))
 print('Frame count:', cap.get(cv2.CAP_PROP_FRAME_COUNT))
