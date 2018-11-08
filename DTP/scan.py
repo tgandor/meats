@@ -41,7 +41,7 @@ class Settings(object):
         self.height = 297.0
         self.scale = tk.DoubleVar(tk_root, value=1.0)
         self.extension = tk.StringVar(tk_root, value='.png')
-        self.scan_mode = tk.StringVar(tk_root, value='color')
+        self.scan_mode = tk.StringVar(tk_root, value='Color')
         self.custom_width = tk.StringVar(tk_root, value='210.0')
         self.custom_height = tk.StringVar(tk_root, value='297.0')
 

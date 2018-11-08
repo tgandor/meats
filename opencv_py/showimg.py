@@ -31,7 +31,15 @@ def quick_view_directory(directory_name, min_mse=0., delay=1, verbose=True, dele
     data = glob.glob(directory_name + '/*.*')
     prev = None
     for filename in tqdm(sorted(data)):
-        image = cv2.imread(filename)
+        try:
+            image = cv2.imread(filename)
+            if image is None:
+                tqdm.write('Failed to load: {}'.format(filename))
+                continue
+        except cv2.error:
+            tqdm.write('Error loading: {}'.format(filename))
+            continue
+
         if prev is not None and min_mse > 0.:
             current_mse = mse(prev, image)
             if current_mse < min_mse:
