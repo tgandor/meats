@@ -64,6 +64,9 @@ class File:
     def __repr__(self):
         return 'File({})'.format(self.file_path)
 
+    def __lt__(self, other):
+        return self.file_path < other.file_path
+
     @LazyProperty
     def basename(self):
         return os.path.basename(self.file_path)
@@ -104,7 +107,7 @@ def suitability_max_len_penalize_spaces(file_):
     :param file_: `File` file object to evaluate
     :return: `int` suitability score
     """
-    return -len(file_.file_path.replace(' ', '').replace('(', '').replace(')', ''))
+    return -len(file_.file_path.replace(' ', '').replace('(', '').replace(')', '')), file_.file_path
 
 
 class Group:
@@ -127,12 +130,12 @@ class Group:
             raise AttributeError(keyError.args)
 
     def __repr__(self):
-        return 'Group({}, {})'.format(self.features, self.files)
+        return 'Group({}, {})'.format(self.features, sorted(self.files))
 
     def as_dict(self):
         return {
             'features': self.features,
-            'files': [file.as_dict() for file in self.files]
+            'files': [file.as_dict() for file in sorted(self.files)]
         }
 
 
