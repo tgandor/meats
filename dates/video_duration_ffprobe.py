@@ -16,6 +16,7 @@ except ImportError:
 parser = argparse.ArgumentParser()
 parser.add_argument('files', nargs='+')
 parser.add_argument('--verbose', '-v', action='store_true')
+parser.add_argument('--separator', '-s', help='Output separator for CSV', default=';')
 
 
 def get_duration(filename, verbose=False):
@@ -39,4 +40,4 @@ if __name__ == '__main__':
     for pattern in args.files:
         for name in natsorted(glob.glob(pattern)):
             duration = get_duration(name, args.verbose)
-            print('{};{}'.format(name, duration))
+            print('{}{}{}'.format(name, args.separator, duration))
