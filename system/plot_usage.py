@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import argparse
+import datetime
 import os
 import sqlite3
+
 import pandas as pd
 from matplotlib import pyplot as plt
 
@@ -18,10 +20,18 @@ def fake_date(dt):
 parser = argparse.ArgumentParser()
 parser.add_argument('--ascii', '-t', action='store_true')
 parser.add_argument('--fake-date', '-d', action='store_true')
+parser.add_argument('--mountpoint', '-m', default='/', help='mountpoint to show')
+parser.add_argument('--days', '-D', type=int, help='number of last days to show')
 args = parser.parse_args()
 
 conn = sqlite3.connect(os.path.expanduser('~/usage.db'))
-df = pd.read_sql_query("select * from df where mountpoint='/'", conn)
+params = (args.mountpoint,)
+query = 'select * from df where mountpoint=?'
+if args.days:
+    query += ' and df_date > ?'
+    params += (datetime.datetime.now() - datetime.timedelta(days=args.days),)
+
+df = pd.read_sql_query(query, conn, params=params)
 df.df_date = pd.to_datetime(df['df_date'])
 
 if args.ascii:
