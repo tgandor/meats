@@ -1,6 +1,6 @@
 @echo off
 
-if "%1"=="" (
+if "%~1"=="" (
     echo Usage: %0 file.exe
     exit /b
 )
