@@ -36,9 +36,10 @@ def plot_counter_console(counter):
     tops = counter.most_common()
     norm = tops[0][1]
     maxlen = max(len(key) for key in counter.keys())
-    format = '{:%ds} {} ({})' % maxlen
+    total = sum(counter.values())
+    format = '{:%ds} {} ({}, {:.2f}%%)' % maxlen
     for item, count in tops:
-        print(format.format(item, '=' * (100 * count // norm) or '.', count))
+        print(format.format(item, '=' * (100 * count // norm) or '.', count, 100. * count / total))
 
 
 if len(stats) == 0:
