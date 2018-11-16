@@ -18,9 +18,9 @@ if len(sys.argv) > 2:
 
 def get_bytes():
     data = os.popen('ifconfig '+interface).read()
-    m = re.search("RX bytes:(\d+)", data)
+    m = re.search("RX (?:packets \d+\s*)bytes(?::? *)(\d+)", data)
     rxb = int(m.group(1))
-    m = re.search("TX bytes:(\d+)", data)
+    m = re.search("TX (?:packets \d+\s*)bytes(?::? *)(\d+)", data)
     txb = int(m.group(1))
     return rxb, txb
 
