@@ -65,7 +65,7 @@ class Settings(object):
         device.br_x = self.br_x()
         device.br_y = self.br_y()
         if self.mode() == 'gray+otsu':
-            device.mode = 'gray'
+            device.mode = 'Gray'
         else:
             if self.mode() in device['mode'].constraint:
                 device.mode = self.mode()
@@ -179,9 +179,9 @@ class ScanDialog(tk.Frame):
 
         panel = tk.Frame(settings_panel)
         tk.Label(panel, text="Scan Mode").pack()
-        tk.Radiobutton(panel, text="Color", value='color', variable=self.settings.scan_mode).pack(anchor=tk.W)
-        tk.Radiobutton(panel, text="Gray", value='gray', variable=self.settings.scan_mode).pack(anchor=tk.W)
-        tk.Radiobutton(panel, text="Lineart", value='lineart', variable=self.settings.scan_mode).pack(anchor=tk.W)
+        tk.Radiobutton(panel, text="Color", value='Color', variable=self.settings.scan_mode).pack(anchor=tk.W)
+        tk.Radiobutton(panel, text="Gray", value='Gray', variable=self.settings.scan_mode).pack(anchor=tk.W)
+        tk.Radiobutton(panel, text="Lineart", value='Lineart', variable=self.settings.scan_mode).pack(anchor=tk.W)
         tk.Radiobutton(panel, text="Gray+Otsu", value='gray+otsu', variable=self.settings.scan_mode).pack(anchor=tk.W)
         panel.pack(side=tk.LEFT, anchor=tk.N)
 
