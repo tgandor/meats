@@ -96,7 +96,7 @@ def main():
         if args.modify:
             with open(filename, 'wb') as new_yaml:
                 for line in modified:
-                    new_yaml.write(line if not args.rstrip else line.rstrip() + '\n')
+                    new_yaml.write(line.encode() if not args.rstrip else line.rstrip().encode() + b'\n')
         print('-' * 60)
 
 
