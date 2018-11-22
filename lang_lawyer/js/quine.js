@@ -1,0 +1,1 @@
+function quote(s) { return String.fromCharCode(39) + s + String.fromCharCode(39) }; var s='function quote(s) { return String.fromCharCode(39) + s + String.fromCharCode(39) }; var s=X; console.log(s.replace("X", quote(s)));'; console.log(s.replace("X", quote(s)));
