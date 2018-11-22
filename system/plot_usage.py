@@ -22,6 +22,8 @@ parser.add_argument('--ascii', '-t', action='store_true')
 parser.add_argument('--fake-date', '-d', action='store_true')
 parser.add_argument('--mountpoint', '-m', default='/', help='mountpoint to show')
 parser.add_argument('--days', '-D', type=int, help='number of last days to show')
+parser.add_argument('--width', '-w', type=int, help='width of plot (--ascii only)', default=170)
+parser.add_argument('--height', '-H', type=int, help='height of plot (--ascii only)', default=60)
 args = parser.parse_args()
 
 conn = sqlite3.connect(os.path.expanduser('~/usage.db'))
@@ -44,7 +46,7 @@ if args.ascii:
 
     import asciiplotlib
     fig = asciiplotlib.figure()
-    fig.plot(x=df['df_date'], y=df['used'], label='used MB', xlabel=xlabel, width=170, height=60)
+    fig.plot(x=df['df_date'], y=df['used'], label='used MB', xlabel=xlabel, width=args.width, height=args.height)
     fig.show()
 else:
     df.plot(x='df_date', y='used')
