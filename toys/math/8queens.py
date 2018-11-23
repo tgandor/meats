@@ -57,6 +57,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--size', '-n', type=int, choices=range(3, 21), default=8)
     parser.add_argument('--all', '-a', action='store_true')
+    parser.add_argument('--quiet', '-q', action='store_true')
     return parser.parse_args()
 
 
@@ -86,8 +87,9 @@ def main():
     else:
         for i, sol in enumerate(pycosat.itersolve(clauses)):
             print(i+1)
-            output(sol)
-            print('=' * 10)
+            if not args.quiet:
+                output(sol)
+                print('=' * 10)
 
 
 if __name__ == '__main__':
