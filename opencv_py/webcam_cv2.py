@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 """
 Script to show a webcam or a video file and overlay simple effects.
@@ -67,16 +67,21 @@ if args.width:
 if args.height:
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, args.height)
 
-print('Opened with FPS:', cap.get(cv2.CAP_PROP_FPS))
+initial_fps = cap.get(cv2.CAP_PROP_FPS)
+print('Opened with FPS:', initial_fps)
 print('Frame count:', cap.get(cv2.CAP_PROP_FRAME_COUNT))
-print('FourCC:', cap.get(cv2.CAP_PROP_FOURCC))
+initial_fourcc = int(cap.get(cv2.CAP_PROP_FOURCC))
+print('FourCC:', [chr(((initial_fourcc >> (8*i)) & 0xff)) for i in range(4)] if initial_fourcc else '0')
 print('Format:', cap.get(cv2.CAP_PROP_FORMAT))
 print('Width:', cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 print('Height:', cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
 if args.fps:
     cap.set(cv2.CAP_PROP_FPS, args.fps)
-    print('After setting to', args.fps, 'we get', cap.get(cv2.CAP_PROP_FPS))
+    prop_fps = cap.get(cv2.CAP_PROP_FPS)
+    print('After setting to', args.fps, 'we get', prop_fps)
+else:
+    prop_fps = initial_fps
 
 if args.fourcc:
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*args.fourcc))
@@ -180,10 +185,15 @@ while True:
         kernel = min(kernel+2, max_kernel)
     elif key == ord(' '):
         # pause
+        print('Paused at frame:', frame_idx)
+        if 0 < prop_fps < 120:
+            print('Approximate time [seconds]:', frame_idx / prop_fps)
         while True:
             key = cv2.waitKey(1000) & 0xFF
             if key == ord(' '):
                 break
+            elif key == ord('q'):
+                exit()
     elif raw_key not in (-1, 0xff):
         print('Unhandled key: {k}, 0x{k:x}, {char}, raw: {r}'.format(k=key, r=raw_key, char=repr(chr(key))))
 
