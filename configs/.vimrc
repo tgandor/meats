@@ -1,29 +1,21 @@
-version 6.0
-if &cp | set nocp | endif
-let s:cpo_save=&cpo
-set cpo&vim
-nmap gx <Plug>NetrwBrowseX
-nnoremap <silent> <Plug>NetrwBrowseX :call netrw#NetrwBrowseX(expand("<cWORD>"),0)
-let &cpo=s:cpo_save
-unlet s:cpo_save
-set background=dark
-set backspace=indent,eol,start
-set fileencodings=ucs-bom,utf-8,default,latin1
-set helplang=pl
-set history=50
+" let _curfile = expand("%:t")
+" if _curfile =~ "Makefile" || _curfile =~ "makefile" || _curfile =~ ".*\.mk"
+"     set noexpandtab
+" else
+"     set expandtab
+" endif
+
+au FileType make setl noexpandtab
+
+set autoindent
+set expandtab
 set laststatus=2
-set nomodeline
-set printoptions=paper:a4
+set list
+set listchars=tab:>-,trail:.
+set modeline
 set ruler
-set runtimepath=~/.vim,/var/lib/vim/addons,/usr/share/vim/vimfiles,/usr/share/vim/vim74,/usr/share/vim/vimfiles/after,/var/lib/vim/addons/after,~/.vim/after
-set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc
+set shiftwidth=4
+set smartindent
+set tabstop=4
 
-" Own stuff BEGIN
-
-" http://vim.wikia.com/wiki/Append_output_of_an_external_command
-command! -nargs=* -complete=shellcmd R new | setlocal buftype=nofile bufhidden=hide noswapfile | r !<args>
-
-" http://stackoverflow.com/questions/158968/changing-vim-indentation-behavior-by-file-type
-au FileType python setl sw=4 sts=4 et ai
-
-" vim: set ft=vim :
+syn on
