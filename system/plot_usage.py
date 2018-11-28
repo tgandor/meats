@@ -46,7 +46,7 @@ if args.ascii:
 
     import asciiplotlib
     fig = asciiplotlib.figure()
-    fig.plot(x=df['df_date'], y=df['used'], label='used MB', xlabel=xlabel, width=args.width, height=args.height)
+    fig.plot(x=df['df_date'], y=df['used'] / 1024, label='used GB', xlabel=xlabel, width=args.width, height=args.height)
     fig.show()
 else:
     df.plot(x='df_date', y='used')
