@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 from itertools import islice
+import argparse
 
 
 def eppstein():
@@ -67,10 +68,60 @@ def me():
         q += 2
 
 
-def test():
-    for f in (eppstein, martelli, hochberg, me):
+def me_pop():
+    yield 2
+    D = {}
+    q = 3
+    while True:
+        divs = D.pop(q, None)
+        if divs:
+            for p in divs:
+                D.setdefault(p+p+q, []).append(p)
+        else:
+            yield q
+            D[q*q] = [q]
+        q += 2
+
+
+def me_defaultdict1():
+    from collections import defaultdict
+    yield 2
+    D = defaultdict(list)
+    q = 3
+    while True:
+        divs = D.pop(q, None)
+        if divs:
+            for p in divs:
+                D[p+p+q].append(p)
+        else:
+            yield q
+            D[q*q].append(q)
+        q += 2
+
+
+def me_defaultdict2():
+    from collections import defaultdict
+    yield 2
+    D = defaultdict(list)
+    q = 3
+    while True:
+        divs = D.pop(q, None)
+        if divs:
+            for p in divs:
+                D[p+p+q].append(p)
+        else:
+            yield q
+            D[q*q] = [q]
+        q += 2
+
+
+ALL_GENERATORS = [eppstein, martelli, hochberg, me, me_pop, me_defaultdict1, me_defaultdict2]
+
+
+def test(max_primes=25):
+    for f in ALL_GENERATORS:
         print(str(f), ':')
-        for p in islice(f(), 25):
+        for p in islice(f(), max_primes):
             print(p, end=' ')
         print()
 
@@ -78,7 +129,7 @@ def test():
 def speed_test(max_primes=10**6):
     import tqdm
 
-    for f in (eppstein, martelli, hochberg, me):
+    for f in ALL_GENERATORS:
         print(str(f), ':')
         for p in tqdm.tqdm(islice(f(), max_primes), total=max_primes):
             # print(p, end=' ')
@@ -88,14 +139,38 @@ def speed_test(max_primes=10**6):
 
 def validate(max_primes=10**6):
     reference = list(islice(eppstein(), max_primes))
-    for f in (martelli, hochberg, me):
+    for f in ALL_GENERATORS[1:]:
         print(str(f), ':')
         result = list(islice(f(), max_primes))
         print('OK' if result == reference else 'Fail')
 
 
+def output(max_primes):
+    prime_gen = hochberg()
+    if max_primes > 0:
+        prime_gen = islice(prime_gen, max_primes)
+    for p in prime_gen:
+        print(p)
+
+
 if __name__ == '__main__':
-    test()
-    validate()
-    speed_test()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--test', action='store_true')
+    parser.add_argument('--speed', action='store_true')
+    parser.add_argument('--validate', action='store_true')
+    parser.add_argument('--limit', '-n', type=int, default=10**4)
+    args = parser.parse_args()
+
+    if args.test:
+        test(args.limit)
+        exit()
+
+    if args.validate:
+        validate(args.limit)
+
+    if args.speed:
+        speed_test(args.limit)
+
+    if not (args.speed or args.validate):
+        output(args.limit)
 
