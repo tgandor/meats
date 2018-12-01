@@ -6,25 +6,32 @@ import re
 import time
 import urllib
 import random
+from operator import itemgetter
 
 CHUNK = 512 * 1024
-user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
+user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0'
 
 try:
 	import cStringIO
 except ImportError:
-    import io as StringIO	
+    import io as StringIO
 
-	
+try:
+    from natsort import natsorted
+except ImportError:
+    print('WARNING: natsorted is missing')
+    natsorted = sorted
+
+
 def urlopen3(url):
 	import urllib.request
 	req = urllib.request.Request(
-		url, 
-		data=None, 
+		url,
+		data=None,
 		headers={'User-Agent': user_agent}
 	)
-	return urllib.request.urlopen(req)		
-	
+	return urllib.request.urlopen(req)
+
 try:
 	urllib.URLopener.version = user_agent
 	urlopen = urllib.urlopen
@@ -124,7 +131,7 @@ class MusicHandler(object):
 
     def get_url(self, hostname, file_id):
         ts = int(time.time() * 1000)
-        return "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
+        return "https://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
 
     def get_data(self, hostname, file_id):
         url = self.get_url(hostname, file_id)
@@ -136,12 +143,15 @@ class VideoHandler(object):
     fileext = '.flv'
 
     def get_data(self, hostname, file_id):
-        url = "http://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
+        url = "https://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
         return download_url(url)
 
 
 def _extract_tasks(handler, contents):
-    return sorted(set(sum((handler.pattern.findall(content) for content in contents), [])))
+    return natsorted(
+        set(sum((handler.pattern.findall(content) for content in contents), [])),
+        key=itemgetter(0)
+    )
 
 
 def retrieve_all(hostname, handler, contents, targetdir):
@@ -274,7 +284,7 @@ def command_play(the_url):
     handler = MusicHandler()
     for track, file_id in _extract_tasks(handler, contents):
         url = handler.get_url(hostname, file_id)
-        print(track, url)		
+        print(track, url)
         if os.system("mplayer '%s'" % url) != 0:
             print("Unclean exit. quitting.")
             break

@@ -5,26 +5,33 @@ import sys
 import os
 import re
 import time
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import random
 from io import BytesIO
+from operator import itemgetter
 from six.moves import range
 from six.moves import zip
 from six.moves import input
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+
+try:
+    from natsort import natsorted
+except ImportError:
+    print('WARNING: natsorted is missing')
+    natsorted = sorted
 
 CHUNK = 512 * 1024
-user_agent = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)'
+user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0'
 
-	
+
 def urlopen3(url):
 	import urllib.request
 	req = urllib.request.Request(
-		url, 
-		data=None, 
+		url,
+		data=None,
 		headers={'User-Agent': user_agent}
 	)
-	return urllib.request.urlopen(req)		
-	
+	return urllib.request.urlopen(req)
+
 try:
 	six.moves.urllib.request.URLopener.version = user_agent
 	urlopen = six.moves.urllib.request.urlopen
@@ -88,7 +95,10 @@ def clean_name(dirty):
         starred = bytes(int(o, 16) for o in codes)
         return starred.decode('utf-8')
 
-    dirty = re.sub('(\\*[0-9a-fA-F]{2})+', parse_uft8, str(dirty))
+    if isinstance(dirty, bytes):
+        dirty = dirty.decode()
+
+    dirty = re.sub('(\\*[0-9a-fA-F]{2})+', parse_uft8, dirty)
     dirty = dirty.replace('(', '').replace(')', '')
     return dirty.replace('+', '_')
 
@@ -117,17 +127,17 @@ def download_url(url):
     msg = resp.info()
     length = resp.getheader('Content-Length')
     if length:
-        info("Downloading %sB " % human(int(length)), eol='')
+        info("%s\nDownloading %sB " % (url, human(int(length))), eol='')
     return read_with_progress(resp)
 
 
 class MusicHandler(object):
-    pattern = re.compile(b'/([^/]+),(\d+)\\.mp3', re.IGNORECASE)
+    pattern = re.compile(r'/([^/]+),(\d+)\.mp3', re.IGNORECASE)
     fileext = '.mp3'
 
     def get_url(self, hostname, file_id):
         ts = int(time.time() * 1000)
-        return "http://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
+        return "https://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
 
     def get_data(self, hostname, file_id):
         url = self.get_url(hostname, file_id)
@@ -135,16 +145,18 @@ class MusicHandler(object):
 
 
 class VideoHandler(object):
-    pattern = re.compile(b'/([^/]+),(\d+)\\.(?:avi|mp4)', re.IGNORECASE)
+    pattern = re.compile(r'/([^/]+),(\d+)\.(?:avi|mp4)', re.IGNORECASE)
     fileext = '.flv'
 
     def get_data(self, hostname, file_id):
-        url = "http://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
+        url = "https://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
         return download_url(url)
 
 
 def _extract_tasks(handler, contents):
-    return sorted(set(sum((handler.pattern.findall(content) for content in contents), [])))
+    task_groups = (handler.pattern.findall(content.decode()) for content in contents)
+    joined = set(sum(task_groups, []))
+    return natsorted(joined, key=itemgetter(0))
 
 
 def retrieve_all(hostname, handler, contents, targetdir):
@@ -152,9 +164,14 @@ def retrieve_all(hostname, handler, contents, targetdir):
     tasks = _extract_tasks(handler, contents)
     total = len(tasks)
     i = 0
+
     for title, file_id in tasks:
         title_c = clean_name(title) + handler.fileext
         filename = os.path.join(targetdir, title_c)
+
+        if isinstance(file_id, bytes):
+            file_id = file_id.decode()
+
         i += 1
         info("%d/%d" % (i, total), eol='')
         if os.path.exists(filename) and os.path.getsize(filename) > 0:
@@ -181,7 +198,7 @@ def _get_inner_content(the_url):
 
 
 def _gather_contents(the_url):
-    host_path = re.match('http://[^/]+(/.*)', the_url).group(1)
+    host_path = re.match('https?://[^/]+(/.*)', the_url).group(1)
     contents = [_get_inner_content(the_url)]
     page = 2
     while True:
@@ -201,7 +218,7 @@ def _gather_contents(the_url):
 
 
 def command_dl(the_url):
-    hostname = re.match('http://([^/]+)/', the_url).group(1)
+    hostname = re.match('https?://([^/]+)/', the_url).group(1)
     dir_name = clean_name(the_url[the_url.rfind('/')+1:])
     if not os.path.exists(dir_name):
         info("Creating directory: " + dir_name)
@@ -277,7 +294,7 @@ def command_play(the_url):
     handler = MusicHandler()
     for track, file_id in _extract_tasks(handler, contents):
         url = handler.get_url(hostname, file_id)
-        print(track, url)		
+        print(track, url)
         if os.system("mplayer '%s'" % url) != 0:
             print("Unclean exit. quitting.")
             break
