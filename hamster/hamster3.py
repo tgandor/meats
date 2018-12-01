@@ -85,10 +85,9 @@ def clean_name(dirty):
     def parse_uft8(starred):
         starred = starred.group()
         codes = [starred[i:i+2] for i in range(1, len(starred), 3)]
-        starred = ''.join(chr(int(o, 16)) for o in codes)
+        starred = bytes(int(o, 16) for o in codes)
         return starred.decode('utf-8')
 
-    print(type(dirty))
     dirty = re.sub('(\\*[0-9a-fA-F]{2})+', parse_uft8, str(dirty))
     dirty = dirty.replace('(', '').replace(')', '')
     return dirty.replace('+', '_')
