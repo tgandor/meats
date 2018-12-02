@@ -6,7 +6,6 @@ import os
 import sqlite3
 
 import pandas as pd
-from matplotlib import pyplot as plt
 
 
 def fake_date(dt):
@@ -37,6 +36,8 @@ df = pd.read_sql_query(query, conn, params=params)
 df.df_date = pd.to_datetime(df['df_date'])
 
 if args.ascii:
+    import asciiplotlib
+
     if args.fake_date:
         df.df_date = df[['df_date']].apply(fake_date, axis=1)
         xlabel = 'day.fraction'
@@ -44,10 +45,11 @@ if args.ascii:
         df.df_date = df[['df_date']].apply((lambda x: int(x[0].timestamp())), axis=1)
         xlabel = 'timestamp'
 
-    import asciiplotlib
     fig = asciiplotlib.figure()
     fig.plot(x=df['df_date'], y=df['used'] / 1024, label='used GB', xlabel=xlabel, width=args.width, height=args.height)
     fig.show()
 else:
+    from matplotlib import pyplot as plt
+
     df.plot(x='df_date', y='used')
     plt.show()
