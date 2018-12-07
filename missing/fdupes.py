@@ -291,11 +291,11 @@ def parse_args():
     parser.add_argument('--basename-only', '-N', action='store_true', help='Group by basename (only)')
     parser.add_argument('--debug', '-v', action='store_true', help='Show verbose debugging output')
     parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates interactively')
+    parser.add_argument('--delete-command', help='Use a different command to delete duplicates, e.g. "git rm"')
     parser.add_argument('--delete-now', '-D', action='store_true', help='Delete the duplicates automatically')
     parser.add_argument('--groups', '-i', help='Saved group files to load instead of scanning')
     parser.add_argument('--hardlink', '-H', action='store_true', help='Hardlink the duplicate files')
-    parser.add_argument('--min-size', '-m', help='Min size of deleted duplicates for automatic deletion',
-                        type=int, default=1024*1024)
+    parser.add_argument('--min-size', '-m', help='Min size in B of deleted files (auto mode)', type=int, default=1)
     parser.add_argument('--no-md5', '-5', action='store_true', help='Skip grouping by md5 sum')
     parser.add_argument('--no-print', '-P', action='store_true', help='Skip printing the groups')
     parser.add_argument('--no-save', '-S', action='store_true', help='Skip saving the groups as JSON')
@@ -336,12 +336,13 @@ def delete_interactive(groups):
             os.unlink(file_.file_path)
 
 
-def delete_unattended(groups, min_size=1024*1024):
+def delete_unattended(groups, args):
     """
     Delete non-first files from every group, no smaller than min_size.
 
     :param groups: List[Group]
-    :param min_size: int smallest size of deleted duplicate in bytes
+    :param args.min_size: int smallest size of deleted duplicate in bytes
+    :param args.delete_command: Optional[str] command to use in lieu of os.unlink
     :return: List[Group] groups which where not deleted due to size.
     """
     print('Deleting up to {} groups:'.format(len(groups)))
@@ -352,8 +353,8 @@ def delete_unattended(groups, min_size=1024*1024):
     for group in iterator:
         print(group.features)
         ensure_deletable(group)
-        if group.size < min_size:
-            print('Size limit ({}) reached.'.format(min_size))
+        if group.size < args.min_size:
+            print('Size limit ({}) reached.'.format(args.min_size))
             return list(iterator)
 
         for i, file_ in enumerate(group.files):
@@ -366,7 +367,10 @@ def delete_unattended(groups, min_size=1024*1024):
                 continue
 
             print('Deleting:', file_.file_path)
-            os.unlink(file_.file_path)
+            if args.delete_command:
+                os.system('{} "{}"'.format(args.delete_command, file_.file_path))
+            else:
+                os.unlink(file_.file_path)
 
         waste = group_waste(group)
         total_cleared += waste
@@ -443,7 +447,7 @@ def main():
         delete_interactive(groups)
         profiler.finish_phase('interactive processing')
     elif args.delete_now:
-        rest = delete_unattended(groups, args.min_size)
+        rest = delete_unattended(groups, args)
         if rest:
             print('Remaining groups:', groups_summary(rest))
             save_groups(rest, args.prefix + 'left_')
