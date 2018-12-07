@@ -8,21 +8,33 @@ Some protection against overwriting existing files.
 
 from __future__ import print_function
 
+import argparse
 import os
 import subprocess
-import sys
 
 
 def main():
     """Main function."""
-    for image in sys.argv[1:]:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--lang', '-l', help='Language to use')
+    parser.add_argument('files', nargs='+')
+    args = parser.parse_args()
+
+    base_command = ['tesseract']
+    if args.lang:
+        base_command.extend(['-l', args.lang])
+
+    for image in args.files:
         basename, _ = os.path.splitext(image)
 
         if os.path.exists(basename + '.txt'):
-            print('Skipping {} - {} exists.'.format(image, basename+'.txt'))
+            print('Skipping {} - {}.txt exists.'.format(image, basename))
             continue
 
-        subprocess.call(['tesseract', image, basename])
+        print('OCR-ing {} to {}.txt ...'.format(image, basename))
+        print(base_command + [image, basename])
+        subprocess.call(base_command + [image, basename])
+        print('-'*40)
 
 if __name__ == '__main__':
     main()

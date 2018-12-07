@@ -300,6 +300,7 @@ def parse_args():
     parser.add_argument('--no-print', '-P', action='store_true', help='Skip printing the groups')
     parser.add_argument('--no-save', '-S', action='store_true', help='Skip saving the groups as JSON')
     parser.add_argument('--prefix', '-p', help='Prefix for saving the groups', default='')
+    parser.add_argument('--sort', help='Custom sorting attribute')
     parser.add_argument('--unique', '-u', action='store_true', help='Keep track of unique files')
     parser.add_argument('directories', nargs='*', help='Directories to scan for duplicates', default=['.'])
     return parser.parse_args()
@@ -433,7 +434,7 @@ def main():
             print('{} unique files found.'.format(len(unique_files)))
         exit()
 
-    sort_groups(groups)
+    sort_groups(groups, args.sort)
 
     if not args.no_print:
         process_groups(groups)
@@ -483,11 +484,15 @@ def scan_directories(args):
     return all_files
 
 
-def sort_groups(groups):
-    if any(hasattr(group, 'size') for group in groups):
+def sort_groups(groups, custom_attr=None):
+    if custom_attr:
+        import operator
+        groups.sort(key=operator.attrgetter(custom_attr))
+    elif any(hasattr(group, 'size') for group in groups):
         groups.sort(key=group_waste)
     else:
         groups.sort(key=len)
+
     for group in groups:
         sort_members(group)
 
