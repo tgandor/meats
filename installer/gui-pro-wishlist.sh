@@ -1,9 +1,10 @@
 #!/bin/bash
 
 sudo apt install -y \
-    kdf \
     chromium-browser \
     gimp \
+    gitk \
+    kdf \
     mplayer \
     terminator \
     ttf-mscorefonts-installer \
