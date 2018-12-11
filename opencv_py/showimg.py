@@ -30,6 +30,7 @@ def quick_view_directory(directory_name, min_mse=0., delay=1, verbose=True, dele
     quit = ord('q')
     data = glob.glob(directory_name + '/*.*')
     prev = None
+    pause = False
     for filename in tqdm(sorted(data)):
         try:
             image = cv2.imread(filename)
@@ -56,10 +57,14 @@ def quick_view_directory(directory_name, min_mse=0., delay=1, verbose=True, dele
         res = cv2.waitKey(delay)
 
         # pause
-        if res & 0xff == 32:
+        if pause or res & 0xff == 32:
             while True:
                 res = cv2.waitKey(delay)
                 if res & 0xff == 32:
+                    pause = False
+                    break
+                elif res & 0xff == ord('.'):
+                    pause = True
                     break
 
         if res & 0xff == quit:

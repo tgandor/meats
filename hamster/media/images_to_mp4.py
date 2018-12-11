@@ -123,6 +123,8 @@ if __name__ == '__main__':
     if converter is None:
         converter = which('avconv')
     if converter is None:
+        converter = which('ffmpeg.exe')
+    if converter is None:
         print('Neither ffmpeg nor avconv found.')
         exit()
 
