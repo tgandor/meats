@@ -24,6 +24,15 @@ def divisor_count(factorization):
     return product - 2
 
 
+def divisor_sum(factorization):
+    product = 1
+
+    for p, power in factorization:
+        product *= sum(p ** k for k in range(power + 1))
+
+    return product
+
+
 def _format_factor(prime, power):
     if power > 1:
         return '({} ** {})'.format(prime, power)
@@ -38,4 +47,5 @@ if __name__ == '__main__':
     factors = list(factorize(args.n))
     print('n = {}'.format(' * '.join(_format_factor(prime, power) for prime, power in factors)))
     print('proper divisor count: {:,}'.format(divisor_count(factors)))
+    print('divisor sum: {:,}'.format(divisor_sum(factors)))
 
