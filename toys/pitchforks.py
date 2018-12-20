@@ -25,5 +25,10 @@ for level, pitchfork in levels.items():
             if new_percent < thresh:
                 percent_raise = raise_p
                 break
+        new_bonus_percent = new_percent + percent_raise
 
-        print(f'{level}, before: {start:3}%, after: {new_percent:5.1f}%, raise: {percent_raise}%')
+        effective_ratio = (new_bonus_percent * (100 + pitchfork) / 100) / start
+        effective_percent = (effective_ratio - 1) * 100
+
+        print(f'{level}, from: {start:3}%, after pf: {new_percent:5.1f}%, nom: {percent_raise:3}%,'
+              f' to: {new_bonus_percent:5.1f}% effective {effective_percent:.1f}%')
