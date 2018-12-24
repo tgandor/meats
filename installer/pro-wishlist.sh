@@ -12,6 +12,7 @@ sudo apt install -y \
     kdesdk-scripts \
     lm-sensors \
     mc \
+    net-tools \
     python3-pip \
     python-pip \
     rar \
