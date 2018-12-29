@@ -22,6 +22,7 @@ def reset():
     global kernel
     global min_kernel
     global max_kernel
+    global max_info_mode
     # effect flags
     global grayscale
     global gaussian
@@ -31,11 +32,13 @@ def reset():
     # other
     global fullscreen
     global info
+    global info_mode
     global record
     # params
     kernel = 9
     min_kernel = 3
     max_kernel = 25
+    max_info_mode = 1
     # effect flags
     grayscale = False
     gaussian = False
@@ -45,6 +48,7 @@ def reset():
     # other
     fullscreen = False
     info = False
+    info_mode = 0
     record = False
 
 
@@ -91,6 +95,7 @@ cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
 first_frame = True
 frame_idx = 0
 start_time = time.time()
+total_saved = 0
 
 while True:
     # Capture frame-by-frame
@@ -122,7 +127,13 @@ while True:
 
     if info:
         fps = frame_idx / (time.time() - start_time)
-        message = 'Frame {}, ~fps: {:.2f}, {}'.format(frame_idx, fps, frame.shape)
+        if info_mode == 0:
+            message = 'Frame {}, ~fps: {:.2f}, {}'.format(frame_idx, fps, frame.shape)
+        elif info_mode == 1:
+            message = time.strftime('%Y-%m-%d %H:%M:%S, frame: ') + str(frame_idx)
+        else:
+            message = 'Mode not supported ;)'
+
         cv2.putText(frame,
             message,
             (0, 20),
@@ -135,7 +146,11 @@ while True:
     if record:
         filename = time.strftime('%Y%m%d_%H%M%S_') + str(frame_idx) + '.jpg'
         cv2.imwrite(filename, frame)
-        print('frame saved:', os.path.abspath(filename))
+        size = os.path.getsize(filename)
+        total_saved += size
+        rate = int(total_saved * 3600 // (time.time() - start_time))
+        print('frame saved: {}, {:,} KB, {:,} MB total, ~ {:,} MB/h'.format(
+            filename, size // 2**10, total_saved // 2**20, rate // 2**20))
 
     # Display the resulting frame
     if all(dim > 0 for dim in frame.shape):
@@ -163,6 +178,8 @@ while True:
         gaussian = not gaussian
     elif key == ord('i'):
         info = not info
+    elif key == ord('I'):
+        info_mode = info_mode + 1 if info_mode < max_info_mode else 0
     elif key == ord('l'):
         # mirror, as in 'looking glass'
         mirror = not mirror
