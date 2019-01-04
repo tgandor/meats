@@ -412,13 +412,14 @@ def get_next_label(current):
 # endregion
 
 
-def multi_label(text, width, height, count):
+def multi_label(text, width, height, count, canvas=None, label_state=None):
     save_label(text, width, height, None, label_settings(count=count))
-    c = _setup_canvas()
-    state = LabelState()
+    c = canvas or _setup_canvas()
+    state = label_state or LabelState()
     for i in range(count):
         label(c, u'{}\n{}/{}'.format(text, i + 1, count), width, height, state=state)
-    _finish_rendering(c)
+    if canvas is None:
+        _finish_rendering(c)
 
 
 def parse_s(s, full_s, max_s=A4[1]):
@@ -481,6 +482,11 @@ def win_main():
         except ImportError:
             _install_and_die('tk')
 
+    try:
+        from tkinter import ttk
+    except ImportError:
+        import ttk
+
     ui_font = ('TkDefaultFont', 12)
 
     class Spinbox(tk.Spinbox):
@@ -515,21 +521,29 @@ def win_main():
         widget.delete('1.0', tk.END)
         widget.insert(tk.END, value)
 
-    def generate(text_widget, width_input, height_input, num_serial):
+    def generate(text_widget, width_input, height_input, num_serial, canvas_state):
         label_text = text_widget.get('1.0', 'end').strip()
         w = float(width_input.get().replace(',', '.')) * cm
         h = float(height_input.get().replace(',', '.')) * cm
         settings['round_label'] = label_model.is_round.get() != 0
 
+        c = canvas_state.get('canvas') or _setup_canvas()
+        state = canvas_state.get('label_state') or LabelState()
+
         if label_model.is_serial.get():
-            multi_label(label_text, w, h, int(num_serial.get()))
+            multi_label(label_text, w, h, int(num_serial.get()), canvas=c, label_state=state)
         else:
-            c = _setup_canvas()
             save_label(label_text, w, h, None, label_settings())
-            state = LabelState()
             for _ in range(int(num_serial.get())):
                 label(c, label_text, w, h, state)
+
+        if canvas_state['mode'].get() == 'Enqueue':
+            canvas_state['canvas'] = c
+            canvas_state['label_state'] = state
+        else:
             _finish_rendering(c)
+            canvas_state['canvas'] = None
+            canvas_state['label_state'] = None
 
     def set_current_label(height, height_input, last_id, previous_id, text, text_widget, width, width_input):
         set_text(text_widget, text)
@@ -602,20 +616,50 @@ def win_main():
     Spinbox(dialog, values=list(range(20, 74, 2)), textvariable=font_size).pack(anchor=tk.N)
     font_size.trace('w', lambda *_: change_font(font_size))
 
+
+    ui_label(dialog, 'Print mode:')
+    print_mode = tk.StringVar(value='Generate')
+    cb_print_mode = ttk.Combobox(dialog, textvariable=print_mode)
+    cb_print_mode['values'] = ('Generate', 'Print', "Enqueue")
+    cb_print_mode.current(0)
+    cb_print_mode.pack(anchor=tk.N)
+
+    canvas_state = {
+        'mode': print_mode,
+        'canvas': None,
+        'label_state': None,
+    }
+
     last_id = tk.IntVar()
     print_ = getattr(args, 'print')
     panel = tk.Frame(dialog)
     tk.Button(panel, text='<', width='3', height='3',
               command=lambda: load_previous(text, width, height, last_id)).grid(row=0, column=0)
-    tk.Button(
+    go_button = tk.Button(
         panel, text='Print' if print_ else 'Generate', font=ui_font, width=47, height=3,
-        command=lambda: generate(text, width, height, serial_count)
-    ).grid(row=0, column=1)
+        command=lambda: generate(text, width, height, serial_count, canvas_state)
+    )
+    go_button.grid(row=0, column=1)
     tk.Button(panel, text='>', width='3', height='3',
               command=lambda: load_next(text, width, height, last_id)).grid(row=0, column=2)
     panel.pack(anchor=tk.N)
 
     dialog.pack(fill=tk.BOTH, expand=1)
+
+    # region: event handlers
+
+    def on_print_mode_changed(mode, button):
+        if mode.get() == 'Print':
+            setattr(args, 'print', True)
+        else:
+            setattr(args, 'print', False)
+
+        button.config(text=mode.get())
+
+    cb_print_mode.bind('<<ComboboxSelected>>', lambda event: on_print_mode_changed(print_mode, go_button))
+
+    # endregion
+
     root.mainloop()
 
 
