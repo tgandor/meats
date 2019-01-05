@@ -85,6 +85,7 @@ def _setup_canvas(outfile=default_output_file):
 
 
 def new_page(c):
+    print('Starting new page')
     c.showPage()
     if last_font:
         c.setFont(last_font[0], settings['font_size'])
@@ -142,10 +143,13 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     c.setDash(4, 8)
     c.setLineWidth(settings['line_width'])
 
-    # seems like transform IS part of state
-    if settings['line_width'] > 0 and state.height_left < page_height:
-        c.line(0, state.height_left, page_width, state.height_left)
+    # top line
+    if settings['line_width'] > 0 and state.height_left < page_height and not settings['round_label']:
+        # used to be until page width:
+        c.line(0, state.height_left, width, state.height_left)
+
     h_offset = state.height_left - page_height
+    # seems like transform IS part of state
     c.translate(1*cm if settings['round_label'] else 0.0, h_offset)
 
     # borders
