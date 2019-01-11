@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Query address using Future Processing DNSes."""
+"""Query address (possibly) using a custom resolv.conf file (custom DNSes)."""
 
 from __future__ import print_function
 
