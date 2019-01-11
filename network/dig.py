@@ -29,6 +29,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--ip', '-a', action='store_true', help='Only output IP address')
 parser.add_argument('--no-config', '-n', action='store_true', help='Don\'t use resolv.conf even if it exists.')
 parser.add_argument('--save', '-s', action='store_true', help='Save to /etc/hosts (needs writing access)')
+parser.add_argument('--reverse', '-r', action='store_true', help='Do a reverse DNS query')
 parser.add_argument('url', type=str, help='The name to look up')
 args = parser.parse_args(sys.argv[1:])
 
@@ -39,7 +40,12 @@ if os.path.exists(conf) and not args.no_config:
 else:
     res = ensure_resolver().Resolver()
 
-answers = res.query(args.url, 'A')
+if args.reverse:
+    import dns.reversename
+    name = dns.reversename.from_address(args.url)
+    answers = res.query(name, 'PTR')
+else:
+    answers = res.query(args.url, 'A')
 
 for rdata in answers:
     if args.ip:
