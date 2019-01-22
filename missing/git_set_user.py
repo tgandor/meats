@@ -13,7 +13,8 @@ def main():
 
     os.chdir(source_dir)
     last_commit = os.popen("git log -1").readlines()
-    author = last_commit[1].split()
+    author_line = [line for line in last_commit if line.startswith('Aut')][0]
+    author = author_line.split()
 
     os.chdir(target_dir)
     cmd = 'git config user.name "{}"'.format(' '.join(author[1:-1]))
