@@ -20,12 +20,21 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--ascii', '-t', action='store_true')
 parser.add_argument('--fake-date', '-d', action='store_true')
 parser.add_argument('--mountpoint', '-m', default='/', help='mountpoint to show')
+parser.add_argument('--list-mountpoints', action='store_true', help='mountpoint to show')
 parser.add_argument('--days', '-D', type=int, help='number of last days to show')
 parser.add_argument('--width', '-w', type=int, help='width of plot (--ascii only)', default=170)
 parser.add_argument('--height', '-H', type=int, help='height of plot (--ascii only)', default=60)
 args = parser.parse_args()
 
 conn = sqlite3.connect(os.path.expanduser('~/usage.db'))
+
+if args.list_mountpoints:
+    df = pd.read_sql_query('select distinct mountpoint from df order by mountpoint', conn)
+    for row in df['mountpoint']:
+        print(row)
+    conn.close()
+    exit()
+
 params = (args.mountpoint,)
 query = 'select * from df where mountpoint=?'
 if args.days:
