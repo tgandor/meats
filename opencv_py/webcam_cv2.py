@@ -55,10 +55,11 @@ def reset():
 reset()
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--fps', '-fps', type=float)
+parser.add_argument('--fps', '-fps', type=float, help='FPS to set on the video capture')
 parser.add_argument('--width', '-W', type=int)
 parser.add_argument('--height', '-H', type=int)
-parser.add_argument('--fourcc', type=str, help='Set FourCC for video source (hack)')
+parser.add_argument('--fourcc', help='Set FourCC for video source (hack)')
+parser.add_argument('--delay', '-s', type=float, help='Time to sleep between frames (seconds)')
 parser.add_argument('device', type=str, nargs='?',
                     help='device number, video file name or network stream URL', default='0')
 args = parser.parse_args()
@@ -163,7 +164,7 @@ while True:
         cv2.resizeWindow('frame', frame.shape[1], frame.shape[0])
         first_frame = False
 
-    raw_key = cv2.waitKey(1)
+    raw_key = cv2.waitKey(int(args.delay * 1000 + 0.5) if args.delay else 1)
     key = raw_key & 0xFF
     if key == ord('q'):
         break
