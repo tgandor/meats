@@ -12,12 +12,15 @@ from itertools import chain
 parser = argparse.ArgumentParser()
 parser.add_argument('--bitrate', '-b', help='specify output bitrate for video')
 parser.add_argument('--converter', help='Manually specify [full path to] ffmpeg or avconv')
+parser.add_argument('--classify', '-k', action='store_true', help='detect weak or negative (nocebo) compression')
 parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. for cutting or remuxing')
 parser.add_argument('--copy-audio', '-c', action='store_true')
 parser.add_argument('--deinterlace', '-d', action='store_true', help='deinterlace with yadif (requires recoding)')
 parser.add_argument('--duration', '-t', help='Duration limit for encoding')
 parser.add_argument('--framerate', '-r', help='specify output FPS for video')
 parser.add_argument('--hwaccel', '-hw', help='specify input hardware acceleration')
+parser.add_argument('--move', '-m', action='store_true', help='move original file to original/ directory')
+parser.add_argument('--name-suffix', '-ns', help='')
 parser.add_argument('--nv', '-nv', action='store_true', help='Enable both nvdec and nvenc for transcoding')
 parser.add_argument('--nvdec', '-nvd', action='store_true')
 parser.add_argument('--nvenc', '-nve', action='store_true')
@@ -160,7 +163,8 @@ if __name__ == '__main__':
     if args.duration:
         encoder_options += ' -t {}'.format(args.duration)
 
-    makedirs('original', exist_ok=True)
+    if args.move:
+        makedirs('original', exist_ok=True)
     makedirs('converted', exist_ok=True)
 
     converter = args.converter
@@ -168,6 +172,9 @@ if __name__ == '__main__':
         converter = which('ffmpeg')
     if converter is None:
         converter = which('avconv')
+    if converter is None:
+        # Py2 on Windows, rarely nowadays
+        converter = which('ffmpeg.exe')
     if converter is None:
         print('Neither ffmpeg nor avconv found.')
         exit()
@@ -179,8 +186,13 @@ if __name__ == '__main__':
 
     for filename in chain.from_iterable(map(glob.glob, args.files_or_globs)):
         basename = os.path.basename(filename)
-        original = os.path.join('original', basename)
-        os.rename(filename, original)
+
+        if args.move:
+            original = os.path.join('original', basename)
+            os.rename(filename, original)
+        else:
+            original = filename
+
         converted = os.path.splitext(os.path.join('converted', basename))[0] + '.mp4'
         filters = ''
         if args.stabilize:
