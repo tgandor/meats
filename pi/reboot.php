@@ -7,7 +7,7 @@
 //	# Special for this system - let apache run exes we use in the web interface
 //	www-data ALL=NOPASSWD: /sbin/reboot
 
-$pid = system("(sleep 2 ; sudo /sbin/reboot ) > /dev/null 2>&1 & echo $!");
+$pid = exec("(sleep 2 ; sudo /sbin/reboot ) > /dev/null 2>&1 & echo $!");
 
 ?>
 
@@ -38,8 +38,8 @@ $pid = system("(sleep 2 ; sudo /sbin/reboot ) > /dev/null 2>&1 & echo $!");
             <p class="lead">A reboot will follow if everything is set up correctly...</p>
         </div>
         <div class="row">
-            <div class="col-md-6 text-right">The PID:</div>
-            <div class="col-md-6 text-left"><?php echo $pid; ?></div>
+            <div class="col-md-6">The PID:</div>
+            <div class="col-md-6"><?php echo $pid; ?></div>
             <div class="col-md-12">Please close this page now.</div>
         </div>
     </div>
@@ -51,5 +51,3 @@ $pid = system("(sleep 2 ; sudo /sbin/reboot ) > /dev/null 2>&1 & echo $!");
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
   </body>
 </html>
-
-
