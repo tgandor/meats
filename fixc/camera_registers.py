@@ -68,7 +68,7 @@ to_translate = """
             {0x3092 , 0x0a49},
             {0x3094 , 0x4949},
             {0x3096 , 0x4950},
-            
+
             {0x316c , 0x350f},
             {0x001e , 0x0777},
 """
@@ -239,7 +239,7 @@ def var_desc(id_, offset, val, val_vars={}):
         '_vert_flip={}'.format(_get_bits(val, 1)),
         '_horiz_mirror={}'.format(_get_bits(val, 0)),
         ]
-    
+
     if id_==18 and offset==12+72:
         return [
         'cam1_ctx_a:',
@@ -251,7 +251,7 @@ def var_desc(id_, offset, val, val_vars={}):
         '_vert_flip={}'.format(_get_bits(val, 1)),
         '_horiz_mirror={}'.format(_get_bits(val, 0)),
         ]
-    
+
     if id_ in (26, 27) and offset==160:
         return [
         'pri_a_config_jpeg_ob_:' if id_ == 26 else 'pri_b_config_jpeg_ob_:',
@@ -278,14 +278,14 @@ def var_desc(id_, offset, val, val_vars={}):
         'setperiod={}'.format(_get_bits(val, 1)),
         'detectperiod={}'.format(_get_bits(val, 0)),
         ]
-    
+
     if id_ in (26, 27) and offset==142:
         return [
         'pri_a_config_jpeg_:' if id_ == 26 else 'pri_b_config_jpeg_:',
         'tn_enable={}'.format(_get_bits(val, 1)),
         'jp_enable={}'.format(_get_bits(val, 0)),
         ]
-    
+
     if id_ in (26, 27) and offset==7:
         return [
         'pri_a_of_ (o/format):' if id_ == 26 else 'pri_a_of_ (o/format):',
@@ -298,7 +298,7 @@ def var_desc(id_, offset, val, val_vars={}):
         'rgb565={}'.format(_get_bits(val, 2)),
         'yuv422={}'.format(_get_bits(val, 0)),
         ]
-    
+
     if id_ in (26, 27) and offset==144:
         return [
         'pri_a_config_jpeg_jp_cfg_' if id_ == 26 else 'pri_b_config_jpeg_jp_cfg_:',
@@ -488,7 +488,7 @@ def comment_decompile(data):
     for f, val in data:
         if type(val) != int:
             f, val = val, f
-        print('            {%s , 0x%04x }, // %s' 
+        print('            {%s , 0x%04x }, // %s'
             % (f.__name__, val, ' '.join(f(val))))
 
 # comment_decompile(data)

@@ -16,7 +16,7 @@ def arch_of(dll_file):
         f.seek(offset, os.SEEK_SET)
         pehdr = f.read(6)
         # careful! H == unsigned short, x64 is negative with signed
-        magic, padding, machine = struct.unpack('2s2sH', pehdr) 
+        magic, padding, machine = struct.unpack('2s2sH', pehdr)
         # print magic, hex(machine)
         if magic != b'PE':
             return None
@@ -27,5 +27,5 @@ def arch_of(dll_file):
         if machine == 0x8664:
             return 'x64'
         return 'unknown'
-        
+
 print(arch_of(sys.argv[1]))

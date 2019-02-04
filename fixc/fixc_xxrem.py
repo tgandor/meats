@@ -22,5 +22,5 @@ else:
             open(f+"~", "w").write(data)
             open(f, "w").write(changed)
 
-        
+
 

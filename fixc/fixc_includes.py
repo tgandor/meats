@@ -28,7 +28,7 @@ def fix_includes(bulk):
                     bulk = "#include <%s>%s%s" % (heading, eol, bulk)
                     break
     return bulk
-                
+
 if len(sys.argv) < 2:
     sys.stdout.write(fix_includes(sys.stdin.read()))
 else:

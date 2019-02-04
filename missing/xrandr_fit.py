@@ -38,7 +38,7 @@ def find_best_pairs(local, remote):
     for local_device, local_resolutions in local:
         for remote_device, remote_resolutions in remote:
             for res in remote_resolutions:
-                good = [res2 for res2 in local_resolutions 
+                good = [res2 for res2 in local_resolutions
                         if res2[0] >= res[0] and res2[1] >= res[1]]
                 # print good
                 if len(good):

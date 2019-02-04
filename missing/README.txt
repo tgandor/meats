@@ -1,6 +1,6 @@
 
 This tool has two versions - one written more cleanly "sorth" and a file,
-which contains a one-liner (yes, Python also allows for one liners, but - 
+which contains a one-liner (yes, Python also allows for one liners, but -
 as you'll see - they are longer and more complicated then in Perl).
 
 The one liner is sometimes a nice thing to keep in commandline history,

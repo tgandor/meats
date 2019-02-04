@@ -8,7 +8,7 @@ fi
 times=$1
 shift
 
-for i in `seq 1 $times`; do 
+for i in `seq 1 $times`; do
 	"$@"
 done
 

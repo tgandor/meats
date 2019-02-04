@@ -6,7 +6,7 @@ fsutil dirty query %systemdrive% >nul 2>nul
 IF %ERRORLEVEL% == 0 goto :elevated
     rem Save working directory
     echo pushd "%cd%" > "%temp%\getadmin_cwd.bat"
-    rem Prepare script 
+    rem Prepare script
     echo Set UAC = CreateObject^("Shell.Application"^) >> "%temp%\getadmin.vbs"
     echo UAC.ShellExecute "%~s0", "%*", "%cd%", "runas", 1 >> "%temp%\getadmin.vbs"
     rem Execute - pops up new shell

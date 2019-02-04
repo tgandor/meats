@@ -7,5 +7,5 @@ goto:eof
 
 :usage
 @echo Usage: %0 Interface
-@echo Resets "Interface" to DHCP address and DNS servers. 
+@echo Resets "Interface" to DHCP address and DNS servers.
 @echo Remember to be admin.
