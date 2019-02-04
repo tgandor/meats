@@ -23,16 +23,16 @@ char* trim_directives(char *source)
 	num_sub = regex->re_nsub + 1;
 	match = (regmatch_t *) malloc (sizeof(regmatch_t) * num_sub);
     assert(match != 0);
-	
+
 	while (regexec(regex, source + offset, num_sub, match, 0) == 0) {
 		int skip;
 		int total_length;
 		int directive_length;
-		
+
  	    // err_nr = regexec(regex, source + offset, num_sub, match, 0);
 		// printf("Blad: %d\n", err_nr);
 		// printf("%d %d\n", match->rm_so, match->rm_eo);
-		
+
 		// dopisanie do wyjscia tego, co poprzedza -- concat up to here
 		astrn0cat(&output, source+offset, match->rm_so);
 
@@ -44,14 +44,14 @@ char* trim_directives(char *source)
 		// printf("Total: >%s<\n", line);
 		astrn0cpy(&line, source+offset+match[1].rm_so, directive_length);
 		// printf(">%s<\n", line);
-		
+
 		skip = match->rm_eo;
 		if (is_useful_directive(line))
 		{
 			// puts("Ta dyrektywa jest ok\n");
 			astrn0cat(&output, source+offset, total_length);
 		}
-		else 
+		else
 		{
 			// puts("Ta dyrektywa zostanie usunieta");
 			while (source[offset+skip] == '\n' || source[offset+skip] == '\r') ++skip;
@@ -81,7 +81,7 @@ void trim_directives_from(char **source)
 int is_useful_directive(char *directive)
 {
 	int i;
-	for (i = 0; i < NUM_DIRECTIVES; i++) 
+	for (i = 0; i < NUM_DIRECTIVES; i++)
 	{
 		if(!strcmp(directive, neccessary_directives[i]))
 			return 1;
@@ -104,10 +104,10 @@ char *trim_all_directives(char *source)
 	num_sub = regex->re_nsub + 1;
 	match = (regmatch_t *) malloc (sizeof(regmatch_t) * num_sub);
     assert(match != 0);
-	
+
 	while (regexec(regex, source + offset, num_sub, match, 0) == 0) {
 		int skip;
-		
+
 		// dopisanie do wyjscia tego, co poprzedza -- concat up to here
 		astrn0cat(&output, source+offset, match->rm_so);
 

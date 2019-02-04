@@ -12,7 +12,7 @@ int main() {
 	if (ret==32)
 		buffer[31]='\0';
 
-	if (ret) 
+	if (ret)
 		printf("multibyte string: %s\n", buffer);
 
 	return 0;

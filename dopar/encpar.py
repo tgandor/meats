@@ -30,7 +30,7 @@ def read_env():
     COMMAND_PATTERN = os.getenv('COMMAND_PATTERN', COMMAND_PATTERN)
     NUM_PROC = int(os.getenv('NUM_PROC', NUM_PROC))
     print (COMMAND_PATTERN, NUM_PROC)
-    
+
 def process_files(files):
     """Run COMMAND_PATTERN for its arguments using NUM_PROC threads."""
     q = Queue()
@@ -44,4 +44,4 @@ def process_files(files):
 if __name__=='__main__':
     read_env()
     process_files(sys.argv[1:])
-    
+

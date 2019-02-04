@@ -2,7 +2,7 @@
 
 using namespace std;
 
-template <int N> 
+template <int N>
 void array_info(char (&c)[N]) {
     cout << "Array is " << N << " elements long." << endl;
 }

@@ -29,7 +29,7 @@ for target_dir in sys.argv[2:]:
 
 print("{} files altogether.".format(len(all_target_files), target_dir))
 
-files_copied = [f for f in files 
+files_copied = [f for f in files
     if os.path.basename(f) in all_target_files]
 
 if len(files_copied) < len(files):

@@ -10,7 +10,7 @@
 #include "atom_codes.h"
 #include "metrics.h"
 
-/* 
+/*
 Macro for distinction by another parser
 ---
 Makro rozpoznawane przez parser getatoms
@@ -26,10 +26,10 @@ static int column;
 static ATOM construct_atom(int type);
 static int handle_single_char(int c);
 static int handle_token(int t);
-static int decision; 
+static int decision;
 
 struct metrics atpasMetrics;
-static UNIQUE_DICTIONARY atpasId; 
+static UNIQUE_DICTIONARY atpasId;
 
 #define DECIDE(atom) { if((decision=handle_token(atom))!=-1) return construct_atom(decision); }
 
@@ -52,7 +52,7 @@ NQUOTE [^']
 "DOWNTO"      DECIDE(_ATOM(DOWNTO));
 "ELSE"        { atpasMetrics.else_keywords++; DECIDE(_ATOM(ELSE)); }
 "FOR"         { atpasMetrics.for_keywords++; DECIDE(_ATOM(FOR)); }
-"FORWARD"     DECIDE(_ATOM(FORWARD));  
+"FORWARD"     DECIDE(_ATOM(FORWARD));
 "INLINE"      DECIDE(_ATOM(INLINE));
 "FUNCTION"    DECIDE(_ATOM(FUNCTION));
 "GOTO"        DECIDE(_ATOM(GOTO));
@@ -80,22 +80,22 @@ NQUOTE [^']
 "TYPE"        DECIDE(_ATOM(TYPE));
 "UNTIL"       DECIDE(_ATOM(UNTIL));
 "VAR"         DECIDE(_ATOM(VAR));
-"WHILE"       { atpasMetrics.while_keywords++; DECIDE(_ATOM(WHILE)); } 
+"WHILE"       { atpasMetrics.while_keywords++; DECIDE(_ATOM(WHILE)); }
 "WITH"        DECIDE(_ATOM(WITH));
 
 "ORD"	DECIDE(_ATOM(ORD));
 "USES"	DECIDE(_ATOM(USES));
 
-"REAL"       DECIDE(_ATOM(BUILTINTYPE)); 
-"EXTENDED"   DECIDE(_ATOM(BUILTINTYPE)); 
-"INTEGER"    DECIDE(_ATOM(BUILTINTYPE)); 
-"LONGINT"    DECIDE(_ATOM(BUILTINTYPE)); 
-"BOOLEAN"    DECIDE(_ATOM(BUILTINTYPE)); 
-"BYTE"       DECIDE(_ATOM(BUILTINTYPE)); 
-"CHAR"       DECIDE(_ATOM(BUILTINTYPE)); 
-"STRING"     DECIDE(_ATOM(BUILTINTYPE)); 
-"ANSISTRING" DECIDE(_ATOM(BUILTINTYPE)); 
-"POINTER"    DECIDE(_ATOM(BUILTINTYPE)); 
+"REAL"       DECIDE(_ATOM(BUILTINTYPE));
+"EXTENDED"   DECIDE(_ATOM(BUILTINTYPE));
+"INTEGER"    DECIDE(_ATOM(BUILTINTYPE));
+"LONGINT"    DECIDE(_ATOM(BUILTINTYPE));
+"BOOLEAN"    DECIDE(_ATOM(BUILTINTYPE));
+"BYTE"       DECIDE(_ATOM(BUILTINTYPE));
+"CHAR"       DECIDE(_ATOM(BUILTINTYPE));
+"STRING"     DECIDE(_ATOM(BUILTINTYPE));
+"ANSISTRING" DECIDE(_ATOM(BUILTINTYPE));
+"POINTER"    DECIDE(_ATOM(BUILTINTYPE));
 
 
 [a-zA-Z_]([a-zA-Z0-9_])* { atpasMetrics.identifiers++; unique_dictionary_add(atpasId, yytext); DECIDE(_ATOM(IDENTIFIER)); }
@@ -108,11 +108,11 @@ NQUOTE [^']
 
 '[^']*'	DECIDE(_ATOM(STRINGLIT));
 
-[-:,.=>\[(<\]+);/*^] { 
+[-:,.=>\[(<\]+);/*^] {
    decision = handle_single_char (*yytext);
    if (decision != -1)
-     return construct_atom(decision); 
-} 
+     return construct_atom(decision);
+}
 
 ".."    DECIDE(_ATOM(DOTDOT));
 "<="    DECIDE(_ATOM(LE));
@@ -130,14 +130,14 @@ NQUOTE [^']
 
 "//"        { offset+=2; while (input() != '\n') ++offset; lineno++; column=0; }
 "\n"|"\r\n" { lineno++; offset+=yyleng; column=0; }
-[ \t\f]+    { offset+=yyleng; column+=yyleng; }    
+[ \t\f]+    { offset+=yyleng; column+=yyleng; }
 
-<<EOF>> { 
-  atpasMetrics.lines=lineno; 
+<<EOF>> {
+  atpasMetrics.lines=lineno;
   atpasMetrics.unique_ids = atpasId->count;
   free_unique_dictionary(atpasId);
   free(atpasId);
-  return (ATOM)0; 
+  return (ATOM)0;
 }
 
 .    { fprintf (stderr, _("'%c' (%d) illegal charcter at line %d\n"), *yytext, *yytext, lineno); }
@@ -181,10 +181,10 @@ static void skip_star_comment()
 
 	c1 = input();
 	c2 = input();
-  
-	while (c2 != EOF && !(c1 == '*' && c2 == ')')) 
+
+	while (c2 != EOF && !(c1 == '*' && c2 == ')'))
 	{
-		if (c1 == '\n') 
+		if (c1 == '\n')
 		{
 			++lineno;
 			column = 0;
@@ -210,12 +210,12 @@ int handle_single_char(int c)
   column ++;
   switch(c)
   {
-  /* 
-	Atoms which are not interesting 
+  /*
+	Atoms which are not interesting
 	---
 	Atomy, które nie s± ciekawe
-	*/ 
-	case ';': 
+	*/
+	case ';':
 	  atpasMetrics.semicolons++;
     case ',':    /*  COMMA  */
     case ':':    /*  COLON  */
@@ -292,7 +292,7 @@ int handle_token(int t)
     case XOR:
     case NOT:
 	  return _ATOM(LOGIC);
-	  
+
     case USES:
 	  return _ATOM(OTHER);
     case NIL:
@@ -303,14 +303,14 @@ int handle_token(int t)
     case NOTEQUAL:  /*   "<>"    */
     case IN:
 	  return _ATOM(RELATION);
-	  
+
     case RECORD:
     case ARRAY:
     case SET:
 	case PFILE:
 	  return _ATOM(BUILTINTYPE);
 	/*
-	Tokens to be filtered out 
+	Tokens to be filtered out
 	---
 	Tokeny do odfiltrowania
 	*/
@@ -334,7 +334,7 @@ int handle_token(int t)
   return _ATOM(IMPOSSIBLE);
 }
 
-ATOM 
+ATOM
 construct_atom(int type)
 {
   ATOM ret_atom;

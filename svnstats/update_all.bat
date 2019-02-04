@@ -67,16 +67,16 @@ goto:eof
 	if %mins% lss 0 set /a hours = %hours% - 1 & set /a mins = 60%mins%
 	if %secs% lss 0 set /a mins = %mins% - 1 & set /a secs = 60%secs%
 	if %ms% lss 0 set /a secs = %secs% - 1 & set /a ms = 100%ms%
-	
+
 	:: mission accomplished
-	set /a totalsecs = %hours%*3600 + %mins%*60 + %secs% 
-	
+	set /a totalsecs = %hours%*3600 + %mins%*60 + %secs%
+
 	:: zero padding - note: must be after computing the totalsecs variable
 	if 1%ms% lss 100 set ms=0%ms%
 	if %hours% lss 10 set hours=0%hours%
 	if %mins% lss 10 set mins=0%mins%
 	if %secs% lss 10 set secs=0%secs%
-	
+
 	echo %hours%:%mins%:%secs%.%ms% elapsed (%totalsecs%.%ms%s total)
 @endlocal
 goto:eof

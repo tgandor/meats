@@ -34,7 +34,7 @@ def main():
         exit()
 
     results = list(filter(
-        lambda x: matches_filter(x, filter_), 
+        lambda x: matches_filter(x, filter_),
         list(nonogram(size, numbers))))
     was_marked = [False] * size
     was_empty = [False] * size
@@ -102,14 +102,14 @@ def nonogram(size, elements, min_slack=0):
     if not elements:
         yield EMPTY * size
         return
-    
+
     max_slack = size - packed_size(elements)
-    
+
     for slack in range(min_slack, max_slack+1):
         new_size = size - slack - elements[0]
         new_elements = elements[1:]
         prefix = EMPTY * slack + MARKED * elements[0]
-        
+
         for result in nonogram(new_size, new_elements, 1):
             yield prefix + result
 

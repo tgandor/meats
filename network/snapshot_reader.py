@@ -128,7 +128,7 @@ def process_snapshot(serial_, header):
                 break
 
         print('Saving results, Zbar {}, Barcode: {}'.format(result, barcode))
-        
+
         with open(timestamp + '_OKAY.txt', 'wb') as f:
             f.write(header)
             f.write(line)

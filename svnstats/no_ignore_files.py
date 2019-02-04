@@ -50,7 +50,7 @@ def _get_alien_files(versioned, top='', externals=set()):
         elif isdir(full_path) and not islink(full_path):
             for alien in _get_alien_files(versioned, full_path, externals):
                 yield alien
-    
+
 def get_alien_files__db(wc_root=''):
     wcdb_file = os.path.join(wc_root, '.svn', 'wc.db')
     if not os.path.exists(wcdb_file):

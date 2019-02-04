@@ -451,10 +451,10 @@ static int column;
 static ATOM construct_atom(int type);
 static int handle_single_char(int c);
 static int handle_token(int t);
-static int decision; 
+static int decision;
 
 struct metrics atbanMetrics;
-static UNIQUE_DICTIONARY atbanId; 
+static UNIQUE_DICTIONARY atbanId;
 
 #define DECIDE(atom) { if((decision=handle_token(atom))!=-1) return construct_atom(decision); }
 
@@ -708,11 +708,11 @@ YY_RULE_SETUP
 case 3:
 YY_RULE_SETUP
 #line 37 "atomizer_banal.l"
-{ 
+{
    decision = handle_single_char (*yytext);
    if (decision != -1)
-     return construct_atom(decision); 
-} 
+     return construct_atom(decision);
+}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
@@ -827,19 +827,19 @@ YY_RULE_SETUP
 case 26:
 YY_RULE_SETUP
 #line 71 "atomizer_banal.l"
-{ 
-   fprintf(stderr, _("%d: unexpected character `%c'\n"), lineno, *yytext); 
+{
+   fprintf(stderr, _("%d: unexpected character `%c'\n"), lineno, *yytext);
    ++offset; ++column;
 }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 #line 76 "atomizer_banal.l"
-{ 
-  atbanMetrics.lines=lineno; 
+{
+  atbanMetrics.lines=lineno;
   atbanMetrics.unique_ids = atbanId->count;
   free_unique_dictionary(atbanId);
   free(atbanId);
-  return (ATOM)0; 
+  return (ATOM)0;
 }
 	YY_BREAK
 case 27:
@@ -1738,11 +1738,11 @@ int handle_single_char(int c)
 {
   switch(c)
   {
-    /* 
-	Atoms which are not interesting 
+    /*
+	Atoms which are not interesting
 	---
 	Atomy, które nie s± ciekawe
-	*/ 
+	*/
     case ';':
 	case ',':
 	  return -1;
@@ -1751,9 +1751,9 @@ int handle_single_char(int c)
 	---
 	Atomy, które s± ciekawe
 	*/
-	case '{': 
+	case '{':
 	  return _ATOM(BEGN);
-	case '}': 
+	case '}':
 	  return _ATOM(END);
 	case '+':
 	  atbanMetrics.plus++;
@@ -1816,7 +1816,7 @@ int handle_token(int t)
   return _ATOM(IMPOSSIBLE);
 }
 
-ATOM 
+ATOM
 construct_atom(int type)
 {
   ATOM atbanlval;

@@ -2,7 +2,7 @@
     Summary/Purpose: define macros used to promote cross-platform
                      compatibility.
 
-   - - - - - - - - - - - - Copyright Notice - - - - - - - - - - - - 
+   - - - - - - - - - - - - Copyright Notice - - - - - - - - - - - -
      Copyright 1998 Forrest J. Cavalier III
 
    See http://www.mibsoftware.com/libmib/ for documentation and
@@ -36,7 +36,7 @@
       built from modified source code may be distributed.  Unless other
       licensing agreements are made in writing,
          a) Source code modifications shall be distributed only as
-	    "patch files." 
+	    "patch files."
       and
          b) When source code of the Software is distributed, it shall
 	    be in its "pristine", unmodified form.

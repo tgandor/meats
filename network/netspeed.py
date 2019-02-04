@@ -64,7 +64,7 @@ while True:
         if idle_secs == next_report:
             print(time.strftime('%H:%M:%S') + " %d seconds idle" % idle_secs)
             sys.stdout.flush()
-            if next_report < max_idle: 
+            if next_report < max_idle:
                 next_report *= 2
             else:
                 next_report += max_idle
@@ -75,7 +75,7 @@ while True:
         idle_secs = 0
         next_report = interval
     os.system('xset led 3')
-    print(time.strftime('%H:%M:%S') 
+    print(time.strftime('%H:%M:%S')
         + " Recv %s, Send %s. Total: %s, %s." % tuple(
             map(human_format, (rxb-rxb0, txb-txb0, rxb, txb))))
     sys.stdout.flush()

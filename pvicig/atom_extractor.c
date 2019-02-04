@@ -1568,10 +1568,10 @@ int main(int argc, char **argv)
 	  break;
 	}
   }
-  
-  for (i=optind; i<argc; i++) 
+
+  for (i=optind; i<argc; i++)
   {
-    if ( yyin = fopen(argv[i], "r") ) 
+    if ( yyin = fopen(argv[i], "r") )
 	{
       yylex();
 	  fclose(yyin);
@@ -1594,7 +1594,7 @@ int main(int argc, char **argv)
 	fprintf(h_out, "\nextern const char *atom_names[];\n");
 	if(close_h)
 	  fprintf(h_out, "\n#endif\n");
-	
+
 	/* C file */
 	fprintf(c_out, "\nconst char *atom_names[] = \n{\n");
     fprintf(c_out, "  \"%s\",\n", atomdict.entries->word);

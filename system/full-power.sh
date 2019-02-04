@@ -15,4 +15,4 @@ if [ "$1" != "show" -a "$1" != "list" ] ; then
 fi
 
 echo "Checking:"
-head /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor 
+head /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor

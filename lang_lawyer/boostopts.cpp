@@ -12,7 +12,7 @@ int main()
 	desc.add_options()
 		("help", "Print help messages")
 		("add", po::value<int>()->default_value(10), ("additional options"));
-		
+
 	try
 	{
 		po::store(po::parse_config_file<char>("boostopts.conf", desc), vm);
@@ -23,8 +23,8 @@ int main()
 		const char *argv[2] = {"dummy", 0};
 		po::store(po::parse_command_line(argc, argv, desc), vm);
 	}
-	
-	if ( vm.count("help")  ) 
+
+	if ( vm.count("help")  )
 	{
 		std::cout << desc << std::endl;
 		return 0;
@@ -33,7 +33,7 @@ int main()
 	{
 		std::cout << "Help option not specified..." << std::endl;
 	}
-	
+
 	std::cout << "In the end 'add' is: " << vm["add"].as<int>() << std::endl;
 	return 0;
 }

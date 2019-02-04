@@ -1,9 +1,9 @@
 #include <iostream>
- 
+
 int main()
 {
   int a, b;
- 
+
   for (a = 0; a < 5; a++)
   {
     __asm ( "mov %1, %%eax; "            // a into eax
@@ -15,6 +15,6 @@ int main()
          );
     std::cout << "The code " << a << " gives " << b << std::endl;
   }
- 
+
   return 0;
 }

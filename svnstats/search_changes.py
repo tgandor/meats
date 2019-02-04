@@ -23,7 +23,7 @@ def revisions_for_path(path, stay_on_branch=False):
     command = 'svn log -q %s %s' % (stop_option, path)
     log = os.popen(command).read()
     return rev.findall(log)
-    
+
 
 def list_summary(list_, sample_size=2):
     if len(list_) <= 2 * sample_size:
@@ -31,7 +31,7 @@ def list_summary(list_, sample_size=2):
     head = repr(list_[:sample_size])
     tail = repr(list_[-sample_size:])
     return head[:-1] + ', ..., ' + tail[1:]
-    
+
 
 def revision_diff(path, revision):
     command = 'svn diff -c %s %s' % (revision, path)
@@ -42,7 +42,7 @@ def revision_log(revision):
     command = 'svn log -r %s' % (revision,)
     return os.popen(command).read()
 
-    
+
 def report_diff(diff, args):
     if not args.diff:
         return
@@ -51,7 +51,7 @@ def report_diff(diff, args):
         if args.diff in line and (not args.new or line.startswith('+')):
             print(line)
 
-            
+
 def main():
     args = arguments()
     revisions = revisions_for_path(args.path, args.branch)
@@ -73,5 +73,5 @@ def main():
             print()
 
 
-if __name__ == '__main__':  
+if __name__ == '__main__':
     main()

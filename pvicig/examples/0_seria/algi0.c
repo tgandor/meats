@@ -10,7 +10,7 @@ int main()
     r1 = (3.+sqrt(5))/2.;
     r2 = (3.-sqrt(5))/2.;
 
-    for (int i=0; i<20000; i++) {    
+    for (int i=0; i<20000; i++) {
       printf("%d: %Le\n", i, A + B);
       A *= r1;
       B *= r2;

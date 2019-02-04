@@ -89,8 +89,8 @@ def main():
 
     if status is None:
         files_generator = get_alien_files__pipe()
-    else: 
-        files_generator = get_alien_files__entries() 
+    else:
+        files_generator = get_alien_files__entries()
 
     for filename in files_generator:
 

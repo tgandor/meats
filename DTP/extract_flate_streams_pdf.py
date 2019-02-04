@@ -22,7 +22,7 @@ class PdfFlateStreamExaminer(object):
         self.start = None
         self.end = None
         self.stream_num = 0
-        
+
     def process(self):
         while self.next_stream_start():
             if not self.next_stream_end():
@@ -32,14 +32,14 @@ class PdfFlateStreamExaminer(object):
             self.process_stream_data(self.data[self.start:self.end])
             print('-'*40)
             self.stream_num += 1
-        
+
     def next_stream_start(self):
         flate_filter_pos = self.data.find('/Filter/FlateDecode', self.current_pos)
         if flate_filter_pos == -1:
             flate_filter_pos = self.data.find('/Filter /FlateDecode', self.current_pos)
         if flate_filter_pos == -1:
            return False
-        
+
         self.start = find_after(self.data, 'stream\r\n', flate_filter_pos)
         self.current_pos = self.start
         return True
@@ -50,7 +50,7 @@ class PdfFlateStreamExaminer(object):
             return False
         self.current_pos = self.end
         return True
-        
+
     def process_stream_data(self, zipped):
         result = zlib.decompress(zipped)
         re_zlib = zlib.compress(result)
@@ -58,11 +58,11 @@ class PdfFlateStreamExaminer(object):
         print('Decompressed: %d bytes' % len(result))
         print('Re-deflated: %d bytes' % len(re_zlib))
         print('Re-bzipped2: %d bytes' % len(re_bz2))
-        
+
         output_file = '{0}_stream_{1}.txt'.format(self.filename, self.stream_num)
         open(output_file, 'wb').write(result)
         print('Data saved to: {0}'.format(output_file))
-        
+
 
 if __name__=='__main__':
     PdfFlateStreamExaminer(sys.argv[1]).process()

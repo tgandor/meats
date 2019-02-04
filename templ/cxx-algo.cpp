@@ -40,7 +40,7 @@ using namespace std;
 
 template<class T1, class T2>
 ostream& operator<< (ostream& o, const pair<T1, T2> &p) {
-    return o << '(' << p.p1 << ", " << p.p2 << ')';    
+    return o << '(' << p.p1 << ", " << p.p2 << ')';
 }
 
 template<class T>
@@ -49,7 +49,7 @@ ostream& operator<< (ostream& o, const list<T> &l) {
     o << '[';
     if ( i != l.end() )
         o << *i++;
-    for(; i != l.end(); ++i) 
+    for(; i != l.end(); ++i)
         o << ", " << *i;
     return o << ']';
 }
@@ -60,7 +60,7 @@ ostream& operator<< (ostream& o, const deque<T> &l) {
     o << "deq[";
     if ( i != l.end() )
         o << *i++;
-    for(; i != l.end(); ++i) 
+    for(; i != l.end(); ++i)
         o << ", " << *i;
     return o << ']';
 }
@@ -84,15 +84,15 @@ public:
     bn(long long x = 0LL) {
         load(x);
     }
-    
+
     bn(const bn &tpl) : limbs(tpl.limbs) {}
-    
+
     void load(long long x) {
         limbs.clear();
-        do { 
+        do {
             limbs.PB(x % BNM);
             x /= BNM;
-        } while (x);        
+        } while (x);
     }
     void mul(long long x) {
         long long carry=0, m = x % BNM;
@@ -127,7 +127,7 @@ public:
         limbs.swap(result);
     }
 
-    void mul(const bn& x) 
+    void mul(const bn& x)
     {
         bn result(0);
 	bn pattern(*this);
@@ -139,31 +139,31 @@ public:
 	}
 	limbs.swap(result.limbs);
     }
-    
+
     void add(long long x) {
         *this += bn(x);
     }
-    
+
     const bn& operator+=(const bn &x) {
         LI carry = 0;
-        if ( x.limbs.size() > limbs.size() ) 
+        if ( x.limbs.size() > limbs.size() )
             limbs.resize(x.limbs.size(), 0LL);
         FOR(i, x.limbs.size()) {
             LI temp = limbs[i]+x.limbs[i]+carry;
-            if ( i == limbs.size() ) 
+            if ( i == limbs.size() )
                 limbs.PB(temp % BNM);
             else
                 limbs[i] = temp % BNM;
             carry = temp / BNM;
         }
         if ( carry ) {
-            if ( x.limbs.size() == limbs.size() ) 
+            if ( x.limbs.size() == limbs.size() )
                 limbs.PB(carry);
             else {
                 I i = x.limbs.size();
-                while ( carry ) { 
+                while ( carry ) {
                     LI temp = limbs[i] + carry;
-                    if ( i == limbs.size() ) 
+                    if ( i == limbs.size() )
                         limbs.PB(temp % BNM);
                     else
                         limbs[i] = temp % BNM;
@@ -179,18 +179,18 @@ public:
             return true;
         if ( limbs.size() > x.limbs.size() )
             return false;
-        for(I n = limbs.size()-1; n>=0; --n) 
+        for(I n = limbs.size()-1; n>=0; --n)
             if ( limbs[n] != x.limbs[n] )
                 return limbs[n] < x.limbs[n];
         return false;
     }
-    
+
     bool operator<(const LI &x) {
         if ( x < BNM )
             return limbs.size()==1 && limbs[0]<x;
         return operator<(bn(x));
     }
-    
+
     void out() {
         I n = limbs.size();
         printf("%lld", limbs[n-1]);
@@ -219,10 +219,10 @@ int bitnum[] = {
 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
-4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8    
+4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8
 };
 
-template <class T> 
+template <class T>
 T gcd(T a, T b) {
     T c = a % b;
     while ( c ) { a = b; b = c; c = a % b; }
@@ -232,6 +232,6 @@ T gcd(T a, T b) {
 /// END OF BOILERPLATE ;)
 
 int main() {
-    
+
     return 0;
 }

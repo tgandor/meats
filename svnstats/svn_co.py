@@ -25,7 +25,7 @@ if len(sys.argv) < 2:
     exit(1)
 
 ensure_command('svn', 'subversion')
- 
+
 url_parts = sys.argv[1].split('/')
 
 if url_parts[-1] == '':

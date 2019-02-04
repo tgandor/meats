@@ -7,7 +7,7 @@ if grep -q smsc95xx.macaddr /boot/cmdline.txt ; then
     grep -o 'smsc95xx.macaddr=[0-9A-Fa-f:]*' /boot/cmdline.txt
 else
     echo No MAC spoofing found in /boot/cmdline.txt.
-fi 
+fi
 
 if [ -z "$1" ] ; then
     echo Usage: $0 MA:CA:DD:RE:SS

@@ -7,7 +7,7 @@ fi
 
 addr=$1
 iface=$2
-if [ -z "$iface" ] ; then 
+if [ -z "$iface" ] ; then
     iface=eth0
 fi
 

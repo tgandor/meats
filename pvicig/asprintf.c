@@ -30,20 +30,20 @@
 
      3. The Software may be distributed in modified forms provided that
         the names and reputation of Mib Software and Libmib, and
-        derivatives, shall not be used to advertise, describe, or 
+        derivatives, shall not be used to advertise, describe, or
         distribute the software, except within the source code itself.
-        
+
      4. The electronic and printed documentation external to the source
         code shall not be distributed.
 
-     
+
      5. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
         EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
         MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
         IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
         CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
         TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-        SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+        SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 /*BSELIMP*/
 /**************************************************************/
@@ -95,7 +95,7 @@
 #define ASTRING_HAVE_SNPRINTF 1
 #else
 #ifdef ASTRING_USE_SPRINTF
-    /* 
+    /*
      * If you only have sprintf, but not snprintf(), then there still is
      * an implementation that will work. In very rare cases, it can
      * fail to prevent a buffer overrun.  It exits.
@@ -189,7 +189,7 @@
  */
 int avsprintf(char LIBMIB_PTR * LIBMIB_PTR *ppasz,const char *format,va_list ap)
 {
-    
+
     size_t needlen;
     int cnt; /* Changed from unsigned 10/21/98: need to handle -1 return from vsnprintf */
     char LIBMIB_PTR *ret = 0;
@@ -231,7 +231,7 @@ int avsprintf(char LIBMIB_PTR * LIBMIB_PTR *ppasz,const char *format,va_list ap)
 
 int asprintf(char LIBMIB_PTR * LIBMIB_PTR *ppasz,const char *format,...)
 {
-    
+
     va_list ap;
 
     va_start(ap, format);
@@ -267,7 +267,7 @@ int asprintf(char LIBMIB_PTR * LIBMIB_PTR *ppasz,const char *format,...)
 #endif
 
 /* What follows first are three variants of a local helper function,
-   to handle all cases of format specifiers which take a '*' width argument, 
+   to handle all cases of format specifiers which take a '*' width argument,
    e.g.   ("Printing %10.*s",len,string)
 
    Then the actual astring() function
@@ -298,7 +298,7 @@ LIBMIB_PRIVATE va_list do_snprintfw0(int *cnt, /* return value */
 	    *cnt = snprintf(ARGBUF(buf,cbBuf),pszFormat,va_arg(apnext,short));
 	break;
 #ifdef ASTRING_HAVE_LONG_LONG
-	case 4: 
+	case 4:
 	    *cnt = snprintf(ARGBUF(buf,cbBuf),pszFormat,va_arg(apnext,long long int));
 	break;
 #endif
@@ -364,7 +364,7 @@ LIBMIB_PRIVATE va_list do_snprintfw1(int *cnt, /* return value */
 	    *cnt = snprintf(ARGBUF(buf,cbBuf),pszFormat,w1,va_arg(apnext,short));
 	break;
 #ifdef ASTRING_HAVE_LONG_LONG
-	case 4: 
+	case 4:
 	    *cnt = snprintf(ARGBUF(buf,cbBuf),pszFormat,w1,va_arg(apnext,long long int));
 	break;
 #endif
@@ -430,7 +430,7 @@ LIBMIB_PRIVATE va_list do_snprintfw2(int *cnt, /* return value */
 	    *cnt = snprintf(ARGBUF(buf,cbBuf),pszFormat,w1,w2,va_arg(apnext,short));
 	break;
 #ifdef ASTRING_HAVE_LONG_LONG
-	case 4: 
+	case 4:
 	    *cnt = snprintf(ARGBUF(buf,cbBuf),pszFormat,w1,w2,va_arg(apnext,long long int));
 	break;
 #endif
@@ -479,7 +479,7 @@ LIBMIB_PRIVATE va_list do_snprintfw2(int *cnt, /* return value */
 
 int avsprintf(char **ppasz,const char *format,va_list ap)
 {
-    
+
     va_list apnext;
     int argtype; /* Low 8 bits is size */
 		/* Next 8 bits is type */
@@ -647,7 +647,7 @@ int avsprintf(char **ppasz,const char *format,va_list ap)
 		    /* Don't have snprintf, so we just trashed something
 		     * we give up.
 		     */
-		    
+
 		    PR_CRIT(TSD(F_libmib_astring_102,"F_libmib_astring_102: asnprintf overrun.  didn't predict "));
 		    PR_CRIT(subf);
 		    exit(-1);

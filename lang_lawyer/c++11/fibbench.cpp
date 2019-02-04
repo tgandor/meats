@@ -29,7 +29,7 @@ protected:
 	virtual char do_thousands_sep() const { return ','; }
 	virtual std::string do_grouping() const { return "\003"; }
 };
-	
+
 int main(int argc, char **argv)
 {
 	using namespace std::chrono;
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 #ifdef CNT
 		<< g_calls << " (counted), "
 #endif
-		<< std::setprecision(0) << std::fixed << calls/secs << " c/s." 
+		<< std::setprecision(0) << std::fixed << calls/secs << " c/s."
 		<<  std::endl;
 	return 0;
 }

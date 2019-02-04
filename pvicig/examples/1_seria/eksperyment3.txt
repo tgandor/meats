@@ -1,7 +1,7 @@
 --------------------------------------------------------
 maszyna111.c	-	maszyna110.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   24      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -17,7 +17,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna111.c	-	maszyna101.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   24      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -33,7 +33,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna111.c	-	maszyna100.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   24      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -49,7 +49,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna110.c	-	maszyna101.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   24      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -65,7 +65,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna110.c	-	maszyna100.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   24      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -81,7 +81,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna101.c	-	maszyna100.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   24      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -97,7 +97,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna011.c	-	maszyna010.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     21 -   21      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -113,7 +113,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna011.c	-	maszyna001.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     21 -   21      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -129,7 +129,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna011.c	-	maszyna000.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     21 -   21      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -145,7 +145,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna010.c	-	maszyna001.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     21 -   21      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -161,7 +161,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna010.c	-	maszyna000.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     21 -   21      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -177,7 +177,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna001.c	-	maszyna000.c	100,00%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     21 -   21      100,00 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -193,7 +193,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna111.c	-	maszyna011.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -209,7 +209,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna111.c	-	maszyna010.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -225,7 +225,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna111.c	-	maszyna001.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -241,7 +241,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna111.c	-	maszyna000.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -257,7 +257,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna110.c	-	maszyna011.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -273,7 +273,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna110.c	-	maszyna010.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -289,7 +289,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna110.c	-	maszyna001.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -305,7 +305,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna110.c	-	maszyna000.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -321,7 +321,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna101.c	-	maszyna011.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -337,7 +337,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna101.c	-	maszyna010.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -353,7 +353,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna101.c	-	maszyna001.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -369,7 +369,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna101.c	-	maszyna000.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -385,7 +385,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna100.c	-	maszyna011.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -401,7 +401,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna100.c	-	maszyna010.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -417,7 +417,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna100.c	-	maszyna001.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %
@@ -433,7 +433,7 @@ Warto¶ci metryk:
 --------------------------------------------------------
 maszyna100.c	-	maszyna000.c	 98,61%
 	Liczba kafli: 1, Suma d³ugo¶ci: 81
-Warto¶ci metryk: 
+Warto¶ci metryk:
     24 -   21       87,50 %
     12 -   12      100,00 %
      2 -    2      100,00 %

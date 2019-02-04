@@ -4,10 +4,10 @@ from __future__ import print_function
 class A:
     def f(self):
         pass
-    
+
     def g(self):
         pass
-    
+
 
 class B:
     def f(self):

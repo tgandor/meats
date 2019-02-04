@@ -5,7 +5,7 @@
 #include <malloc.h>
 #include <stdio.h>
 
-struct dictionary_entry 
+struct dictionary_entry
 {
   struct dictionary_entry *next;
   char *word;
@@ -20,7 +20,7 @@ struct unique_dictionary
 };
 typedef struct unique_dictionary* UNIQUE_DICTIONARY;
 
-void 
+void
 unique_dictionary_add(UNIQUE_DICTIONARY dictionary, const char *word);
 
 /*
@@ -36,16 +36,16 @@ new_unique_dictionary();
  * ---
  *  Destruktor
  */
-void 
+void
 free_unique_dictionary(UNIQUE_DICTIONARY dictionary);
 
-DICTIONARY_ENTRY 
+DICTIONARY_ENTRY
 lookup_unique_dictionary(UNIQUE_DICTIONARY dictionary, const char *word);
 
 void
 output_unique_dictionary(UNIQUE_DICTIONARY dictionary);
 
-int 
+int
 delete_from_unique_dictionary(UNIQUE_DICTIONARY dictionary, const char *word);
 
 #endif

@@ -17,7 +17,7 @@ def wake_on_lan(macaddress, ipaddress=None):
     else:
         raise ValueError('Incorrect MAC address format')
     macaddress = macaddress.upper()
- 
+
     # Pad the synchronization stream.
     data = ''.join(['F'*12, macaddress * 20])
 
@@ -33,7 +33,7 @@ def wake_on_lan(macaddress, ipaddress=None):
         sock.sendto(send_data, (ipaddress, 7))
     else:
         sock.sendto(send_data, ('<broadcast>', 7))
-    
+
 def usage():
     import sys
     print "Usage: %s MACADDRESS [IPADDRESS]" % sys.argv[0]
@@ -49,4 +49,4 @@ if __name__ == '__main__':
     else:
         print "Excess arguments:", sys.argv[3:]
         usage()
-    
+

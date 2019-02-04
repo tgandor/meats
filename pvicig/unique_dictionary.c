@@ -7,11 +7,11 @@ new_unique_dictionary()
 	return (UNIQUE_DICTIONARY) calloc ( 1, sizeof (struct unique_dictionary) );
 }
 
-void 
+void
 unique_dictionary_add(UNIQUE_DICTIONARY dictionary, const char *word)
 {
 	DICTIONARY_ENTRY new_entry;
-	
+
 	if (lookup_unique_dictionary(dictionary, word) != (DICTIONARY_ENTRY)0)
 		return;
 	new_entry = (DICTIONARY_ENTRY) malloc (sizeof(*new_entry));
@@ -22,7 +22,7 @@ unique_dictionary_add(UNIQUE_DICTIONARY dictionary, const char *word)
 	++(dictionary->count);
 }
 
-void 
+void
 free_unique_dictionary(UNIQUE_DICTIONARY dictionary)
 {
 	DICTIONARY_ENTRY curr, next;
@@ -36,7 +36,7 @@ free_unique_dictionary(UNIQUE_DICTIONARY dictionary)
 	}
 }
 
-DICTIONARY_ENTRY 
+DICTIONARY_ENTRY
 lookup_unique_dictionary(UNIQUE_DICTIONARY dictionary, const char *word)
 {
 	DICTIONARY_ENTRY result;
@@ -49,11 +49,11 @@ lookup_unique_dictionary(UNIQUE_DICTIONARY dictionary, const char *word)
 void
 output_unique_dictionary(UNIQUE_DICTIONARY dictionary)
 {
-	if (!dictionary->entries) 
+	if (!dictionary->entries)
 	{
 		puts("The dictionary is empty");
 	}
-	else 
+	else
 	{
 		DICTIONARY_ENTRY iter;
 		printf("%d entries:\n", dictionary->count);
@@ -66,7 +66,7 @@ output_unique_dictionary(UNIQUE_DICTIONARY dictionary)
 	}
 }
 
-int 
+int
 delete_from_unique_dictionary(UNIQUE_DICTIONARY dictionary, const char *word)
 {
 	DICTIONARY_ENTRY entry, temp;
@@ -94,7 +94,7 @@ delete_from_unique_dictionary(UNIQUE_DICTIONARY dictionary, const char *word)
 			temp = entry->next;
 			entry->next = entry->next->next;
 			free(temp->word);
-			free(temp); 
+			free(temp);
 			--(dictionary->count);
 		}
 		entry = entry->next;

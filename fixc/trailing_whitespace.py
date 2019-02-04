@@ -27,6 +27,7 @@ EXLUCDED = [
     '.jpg',
     '.png',
     '.jpeg',
+    '.out', # a.out ...
 ]
 
 

@@ -13,12 +13,12 @@ static void record_match_private(QUEUES *queues, Match m, int update_pointer)
 	{
 		q = (QUEUES) malloc (sizeof(struct match_priority_queue));
 		q->right = q->left = 0;
-		q->first = q->last = 
+		q->first = q->last =
 			(struct match_item*) malloc (sizeof (struct match_item));
 		q->first->next = 0;
     	q->first->match = m;
 		q->L = m.L;
-		/* 
+		/*
 		 * update pointer even if not asked
 		 * zmieñ wska¼nik nawet je¿eli to nie by³o wskazane
 		 */
@@ -37,7 +37,7 @@ static void record_match_private(QUEUES *queues, Match m, int update_pointer)
 			q = q->left;
 			q->left = 0;
 			q->L = m.L;
-			q->first = q->last = 
+			q->first = q->last =
 				(struct match_item*) malloc (sizeof(struct match_item));
 			q->first->next = 0;
 			q->first->match = m;
@@ -74,7 +74,7 @@ static void record_match_private(QUEUES *queues, Match m, int update_pointer)
 			q = q->right;
 			q->right = 0;
 			q->L = m.L;
-			q->first = q->last = 
+			q->first = q->last =
 				(struct match_item*) malloc (sizeof(struct match_item));
 			q->first->next = 0;
 			q->first->match = m;
@@ -201,14 +201,14 @@ TILES perform_GST(ATOM *pattern_atoms, int lp, ATOM *text_atoms, int lt)
 	int s = GST_initial;
 	/* maximal length of found match */
 	int L_max;
-	/* 
+	/*
 	 * Initialize GST control structure (class)
 	 * ---
 	 *  Inicjalizacja struktury steruj±cej algorytmem GST
 	 */
 	GST gst = (GST) malloc (sizeof(*gst));
 	gst->p_marks = calloc(lp+1, sizeof(int));
-	gst->p_marks[lp] = 1; 
+	gst->p_marks[lp] = 1;
 	gst->t_marks = calloc(lt+1, sizeof(int));
 	gst->t_marks[lt] = 1;
 	gst->theTiles = (TILES) calloc(1, sizeof(struct tiles));
@@ -230,7 +230,7 @@ TILES perform_GST(ATOM *pattern_atoms, int lp, ATOM *text_atoms, int lt)
 				s /= 2;
 			else if ( s > GST_shortest )
 				s = GST_shortest;
-			else 
+			else
 				break;
 		}
 	}
@@ -300,7 +300,7 @@ static int find_appropriate_prime(int lower_bound)
 static int modular_power(int base, int exponent)
 {
   int result=1, factor=base;
-  while ( exponent ) 
+  while ( exponent )
   {
     if ( exponent & 1 )
 	  result = result * factor % KR_modulus;
@@ -338,16 +338,16 @@ int scan_patterns(int s, GST gst)
 	int position;
 	struct link *hash_link;
 	int recorded = 0;
-	
-	t=0; 
+
+	t=0;
 	while (t + s <= gst->lt)
 	{
-		if(gst->t_marks[t] || gst->t_marks[t+s-1]) 
+		if(gst->t_marks[t] || gst->t_marks[t+s-1])
 		{
 			t++;
 			continue;
 		}
-		
+
 		if (t == last_hash+1) /* quick hashing */
 		{
 			hash = ((hash + mbs * gst->T[t-1]->code) * KR_base + gst->T[t+s-1]->code) % KR_modulus;
@@ -379,8 +379,8 @@ int scan_patterns(int s, GST gst)
 		{
 			p++;
 			continue;
-		}	
-		
+		}
+
 		if (p == last_hash+1) /* quick hashing */
 		{
 			hash = ((hash + mbs * gst->P[p-1]->code) * KR_base + gst->P[p+s-1]->code) % KR_modulus;
@@ -502,12 +502,12 @@ void mark_strings(int s, GST gst)
 				}
 				gst->theTiles->num++;
 				gst->theTiles->sum_lengths += m.L;
-				/* 
+				/*
 				 * marking tokens
 				 * ---
 				 *  zaznaczanie atomów
 				 */
-				for (i=0; i<m.L; i++) 
+				for (i=0; i<m.L; i++)
 				{
 				  gst->t_marks[m.t+i] = 1;
 				  gst->p_marks[m.p+i] = 1;

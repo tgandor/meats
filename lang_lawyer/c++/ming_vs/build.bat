@@ -17,7 +17,7 @@ if "%BEST_TOOLS%"=="none" (
 )
 :: echo Best tools found %BEST_TOOLS%
 
-"%BEST_TOOLS%..\..\VC\bin\cl.exe" 
+"%BEST_TOOLS%..\..\VC\bin\cl.exe"
 
 if "%1"=="" (
     echo "BTW, usage: %0 [DLL(=mingw) [EXE](=msvc)]"
@@ -47,7 +47,7 @@ if %ARCH%==x64 (
     call "%BEST_TOOLS%..\..\VC\vcvarsall.bat" amd64
 ) else (
     call "%BEST_TOOLS%vsvars32.bat"
-)    
+)
 
 lib /machine:%ARCH% /def:lib_orig.def
 

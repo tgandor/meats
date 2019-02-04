@@ -1,6 +1,6 @@
 #ifndef _INC_ATOM_CODES_H
 #define _INC_ATOM_CODES_H
-enum atoms 
+enum atoms
 {
   INPUT,
   PRINT,

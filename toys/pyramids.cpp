@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 	vector<int> pyramids(n);
 	for (int i=1; i <= n; ++i)
 		pyramids[i-1] = i;
-	do 
+	do
 	{
 		cout << left(pyramids) << " --- ";
 		copy(pyramids.begin(), pyramids.end(), ostream_iterator<int>(cout, " "));

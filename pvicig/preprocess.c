@@ -2,11 +2,11 @@
 
 /**
  * Tries to preprocess given string with the C preprocessor.
- * If the preprocessor is not in the path, returns the 
+ * If the preprocessor is not in the path, returns the
  * unchanged string.
  * --------------
  * Próbuje poddaæ podany napis (kod ¼ród³owy) przetwarzaniu
- * preprocesorem CPP. Je¿eli nie uda siê to (nie mo¿na 
+ * preprocesorem CPP. Je¿eli nie uda siê to (nie mo¿na
  * znale¼æ programu cpp), zwracany jest napis oryginalny.
  */
 
@@ -21,16 +21,16 @@ char *preprocess(char *source)
   int send[2], recv[2];
   int filter_status;
   pid_t pid;
-  
+
   // printf("Zaraz beda pipy\n");
-  if (pipe(send)  || pipe(recv)) 
+  if (pipe(send)  || pipe(recv))
 	  return source;
-  
+
   // printf("Proces glowny - zaczynam forkowac\n");
   pid = fork();
-  if (pid < 0) 
+  if (pid < 0)
 	  return source;
-  
+
   // child process, filter -- proces potomny, filtr
   if (!pid)
   {
@@ -41,21 +41,21 @@ char *preprocess(char *source)
 	  */
 	  close(send[WR]);
 	  close(recv[RD]);
-	  
+
 	  close(0); // close standard input -- podmiana standardowego wej¶cia
-	  dup(send[RD]); 
+	  dup(send[RD]);
 	  close(send[RD]);
-	  
+
 	  close(1);
 	  dup(recv[WR]);
 	  close(recv[WR]);
-	  
+
 	  exec_error = execlp("cpp", "cpp", (char*)0);
-	  
+
 	  fprintf(stderr, "Error (%d): could not execute cpp\n", exec_error);
 	  while ((c = getchar()) != EOF)
-		  putchar(c); 
-	  
+		  putchar(c);
+
 	  exit(1); // return non-zero status -- zwracamy nie 0
   }
   else // parent process or sender -- proces rodzic lub nadawca
@@ -63,10 +63,10 @@ char *preprocess(char *source)
 	  FILE *out, *in;
 	  char *ret=0;
 	  pid_t pid2;
-	  
+
 	  close(send[RD]);
 	  close(recv[WR]);
-	  
+
 	  pid2 = fork();
 	  if (pid2 < 0)
 		  return source;
@@ -85,7 +85,7 @@ char *preprocess(char *source)
 		  exit(0);
 	  }
 	  // the main process, parent -- rodzic, proces g³ówny
-	  /* 
+	  /*
 	  signal(SIGSEGV, sigMain);
 	  */
 	  close(send[WR]);
@@ -102,14 +102,14 @@ char *preprocess(char *source)
 	  fclose(in);
 	  // printf("Main: zamknalem plik\n");
 	  close(recv[RD]);
-	  
+
 	  if (filter_status != 0) {
 		  astrfree(&ret);
 	  }
-	  
+
 	  return ret;
   }
-  
+
   return source;
 }
 

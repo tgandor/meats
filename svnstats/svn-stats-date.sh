@@ -1,7 +1,7 @@
 #!/bin/bash
 
 date_requested=$1
-if [ -z $date_requested ] ; then 
+if [ -z $date_requested ] ; then
 	date_requested=today
 fi
 

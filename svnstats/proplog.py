@@ -8,8 +8,8 @@ try:
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--property", type=str, help="SVN property name (default: svn:mergeinfo)", default='svn:mergeinfo')
-    parser.add_argument('--minrev', type=int, default=0) 
-    parser.add_argument('--maxrev', type=int, default=0) 
+    parser.add_argument('--minrev', type=int, default=0)
+    parser.add_argument('--maxrev', type=int, default=0)
     parser.add_argument('--short', action='store_true')
     args = parser.parse_args()
     prop = args.property
@@ -53,8 +53,8 @@ def diff(newval, oldval):
     out = set(olines) - set(nlines)
     return '\n'.join(
         [ '-%s' % line for line in olines if line in out ] +
-        [ ('+%s' if line in ins else ' %s') % line 
-            for line in (ins if short else nlines) 
+        [ ('+%s' if line in ins else ' %s') % line
+            for line in (ins if short else nlines)
         ]
     )
 

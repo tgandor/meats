@@ -10,7 +10,7 @@ my $counter = 0;
 
 while(<STDIN>)
 {
-	if (/^r[1-9]/) { 
+	if (/^r[1-9]/) {
 		my @data = split(/\s+/);
 		$print = 1 if ($data[2] eq $user);
 		if ($data[2] eq $user)
@@ -19,7 +19,7 @@ while(<STDIN>)
 			print "($counter)\n";
 		}
 	}
-	if ($print) 
+	if ($print)
 	{
 		print;
 		$print = 0 if (/^---/);

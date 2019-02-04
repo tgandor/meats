@@ -10,9 +10,9 @@ public:
         #pragma omp critical
         cout << "Copy-constructed from " << (void*)&rhs << " to " << this << endl;
     }
-    void use(int n) { 
+    void use(int n) {
         #pragma omp critical
-        cout << "Used at " << this << " in iteration " << n << endl; 
+        cout << "Used at " << this << " in iteration " << n << endl;
     }
 };
 

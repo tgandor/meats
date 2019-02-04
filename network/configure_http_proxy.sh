@@ -15,7 +15,7 @@ sudo systemctl restart apache2
 cat <<EOF
 Add this to /etc/apache2/sites-available/000-default.conf
 inside VirtualHost
-	
+
     <Proxy *>
         Order deny,allow
         Allow from all
@@ -24,6 +24,6 @@ inside VirtualHost
     ProxyRequests Off
     ProxyPreserveHost On
     ProxyPass /alias http://localhost:8080/
-    ProxyPassReverse /alias http://localhost:8080/ 
+    ProxyPassReverse /alias http://localhost:8080/
 EOF
 

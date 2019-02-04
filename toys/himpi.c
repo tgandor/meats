@@ -19,7 +19,7 @@ int main (int argc, char * argv[])
   MPI_Barrier(MPI_COMM_WORLD);
   if ( rank == 0 )
     printf("Total processes: %d\n", size);
-  
+
   MPI_Finalize ();
   return 0;
 }

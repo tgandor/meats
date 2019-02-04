@@ -9,8 +9,8 @@ int main(int argc, char **argv)
     r1 = (3.+sqrt(5))/2.;
     A = (3.+sqrt(5.))/(2.*sqrt(5.));
     B = 1. - A;
-    for (int i=0; i<20000; i++) 
-    {    
+    for (int i=0; i<20000; i++)
+    {
       printf("%d: %fe\n", i, B + A);
       B *= r2;
       A *= r1;

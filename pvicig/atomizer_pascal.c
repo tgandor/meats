@@ -538,7 +538,7 @@ char *yytext;
 #include "atom_codes.h"
 #include "metrics.h"
 
-/* 
+/*
 Macro for distinction by another parser
 ---
 Makro rozpoznawane przez parser getatoms
@@ -554,10 +554,10 @@ static int column;
 static ATOM construct_atom(int type);
 static int handle_single_char(int c);
 static int handle_token(int t);
-static int decision; 
+static int decision;
 
 struct metrics atpasMetrics;
-static UNIQUE_DICTIONARY atpasId; 
+static UNIQUE_DICTIONARY atpasId;
 
 #define DECIDE(atom) { if((decision=handle_token(atom))!=-1) return construct_atom(decision); }
 
@@ -850,7 +850,7 @@ YY_RULE_SETUP
 case 10:
 YY_RULE_SETUP
 #line 55 "atomizer_pascal.l"
-DECIDE(_ATOM(FORWARD));  
+DECIDE(_ATOM(FORWARD));
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
@@ -990,7 +990,7 @@ DECIDE(_ATOM(VAR));
 case 38:
 YY_RULE_SETUP
 #line 83 "atomizer_pascal.l"
-{ atpasMetrics.while_keywords++; DECIDE(_ATOM(WHILE)); } 
+{ atpasMetrics.while_keywords++; DECIDE(_ATOM(WHILE)); }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
@@ -1010,52 +1010,52 @@ DECIDE(_ATOM(USES));
 case 42:
 YY_RULE_SETUP
 #line 89 "atomizer_pascal.l"
-DECIDE(_ATOM(BUILTINTYPE)); 
+DECIDE(_ATOM(BUILTINTYPE));
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
 #line 90 "atomizer_pascal.l"
-DECIDE(_ATOM(BUILTINTYPE)); 
+DECIDE(_ATOM(BUILTINTYPE));
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
 #line 91 "atomizer_pascal.l"
-DECIDE(_ATOM(BUILTINTYPE)); 
+DECIDE(_ATOM(BUILTINTYPE));
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
 #line 92 "atomizer_pascal.l"
-DECIDE(_ATOM(BUILTINTYPE)); 
+DECIDE(_ATOM(BUILTINTYPE));
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
 #line 93 "atomizer_pascal.l"
-DECIDE(_ATOM(BUILTINTYPE)); 
+DECIDE(_ATOM(BUILTINTYPE));
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
 #line 94 "atomizer_pascal.l"
-DECIDE(_ATOM(BUILTINTYPE)); 
+DECIDE(_ATOM(BUILTINTYPE));
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
 #line 95 "atomizer_pascal.l"
-DECIDE(_ATOM(BUILTINTYPE)); 
+DECIDE(_ATOM(BUILTINTYPE));
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
 #line 96 "atomizer_pascal.l"
-DECIDE(_ATOM(BUILTINTYPE)); 
+DECIDE(_ATOM(BUILTINTYPE));
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
 #line 97 "atomizer_pascal.l"
-DECIDE(_ATOM(BUILTINTYPE)); 
+DECIDE(_ATOM(BUILTINTYPE));
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
 #line 98 "atomizer_pascal.l"
-DECIDE(_ATOM(BUILTINTYPE)); 
+DECIDE(_ATOM(BUILTINTYPE));
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
@@ -1095,11 +1095,11 @@ DECIDE(_ATOM(STRINGLIT));
 case 59:
 YY_RULE_SETUP
 #line 111 "atomizer_pascal.l"
-{ 
+{
    decision = handle_single_char (*yytext);
    if (decision != -1)
-     return construct_atom(decision); 
-} 
+     return construct_atom(decision);
+}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
@@ -1169,16 +1169,16 @@ YY_RULE_SETUP
 case 73:
 YY_RULE_SETUP
 #line 133 "atomizer_pascal.l"
-{ offset+=yyleng; column+=yyleng; }    
+{ offset+=yyleng; column+=yyleng; }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 #line 135 "atomizer_pascal.l"
-{ 
-  atpasMetrics.lines=lineno; 
+{
+  atpasMetrics.lines=lineno;
   atpasMetrics.unique_ids = atpasId->count;
   free_unique_dictionary(atpasId);
   free(atpasId);
-  return (ATOM)0; 
+  return (ATOM)0;
 }
 	YY_BREAK
 case 74:
@@ -2110,10 +2110,10 @@ static void skip_star_comment()
 
 	c1 = input();
 	c2 = input();
-  
-	while (c2 != EOF && !(c1 == '*' && c2 == ')')) 
+
+	while (c2 != EOF && !(c1 == '*' && c2 == ')'))
 	{
-		if (c1 == '\n') 
+		if (c1 == '\n')
 		{
 			++lineno;
 			column = 0;
@@ -2139,12 +2139,12 @@ int handle_single_char(int c)
   column ++;
   switch(c)
   {
-  /* 
-	Atoms which are not interesting 
+  /*
+	Atoms which are not interesting
 	---
 	Atomy, które nie s± ciekawe
-	*/ 
-	case ';': 
+	*/
+	case ';':
 	  atpasMetrics.semicolons++;
     case ',':    /*  COMMA  */
     case ':':    /*  COLON  */
@@ -2221,7 +2221,7 @@ int handle_token(int t)
     case XOR:
     case NOT:
 	  return _ATOM(LOGIC);
-	  
+
     case USES:
 	  return _ATOM(OTHER);
     case NIL:
@@ -2232,14 +2232,14 @@ int handle_token(int t)
     case NOTEQUAL:  /*   "<>"    */
     case IN:
 	  return _ATOM(RELATION);
-	  
+
     case RECORD:
     case ARRAY:
     case SET:
 	case PFILE:
 	  return _ATOM(BUILTINTYPE);
 	/*
-	Tokens to be filtered out 
+	Tokens to be filtered out
 	---
 	Tokeny do odfiltrowania
 	*/
@@ -2263,7 +2263,7 @@ int handle_token(int t)
   return _ATOM(IMPOSSIBLE);
 }
 
-ATOM 
+ATOM
 construct_atom(int type)
 {
   ATOM ret_atom;

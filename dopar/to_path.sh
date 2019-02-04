@@ -9,10 +9,10 @@ mydir=`dirname $0`
 mydir=`realpath $mydir`
 
 if echo $PATH | grep -q "$mydir"; then
-    echo "$mydir already on PATH"    
+    echo "$mydir already on PATH"
 elif grep -q "$mydir" ~/.bashrc ; then
     echo "$mydir in .bashrc PATH, restart the shell"
 else
     echo "PATH=\$PATH:$mydir" | tee -a ~/.bashrc
-    echo "$mydir added to PATH in .bashrc; restart the shell"    
+    echo "$mydir added to PATH in .bashrc; restart the shell"
 fi

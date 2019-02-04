@@ -6,7 +6,7 @@
 struct atom
 {
   int code;
-  char *content; // redundant? 
+  char *content; // redundant?
   int start;
   int len;
   int line;

@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 require 'yt_util'
- 
+
 puts "Querying..."
 results = YtUtil::Scrape.query(ARGV.join(" "))
 results = results.map {|i| i[:video] }.compact
@@ -14,8 +14,8 @@ results.each do |code| # Iterate over results for a valid video
   puts code
   urls = `youtube-dl -F #{code}`
   format = nil
-  urls.each_line { |line| 
-    if line =~ /only/ 
+  urls.each_line { |line|
+    if line =~ /only/
       next
     end
     if line =~ /best/ && line =~ /mp4/

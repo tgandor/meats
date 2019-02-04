@@ -42,7 +42,7 @@ def unit(field):
     elif '_CAPACITY' in field:
         return ' %'
     return ''
-    
+
 
 def power_supply_data():
     batteries = glob.glob('/sys/class/power_supply/BAT?/uevent')

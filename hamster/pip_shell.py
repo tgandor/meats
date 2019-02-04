@@ -54,7 +54,7 @@ def expand(cmd):
 
 while(True):
     cmd = raw_input("--> ")
-    if cmd.strip() == "": 
+    if cmd.strip() == "":
         break
     if cmd.strip() == '?':
         print("Shorthands:")

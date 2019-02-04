@@ -567,7 +567,7 @@ char *yytext;
 #include "atom_codes.h"
 #include "metrics.h"
 
-/* 
+/*
 Macro for distinction by another parser
 ---
 Makro rozpoznawane przez parser getatoms
@@ -587,7 +587,7 @@ static int handle_token(int t);
 static int decision;
 
 struct metrics atcMetrics;
-static UNIQUE_DICTIONARY atcId; 
+static UNIQUE_DICTIONARY atcId;
 
 #define DECIDE(atom) { if((decision=handle_token(atom))!=-1) return construct_atom(decision); }
 
@@ -841,11 +841,11 @@ YY_RULE_SETUP
 case 3:
 YY_RULE_SETUP
 #line 48 "atomizer_c.l"
-{ 
+{
    decision = handle_single_char (*yytext);
    if (decision != -1)
-     return construct_atom(decision); 
-} 
+     return construct_atom(decision);
+}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
@@ -1189,12 +1189,12 @@ DECIDE(_ATOM(STRING));
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 #line 131 "atomizer_c.l"
-{ 
-  atcMetrics.lines=lineno; 
+{
+  atcMetrics.lines=lineno;
   atcMetrics.unique_ids = atcId->count;
   free_unique_dictionary(atcId);
   free(atcId);
-  return (ATOM)0; 
+  return (ATOM)0;
 }
 	YY_BREAK
 case 72:
@@ -2110,10 +2110,10 @@ skip_comment()
 
 	c1 = input();
 	c2 = input();
-  
-	while (c2 != EOF && !(c1 == '*' && c2 == '/')) 
+
+	while (c2 != EOF && !(c1 == '*' && c2 == '/'))
 	{
-		if (c1 == '\n') 
+		if (c1 == '\n')
 		{
 			++lineno;
 			column = 0;
@@ -2139,12 +2139,12 @@ int handle_single_char(int c)
   column ++;
   switch(c)
   {
-    /* 
-	Atoms which are not interesting 
+    /*
+	Atoms which are not interesting
 	---
 	Atomy, które nie s± ciekawe
-	*/ 
-	case ';': 
+	*/
+	case ';':
 	  atcMetrics.semicolons++;
 	case ',':
 	  return -1;
@@ -2153,41 +2153,41 @@ int handle_single_char(int c)
 	---
 	Atomy, które s± ciekawe
 	*/
-	case '[': 
-	case ']': 
-	case '(': 
-	case ')': 
+	case '[':
+	case ']':
+	case '(':
+	case ')':
 	  return _ATOM(BRACKET);
-	case '.': 
+	case '.':
 	  return _ATOM(SELECTOR);
-	case '{': 
+	case '{':
 	  return _ATOM(BEGN);
-	case '}': 
+	case '}':
 	  return _ATOM(END);
-	case '+': 
+	case '+':
 	  atcMetrics.plus++;
 	  return _ATOM(ARITHMETIC);
-	case '-': 
+	case '-':
 	  atcMetrics.minus++;
 	  return _ATOM(ARITHMETIC);
-	case '*': 
+	case '*':
 	  atcMetrics.times++;
-	case '/': 
-	case '%': 
+	case '/':
+	case '%':
 	  return _ATOM(ARITHMETIC);
-	case '^': 
-	case '&': 
-	case '|': 
-	case '~': 
+	case '^':
+	case '&':
+	case '|':
+	case '~':
 	  return _ATOM(BITWISE);
-	case '!': 
-	case '?': 
-	case ':': 
+	case '!':
+	case '?':
+	case ':':
 	  return _ATOM(LOGIC);
-	case '<': 
-	case '>': 
+	case '<':
+	case '>':
 	  return _ATOM(RELATION);
-	case '=': 
+	case '=':
 	  atcMetrics.assignments++;
 	  return _ATOM(ASSIGNMENT);
 	/*
@@ -2254,7 +2254,7 @@ int handle_token(int t)
     case DEFAULT:   /* "default" */
     case RETURN:    /* "return" */
 	  return _ATOM(CONTROL);
-	  
+
     case CHAR:    /* "char" */
     case FLOAT:   /* "float" */
     case DOUBLE:  /* "double" */
@@ -2273,7 +2273,7 @@ int handle_token(int t)
     case GTEQ:   /* ">=" */
 	  return _ATOM(RELATION);
 	/*
-	Tokens to be filtered out 
+	Tokens to be filtered out
 	---
 	Tokeny do odfiltrowania
 	*/
@@ -2295,7 +2295,7 @@ int handle_token(int t)
   return _ATOM(IMPOSSIBLE);
 }
 
-ATOM 
+ATOM
 construct_atom(int type)
 {
   ATOM ret_atom;
@@ -2306,7 +2306,7 @@ construct_atom(int type)
   ---
   offset zosta³ ju¿ zmodyfikowany w funkcji handle_token
   */
-  ret_atom->start   = offset - yyleng; 
+  ret_atom->start   = offset - yyleng;
   ret_atom->len     = yyleng;
   ret_atom->code    = type;
   ret_atom->line    = lineno;

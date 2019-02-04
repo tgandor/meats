@@ -2,23 +2,23 @@
 
 #ifdef _MSC_VER
 
-class Foo 
+class Foo
 {
 public:
-	static const int MEMBER = 1; 
+	static const int MEMBER = 1;
 };
 
 #else
 
 // e.g. GCC
 
-class Foo 
+class Foo
 {
 public:
 	static const int MEMBER;
 };
 
-const int Foo::MEMBER = 1; 
+const int Foo::MEMBER = 1;
 
 #endif
 

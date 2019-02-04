@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if which avconv ; then 
+if which avconv ; then
 	conv=avconv
 else
 	conv=ffmpeg

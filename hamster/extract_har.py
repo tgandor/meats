@@ -37,7 +37,7 @@ def unpack_single(har_filename):
         if os.path.exists(filename):
             print(filename, 'EXISTS! Not overwriting.')
             continue
-            
+
         with open(filename, 'wb') as data_file:
             data_file.write(data)
         total_output += len(data)

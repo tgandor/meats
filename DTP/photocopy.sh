@@ -26,7 +26,7 @@ if [ "$1" == "-s" ] ; then
 	fi
 	tmpdf=`date +"%Y-%m-%d_%H-%M-%S"`$extra.tif
 	title=$tmpdf
-	
+
 else
 	tmpdf=/tmp/photocopy.tif
 	title=Photocopy

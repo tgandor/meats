@@ -8,7 +8,7 @@ else
 	ip=$1
 fi
 
-ping -c4 $ip > /dev/null 
+ping -c4 $ip > /dev/null
 
 if [ $? != 0 ] ; then
 	echo Rebooting due to network failure.

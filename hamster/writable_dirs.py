@@ -30,11 +30,11 @@ def test_file_write(directory):
     except:
         return False
 
-    
+
 if __name__ == '__main__':
     for d in recurse('/'):
         if test_file_write(d):
             print(d + " OK")
         else:
             print(d + " FAIL")
-        
+

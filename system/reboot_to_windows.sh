@@ -17,7 +17,7 @@ echo "Windows entry: $WINDOWS_TITLE"
 sudo grub-reboot "$WINDOWS_TITLE"
 
 echo "Checking settings:"
-sudo grub-editenv list 
+sudo grub-editenv list
 
 if [ "$1"=="now" ] ; then
     sudo reboot

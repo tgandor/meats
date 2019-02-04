@@ -16,7 +16,7 @@ else
 fi
 
 # this won't work, fails with:
-# swapon: /tmp/swapfile: skipping - it appears to have holes. 
+# swapon: /tmp/swapfile: skipping - it appears to have holes.
 # sudo dd if=/dev/zero of=$file bs=1G count=0 seek=$gb
 
 free -m

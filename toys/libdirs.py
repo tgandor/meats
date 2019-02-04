@@ -5,7 +5,7 @@ from operator import itemgetter
 from xml.dom import minidom
 import sys
 
-def configs(doc, name='AdditionalDependencies'):    
+def configs(doc, name='AdditionalDependencies'):
     for el in  doc.getElementsByTagName('ItemDefinitionGroup'):
         condition = el.attributes['Condition'].value
         for libs in el.getElementsByTagName(name):
@@ -26,7 +26,7 @@ def group_report(doc, element='AdditionalDependencies'):
             print "%2d %s" % (cn, cond[1])
         print "Value:"
         print k
-        print "-"*40    
+        print "-"*40
     print "End of grouping by", element
     print "=" * 60, "\n"
 

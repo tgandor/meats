@@ -7,7 +7,7 @@ if [ -z "$1" ] ; then
 fi
 
 if [ ! -f $HOME/.ssh/id_rsa ] ; then
-    echo "Generating Keys, press enter a couple of times..."    
+    echo "Generating Keys, press enter a couple of times..."
     ssh-keygen
 fi
 

@@ -15,14 +15,14 @@ int fib(int x)
 		n = (x-3)/2;
 		k = 3;
 	}
-	else 
+	else
 	{
 		n = (x-2)/2;
 		k = 2;
 	}
 	fn1 = fib(n+1);
 	fn = fib(n);
-	
+
 	ret = (long long) FIB[k] * fn1 % MOD;
 	ret = ret * fn1 % MOD;
 	ret = (ret + (long long)fn1*fn*FIB[k-1]) % MOD;
@@ -40,7 +40,7 @@ int main()
 			printf("%d! jest: %d, powinno: %d\n", i, fib(i), FIB[i]);
 	return 0;
 	scanf("%d", &C);
-	for(i=0;i<C;i++) { 
+	for(i=0;i<C;i++) {
 		scanf("%d%d%d%d", &a, &b, &n, &MOD);
 		ans = (long long) a * fib(n+1) % MOD + b * fib(n+2) % MOD;
 		ans %= MOD;

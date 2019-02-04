@@ -58,7 +58,7 @@ echo We were elevated via VBS
         echo Parent environment accessible: UAC_ELEVATION=%UAC_ELEVATION%
     ) else (
         echo Parent environment not defined
-    )    
+    )
     pause
 goto:eof
 :no_elev

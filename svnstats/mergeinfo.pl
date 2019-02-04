@@ -28,7 +28,7 @@ for my $rev (@ARGV) {
       if ($rev >= $min && $rev <= $max) { print "$rev: $paths{$_}\n"; }
     } else {
       if ($rev == $_) { print "$rev: $paths{$_}\n"; }
-    } 
+    }
   }
 }
 

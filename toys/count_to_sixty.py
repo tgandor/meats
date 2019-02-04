@@ -9,7 +9,7 @@ def count(n):
     """Generates a range(n), but not a list or range object."""
     for i in range(n):
         yield i
-    
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--count', '-n', default=60)

@@ -1,11 +1,11 @@
 AUTOMAKE_OPTIONS = gnu
-bin_PROGRAMS = pvicig 
+bin_PROGRAMS = pvicig
 EXTRA_PROGRAMS = getatoms
 
 pvicig_SOURCES = main.c preprocess.c trim_directives.c astring.c \
 				 asprintf.c atomizer_c.l atomizer_pascal.l atomizer_banal.l \
 				 unique_dictionary.c atom.c comparison.c program.c GST.c \
-				 atom_codes.c 
+				 atom_codes.c
 
 getatoms_SOURCES = atom_extractor.l unique_dictionary.c
 
@@ -24,7 +24,7 @@ atom_codes.h        : getatoms atomizer_c.c atomizer_pascal.c atomizer_banal.c
 atom_codes.o        : atom_codes.h
 
 # A parser and lexer of BANAL programming language
-# Analizatory jêzyka BANAL (mojego autorstwa) 
+# Analizatory jêzyka BANAL (mojego autorstwa)
 atomizer_banal.c : atomizer_banal.l
 	$(LEX) -Patban -oatomizer_banal.c atomizer_banal.l
 atomizer_banal.o : atom_codes.h

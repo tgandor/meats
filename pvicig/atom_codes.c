@@ -1,5 +1,5 @@
 
-const char *atom_names[] = 
+const char *atom_names[] =
 {
   "INPUT",
   "PRINT",

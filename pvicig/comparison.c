@@ -2,7 +2,7 @@
 
 /*
  * A callback function to sort comparisons descending
- * -- 
+ * --
  *  Funkcja zwrotna do sortowania porównañ w porz±dku malej±cym
  */
 #define min(a,b) (a<b?a:b)
@@ -31,7 +31,7 @@ static void calculate_score(COMPARISON c)
   {
     A = c->a->num_lex_atoms;
     B = c->b->num_lex_atoms;
-    AB = c->atom_tiles->sum_lengths; 
+    AB = c->atom_tiles->sum_lengths;
     gstScore = (double) 2 * AB / (A+B);
   }
   if ( use_metric )
@@ -47,7 +47,7 @@ static void calculate_score(COMPARISON c)
 			 {
 				 metricScore += 1;
 			 }
-			 else 
+			 else
 			 {
 				 metricScore += (double)min(metr_a[i], metr_b[i]) / (double)max(metr_a[i], metr_b[i]);
 			 }
@@ -56,20 +56,20 @@ static void calculate_score(COMPARISON c)
 		 else if ( metr_b[i] && metr_a[i] )
 		 {
 		   metricScore += (double)min(metr_a[i], metr_b[i]) / (double)max(metr_a[i], metr_b[i]);
-           numMetrics++;	
+           numMetrics++;
 		 }
 	  }
-	  if (numMetrics) 
+	  if (numMetrics)
 	    metricScore /= (double) numMetrics;
 	  else
         metricScore = 0;
   }
   switch ( use_metric )
   {
-  case 2: 
+  case 2:
     c->overall = metricScore;
 	break;
-  case 1: 
+  case 1:
     c->overall = (gstScore + metricScore) / 2;
 	break;
   default:
@@ -88,7 +88,7 @@ int compare_comparison(const void * a, const void * b)
 	const COMPARISON ca = *(const COMPARISON*)a;
 	const COMPARISON cb = *(const COMPARISON*)b;
 	/* ascending: see below -- rosn±co: poni¿ej */
-	if ( sort_asc ) 
+	if ( sort_asc )
 	  return (ca->overall > cb->overall) - (ca->overall < cb->overall);
 	/* for descending sort -- do sortowania malej±co */
 	return (ca->overall < cb->overall) - (ca->overall > cb->overall);
@@ -112,12 +112,12 @@ void output_tiles(COMPARISON comp, TILES t)
 		printf("%d:\n", i++);
 		output_tile(tile);
 		printf(_("Fragment of %s:\n"), comp->a->filename);
-	    print_substring(comp->a->source, 
-				tile->p_atoms[0]->start, 
+	    print_substring(comp->a->source,
+				tile->p_atoms[0]->start,
 				tile->p_atoms[tile->L-1]->start + tile->p_atoms[tile->L-1]->len);
 		printf(_("Fragment of %s:\n"), comp->b->filename);
-	    print_substring(comp->b->source, 
-				tile->t_atoms[0]->start, 
+	    print_substring(comp->b->source,
+				tile->t_atoms[0]->start,
 				tile->t_atoms[tile->L-1]->start + tile->t_atoms[tile->L-1]->len);
 		tile = tile->next;
 	}
@@ -157,7 +157,7 @@ void output_comparison(COMPARISON comp)
 	    int *metr_b = (int*) &comp->b->theMetrics;
 	    for(i=0; i < num_metrics; i++)
 			printf("  %4d - %4d  %10s %%\n", metr_a[i], metr_b[i], percentage(metr_a[i], metr_b[i]));
-	  }  
+	  }
 	}
 }
 
@@ -173,7 +173,7 @@ COMPARISON compare_programs(struct program * a, struct program * b)
 		fprintf(stderr, _("Comparing %s and %s\n"), a->filename, b->filename);
 	ret->a = a;
 	ret->b = b;
-	
+
 	/*
 	 * Processing
 	 * ---------------------------------------------
@@ -195,7 +195,7 @@ COMPARISON compare_programs(struct program * a, struct program * b)
 	ret->atom_tiles = perform_GST(a->lex_atoms, a->num_lex_atoms, b->lex_atoms, b->num_lex_atoms);
 
 	/*
-	 * Final calculation 
+	 * Final calculation
 	 * ---
 	 *  Obliczenie koñcowego wyniku
 	 */

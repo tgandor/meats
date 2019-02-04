@@ -2,7 +2,7 @@
 
 /*
  * A dummy metrics structure for initializing
- * --- 
+ * ---
  *  Pomocnicza struktura do inicjalizacji (zerami)
  */
 static struct metrics emptyMetrics;
@@ -32,9 +32,9 @@ PROGRAM new_program(char *filename)
 {
   FILE *input;
   PROGRAM result = calloc(1, sizeof(*result));
-  /* 
-   * Identify the kind of source 
-   * --- 
+  /*
+   * Identify the kind of source
+   * ---
    *  Identyfikacja rodzaju programu
    */
   result->kind = identify_program(filename);
@@ -43,14 +43,14 @@ PROGRAM new_program(char *filename)
     free(result);
     return NULL;
   }
-  /* 
-   * Load the source into memory 
+  /*
+   * Load the source into memory
    * ---
    *  Wczytanie ¼ród³a do pamiêci
    */
   result->filename = strdup(filename);
   input = fopen(filename, "r");
-  if (!input) 
+  if (!input)
   {
     free(result);
     return NULL;
@@ -79,7 +79,7 @@ void output_program(PROGRAM prog)
     puts(_("No program - null pointer"));
     return;
   }
-  
+
   puts(_("Program contents:"));
   printf(_("Filename: %s\n"), prog->filename);
   if ( output_source )
@@ -100,7 +100,7 @@ void output_program(PROGRAM prog)
     printf(_("Metrics values (as they follow, for reference read metrics.h):\n"));
     for(i=0; i < sizeof(struct metrics) / sizeof(int); i++)
       printf("%d ", *((int*)&prog->theMetrics + i));
-    printf("\n"); 
+    printf("\n");
   }
 }
 
@@ -109,27 +109,27 @@ int process_program(PROGRAM prog)
   if (verbose_flag)
     printf(_("Processing program %s...\n"), prog->filename);
   /* Potential preparation of special - eg. C - source */
-  if (prog->kind == C && use_cpp)  
+  if (prog->kind == C && use_cpp)
   {
     trim_directives_from(&(prog->source));
     preprocess_from(&(prog->source));
     trim_directives_from(&(prog->source));
 	babble(_("File preprocessed."));
   }
-  /* 
-   * Lexical analysis for atoms 
+  /*
+   * Lexical analysis for atoms
    * ---
    *  Analiza leksykalna atomów
    */
   if (prog->kind == C)
-  { 
+  {
     ATOM a;
     FILE *atom_out;
     atcin = (FILE*) fmemopen(prog->source, strlen(prog->source), "r");
     atom_out = (FILE*) open_memstream(&prog->lex_atoms, &prog->num_lex_atoms);
 	init_atclex();
 	atcMetrics = emptyMetrics;
-    while ( a = atclex()) 
+    while ( a = atclex())
     {
       fwrite(&a, sizeof(ATOM), 1, atom_out);
     }
@@ -140,7 +140,7 @@ int process_program(PROGRAM prog)
     ---
     Zamiana rozmiaru w bajtach na liczbê wska¼nikow
     */
-    prog->num_lex_atoms /= sizeof(ATOM); 
+    prog->num_lex_atoms /= sizeof(ATOM);
 	prog->theMetrics = atcMetrics;
   }
   else if (prog->kind == BANAL)
@@ -151,7 +151,7 @@ int process_program(PROGRAM prog)
     atom_out = (FILE*) open_memstream(&prog->lex_atoms, &prog->num_lex_atoms);
 	init_atbanlex();
 	atbanMetrics = emptyMetrics;
-    while ( a = atbanlex()) 
+    while ( a = atbanlex())
     {
       fwrite(&a, sizeof(ATOM), 1, atom_out);
       // printf("%s - code %3d - type %s\n", a->content, a->code, atom_names[a->code]);
@@ -163,7 +163,7 @@ int process_program(PROGRAM prog)
     ---
     Zamiana rozmiaru w bajtach na liczbe wskaznikow
     */
-    prog->num_lex_atoms /= sizeof(ATOM); 
+    prog->num_lex_atoms /= sizeof(ATOM);
 	prog->theMetrics = atbanMetrics;
   }
   else if (prog->kind == PASCAL)
@@ -174,7 +174,7 @@ int process_program(PROGRAM prog)
     atom_out = (FILE*) open_memstream(&prog->lex_atoms, &prog->num_lex_atoms);
 	init_atpaslex();
 	atpasMetrics = emptyMetrics;
-    while ( a = atpaslex()) 
+    while ( a = atpaslex())
     {
       fwrite(&a, sizeof(ATOM), 1, atom_out);
     }
@@ -185,10 +185,10 @@ int process_program(PROGRAM prog)
     ---
     Zamiana rozmiaru w bajtach na liczbe wskaznikow
     */
-    prog->num_lex_atoms /= sizeof(ATOM); 
+    prog->num_lex_atoms /= sizeof(ATOM);
 	prog->theMetrics = atpasMetrics;
   }
-  
+
   babble(_("Processed."));
   return 1;
 }

@@ -29,7 +29,7 @@ protected:
 	virtual char do_thousands_sep() const { return ','; }
 	virtual std::string do_grouping() const { return "\003"; }
 };
-	
+
 int main(int argc, char **argv)
 {
 	using namespace std::chrono;
@@ -38,12 +38,12 @@ int main(int argc, char **argv)
 	{
 		std::istringstream(argv[1]) >> percent;
 	}
-	
+
 	if (percent < 1)
 		percent = 1.0;
 	else if (percent > 100)
 		percent = 100;
-	
+
 	for (;;)
 	{
 		high_resolution_clock::time_point start = high_resolution_clock::now();

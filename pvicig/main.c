@@ -1,5 +1,5 @@
-/* 
-  pvicig -- compare programs' source codes to detect copies 
+/*
+  pvicig -- compare programs' source codes to detect copies
   Copyright (C) 2006 Tomasz Gandor
 
     This program is free software; you can redistribute it and/or modify
@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-    
+
     ---------------------------------
 
   pvicig -- porównuje teksty źródłowe programów i określa ich podobieństwo
@@ -37,12 +37,12 @@
     Powszechnej Licencji Publicznej GNU (GNU General Public License);
     jeśli nie - napisz do Free Software Foundation, Inc., 59 Temple
     Place, Fifth Floor, Boston, MA  02110-1301  USA
-    
+
 */
 
 
 /*
- * The headers, defines, includes are all in one file 
+ * The headers, defines, includes are all in one file
  * ---
  *  Wszystkie nagłówki, makrodefinicje i tym podobne w osobnym pliku
  */
@@ -51,40 +51,40 @@
 /* --------------------------------------
  * Variables
  * --
- *  Zmienne 
+ *  Zmienne
  ----------------------------------------*/
 
-/* 
-  The name this program was run with. 
+/*
+  The name this program was run with.
   ---
   Nazwa, z którą program został uruchomiony
 */
 static const char *program_name;
 
-/* 
-  If nonzero, display usage information and exit.  
+/*
+  If nonzero, display usage information and exit.
   ---
   Flaga wymuszająca wypisanie pomocy do programu
 */
 static int show_help = 0;
 
-/* 
-  If nonzero, print the version on standard output and exit.  
+/*
+  If nonzero, print the version on standard output and exit.
   ---
   Flaga wymuszająca wypisanie informacji o wersji
 */
 static int show_version = 0;
 
 /*
-  Increases amount of output data 
-  --- 
+  Increases amount of output data
+  ---
   Zwiększa ilość wypisywanych informacji
 */
 int verbose_flag = 0;
 
-/* 
+/*
   Decreases amount of output data (e.g. errors)
-  --- 
+  ---
   Zmniejsza ilość wypisywanych informacji (diagnostycznych)
 */
 int quiet_flag = 0;
@@ -107,8 +107,8 @@ int use_cpp      = 0;
 int output_source = 0;
 int sort_asc      = 0;
 
-/* 
-  Long and short options 
+/*
+  Long and short options
   ---
   Opcje programu w formacie długim i krótkim
 */
@@ -143,7 +143,7 @@ static const struct option long_options[] =
 };
 static char opt_str[] = "qvo:i:t:";
 
-int 
+int
 report(char *error)
 {
   if(!quiet_flag)
@@ -151,7 +151,7 @@ report(char *error)
   return 0;
 }
 
-int 
+int
 babble(char *message)
 {
 	if(verbose_flag)
@@ -162,14 +162,14 @@ babble(char *message)
 int
 check_gst_params()
 {
-	if ( GST_shortest < 2 ) 
+	if ( GST_shortest < 2 )
 	{
 		report(_("Too short minimal match length."));
 		if ( GST_initial >= 2 * DEFAULT_GST_SHORTEST )
 			return 1;
 		return 2;
 	}
-	if(GST_initial < GST_shortest) 
+	if(GST_initial < GST_shortest)
 	{
 		report(_("Wrong Greedy String Tiling parameters."));
 		return 3;
@@ -193,7 +193,7 @@ check_kr_params()
   return 1;
 }
 
-static void 
+static void
 usage()
 {
   printf(_("\
@@ -247,9 +247,9 @@ main (int argc, char *const *argv)
   int i,j;
   int program_count, temp_count;
   DICTIONARY_ENTRY iter;
-  
-  /* 
-  option character 
+
+  /*
+  option character
   ---
   zdekodowany symbol opcji
   */
@@ -261,7 +261,7 @@ main (int argc, char *const *argv)
   flaga - gdy ustawiona porównujemy tylko z wskazanym programem
   */
   int one_suspect = 0;
-  
+
   /*
   a vector of programs to process
   ---
@@ -276,7 +276,7 @@ main (int argc, char *const *argv)
   */
   UNIQUE_DICTIONARY filenames;
   char *suspect_filename;
-  
+
   /*
   an array of pointers to a comparison structure
   ---
@@ -301,14 +301,14 @@ main (int argc, char *const *argv)
   setlocale(LC_ALL, "");
   bindtextdomain(PACKAGE, LOCALEDIR);
   textdomain(PACKAGE);
-  
+
   /*
   decode program options with getopt_long
   ---
   przeanalizowanie opcji programu funkcją getopt_long
   */
   while ( (option_char = getopt_long (argc, argv, opt_str,
-     long_options, NULL)) != EOF) 
+     long_options, NULL)) != EOF)
   {
     // printf(_("Seen option: %d (%c)\n"), option_char, option_char>0 ? option_char : '?');
     switch(option_char)
@@ -353,7 +353,7 @@ main (int argc, char *const *argv)
       break;
     }
   }
-  
+
   /*
   Handle trivial options
   ---
@@ -370,7 +370,7 @@ main (int argc, char *const *argv)
     printf("%s %s\n", PACKAGE, VERSION);
     return EXIT_SUCCESS;
   }
-  
+
   switch (check_gst_params())
   {
 	  case 3:
@@ -394,7 +394,7 @@ main (int argc, char *const *argv)
 	  KR_base = DEFAULT_KR_BASE;
 	  KR_modulus = DEFAULT_KR_MODULUS;
   }
-  
+
   /*
   Handle a one-to-many compared program
   ---
@@ -417,14 +417,14 @@ main (int argc, char *const *argv)
 	if (verbose_flag)
       output_program(suspect_program);
   }
-  
+
   /*
   Check if enough arguments
   ---
   Sprawdzenie, czy nie za mało argumentów
   */
   program_count = argc - optind;
-  if (program_count + one_suspect < 2) 
+  if (program_count + one_suspect < 2)
   {
     report(_("Not enough arguments."));
     return EXIT_FAILURE;
@@ -441,19 +441,19 @@ main (int argc, char *const *argv)
 
   if (one_suspect)
     delete_from_unique_dictionary(filenames, suspect_filename);
-    
+
   /*
   Check if enough unique arguments
   ---
   Sprawdzenie, czy nie za mało unikatowych argumentów
   */
   program_count = filenames->count;
-  if (program_count + one_suspect < 2) 
+  if (program_count + one_suspect < 2)
   {
     report(_("Not enough unique arguments."));
     return EXIT_FAILURE;
   }
-  
+
   /*
   loading programs into memory and processing them
   ---
@@ -469,20 +469,20 @@ main (int argc, char *const *argv)
     {
       programs[program_count++] = temp;
     }
-    else 
+    else
     {
 	  if(!quiet_flag)
         fprintf(stderr, _("File: `%s' not loaded correctly.\n"), iter->word);
     }
     iter = iter->next;
   }
-  
+
   /*
   Check if enough succesfully loaded programs
   ---
   Sprawdzenie, czy nie za mało wczytanych programów
   */
-  if (program_count + one_suspect < 2) 
+  if (program_count + one_suspect < 2)
   {
     report(_("Not enough loaded programs."));
     return EXIT_FAILURE;
@@ -497,7 +497,7 @@ main (int argc, char *const *argv)
   temp_count = 0;
   for (i=0; i < program_count; i++)
   {
-    if (process_program(programs[i]) != 0) 
+    if (process_program(programs[i]) != 0)
     {
       temp_programs[temp_count++] = programs[i];
 	  if (verbose_flag)
@@ -519,20 +519,20 @@ main (int argc, char *const *argv)
   ---
   Sprawdzenie, czy nie za mało przeanalizowanych programów
   */
-  if (program_count + one_suspect < 2) 
+  if (program_count + one_suspect < 2)
   {
     puts(_("Not enough processed programs."));
     return EXIT_FAILURE;
   }
   babble("Programs processed.");
   /*
-   * Program comparison 
+   * Program comparison
    * ---
    *  Porównywanie programów
    */
-  if (one_suspect) 
+  if (one_suspect)
   {
-    /* 
+    /*
     N = O(N) comparisions of programs (linear)
     ---
     N = O(N) liniowa liczba porównań
@@ -542,28 +542,28 @@ main (int argc, char *const *argv)
       comparisons[i] = compare_programs(suspect_program, programs[i]);
     comparison_count = program_count;
   }
-  else 
+  else
   {
-    /* 
+    /*
     N * (N-1) / 2 = O(N^2) comparisions of programs (square complexity)
     ---
     N * (N-1) / 2 = O(N^2) liczba porównań proporcjonalna do kwadratu
     */
     comparison_count = program_count * (program_count-1) / 2;
     comparisons = (COMPARISON *) malloc ( sizeof(COMPARISON) * comparison_count );
-    comparison_count = 0; 
+    comparison_count = 0;
     for (i=0; i < program_count - 1; i++)
       for (j=i+1; j < program_count; j++)
         comparisons[comparison_count++] = compare_programs(programs[i], programs[j]);
   }
-  
+
   /*
   sort results descending
   ---
   sortowanie wyników malejąco względem podobieństwa
   */
   qsort(comparisons, comparison_count, sizeof(COMPARISON), compare_comparison);
-  
+
   /*
   print results to output
   ---
@@ -574,7 +574,7 @@ main (int argc, char *const *argv)
     if ( comparisons[i]->overall >= thereshold )
       output_comparison(comparisons[i]);
   }
-  
+
   return EXIT_SUCCESS;
 }
 

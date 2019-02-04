@@ -32,12 +32,12 @@ struct comparison
 	 * ---
 	 *  Struktura zawieraj±ca kafle pochodz±ce z GST
 	 */
-	struct tiles * atom_tiles; 
-	
+	struct tiles * atom_tiles;
+
 	/*
-	 * pointers to compared programs 
+	 * pointers to compared programs
 	 * ---
-	 *  wska¼niki do porównywanych programów 
+	 *  wska¼niki do porównywanych programów
 	 */
 	struct program *a;
 	struct program *b;

@@ -1,4 +1,4 @@
-# pvicig Program Verifing If Code Is Genuine 
+# pvicig Program Verifing If Code Is Genuine
 # Copyright (C) 2006 Tomasz Gandor
 # This file is distributed under the same license as the pvicig package.
 # Tomasz Gandor, <Tomasz.Gandor@gmail.com>

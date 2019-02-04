@@ -27,5 +27,5 @@ numunique = 0
 for w in sorted(common):
 	if lhs.count(w) < TOO_COMMON and rhs.count(w) < TOO_COMMON:
 		numunique += 1
-		print numunique, w   
+		print numunique, w
 

@@ -33,7 +33,7 @@ extern ATOM atbanlex();
 extern void init_atbanlex();
 extern struct metrics atbanMetrics;
 
-enum program_type 
+enum program_type
 {
   NONE,
   BANAL,
@@ -42,7 +42,7 @@ enum program_type
   PASCAL
 };
 
-struct program 
+struct program
 {
   char *filename;
   char *source;

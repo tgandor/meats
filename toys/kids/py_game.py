@@ -24,7 +24,7 @@ while True:
     events = pygame.event.get()
     for event in events:
         print(event)
-        if (event.type == pygame.QUIT or 
+        if (event.type == pygame.QUIT or
                 (event.type == pygame.KEYDOWN and event.unicode == u'q')):
             pygame.quit()
             sys.exit(0)

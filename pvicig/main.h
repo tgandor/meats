@@ -14,7 +14,7 @@
 #include <limits.h>
 
 /*
- * Non standard includes 
+ * Non standard includes
  * ---
  *  Pozosta³e nag³ówki
  */
@@ -45,10 +45,10 @@ extern int use_cpp;
 extern int output_source;
 extern int sort_asc;
 
-int 
+int
 report(char *error);
 
-int 
+int
 babble(char *message);
 
 /*

@@ -42,7 +42,7 @@
       CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
       TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
       SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-      
+
 */
 
 /**************************************************************/
@@ -181,7 +181,7 @@ void astrfree(char LIBMIB_PTR * LIBMIB_PTR *ppsz)
 
 /**************************************************************/
 char LIBMIB_PTR *astrcpy(char LIBMIB_PTR * LIBMIB_PTR *ppsz,const char LIBMIB_PTR *src)
-{ 
+{
     int toalloc = _fstrlen(src);
     if (*ppsz) {
 	**ppsz = '\0'; /* Signal astrensure that don't need to preserve */
@@ -198,10 +198,10 @@ char LIBMIB_PTR *astrcpy(char LIBMIB_PTR * LIBMIB_PTR *ppsz,const char LIBMIB_PT
 
 /**************************************************************/
 char LIBMIB_PTR *astrn0cpy(char LIBMIB_PTR * LIBMIB_PTR *ppsz,const char LIBMIB_PTR *pSrc,int len)
-{ 
+{
     int toalloc;
     char LIBMIB_PTR *pStop;
-    
+
     if (*ppsz) {
 	**ppsz = '\0'; /* Signal astrensure that don't need to preserve */
     }
@@ -219,7 +219,7 @@ char LIBMIB_PTR *astrn0cpy(char LIBMIB_PTR * LIBMIB_PTR *ppsz,const char LIBMIB_
     if (!*ppsz) {
 	return 0;
     }
-    
+
     _fmemcpy(*ppsz,pSrc,len); /* Don't use strncpy, which zero fills. */
     (*ppsz)[len] = '\0';
     return *ppsz;
@@ -250,7 +250,7 @@ char LIBMIB_PTR *astrcat(char LIBMIB_PTR * LIBMIB_PTR *ppsz,const char LIBMIB_PT
 
 /**************************************************************/
 char LIBMIB_PTR *astrn0cat(char LIBMIB_PTR * LIBMIB_PTR *ppsz,const char LIBMIB_PTR *pSrc,int n)
-{ 
+{
     char LIBMIB_PTR *pStop;
     int toalloc;
     int len = 0;
@@ -275,7 +275,7 @@ char LIBMIB_PTR *astrn0cat(char LIBMIB_PTR * LIBMIB_PTR *ppsz,const char LIBMIB_
 
     astrensure(ppsz,toalloc);
     if (!*ppsz) {
-	return 0;		
+	return 0;
     }
     _fmemcpy(*ppsz+len,pSrc,n); /* Don't use strncpy, which zero fills. */
     (*ppsz)[len+n] = '\0';
@@ -310,7 +310,7 @@ char LIBMIB_PTR *afgets(char LIBMIB_PTR * LIBMIB_PTR *ppasz,FILE *f)
 	if (!ch || (ch == '\n')) {
 	    return *ppasz;
 	}
-    }	
+    }
     if (!ind) { /* Nothing */
 	astrfree(ppasz);
 	return 0;
@@ -346,7 +346,7 @@ int afgettoch(char LIBMIB_PTR * LIBMIB_PTR *ppasz,FILE *f,char chStop)
 	if (ch == chStop) {
 	    return ind;
 	}
-    }	
+    }
     if (!ind) { /* Nothing */
 	astrfree(ppasz);
 	return 0;
@@ -501,7 +501,7 @@ LIBMIB_PRIVATE char LIBMIB_PTR *astrensure(char LIBMIB_PTR * LIBMIB_PTR *ppsz,in
 		adding 1 to strlen()s */
 
     /* Optimized method */
-   
+
 
     pCurrent = _Lookup(*ppsz); /* Also does LRU tracking */
     pubMin = cbMin;
