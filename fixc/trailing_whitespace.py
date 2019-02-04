@@ -18,6 +18,7 @@ TABU = [
 
 
 def is_directory_tabu(dirpath):
+    dirpath = dirpath.replace('\\', '/')
     return any(tabu + '/' in dirpath or dirpath.endswith(tabu) for tabu in TABU)
 
 
@@ -28,6 +29,12 @@ EXLUCDED = [
     '.png',
     '.jpeg',
     '.out', # a.out ...
+    '.exe',
+    '.o',
+    '.h5',
+    '.gz',
+    '.otf',
+    '.ttf',
 ]
 
 
