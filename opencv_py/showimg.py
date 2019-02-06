@@ -12,6 +12,11 @@ import cv2
 import numpy as np
 
 try:
+    from natsort import natsorted
+except ImportError:
+    natsorted = sorted
+
+try:
     from tqdm import tqdm
 except ImportError:
     tqdm = lambda x: x
@@ -61,7 +66,7 @@ def _load_image(filename, args=None):
 
 def quick_view_directory(directory_name, args=None):
     quit = ord('q')
-    data = glob.glob(directory_name + '/*.*')
+    data = natsorted(glob.glob(directory_name + '/*.*'))
     prev = None
     pause = False
     for filename in tqdm(sorted(data)):

@@ -23,24 +23,28 @@ def is_directory_tabu(dirpath):
 
 
 EXLUCDED = [
-    '.pdf',
-    '.md',
-    '.jpg',
-    '.png',
-    '.jpeg',
-    '.out', # a.out ...
+    '.avi',
     '.exe',
-    '.o',
-    '.h5',
     '.gz',
+    '.h5',
+    '.jpeg',
+    '.jpg',
+    '.json', # questionable, but often they don't have EOL at EOF
+    '.md',
+    '.mkv',
+    '.mp4',
+    '.o',
     '.otf',
+    '.out', # a.out ...
+    '.pdf',
+    '.png',
     '.ttf',
 ]
 
 
 def is_excluded(filename):
     _, ext = os.path.splitext(filename.lower())
-    return ext in EXLUCDED
+    return ext in EXLUCDED or ext in args.exclude
 
 
 LF = '\n'
@@ -65,6 +69,7 @@ parser.add_argument('--crlf', '-w', action='store_true')
 parser.add_argument('--fix', '-f', action='store_true')
 parser.add_argument('--list', '-l', action='store_true')
 parser.add_argument('--verbose', '-v', action='store_true')
+parser.add_argument('--exclude', '-x', nargs='*', help='exclude files by extension')
 parser.add_argument('directory', nargs='?', default='.')
 args = parser.parse_args()
 
