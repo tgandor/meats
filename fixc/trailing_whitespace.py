@@ -44,11 +44,11 @@ EXLUCDED = [
 
 def is_excluded(filename):
     _, ext = os.path.splitext(filename.lower())
-    return ext in EXLUCDED or ext in args.exclude
+    return ext in EXLUCDED or ext in (args.exclude or ())
 
 
-LF = '\n'
-CRLF = '\r\n'
+LF = b'\n'
+CRLF = b'\r\n'
 
 
 def identify_eol(line):
@@ -79,7 +79,7 @@ def report(message='', *_):
     print('{}:{}: {} {}'.format(
         path,
         idx+1,
-        base_line.replace(' ', '.').replace('\t', '--->'),
+        base_line.replace(b' ', b'.').replace(b'\t', b'--->'),
         message
     ))
 
@@ -88,20 +88,20 @@ def fix_file(path):
     # maybe write an in-place version some day
     lines = []
     prev_eol = None
-    for line in open(path):
+    for line in open(path, 'rb'):
         base_line, eol = identify_eol(line)
         base_line = base_line.rstrip()
 
         if args.crlf:
             eol = LF
-        elif eol is None:
+        elif prev_eol is not None:
             eol = prev_eol
 
         lines.append(base_line + eol)
         prev_eol = eol
 
-    with open(path, 'w') as fixed_file:
-        fixed_file.write(''.join(lines))
+    with open(path, 'wb') as fixed_file:
+        fixed_file.write(b''.join(lines))
 
 
 problem_files = 0
@@ -127,7 +127,7 @@ for dirpath, dirnames, filenames in os.walk(args.directory):
         file_eol = None
         problems = 0
 
-        for idx, line in enumerate(open(path)):
+        for idx, line in enumerate(open(path, 'rb')):
             base_line, eol = identify_eol(line)
 
             if eol is None:
@@ -135,10 +135,13 @@ for dirpath, dirnames, filenames in os.walk(args.directory):
                 problems += 1
             elif file_eol is None:
                 file_eol = eol
+                if args.verbose:
+                    print('File eol', repr(file_eol))
             elif eol != file_eol:
                 report('Mixed EOL sequence', path, idx+1)
                 problems += 1
-            elif args.crlf and eol == CRLF:
+
+            if args.crlf and eol == CRLF:
                 report('Windows EOL sequence (CRLF) used', path, idx+1)
                 problems += 1
 
