@@ -43,11 +43,31 @@ def _scale_rect(x, y, w, h, W, H):
     return pt1, pt2
 
 
+# https://docs.opencv.org/3.0-beta/modules/imgcodecs/doc/reading_and_writing_images.html
+ACCEPTED_EXTENSIONS = {
+    '.bmp', '.dib', # Windows bitmaps  (always supported)
+    '.jpeg', '.jpg', '.jpe', # JPEG files  (see the Notes section)
+    '.jp2', # JPEG 2000 files  (see the Notes section)
+    '.png', # Portable Network Graphics  (see the Notes section)
+    '.webp', # WebP  (see the Notes section)
+    '.pbm', '.pgm', '.ppm', # Portable image format  (always supported)
+    '.sr', '.ras', # Sun rasters  (always supported)
+    '.tiff', '.tif', # TIFF files  (see the Notes section)
+}
+
+
 def _load_image(filename, args=None):
+    # leaving this to imread() lead to crashes on occasion:
+    _, ext = os.path.splitext(filename)
+    if ext.lower() not in ACCEPTED_EXTENSIONS:
+        tqdm.write('Skipping: {} (rejected extension: {})'.format(filename, ext))
+        return None
+
     image = cv2.imread(filename)
 
     if image is None:
-        return
+        tqdm.write('Failed to load: {}'.format(filename))
+        return None
 
     if args and args.yolo_bbox:
         bbox_filename = os.path.splitext(filename)[0]+'.txt'
@@ -73,7 +93,6 @@ def quick_view_directory(directory_name, args=None):
         try:
             image = _load_image(filename, args)
             if image is None:
-                tqdm.write('Failed to load: {}'.format(filename))
                 continue
         except cv2.error:
             tqdm.write('Error loading: {}'.format(filename))
