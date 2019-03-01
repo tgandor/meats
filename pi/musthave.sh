@@ -25,4 +25,6 @@ fi
 if [ ! -e $HOME/.vimrc ] ; then
     echo Creating $HOME/.vimrc
     cp `dirname $0`/../configs/.vimrc $HOME
+    # the default colors on RPi are too dark on comments:
+    echo "colorscheme torte" >> $HOME/.vimrc
 fi
