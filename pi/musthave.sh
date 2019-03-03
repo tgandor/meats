@@ -3,15 +3,16 @@
 sudo apt-get update
 sudo apt-get -y upgrade
 
-sudo apt-get install \
-    vim \
-    python3 \
+sudo apt-get install -y \
     htop \
     mc \
+    python3 \
+    python3-pip \
+    python-pip \
     screen \
     tmux \
-    python-pip \
-    python3-pip \
+    vim \
+    vlc-nox \
 
 if [ ! -e $HOME/.bash_aliases ] ; then
     echo Creating $HOME/.bash_aliases
