@@ -1,10 +1,14 @@
 #!/bin/bash
 
-sudo apt-get update
-sudo apt-get -y upgrade
+if [ -z  "`find /var/cache/apt/pkgcache.bin -mmin -30`" ] ; then
+    sudo apt update
+    sudo apt -y upgrade
+fi
 
 sudo apt-get install -y \
+    aptitude \
     htop \
+    kdesdk-scripts \
     mc \
     python3 \
     python3-pip \
