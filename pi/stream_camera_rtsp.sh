@@ -1,5 +1,17 @@
 #!/bin/bash
 
+missing=""
+if ! which cvlc >/dev/null; then
+    missing="$missing vlc-nox"
+fi
+if ! which screen >/dev/null; then
+    missing="$missing screen"
+fi
+if [ -n "$missing" ] ; then
+    echo "Missing packages: $missing"
+    sudo apt install $missing
+fi
+
 screen -S streaming -dm bash -c "raspivid -o - -t 0 -hf | cvlc -vvv stream:///dev/stdin --sout '#rtp{sdp=rtsp://:8554/x}' :demux=h264"
 
 echo "Streaming in screen session 'streaming'"
