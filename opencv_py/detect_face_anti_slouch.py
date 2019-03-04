@@ -30,8 +30,17 @@ for path in cascades:
         break
 else:
     print('No haarcascade_frontalface_default.xml found.')
-    print('Try:\nsudo apt install opencv-data')
+    print('Try:\nsudo apt install opencv-data\nor:')
+    print('wget https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_default.xml')
     exit()
+
+
+def face_area(*args):
+    "Ugly hack, because Py3 can't unpack tuples in lambda."
+    x, y, w, h = args if len(args) == 4 else args[0]
+    del x, y
+    return w * h
+
 
 while True:
     # Capture frame-by-frame
@@ -58,10 +67,11 @@ while True:
         print(time.strftime('%H:%M:%S'), 'No faces found')
     else:
         # pick biggest face (a bit heuristic)
-        x, y, w, h = max(faces, key=lambda (x, y, w, h): w * h)
+        x, y, w, h = max(faces, key=face_area)
 
         if initial_face_position is None:
             initial_face_position = y + h//2
+            print(time.strftime('%H:%M:%S'), 'Noted initial face middle:', initial_face_position)
         elif (y + h//2) - initial_face_position > MAX_SLOUCH_RATIO * h:
             is_slouching = True
             print('{} STOP SLOUCHING! (Face middle {}, from initial {})'.format(time.strftime('%H:%M:%S'), y, initial_face_position))
