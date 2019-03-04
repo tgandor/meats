@@ -1,16 +1,20 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 # Acknowledgements:
 # https://realpython.com/face-recognition-with-python/
 # https://github.com/shantnu/FaceDetect/
 
 import os
+import time
 
 import cv2
 
 MAX_SLOUCH_RATIO = 0.2  # relative to img height
 
 initial_face_position = None
+is_slouching = False
 
 cap = cv2.VideoCapture(0)
 
@@ -26,12 +30,15 @@ for path in cascades:
         break
 else:
     print('No haarcascade_frontalface_default.xml found.')
-    print('Try: sudo apt install opencv-data')
+    print('Try:\nsudo apt install opencv-data')
     exit()
 
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
+    if not ret:
+        print('Error grabbing')
+        exit()
 
     h, w = frame.shape[:2]
 
@@ -48,20 +55,22 @@ while True:
     )
 
     if len(faces) == 0:
-        print('No faces found')
-        continue
-    # print("Found {0} faces!".format(len(faces)))
+        print(time.strftime('%H:%M:%S'), 'No faces found')
+    else:
+        # pick biggest face (a bit heuristic)
+        x, y, w, h = max(faces, key=lambda (x, y, w, h): w * h)
 
-    # pick biggest face (a bit heuristic)
-    x, y, w, h = max(faces, key=lambda (x, y, w, h): w * h)
+        if initial_face_position is None:
+            initial_face_position = y + h//2
+        elif (y + h//2) - initial_face_position > MAX_SLOUCH_RATIO * h:
+            is_slouching = True
+            print('{} STOP SLOUCHING! (Face middle {}, from initial {})'.format(time.strftime('%H:%M:%S'), y, initial_face_position))
+        elif is_slouching:
+            print(time.strftime('%H:%M:%S'), 'Back to normal')
+            is_slouching = False
 
-    if initial_face_position is None:
-        initial_face_position = y
-    elif y - initial_face_position > MAX_SLOUCH_RATIO * h:
-        print('STOP SLOUCHING! (Face top {}, from initial {})'.format(y, initial_face_position))
-
-    # Draw a rectangle around the faces
-    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        # Draw a rectangle around the faces
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
     # Display the resulting frame
     cv2.imshow('frame', frame)
