@@ -31,6 +31,19 @@
         </div>
 
         <div class="row">
+            <div class="col-12">
+                <p>
+                    Path:
+                    <?php $path = ''; ?>
+                    <?php foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $i => $dir): ?>
+                    <?php $path .= "$dir/" ?>
+                    / <a href="<?php echo $path ?>"><?php echo $dir ? $dir : '&#8962;'  ?></a>
+                    <?php endforeach ?>
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
         <?php foreach(glob('*.mp3') as $i => $music_file): ?>
             <div class="col-sm-6 col-md-4 col-lg-3 py-3">
                 <p><?php echo $i + 1; ?>. <?php echo $music_file ?></p>
