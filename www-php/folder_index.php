@@ -30,15 +30,21 @@
             <p class="lead">Folder listing</p>
         </div>
 
-        <div class="page-header">
-            <p></p>
-            <h1>
-            <?php $path = ''; ?>
-            <?php foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $i => $dir): ?>
-            <?php $path .= "$dir/" ?>
-            / <a href="<?php echo $path ?>"><?php echo $dir ? $dir : '&#8962;'  ?></a>
-            <?php endforeach ?>
-            </h1>
+        <div class="page-header d-block d-md-none">
+            <h1><?php echo $title ?></h1>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <p>
+                    Path:
+                    <?php $path = ''; ?>
+                    <?php foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $i => $dir): ?>
+                    <?php $path .= "$dir/" ?>
+                    / <a href="<?php echo $path ?>"><?php echo $dir ? $dir : '&#8962;'  ?></a>
+                    <?php endforeach ?>
+                </p>
+            </div>
         </div>
 
         <div class="row">
