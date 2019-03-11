@@ -35,9 +35,9 @@ else:
     exit()
 
 
-def face_area(*args):
+def face_area(rect):
     "Ugly hack, because Py3 can't unpack tuples in lambda."
-    x, y, w, h = args if len(args) == 4 else args[0]
+    x, y, w, h = rect
     del x, y
     return w * h
 
