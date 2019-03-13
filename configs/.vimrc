@@ -6,6 +6,7 @@
 " endif
 
 au FileType make setl noexpandtab
+au FileType python setl kp=pydoc
 
 set autoindent
 set expandtab
