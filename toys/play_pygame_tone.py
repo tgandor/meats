@@ -24,13 +24,13 @@ def MakeSound(arr):
 
 
 def MakeSineWave(freq=1000):
-    return MakeSound(SineWave(freq))
+    return MakeSound(SineWave(freq, volume=4000))
 
 
 SAMPLE_RATE = 22050 ## This many array entries == 1 second of sound.
 
 pygame.init()
-sound = MakeSineWave(130.81)
+sound = MakeSineWave(435)
 sound.play()
 time.sleep(1.2)
 pygame.quit()

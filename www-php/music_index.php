@@ -1,4 +1,9 @@
-<!doctype html>
+<?php
+    $title = basename(dirname($_SERVER['PHP_SELF']));
+    $files = glob('*.mp3');
+    natsort($files);
+    $loop = ($_GET['loop'] == 'true');
+?><!doctype html>
 <html lang="en">
   <head>
     <!-- Required meta tags -->
@@ -16,7 +21,6 @@
     }
     </style>
 
-    <?php $title = basename(dirname($_SERVER['PHP_SELF'])); ?>
     <title><?php echo $title ?> - Music Index</title>
   </head>
   <body>
@@ -41,10 +45,20 @@
                     <?php endforeach ?>
                 </p>
             </div>
+            <div class="col-12">
+                <p>
+                    Loop:
+                    <?php if ($loop): ?>
+                        ON <a href="?loop=false">disable</a>
+                    <?php else: ?>
+                        OFF <a href="?loop=true">enable</a>
+                    <?php endif ?>
+                </p>
+            </div>
         </div>
 
         <div class="row">
-        <?php foreach(glob('*.mp3') as $i => $music_file): ?>
+        <?php foreach($files as $i => $music_file): ?>
             <div class="col-sm-6 col-md-4 col-lg-3 py-3">
                 <p><?php echo $i + 1; ?>. <?php echo $music_file ?></p>
                 <?php if (file_exists(basename("$music_file", "mp3") . "txt")): ?>
@@ -56,6 +70,19 @@
                 </audio>
             </div>
         <?php endforeach ?>
+
+        <?php if(count($files) > 10): ?>
+            <div class="col-12">
+                <p>
+                    Path:
+                    <?php $path = ''; ?>
+                    <?php foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $i => $dir): ?>
+                    <?php $path .= "$dir/" ?>
+                    / <a href="<?php echo $path ?>"><?php echo $dir ? $dir : '&#8962;'  ?></a>
+                    <?php endforeach ?>
+                </p>
+            </div>
+        <?php endif ?>
         </div>
     </div>
 
