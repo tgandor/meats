@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt install -y \
+sudo apt install -y "$@" \
     chromium-browser \
     gimp \
     gitk \
