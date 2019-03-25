@@ -60,7 +60,7 @@
         <div class="row">
         <?php foreach($files as $i => $music_file): ?>
             <div class="col-sm-6 col-md-4 col-lg-3 py-3">
-                <p><?php echo $i + 1; ?>. <?php echo $music_file ?></p>
+                <p><?php echo $i + 1; ?>. <a href="<?php echo $music_file ?>"><?php echo $music_file ?></a></p>
                 <?php if (file_exists(basename("$music_file", "mp3") . "txt")): ?>
                 <p class="small"><?php readfile(basename("$music_file", "mp3") . "txt") ?></p>
                 <?php endif ?>
