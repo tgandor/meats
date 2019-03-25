@@ -2,7 +2,7 @@
     $title = basename(dirname($_SERVER['PHP_SELF']));
     $files = glob('*.mp3');
     natsort($files);
-    $loop = ($_GET['loop'] == 'true');
+    $loop = (isset($_GET['loop']) && $_GET['loop'] == 'true');
 ?><!doctype html>
 <html lang="en">
   <head>
@@ -64,7 +64,7 @@
                 <?php if (file_exists(basename("$music_file", "mp3") . "txt")): ?>
                 <p class="small"><?php readfile(basename("$music_file", "mp3") . "txt") ?></p>
                 <?php endif ?>
-                <audio controls="controls" preload="none"<?php if($_GET['loop'] == 'true'): ?> loop="loop"<?php endif ?>>
+                <audio controls="controls" preload="none"<?php if($loop): ?> loop="loop"<?php endif ?>>
                     <source src="<?php echo $music_file ?>" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
