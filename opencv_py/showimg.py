@@ -69,6 +69,9 @@ def _load_image(filename, args=None):
         tqdm.write('Failed to load: {}'.format(filename))
         return None
 
+    if args and args.rot180:
+        image = np.rot90(image, k=2)
+
     if args and args.yolo_bbox:
         bbox_filename = os.path.splitext(filename)[0]+'.txt'
         H, W = image.shape[:2]
@@ -81,6 +84,17 @@ def _load_image(filename, args=None):
                     cv2.rectangle(image, pt1, pt2, _get_color(class_idx), 1)
         except OSError:
             tqdm.write('Failed to load: {} (bounding boxes)'.format(bbox_filename))
+
+    if args and args.chessboard:
+        wh = args.chessboard.split(',')
+        if len(wh) == 2:
+            w, h = map(int, wh)
+            ret, corners = cv2.findChessboardCorners(image, (w, h), None)
+            if not ret:
+                print('Corners not found')
+            else:
+                cv2.drawChessboardCorners(image, (w, h), corners, ret)
+
     return image
 
 
@@ -153,6 +167,8 @@ if __name__ == '__main__':
     parser.add_argument('--delay', type=int, help='miliseconds to wait beween directory images', default=1)
     parser.add_argument('--delete-similar', action='store_true', help='remove directory images below MSE')
     parser.add_argument('--yolo-bbox', action='store_true', help='try to load and draw YOLO boundinb boxes')
+    parser.add_argument('--chessboard', help='chesboard size to detect and show')
+    parser.add_argument('--rot180', action='store_true', help='rotate image 180 degrees')
     parser.add_argument('--verbose', '-v', action='store_true', help='increase verbosity')
     parser.add_argument('files', nargs='+')
     args = parser.parse_args()
