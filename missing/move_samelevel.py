@@ -11,36 +11,17 @@ parser.add_argument('files', nargs='+')
 parser.add_argument('target_directory')
 args = parser.parse_args()
 
-if not os.path.isdir(args.target_directory):
+if os.path.exists(args.target_directory) and not os.path.isdir(args.target_directory):
     print('Target is not a directory:', args.target_directory)
     exit()
-
-# Some BS, we don't really want relative path calculations:
-
-'''
-# Linux only for now
-chunks = args.target_directory.split('/')
-if chunks[-1] == '':
-    chunks.pop()
-
-down = chunks.count('..')
-up = len(chunks) - down
-
-print('levels down:', down, 'up:', up)
-print(args.files, chunks)
-# import code; code.interact(local=locals())
-'''
 
 real_target = os.path.realpath(args.target_directory)
 real_chunks = real_target.split('/')
 if real_chunks[-1] == '':
     real_chunks.pop()
 
-print(real_chunks)
-
 for filename in args.files:
     source_chunks = os.path.realpath(filename).split('/')
-    # print(source_chunks)
 
     if len(real_chunks) > len(source_chunks):
         print('Too deep target')
