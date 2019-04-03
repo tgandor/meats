@@ -70,11 +70,15 @@ def _load_image(filename, args=None):
         return None
 
     if args and args.rot180:
+        # this is (possibly) faster, but non-contiguous:
         image = np.rot90(image, k=2)
+        # this is also nice, and gives a contiguous array right away:
+        # image = cv2.rotate(image, cv2.ROTATE_180)
 
     if args and args.yolo_bbox:
         bbox_filename = os.path.splitext(filename)[0]+'.txt'
         H, W = image.shape[:2]
+        image = np.ascontiguousarray(image)
         try:
             with open(bbox_filename) as bbox:
                 for line in bbox:
@@ -93,6 +97,9 @@ def _load_image(filename, args=None):
             if not ret:
                 print('Corners not found')
             else:
+                print('Found corners:', corners.shape)
+                # drawing corners needs to have a contiguous array
+                image = np.ascontiguousarray(image)
                 cv2.drawChessboardCorners(image, (w, h), corners, ret)
 
     return image
