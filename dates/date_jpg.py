@@ -5,6 +5,8 @@
 
 # usage: date_jpg.py dscn0001.jpg...
 
+from __future__ import print_function
+
 import glob
 import os
 import re
@@ -30,9 +32,13 @@ def info(f):
     if not match:
         print('{} - not found'.format(f))
         return
-    parsed = time.strptime(match, "%Y:%m:%d %H:%M:%S")
-    print('{} ; {}'.format(f, time.strftime("%Y-%m-%d (%a) %H:%M:%S", parsed)))
+    try:
+        parsed = time.strptime(match, "%Y:%m:%d %H:%M:%S")
+        print('{} ; {}'.format(f, time.strftime("%Y-%m-%d (%a) %H:%M:%S", parsed)))
+    except ValueError:
+        print('{} ; error parsing: {}'.format(f, match), file=sys.stderr)
 
 
 if __name__ == '__main__':
-    list(map(info, sys.argv[1:]))
+    for filename in sys.argv[1:]:
+        info(filename)
