@@ -13,6 +13,9 @@ import time
 from operator import attrgetter
 from threading import Event, Thread
 
+MIN_ELAPSED_TO_SAVE = 5  # Never save groups if faster than this time
+MIN_GROUPS_TO_SAVE = 20  # Less will fit on the screen
+
 
 def md5sum(filename, chunk_size=2**12):
     logging.getLogger().debug('MD5 %s', filename)
@@ -269,6 +272,7 @@ def save_groups(group_list, prefix='', unique_files=None):
     json_dump = prefix + 'fdupes_groups_{}.json'.format(time.strftime('%Y%m%d_%H%M%S'))
     with open(json_dump, 'w') as dump:
         json.dump({
+            'count': len(group_list),
             'groups': [_as_dict(group) for group in group_list],
             'unique': unique_files
         }, dump, default=custom_dumper, indent=2)
@@ -315,7 +319,11 @@ class Profiler:
         print('Finished {} in {:.1f} s. ({:.1f} s total)'.format(
             phase or '',
             self.times[-1] - self.times[-2],
-            self.times[-1] - self.times[0]))
+            self.total_time()))
+
+    def total_time(self):
+        return self.times[-1] - self.times[0]
+
 
 
 def delete_interactive(groups):
@@ -440,7 +448,10 @@ def main():
         process_groups(groups)
         profiler.finish_phase('printing groups')
 
-    if not args.no_save:
+    if not args.no_save and (
+        profiler.total_time() > MIN_ELAPSED_TO_SAVE
+        or len(groups) > MIN_GROUPS_TO_SAVE
+    ):
         save_groups(groups, args.prefix, unique_files)
         profiler.finish_phase('saving groups')
 
@@ -451,7 +462,8 @@ def main():
         rest = delete_unattended(groups, args)
         if rest:
             print('Remaining groups:', groups_summary(rest))
-            save_groups(rest, args.prefix + 'left_')
+            if len(rest) > MIN_GROUPS_TO_SAVE:
+                save_groups(rest, args.prefix + 'left_')
         profiler.finish_phase('deleting duplicates')
     elif args.hardlink:
         link_groups_hard(groups)
