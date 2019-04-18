@@ -85,7 +85,8 @@ def _load_image(filename, args=None):
                     class_idx, x, y, w, h = line.split()
                     class_idx = int(class_idx)
                     pt1, pt2 = _scale_rect(x, y, w, h, W, H)
-                    cv2.rectangle(image, pt1, pt2, _get_color(class_idx), 1)
+                    thickness = max(args.downsample, 1)
+                    cv2.rectangle(image, pt1, pt2, _get_color(class_idx), thickness)
         except OSError:
             tqdm.write('Failed to load: {} (bounding boxes)'.format(bbox_filename))
 
@@ -101,6 +102,9 @@ def _load_image(filename, args=None):
                 # drawing corners needs to have a contiguous array
                 image = np.ascontiguousarray(image)
                 cv2.drawChessboardCorners(image, (w, h), corners, ret)
+
+    if args and args.downsample > 1:
+        return image[::args.downsample, ::args.downsample]
 
     return image
 
@@ -171,6 +175,7 @@ def view_file(filename, args=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--mse', type=float, help='min MSE between images in directory to display', default=0)
+    parser.add_argument('--downsample', type=int, help='display image downsampled N times (stride)', default=1)
     parser.add_argument('--delay', type=int, help='miliseconds to wait beween directory images', default=1)
     parser.add_argument('--delete-similar', action='store_true', help='remove directory images below MSE')
     parser.add_argument('--yolo-bbox', action='store_true', help='try to load and draw YOLO boundinb boxes')

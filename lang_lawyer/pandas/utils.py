@@ -2,6 +2,7 @@
 def sanitize_column_names(df, inplace=True):
     "Replace all non-identifier characters in column names with _."
     def sanit(name):
+        import re
         name = name.lower()
         name = re.sub('\W', '_', name)
         name = re.sub('__+', '_', name)
