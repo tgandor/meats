@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
+import argparse
 import datetime
 import os
+import shutil
 import sqlite3
-
+import sys
+import time
 
 # Filesystem     1M-blocks   Used Available Use% Mounted on
 # udev                7900      0      7900   0% /dev
@@ -35,19 +40,71 @@ create table df
     return conn, cursor
 
 
-data = os.popen('df -m').read().split('\n')[1:]
-df_date = datetime.datetime.now()
+def normal_df():
+    data = os.popen('df -m').read().split('\n')[1:]
+    df_date = datetime.datetime.now()
 
-conn, cursor = open_database()
+    conn, cursor = open_database()
 
-for row in data:
-    columns = row.split(None, 6)
-    if len(columns) != 6:
-        continue
-    cursor.execute(
-        'insert into df (filesystem, size, used, available, use, mountpoint, df_date) values (?,?,?,?,?,?,?)',
-        columns + [df_date]
-    )
-conn.commit()
-cursor.close()
-conn.close()
+    for row in data:
+        columns = row.split(None, 6)
+        if len(columns) != 6:
+            continue
+        cursor.execute(
+            'insert into df (filesystem, size, used, available, use, mountpoint, df_date) values (?,?,?,?,?,?,?)',
+            columns + [df_date]
+        )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def windows_emulation():
+    df_date = datetime.datetime.now()
+
+    conn, cursor = open_database()
+
+    for drive in enumerate_windows_drives():
+        print('Checking:', drive)
+        usage = shutil.disk_usage(drive)
+        print(usage)
+        cursor.execute(
+            'insert into df (filesystem, size, used, available, use, mountpoint, df_date) values (?,?,?,?,?,?,?)',
+            (drive, usage.total, usage.used, usage.free, usage.used / usage.total * 100, drive, df_date)
+        )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def enumerate_windows_drives():
+    try:
+        raise ImportError
+        import win32api
+        # print(repr(win32api.GetLogicalDriveStrings()))
+        for drive in win32api.GetLogicalDriveStrings().split('\0'):
+            if drive:
+                yield drive
+    except ImportError:
+        print('Missing win32api', file=sys.stderr)
+        import string
+        for letter in string.ascii_uppercase:
+            path = letter + ':\\'
+            if os.path.exists(path):
+                yield path
+
+
+if __name__ == '__main__':
+    if os.name == 'nt':
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--loop', '-l', action='store_true')
+        parser.add_argument('--period', '-t', type=float, default=60)
+        args = parser.parse_args()
+        if args.loop:
+            while True:
+                windows_emulation()
+                time.sleep(args.period)
+        else:
+            windows_emulation()
+    else:
+        normal_df()
