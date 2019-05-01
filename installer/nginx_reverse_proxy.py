@@ -8,7 +8,7 @@ import os
 from six.moves import input
 
 script = """
-sudo apt-get update
+[ -z  "`find /var/cache/apt/pkgcache.bin -mmin -30`" ] && sudo apt-get update
 sudo apt-get install nginx openssl
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/cert.key -out /etc/nginx/cert.crt
 """
@@ -46,7 +46,7 @@ server {
       proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header        X-Forwarded-Proto $scheme;
 
-      # Fix the “It appears that your reverse proxy set up is broken" error.
+      # Fix the "It appears that your reverse proxy set up is broken" error.
       proxy_pass          http://localhost:8080;
       proxy_read_timeout  90;
 
