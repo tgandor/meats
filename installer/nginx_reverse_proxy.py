@@ -3,18 +3,28 @@
 # Based on:
 # https://www.digitalocean.com/community/tutorials/how-to-configure-nginx-with-ssl-as-a-reverse-proxy-for-jenkins
 
+import glob
 import os
+import shutil
 
 from six.moves import input
 
 script = """
 [ -z  "`find /var/cache/apt/pkgcache.bin -mmin -30`" ] && sudo apt-get update
 sudo apt-get install nginx openssl
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/cert.key -out /etc/nginx/cert.crt
 """
 
 for line in script.strip().split('\n'):
     os.system(line)
+
+keys = sorted(glob.glob('/etc/letsencrypt/live/*/privkey.pem'))
+certs = sorted(glob.glob('/etc/letsencrypt/live/*/fullchain.pem'))
+
+if keys and certs:
+    shutil.copy(keys[0], '/etc/nginx/cert.key')
+    shutil.copy(certs[0], '/etc/nginx/cert.crt')
+else:
+    os.system("sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/cert.key -out /etc/nginx/cert.crt")
 
 domain_name = input('Enter your domain name:')
 
