@@ -14,7 +14,13 @@ hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 if len(sys.argv) > 1:
-    cap = cv2.VideoCapture(sys.argv[1])
+    try:
+        webcam = int(sys.argv[1])
+    except ValueError:
+        # not a webcam...
+        webcam = sys.argv[1]
+
+    cap = cv2.VideoCapture(webcam)
 else:
     cap = cv2.VideoCapture(0)
 
