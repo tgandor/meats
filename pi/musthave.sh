@@ -17,6 +17,7 @@ sudo apt-get install -y \
     tmux \
     vim \
     vlc-nox \
+    zip \
 
 if [ ! -e $HOME/.bash_aliases ] ; then
     echo Creating $HOME/.bash_aliases

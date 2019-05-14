@@ -22,4 +22,5 @@ sudo apt install -y "$@" \
     subversion \
     tmux \
     vim \
+    zip \
 # end.
