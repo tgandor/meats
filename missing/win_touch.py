@@ -70,25 +70,35 @@ def change_file_dates(fname, newtime):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('target_glob')
-    parser.add_argument('--recursive', '-r', action='store_true', help='Glob recursively, Py3 only.')
+    parser.add_argument('--recursive', '-r', action='store_true', help='Glob recursively, Py3 only. (use **)')
     parser.add_argument('--date', '-d', help='Optional datetime.')
 
     args = parser.parse_args()
 
+    start = datetime.datetime.now()
     if args.recursive:
         targets = glob.glob(args.target_glob, recursive=True)
     else:
         targets = glob.glob(args.target_glob)
+    print('Globbed in', datetime.datetime.now() - start)
 
     if args.date:
         touch_date = parse_date(args.date)
     else:
         touch_date = datetime.datetime.now()
 
-    for target in targets:
-        if 'System Volume Information' in target:
-            print('Not touching:', target)
-            continue
+    start_touching = datetime.datetime.now()
+    count = 0
 
-        print('Touching:', target)
-        change_file_dates(target, touch_date)
+    try:
+        for target in targets:
+            if 'System Volume Information' in target:
+                print('Not touching:', target)
+                continue
+
+            print('Touching:', target)
+            change_file_dates(target, touch_date)
+            count += 1
+    finally:
+        print('Touched', count, 'items in', datetime.datetime.now() - start_touching)
+        print('Total elapsed:', datetime.datetime.now() - start)
