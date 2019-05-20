@@ -24,8 +24,12 @@ cascades = [
     'haarcascade_frontalface_default.xml',
 ]
 
+if hasattr(cv2, 'data'):
+    cascades.insert(0, os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml'))
+
 for path in cascades:
     if os.path.isfile(path):
+        print('Loading face model:', path)
         faceCascade = cv2.CascadeClassifier(path)
         break
 else:
