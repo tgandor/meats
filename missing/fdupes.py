@@ -450,7 +450,7 @@ def main():
 
     if not args.no_save and (
         profiler.total_time() > MIN_ELAPSED_TO_SAVE
-        or len(groups) > MIN_GROUPS_TO_SAVE
+        and len(groups) > MIN_GROUPS_TO_SAVE
     ):
         save_groups(groups, args.prefix, unique_files)
         profiler.finish_phase('saving groups')
