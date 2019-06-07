@@ -1,0 +1,11 @@
+; need to install GitLFS btw.
+[filter "lfs"]
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+
+; alias for ignoring file mode on a single command
+; https://stackoverflow.com/a/31613841/1338797
+[alias]
+nfm = "!f(){ git -c core.fileMode=false $@; };f"
