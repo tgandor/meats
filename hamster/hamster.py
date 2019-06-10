@@ -9,10 +9,14 @@ import random
 from operator import itemgetter
 
 CHUNK = 512 * 1024
-user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0'
+user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:67.0) Gecko/20100101 Firefox/67.0'
+
+if sys.version_info.major > 2:
+    print('This script supports Python version 2 only. Please use hamster3.py')
+    exit(1)
 
 try:
-	import cStringIO
+    import cStringIO
 except ImportError:
     import io as StringIO
 
@@ -24,26 +28,26 @@ except ImportError:
 
 
 def urlopen3(url):
-	import urllib.request
-	req = urllib.request.Request(
-		url,
-		data=None,
-		headers={'User-Agent': user_agent}
-	)
-	return urllib.request.urlopen(req)
+    import urllib.request
+    req = urllib.request.Request(
+        url,
+        data=None,
+        headers={'User-Agent': user_agent}
+    )
+    return urllib.request.urlopen(req)
 
 try:
-	urllib.URLopener.version = user_agent
-	urlopen = urllib.urlopen
+    urllib.URLopener.version = user_agent
+    urlopen = urllib.urlopen
 except AttributeError:
-	urlopen = urlopen3
+    urlopen = urlopen3
 
 
 def info(s, eol='\n'):
-	try:
-		print(s.encode('utf-8')+eol)
-	except TypeError:
-		print(s)
+    try:
+        print(s.encode('utf-8')+eol)
+    except TypeError:
+        print(s)
 
 
 def human(x):

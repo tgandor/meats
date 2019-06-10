@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import absolute_import
+
 import sys
 import os
 import re
@@ -20,7 +21,7 @@ except ImportError:
     natsorted = sorted
 
 CHUNK = 512 * 1024
-user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0'
+user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:67.0) Gecko/20100101 Firefox/67.0'
 
 
 def urlopen3(url):
@@ -154,7 +155,7 @@ class VideoHandler(object):
 
 
 def _extract_tasks(handler, contents):
-    task_groups = (handler.pattern.findall(content.decode()) for content in contents)
+    task_groups = (handler.pattern.findall(content.decode('utf-8')) for content in contents)
     joined = set(sum(task_groups, []))
     return natsorted(joined, key=itemgetter(0))
 
