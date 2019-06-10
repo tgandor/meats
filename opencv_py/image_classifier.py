@@ -29,7 +29,7 @@ parser.add_argument('--retrain', action='store_true', help='Retrain model even w
 parser.add_argument('--generator', '-g', action='store_true')
 parser.add_argument('--rename', '-w', action='store_true', help='Move files to predicted classes')
 parser.add_argument('--threshold', '-t', type=float, default=0.8)
-parser.add_argument('--validation', '-v', type=float, default=0.0, help="Fraction of training to take as validation")
+parser.add_argument('--validation', '-v', type=float, default=0.1, help="Fraction of training to take as validation")
 parser.add_argument('--save', '-o', type=str)
 parser.add_argument('--load', '-i', type=str)
 args = parser.parse_args()
@@ -92,15 +92,19 @@ def create_network():
     return model
 
 
+def image_scaling(x):
+    return (x - 127.5) / 127.5
+
+
 def get_training_generator():
     generator = image.ImageDataGenerator(
-            # rotation_range=180.0,
-            # width_shift_range=0.05,
-            # height_shift_range=0.05,
-            # zoom_range=0.1,
+            rotation_range=180.0,
+            width_shift_range=0.05,
+            height_shift_range=0.05,
+            zoom_range=0.1,
             horizontal_flip=True,
             vertical_flip=True,
-            preprocessing_function=lambda x: (x - 127.5) / 127.5
+            preprocessing_function=image_scaling
         ).flow_from_directory(
             '.',
             target_size=size,
@@ -136,19 +140,34 @@ if __name__ == '__main__':
     if args.save:
         model.save(args.save, overwrite=True)
 
-    to_classify = glob.glob('*.*')
-
     print('Done, loading images...')
+
+    to_classify = glob.glob('*.*')
+    image_files = [
+        image_filename
+        for image_filename in to_classify
+        if os.path.splitext(image_filename.lower())[1] in ('.png', '.jpg', '.bmp', '.gif')
+    ]
+
+    if not to_classify:
+        print('No images to classify in current directory.')
+        exit()
+
     X_test = np.asarray([
-        image.img_to_array(image.load_img(image_filename, target_size=size, grayscale=args.gray)).astype(np.float32) / 256.0 - 0.5
-        for image_filename in to_classify if os.path.splitext(image_filename.lower())[1] in ('.png', '.jpg', '.bmp', '.gif')
+        image_scaling(
+            image.img_to_array(
+                image.load_img(image_filename, target_size=size, grayscale=args.gray)
+            ).astype(np.float32)
+        )
+        for image_filename in image_files
     ])
 
     print('Classifying...', classes)
     Y_test = model.predict(X_test)
 
     print('Done.')
-    for preds, filename in zip(Y_test, to_classify):
+
+    for preds, filename in zip(Y_test, image_files):
         print(preds, filename, classes[np.argmax(preds)])
         if args.rename:
             idx = np.argmax(preds)
