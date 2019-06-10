@@ -16,9 +16,13 @@ def ensure_resolver():
         print('Missing dnspython')
         if sys.platform.startswith('linux'):
             if sys.version_info.major == 2:
-                os.system('sudo apt-get install python-dnspython')
+                if os.system('sudo apt-get install python-dnspython') != 0:
+                    print('pip install dnspython')
+                    os.system('pip install dnspython')
             else:
-                os.system('sudo apt-get install python3-dnspython')
+                if os.system('sudo apt-get install python3-dnspython') != 0:
+                    print('pip install dnspython')
+                    os.system('pip install dnspython')
         else:
             print('pip install dnspython')
             os.system('pip install dnspython')
