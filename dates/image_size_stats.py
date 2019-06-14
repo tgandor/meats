@@ -12,6 +12,13 @@ except ImportError:
     os.system('pip install piexif')
     exit()
 
+try:
+    import imagesize
+except ImportError:
+    print('Missing imagesize')
+    os.system('pip install imagesize')
+    exit()
+
 size_stats = Counter()
 examples = {}
 
@@ -25,7 +32,14 @@ for path, directories, files in os.walk('.'):
                 size = (d["0th"][piexif.ImageIFD.ImageWidth], d["0th"][piexif.ImageIFD.ImageLength])
             except KeyError:
                 print('Error reading size from EXIF:', realname)
-                continue
+                size = None
+
+            size2 = imagesize.get(realname)
+
+            if size is None:
+                size = size2
+
+            assert size == size2
 
             size_stats[size] += 1
             if size not in examples:
@@ -59,7 +73,7 @@ plt.scatter(w, h, s=n)
 plt.axis('scaled')  # https://stackoverflow.com/a/35994245/1338797
 
 # reset axes min to 0:
-plt.xlim(xmin=0)
-plt.ylim(ymin=0)
+plt.xlim(left=0)
+plt.ylim(bottom=0)
 
 plt.show()
