@@ -3,8 +3,10 @@
 from __future__ import print_function
 from __future__ import division
 
-import os
 from collections import Counter
+import argparse
+import os
+import datetime
 
 try:
     import piexif
@@ -20,19 +22,37 @@ except ImportError:
     os.system('pip install imagesize')
     exit()
 
+parser = argparse.ArgumentParser()
+parser.add_argument('directory', nargs='?', default='.')
+parser.add_argument('--no-plot', '-n', action='store_true')
+parser.add_argument('--quantize', '-q', type=int, default=1, help='Truncate dimensions to multiples')
+parser.add_argument('--top', '-t', type=int, default=10, help='Number of most popular sizes to list')
+parser.add_argument('--verbose', '-v', action='store_true')
+args = parser.parse_args()
+
 size_stats = Counter()
 examples = {}
+exif = 0
+exif_mismatch = 0
 
-for path, directories, files in os.walk('.'):
+start = datetime.datetime.now()
+
+for path, directories, files in os.walk(args.directory):
     for basename in files:
         if basename.lower().endswith('.jpg'):
             realname = os.path.join(path, basename)
-            d = piexif.load(realname)
 
             try:
-                size = (d["0th"][piexif.ImageIFD.ImageWidth], d["0th"][piexif.ImageIFD.ImageLength])
-            except KeyError:
-                print('Error reading size from EXIF:', realname)
+                d = piexif.load(realname)
+
+                try:
+                    size = (d["0th"][piexif.ImageIFD.ImageWidth], d["0th"][piexif.ImageIFD.ImageLength])
+                    exif += 1
+                except KeyError:
+                    # print('Error reading size from EXIF:', realname)
+                    size = None
+            except piexif.InvalidImageDataError:
+                print('Error reading EXIF (invalid file [type]?):', realname)
                 size = None
 
             size2 = imagesize.get(realname)
@@ -40,29 +60,64 @@ for path, directories, files in os.walk('.'):
             if size is None:
                 size = size2
 
-            assert size == size2
+            if size != size2:
+                # imagesize seems to be right on the money
+                exif_mismatch += 1
+                print('Size differs for {}: {} vs {} ({})'.format(realname, size, size2, exif_mismatch))
+                size = size2
+            elif args.verbose:
+                print(realname, 'OK')
+
+            if args.quantize > 1:
+                size = tuple(x - x % args.quantize for x in size)
 
             size_stats[size] += 1
             if size not in examples:
                 examples[size] = realname
 
-total = len(size_stats)
+total = sum(size_stats.values())
 
 if total == 0:
-    print('No images found. Sorry.')
+    print('No images found. Sorry. Wall time:', datetime.datetime.now() - start)
     exit()
 
-ordered_keys = sorted(size_stats.keys(), key=lambda x: x[0] * x[1])
+print(
+    'Finished processing', total, 'files,',
+    exif, 'had EXIF metadata, in', datetime.datetime.now() - start
+)
 
+ordered_keys = sorted(size_stats.keys(), key=lambda x: (x[0] * x[1], x))
+
+print('Number of different sizes{}: {}'.format(
+    ' (quantized)' if args.quantize > 1 else '', len(size_stats)
+))
+
+# all sizes
 for size in ordered_keys:
     count = size_stats[size]
-    print('{} {:.1f} MPix, {} files, {:.1f} %, example: {}'.format(
-        size, size[0] * size[1] / 1e6, count, count / total, examples[size]))
+    print('{!r:12} {:4.2f} MPix, {:4d} files, {:5.1f} %, example: {}'.format(
+        size, size[0] * size[1] / 1e6, count, 100 * count / total, examples[size]))
+
+if args.top > 0:
+    print('Top sizes (up to {} most common):'.format(args.top))
+    top_total = 0
+
+    for size, count in size_stats.most_common(args.top):
+        print('{!r:12} {:4.2f} MPix, {:4d} files, {:5.1f} %, example: {}'.format(
+            size, size[0] * size[1] / 1e6, count, 100 * count / total, examples[size]))
+        top_total += count
+
+    print('These combined make up {:.1f} % ({:,} / {:,}) of all files.'.format(
+        100 * top_total / total, top_total, total))
+
+if args.no_plot:
+    exit()
 
 try:
     import matplotlib.pyplot as plt
 except ImportError:
-    print('Missing matplotlib. No plot to show.')
+    print('Missing matplotlib. Plot will not be shown.\nConsider:')
+    print('pip install matplotlib')
     exit()
 
 def transpose(tuples):
