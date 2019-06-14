@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from __future__ import division
 
 import os
 from collections import Counter
@@ -45,12 +46,18 @@ for path, directories, files in os.walk('.'):
             if size not in examples:
                 examples[size] = realname
 
-if len(size_stats) == 0:
+total = len(size_stats)
+
+if total == 0:
     print('No images found. Sorry.')
     exit()
 
-for size, count in size_stats.items():
-    print(size, count, 'example:', examples[size])
+ordered_keys = sorted(size_stats.keys(), key=lambda x: x[0] * x[1])
+
+for size in ordered_keys:
+    count = size_stats[size]
+    print('{} {:.1f} MPix, {} files, {:.1f} %, example: {}'.format(
+        size, size[0] * size[1] / 1e6, count, count / total, examples[size]))
 
 try:
     import matplotlib.pyplot as plt
