@@ -1,6 +1,7 @@
 #!/bin/bash
 
 sudo pacman -S "$@" \
+    bash-completion \
     dstat \
     fdupes \
     iotop \
