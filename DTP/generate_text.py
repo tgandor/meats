@@ -34,6 +34,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('input', nargs='?', help='input corpus (txt file) or trained model metadata (.json)')
 parser.add_argument('start', nargs='?', help='string to start generating from (context)')
 parser.add_argument('--cpu', action='store_true', help='force using CPU even if GPU available')
+parser.add_argument('--clean', action='store_true', help='remove all checkpoints except last_checkpoint to save space')
 parser.add_argument('--epochs', '-e', type=int, default=10, help='epochs to train (# corpus sizes)')
 parser.add_argument('--length', '-l', type=int, default=1000, help='nubmer of characters to generate')
 parser.add_argument('--save', '-o', default='model.json', help='model metadata saving path (only training)')
@@ -80,19 +81,25 @@ def prompt(msg=''):
         pass
 
     try:
-        import six
-        return six.moves.input(msg)
-    except ImportError:
-        return input(msg)
+        try:
+            import six
+            return six.moves.input(msg)
+        except ImportError:
+            return input(msg)
+    except (EOFError, KeyboardInterrupt):
+        # exception tuple needs parentheses...
+        print()
+        return ''
 
 
 def load_model():
+    """Load metadata and last model checkpoint (relative to metadata.json)."""
     with open(args.input) as js:
         metadata = json.load(js)
 
     char2idx = metadata['char2idx']
     embedding_dim = metadata['embedding_dim']
-    last_checkpoint = metadata['last_checkpoint']
+    last_checkpoint = os.path.join(os.path.dirname(args.input), metadata['last_checkpoint'])
     rnn_units = metadata['rnn_units']
 
     vocab = sorted(set(char2idx.keys()))
@@ -104,6 +111,7 @@ def load_model():
     print('Model loaded from:', last_checkpoint)
 
     return model, char2idx, idx2char
+
 
 def train_model():
     if not args.input:
@@ -336,5 +344,36 @@ def generate_text(model, start_string, char2idx, idx2char, num_generate=1000):
   return (start_string + ''.join(text_generated))
 
 
+def clean_checkpoints():
+    """Remove unused checkpoints."""
+    with open(args.input) as js:
+        metadata = json.load(js)
+
+    last_checkpoint = os.path.join(os.path.dirname(args.input), metadata['last_checkpoint'])
+
+    checkpoint_dir = os.path.dirname(last_checkpoint)
+
+    print('Cleaning checkpoint directory:', checkpoint_dir)
+
+    checkpoint_base = os.path.basename(last_checkpoint)
+
+    for path in os.listdir(checkpoint_dir):
+        realpath = os.path.join(checkpoint_dir, path)
+
+        if not os.path.isfile(realpath):
+            continue
+
+        if path == 'checkpoint' or path.startswith(checkpoint_base):
+            print('Leaving:', path)
+            continue
+
+        print('Removing:', realpath)
+        os.unlink(realpath)
+
+
 if __name__ == '__main__':
+    if args.clean:
+        clean_checkpoints()
+        exit()
+
     main()
