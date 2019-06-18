@@ -31,13 +31,13 @@ import sys
 import time
 
 parser = argparse.ArgumentParser()
-parser.add_argument('input', nargs='?', help='input corpus (txt file) or trained model (.json)')
-# the start should be required actually... Well.
+parser.add_argument('input', nargs='?', help='input corpus (txt file) or trained model metadata (.json)')
 parser.add_argument('start', nargs='?', help='string to start generating from (context)')
 parser.add_argument('--cpu', action='store_true', help='force using CPU even if GPU available')
 parser.add_argument('--epochs', '-e', type=int, default=10, help='epochs to train (# corpus sizes)')
 parser.add_argument('--length', '-l', type=int, default=1000, help='nubmer of characters to generate')
-parser.add_argument('--save', '-o', default='model.json', help='Path to save model (only when training)')
+parser.add_argument('--save', '-o', default='model.json', help='model metadata saving path (only training)')
+parser.add_argument('--temperature', '-t', type=float, default=1.0, help='randomness of generated text')
 parser.add_argument('--verbose', '-v', action='store_true')
 args = parser.parse_args()
 
@@ -312,7 +312,7 @@ def generate_text(model, start_string, char2idx, idx2char, num_generate=1000):
   # Low temperatures results in more predictable text.
   # Higher temperatures results in more surprising text.
   # Experiment to find the best setting.
-  temperature = 1.0
+  temperature = args.temperature
 
   # Here batch size == 1
   model.reset_states()
