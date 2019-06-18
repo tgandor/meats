@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--ascii', '-t', action='store_true')
 parser.add_argument('--fake-date', '-d', action='store_true')
 parser.add_argument('--mountpoint', '-m', default='/', help='mountpoint to show')
+parser.add_argument('--absolute', '-a', action='store_true', help='Y axis from 0 to size')
 parser.add_argument('--list-mountpoints', action='store_true', help='mountpoint to show')
 parser.add_argument('--days', '-D', type=int, help='number of last days to show')
 parser.add_argument('--width', '-w', type=int, help='width of plot (--ascii only)', default=170)
@@ -43,6 +44,7 @@ if args.days:
 
 df = pd.read_sql_query(query, conn, params=params)
 df.df_date = pd.to_datetime(df['df_date'])
+# import code; code.interact(local=locals())
 
 if args.ascii:
     import asciiplotlib
@@ -61,4 +63,7 @@ else:
     from matplotlib import pyplot as plt
 
     df.plot(x='df_date', y='used')
+    if args.absolute:
+        # unfortunately, 'size' is a bad column name in Pandas. df.size returns int, df['size'] - Series
+        plt.ylim(bottom=0, top=df['size'].max())
     plt.show()
