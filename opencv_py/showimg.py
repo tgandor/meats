@@ -126,7 +126,7 @@ def quick_view_directory(directory_name, args=None):
         if prev is not None and args and args.mse > 0.:
             current_mse = mse(prev, image)
             if current_mse < args.mse:
-                if args and args.delete_other:
+                if args and args.delete_similar:
                     os.unlink(filename)
                 continue
             if args.verbose:

@@ -11,9 +11,12 @@ for directory, _, files in os.walk('.'):
     for basename in files:
         filename = os.path.join(directory, basename)
         if basename.lower().endswith('.mp3'):
-            audio = MP3(filename)
-            # print(basename, audio.info.length)
-            mp3s.append((datetime.timedelta(seconds=int(audio.info.length)), filename))
+            try:
+                audio = MP3(filename)
+                # print(basename, audio.info.length)
+                mp3s.append((datetime.timedelta(seconds=int(audio.info.length)), filename))
+            except:
+                print('Processing', filename, 'failed!')
 
 mp3s.sort()
 total = datetime.timedelta()
