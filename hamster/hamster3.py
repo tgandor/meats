@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+import argparse
 import sys
 import os
 import re
@@ -132,24 +133,29 @@ def download_url(url):
     return read_with_progress(resp)
 
 
-class MusicHandler(object):
+class Handler(object):
+    def __init__(self, hostname='localhost'):
+        self.hostname = hostname
+
+
+class MusicHandler(Handler):
     pattern = re.compile(r'/([^/]+),(\d+)\.mp3', re.IGNORECASE)
     fileext = '.mp3'
 
-    def get_url(self, hostname, file_id):
+    def get_url(self, file_id):
         ts = int(time.time() * 1000)
-        return "https://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
+        return "https://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (self.hostname, file_id, ts)
 
-    def get_data(self, hostname, file_id):
-        url = self.get_url(hostname, file_id)
+    def get_data(self, file_id):
+        url = self.get_url(file_id)
         return download_url(url)
 
 
-class VideoHandler(object):
+class VideoHandler(Handler):
     pattern = re.compile(r'/([^/]+),(\d+)\.(?:avi|mp4)', re.IGNORECASE)
     fileext = '.flv'
 
-    def get_data(self, hostname, file_id):
+    def get_data(self, file_id):
         url = "https://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
         return download_url(url)
 
@@ -160,9 +166,8 @@ def _extract_tasks(handler, contents):
     return natsorted(joined, key=itemgetter(0))
 
 
-def retrieve_all(hostname, handler, contents, targetdir):
+def retrieve_all(handler, tasks, targetdir):
     info("Starting download loop, exit easily with Ctrl-C while sleeping.")
-    tasks = _extract_tasks(handler, contents)
     total = len(tasks)
     i = 0
 
@@ -179,7 +184,7 @@ def retrieve_all(hostname, handler, contents, targetdir):
             info(">%s< seems to exist, skipping." % filename)
             continue
         info("Retrieving >%s< (id: %s)" % (title_c, file_id))
-        data = handler.get_data(hostname, file_id)
+        data = handler.get_data(file_id)
         if data.startswith(b'The page cannot be displayed'):
             info('Reading failed!')
         else:
@@ -218,7 +223,7 @@ def _gather_contents(the_url):
     return contents
 
 
-def command_dl(the_url):
+def command_dl(the_url, filter_string=None):
     hostname = re.match('https?://([^/]+)/', the_url).group(1)
     dir_name = clean_name(the_url[the_url.rfind('/')+1:])
     if not os.path.exists(dir_name):
@@ -227,7 +232,14 @@ def command_dl(the_url):
     else:
         info("Directory %s seems to already exist." % dir_name)
 
-    retrieve_all(hostname, MusicHandler(), _gather_contents(the_url), dir_name)
+    contents = _gather_contents(the_url)
+    handler = MusicHandler(hostname)
+    tasks = _extract_tasks(handler, contents)
+
+    if filter_string:
+        tasks = list(filter(lambda task: filter_string in task[0], tasks))
+
+    retrieve_all(handler, tasks, dir_name)
 
 
 def _print_tasks(tasks, ext):
@@ -292,9 +304,9 @@ def command_play(the_url):
     contents = _gather_contents(the_url)
     msg = "Playing: %s" % the_url
     print(msg, '\n'+'-'*len(msg))
-    handler = MusicHandler()
+    handler = MusicHandler(hostname)
     for track, file_id in _extract_tasks(handler, contents):
-        url = handler.get_url(hostname, file_id)
+        url = handler.get_url(file_id)
         print(track, url)
         if os.system("mplayer '%s'" % url) != 0:
             print("Unclean exit. quitting.")
@@ -342,6 +354,7 @@ def command_find(the_url, query):
 
 
 def main():
+    """Old CLI."""
     if len(sys.argv) < 2:
         # maybe phone clipboard
         try:
@@ -397,5 +410,20 @@ def main():
 def usage():
     print('Usage: %s [dl|ls|rls|rdl|play] URL' % sys.argv[0])
 
+
+def _main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('the_url')
+    parser.add_argument('--list', '-l', action='store_true')
+    parser.add_argument('--filter', '-f')
+
+    args = parser.parse_args()
+
+    if args.list:
+        command_ls(args.the_url)
+    else:
+        command_dl(args.the_url, args.filter)
+
+
 if __name__ == '__main__':
-    main()
+    _main()
