@@ -126,7 +126,7 @@ def read_with_progress(resp):
 
 def download_url(url):
     resp = urlopen(url)
-    msg = resp.info()
+    # msg = resp.info()
     length = resp.getheader('Content-Length')
     if length:
         info("%s\nDownloading %sB " % (url, human(int(length))), eol='')
@@ -156,7 +156,7 @@ class VideoHandler(Handler):
     fileext = '.flv'
 
     def get_data(self, file_id):
-        url = "https://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
+        url = "https://%s/Video.ashx?id=%s&type=1&file=video" % (self.hostname, file_id)
         return download_url(url)
 
 
@@ -332,7 +332,7 @@ def command_shell(the_url):
         choice = int(input())
         the_url = interesting[choice]
     contents = _gather_contents(the_url)
-    handler = MusicHandler()
+    handler = MusicHandler(hostname)
     tasks = _extract_tasks(handler, contents)
     while True:
         for i in range(len(tasks)):
@@ -341,7 +341,7 @@ def command_shell(the_url):
         if cmd == 'q':
             return
         idx = int(cmd)
-        url = handler.get_url(hostname, tasks[idx][1])
+        url = handler.get_url(tasks[idx][1])
         print("Playing %s from %s..." % (tasks[idx][0], url))
         os.system("mplayer '%s'" % url)
 
