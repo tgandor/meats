@@ -1,14 +1,20 @@
 #!/usr/bin/env python
 
+import argparse
 import os
 import datetime
 
 from mutagen.mp3 import MP3
 
+parser = argparse.ArgumentParser()
+parser.add_argument('path', nargs='?', default='.')
+parser.add_argument('--no-sort', '-n', action='store_true')
+args = parser.parse_args()
+
 mp3s = []
 
-for directory, _, files in os.walk('.'):
-    for basename in files:
+for directory, _, files in os.walk(args.path):
+    for basename in sorted(files):
         filename = os.path.join(directory, basename)
         if basename.lower().endswith('.mp3'):
             try:
@@ -18,7 +24,9 @@ for directory, _, files in os.walk('.'):
             except:
                 print('Processing', filename, 'failed!')
 
-mp3s.sort()
+if not args.no_sort:
+    mp3s.sort()
+
 total = datetime.timedelta()
 
 for i, (duration, filename) in enumerate(mp3s):
