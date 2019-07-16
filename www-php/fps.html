@@ -6,6 +6,7 @@
 <html>
 
 <head>
+    <title>Frames Per Second as millisecond delays</title>
     <meta charset="utf-8">
 
     <style type="text/css">
@@ -39,6 +40,11 @@
 <!-- Body tag is where we will append our SVG and SVG objects-->
 
 <body>
+    <div style="position: absolute; text-align: center; left: 0; right: 0;">
+        <h1>Frames Per Second - in milliseconds</h1>
+        <p>Hover mouse to see <em>ms</em> delay period for specific FPS value.</p>
+    </div>
+    <div id="plot"></div>
 </body>
 
 <!-- Load in the d3 library (version 5) -->
@@ -49,8 +55,9 @@
 
     // 2. Use the margin convention practice
     var margin = { top: 50, right: 50, bottom: 50, left: 50 }
+        , extraForText = 50 // not needed much, after "position: absolute"
         , width = window.innerWidth - margin.left - margin.right // Use the window's width
-        , height = window.innerHeight - margin.top - margin.bottom; // Use the window's height
+        , height = window.innerHeight - margin.top - margin.bottom - extraForText; // Use the window's height
 
     // The number of datapoints -> 1 to 60 FPS
     var n = 60;
@@ -73,10 +80,10 @@
         .curve(d3.curveMonotoneX) // apply smoothing to the line
 
     // 8. An array of objects of length N. Each object has key -> value pair, the key being "y" and the value is a random number
-    var dataset = d3.range(1, n+1).map(function (d) { return { "y": 1000 / d }; })
+    var dataset = d3.range(1, n + 1).map(function (d) { return { "y": 1000 / d }; })
 
     // 1. Add the SVG to the page and employ #2
-    var svg = d3.select("body").append("svg")
+    var svg = d3.select("#plot").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
