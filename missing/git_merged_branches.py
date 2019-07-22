@@ -13,9 +13,11 @@ import os
 import re
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--script', '-s', action='store_true', help='Output commands for deleting remote branches')
-    parser.add_argument('--limit', '-n', type=int, help='Max branches to delete')
+    parser = argparse.ArgumentParser(
+        epilog='Hint: only consider local branches (heuristic): add -x/ to arguments.'
+    )
+    parser.add_argument('--script', '-s', action='store_true', help='output commands for deleting branches')
+    parser.add_argument('--limit', '-n', type=int, help='max branches to delete')
     parser.add_argument('--include', '-i', help='only consider branches matching regular expression')
     parser.add_argument('--exclude', '-x', help='ignore branches matching regular expression')
 
