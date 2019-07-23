@@ -1,0 +1,8 @@
+# Want to read AvgBitrate of larger files?
+# http://u88.n24.queensu.ca/exiftool/forum/index.php?topic=3916.0
+# config example:
+# http://owl.phy.queensu.ca/~phil/exiftool/config.html
+
+%Image::ExifTool::UserDefined::Options = (
+    LargeFileSupport => 1,
+);
