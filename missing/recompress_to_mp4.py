@@ -25,6 +25,7 @@ parser.add_argument('--nv', '-nv', action='store_true', help='Enable both nvdec 
 parser.add_argument('--nvdec', '-nvd', action='store_true')
 parser.add_argument('--nvenc', '-nve', action='store_true')
 parser.add_argument('--quality', '-q', type=int, default=23)
+parser.add_argument('--scale', '-s', help='scale video filter, eg. 960:-1')
 parser.add_argument('--stabilize', '-stab', action='store_true')
 parser.add_argument('--start', '-ss', type=float, help='Start time for encoding in seconds')
 parser.add_argument('files_or_globs', nargs='+')
@@ -144,6 +145,9 @@ if __name__ == '__main__':
 
     if args.deinterlace:
         common_options += ' -vf yadif'
+
+    if args.scale:
+        common_options += ' -vf scale=' + args.scale
 
     if args.nv or args.nvenc:
         encoder_options = 'h264_nvenc -cq {} -preset slow {}'.format(args.quality, common_options)
