@@ -16,6 +16,15 @@ parser.add_argument('--table', '-t', action='store_true', help='Calculate and pr
 parser.add_argument('--stable', '-s', action='store_true',
                     help='Only print stable permutations i.e. where inversions == N*(N-1)/4 (half of max)')
 
+# No-fixed-point permutation is called a 'derangement'. For N = 0, 1, 2, ...,
+# the first few numbers are 1, 0, 1, 2, 9, 44, 265, 1854, ...
+# This sequence can be found here: https://oeis.org/A000166
+# I found that:
+# a(n) = n! -  \sum_{i=1}^n  \binom{n}{i} a(n-i)
+# But Leonhard Euler found out 2 much better formulas:
+# a(n) = (n-1)*(a(n-1) + a(n-2))
+# and
+# a(n) = n*a(n-1) + (-1)^n.
 parser.add_argument('--no-fixed', '-nf', action='store_true',
                     help='Only print permutations where p(i) != i, i.e. having no cycles of lenght 1')
 parser.add_argument('--cycle', '-c', action='store_true', help='Only print 1-cycle permutations. count: (n-1)!')
