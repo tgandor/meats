@@ -41,8 +41,8 @@ parser.add_argument('--round', action='store_true', help='Set default shape to r
 parser.add_argument('--repeat', type=int, default=1, help="Times to repeat each label verbatim (without series)")
 parser.add_argument('--print', action='store_true', help="Try to print directly, instead of opening")
 parser.add_argument('--gui', action='store_true', help="Open a tkinter GUI to create labels")
-parser.add_argument('--db-shell', action='store_true', help="Import a labels.db file to default database")
-parser.add_argument('--import', '-i', type=str, help="Open a connection do DB and query from console")
+parser.add_argument('--db-shell', action='store_true', help="Open a connection do DB and query from console")
+parser.add_argument('--import', '-i', type=str, help="Import a labels.db file to default database")
 parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
 
 settings = dict(
@@ -377,7 +377,10 @@ def _load_label(cursor, label_id):
         cursor: `sqlite3.Cursor`
         label_id: `tuple` 1-element tuple containing label_id
     """
-    print('Loading label: {}'.format(label_id[0]))
+    last_date = _fetch_one(
+        cursor, 'select last_date from newest_outprint where label_id=?', label_id
+    )[0]
+    print('Loading label: {} (last printed {})'.format(label_id[0], last_date))
     return _fetch_one(cursor, 'select id, text, width, height from labels WHERE id=?', label_id)
 
 
@@ -389,7 +392,7 @@ def get_previous_label(current):
             prev_id = _fetch_one(cursor, 'select label_id from newest_outprint order by last_date desc limit 1')
         else:
             prev_id = _fetch_one(cursor, 'select prev_label_id from older_label where label_id=?', (current,))
-        if not prev_id:
+        if not prev_id[0]:
             return None
 
         return _load_label(cursor, prev_id)
@@ -406,7 +409,7 @@ def get_next_label(current):
             next_id = _fetch_one(cursor, 'select label_id from newest_outprint order by last_date limit 1')
         else:
             next_id = _fetch_one(cursor, 'select next_label_id from newer_label where label_id=?', (current,))
-        if not next_id:
+        if not next_id[0]:
             return None
 
         return _load_label(cursor, next_id)
@@ -637,6 +640,7 @@ def win_main():
     last_id = tk.IntVar()
     print_ = getattr(args, 'print')
     panel = tk.Frame(dialog)
+
     tk.Button(panel, text='<', width='3', height='3',
               command=lambda: load_previous(text, width, height, last_id)).grid(row=0, column=0)
     go_button = tk.Button(
@@ -646,6 +650,14 @@ def win_main():
     go_button.grid(row=0, column=1)
     tk.Button(panel, text='>', width='3', height='3',
               command=lambda: load_next(text, width, height, last_id)).grid(row=0, column=2)
+
+    # TODO: filter
+    # simple (in a good way) tk docs:
+    # https://www.tutorialspoint.com/python/python_gui_programming
+    # tk.Label(panel, text='Filter:', font=ui_font).grid(row=1, column=0)
+    # filter_text = tk.Entry(panel, width=47, font=ui_font)
+    # filter_text.grid(row=1, column=1, columnspan=1)
+
     panel.pack(anchor=tk.N)
 
     dialog.pack(fill=tk.BOTH, expand=1)
