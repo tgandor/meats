@@ -614,7 +614,18 @@ def win_main():
         text='Generate round labels').pack(anchor=tk.N)
 
     def change_font(font_variable):
-        settings['font_size'] = int(font_variable.get())
+        # this won't work, happens inside tkinter:
+        # if not font_variable.get():
+        #    return
+
+        try:
+            # value = font_variable._tk.globalgetvar(font_variable._name)
+            value = font_variable.get()
+        except tk.TclError:
+            return
+
+        # TODO: fonts_to_try vs last_font?
+        settings['font_size'] = value
         text.tag_config('label', font=(fonts_to_try[0], settings['font_size']))
 
     ui_label(dialog, 'Font size [pt]:')
