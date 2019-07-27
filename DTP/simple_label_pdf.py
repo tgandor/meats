@@ -520,11 +520,14 @@ def win_main():
         def __init__(self):
             self.is_serial = tk.IntVar()
             self.is_round = tk.IntVar()
+            self.filter = tk.StringVar()
+            self.print_mode = tk.StringVar(value='Generate')
 
     def ui_label(parent, text):
         tk.Label(parent, text=text, font=ui_font).pack(anchor=tk.N)
 
     def set_text(widget, value):
+        """Kludge, his should actually be handled by the model."""
         widget.delete('1.0', tk.END)
         widget.insert(tk.END, value)
 
@@ -544,7 +547,7 @@ def win_main():
             for _ in range(int(num_serial.get())):
                 label(c, label_text, w, h, state)
 
-        if canvas_state['mode'].get() == 'Enqueue':
+        if label_model.print_mode.get() == 'Enqueue':
             canvas_state['canvas'] = c
             canvas_state['label_state'] = state
         else:
@@ -636,14 +639,12 @@ def win_main():
 
 
     ui_label(dialog, 'Print mode:')
-    print_mode = tk.StringVar(value='Generate')
-    cb_print_mode = ttk.Combobox(dialog, textvariable=print_mode)
+    cb_print_mode = ttk.Combobox(dialog, textvariable=label_model.print_mode)
     cb_print_mode['values'] = ('Generate', 'Print', "Enqueue")
     cb_print_mode.current(0)
     cb_print_mode.pack(anchor=tk.N)
 
     canvas_state = {
-        'mode': print_mode,
         'canvas': None,
         'label_state': None,
     }
@@ -665,9 +666,9 @@ def win_main():
     # TODO: filter
     # simple (in a good way) tk docs:
     # https://www.tutorialspoint.com/python/python_gui_programming
-    # tk.Label(panel, text='Filter:', font=ui_font).grid(row=1, column=0)
-    # filter_text = tk.Entry(panel, width=47, font=ui_font)
-    # filter_text.grid(row=1, column=1, columnspan=1)
+    tk.Label(panel, text='Filter:', font=ui_font).grid(row=1, column=0)
+    filter_text = tk.Entry(panel, width=47, font=ui_font, textvariable=label_model.filter)
+    filter_text.grid(row=1, column=1, columnspan=1)
 
     panel.pack(anchor=tk.N)
 
@@ -675,15 +676,16 @@ def win_main():
 
     # region: event handlers
 
-    def on_print_mode_changed(mode, button):
-        if mode.get() == 'Print':
+    def on_print_mode_changed(button):
+        new_mode = label_model.print_mode.get()
+        if new_mode == 'Print':
             setattr(args, 'print', True)
         else:
             setattr(args, 'print', False)
 
-        button.config(text=mode.get())
+        button.config(text=new_mode)
 
-    cb_print_mode.bind('<<ComboboxSelected>>', lambda event: on_print_mode_changed(print_mode, go_button))
+    cb_print_mode.bind('<<ComboboxSelected>>', lambda event: on_print_mode_changed(go_button))
 
     # endregion
 
