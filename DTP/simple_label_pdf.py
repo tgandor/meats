@@ -656,7 +656,7 @@ def win_main():
     tk.Button(panel, text='<', width='3', height='3',
               command=lambda: load_previous(text, width, height, last_id)).grid(row=0, column=0)
     go_button = tk.Button(
-        panel, text='Print' if print_ else 'Generate', font=ui_font, width=47, height=3,
+        panel, textvariable=label_model.print_mode, font=ui_font, width=47, height=3,
         command=lambda: generate(text, width, height, serial_count, canvas_state)
     )
     go_button.grid(row=0, column=1)
@@ -676,16 +676,8 @@ def win_main():
 
     # region: event handlers
 
-    def on_print_mode_changed(button):
-        new_mode = label_model.print_mode.get()
-        if new_mode == 'Print':
-            setattr(args, 'print', True)
-        else:
-            setattr(args, 'print', False)
-
-        button.config(text=new_mode)
-
-    cb_print_mode.bind('<<ComboboxSelected>>', lambda event: on_print_mode_changed(go_button))
+    cb_print_mode.bind('<<ComboboxSelected>>', lambda event: setattr(
+        args, 'print', label_model.print_mode.get() == 'Print'))
 
     # endregion
 
