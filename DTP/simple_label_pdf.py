@@ -522,6 +522,10 @@ def win_main():
             self.is_round = tk.IntVar()
             self.filter = tk.StringVar()
             self.print_mode = tk.StringVar(value='Generate')
+            self.width = tk.DoubleVar()
+            self.height = tk.DoubleVar()
+            self.text = tk.StringVar()
+            self.font_size = tk.IntVar()
 
     def ui_label(parent, text):
         tk.Label(parent, text=text, font=ui_font).pack(anchor=tk.N)
@@ -578,109 +582,107 @@ def win_main():
         next_id, text, width, height = row
         set_current_label(height, height_input, last_id, next_id, text, text_widget, width, width_input)
 
+    def setup_ui(root, label_model):
+        root.title('Simple Label')
+        dialog = tk.Frame(root)
+
+        ui_label(dialog, 'Label text:')
+        text = tk.Text(dialog)
+        text.focus_set()
+
+        def modified(event):
+            text.tag_add('label', '1.0', tk.END)
+
+        text.tag_config('label', justify='center', font=(fonts_to_try[0], settings['font_size']))
+        text.bind('<Key>', modified)
+        text.bind('<<Modified>>', modified)
+        text.pack(anchor=tk.N)
+
+        ui_label(dialog, text='Width: [cm]')
+        width = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
+        width.set("21.0").pack(anchor=tk.N)
+
+        ui_label(dialog, text='Height: [cm]')
+        height = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
+        height.set("8.0").pack(anchor=tk.N)
+
+        ui_label(dialog, 'Repeat count:')
+        serial_count = Spinbox(dialog, from_=1, to=100)
+        serial_count.pack(anchor=tk.N)
+
+        tk.Checkbutton(
+            dialog, variable=label_model.is_serial, font=ui_font,
+            text='Generate serial labels').pack(anchor=tk.N)
+
+        tk.Checkbutton(
+            dialog, variable=label_model.is_round, font=ui_font,
+            text='Generate round labels').pack(anchor=tk.N)
+
+        def change_font(font_variable):
+            # this won't work, happens inside tkinter:
+            # if not font_variable.get():
+            #    return
+            try:
+                # value = font_variable._tk.globalgetvar(font_variable._name)
+                value = font_variable.get()
+            except tk.TclError:
+                return
+
+            # TODO: fonts_to_try vs last_font?
+            settings['font_size'] = value
+            text.tag_config('label', font=(fonts_to_try[0], settings['font_size']))
+
+        ui_label(dialog, 'Font size [pt]:')
+
+        font_size = tk.IntVar(dialog, value=settings['font_size'])
+        Spinbox(dialog, values=list(range(20, 74, 2)), textvariable=font_size).pack(anchor=tk.N)
+        font_size.trace('w', lambda *_: change_font(font_size))
+
+        ui_label(dialog, 'Print mode:')
+        cb_print_mode = ttk.Combobox(dialog, textvariable=label_model.print_mode)
+        cb_print_mode['values'] = ('Generate', 'Print', "Enqueue")
+        cb_print_mode.current(0)
+        cb_print_mode.pack(anchor=tk.N)
+
+        canvas_state = {
+            'canvas': None,
+            'label_state': None,
+        }
+
+        last_id = tk.IntVar()
+        print_ = getattr(args, 'print')
+        panel = tk.Frame(dialog)
+
+        tk.Button(panel, text='<', width='3', height='3',
+                command=lambda: load_previous(text, width, height, last_id)).grid(row=0, column=0)
+        go_button = tk.Button(
+            panel, textvariable=label_model.print_mode, font=ui_font, width=47, height=3,
+            command=lambda: generate(text, width, height, serial_count, canvas_state)
+        )
+        go_button.grid(row=0, column=1)
+        tk.Button(panel, text='>', width='3', height='3',
+                command=lambda: load_next(text, width, height, last_id)).grid(row=0, column=2)
+
+        # TODO: filter
+        # simple (in a good way) tk docs:
+        # https://www.tutorialspoint.com/python/python_gui_programming
+        tk.Label(panel, text='Filter:', font=ui_font).grid(row=1, column=0)
+        filter_text = tk.Entry(panel, width=47, font=ui_font, textvariable=label_model.filter)
+        filter_text.grid(row=1, column=1, columnspan=1)
+
+        panel.pack(anchor=tk.N)
+
+        dialog.pack(fill=tk.BOTH, expand=1)
+
+        # region: event handlers
+        cb_print_mode.bind('<<ComboboxSelected>>', lambda event: setattr(
+            args, 'print', label_model.print_mode.get() == 'Print'))
+        # endregion
+
     root = tk.Tk()
-    root.title('Simple Label')
-    dialog = tk.Frame(root)
-
+    # root needs to be created before IntVars and the like ("default root")
     label_model = LabelFormModel()
-
-    ui_label(dialog, 'Label text:')
-    text = tk.Text(dialog)
-    text.focus_set()
-
-    def modified(event):
-        text.tag_add('label', '1.0', tk.END)
-
-    text.tag_config('label', justify='center', font=(fonts_to_try[0], settings['font_size']))
-    text.bind('<Key>', modified)
-    text.bind('<<Modified>>', modified)
-    text.pack(anchor=tk.N)
-
-    ui_label(dialog, text='Width: [cm]')
-    width = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
-    width.set("21.0").pack(anchor=tk.N)
-
-    ui_label(dialog, text='Height: [cm]')
-    height = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
-    height.set("8.0").pack(anchor=tk.N)
-
-    ui_label(dialog, 'Repeat count:')
-    serial_count = Spinbox(dialog, from_=1, to=100)
-    serial_count.pack(anchor=tk.N)
-
-    tk.Checkbutton(
-        dialog, variable=label_model.is_serial, font=ui_font,
-        text='Generate serial labels').pack(anchor=tk.N)
-
-    tk.Checkbutton(
-        dialog, variable=label_model.is_round, font=ui_font,
-        text='Generate round labels').pack(anchor=tk.N)
-
-    def change_font(font_variable):
-        # this won't work, happens inside tkinter:
-        # if not font_variable.get():
-        #    return
-
-        try:
-            # value = font_variable._tk.globalgetvar(font_variable._name)
-            value = font_variable.get()
-        except tk.TclError:
-            return
-
-        # TODO: fonts_to_try vs last_font?
-        settings['font_size'] = value
-        text.tag_config('label', font=(fonts_to_try[0], settings['font_size']))
-
-    ui_label(dialog, 'Font size [pt]:')
-
-    font_size = tk.IntVar(dialog, value=settings['font_size'])
-    Spinbox(dialog, values=list(range(20, 74, 2)), textvariable=font_size).pack(anchor=tk.N)
-    font_size.trace('w', lambda *_: change_font(font_size))
-
-
-    ui_label(dialog, 'Print mode:')
-    cb_print_mode = ttk.Combobox(dialog, textvariable=label_model.print_mode)
-    cb_print_mode['values'] = ('Generate', 'Print', "Enqueue")
-    cb_print_mode.current(0)
-    cb_print_mode.pack(anchor=tk.N)
-
-    canvas_state = {
-        'canvas': None,
-        'label_state': None,
-    }
-
-    last_id = tk.IntVar()
-    print_ = getattr(args, 'print')
-    panel = tk.Frame(dialog)
-
-    tk.Button(panel, text='<', width='3', height='3',
-              command=lambda: load_previous(text, width, height, last_id)).grid(row=0, column=0)
-    go_button = tk.Button(
-        panel, textvariable=label_model.print_mode, font=ui_font, width=47, height=3,
-        command=lambda: generate(text, width, height, serial_count, canvas_state)
-    )
-    go_button.grid(row=0, column=1)
-    tk.Button(panel, text='>', width='3', height='3',
-              command=lambda: load_next(text, width, height, last_id)).grid(row=0, column=2)
-
-    # TODO: filter
-    # simple (in a good way) tk docs:
-    # https://www.tutorialspoint.com/python/python_gui_programming
-    tk.Label(panel, text='Filter:', font=ui_font).grid(row=1, column=0)
-    filter_text = tk.Entry(panel, width=47, font=ui_font, textvariable=label_model.filter)
-    filter_text.grid(row=1, column=1, columnspan=1)
-
-    panel.pack(anchor=tk.N)
-
-    dialog.pack(fill=tk.BOTH, expand=1)
-
-    # region: event handlers
-
-    cb_print_mode.bind('<<ComboboxSelected>>', lambda event: setattr(
-        args, 'print', label_model.print_mode.get() == 'Print'))
-
-    # endregion
-
+    setup_ui(root, label_model)
     root.mainloop()
 
 
