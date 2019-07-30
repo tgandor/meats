@@ -192,6 +192,7 @@ def _finish_rendering(canvas):
     canvas.showPage()
     canvas.save()
     print_ = getattr(args, 'print')
+
     if sys.platform.startswith('linux'):
         if print_:
             os.system('lp "%s"' % default_output_file)
@@ -563,7 +564,7 @@ def win_main():
         set_text(text_widget, text)
         width_input.set(width)
         height_input.set(height)
-        modified(None)
+        modified(text_widget, None)
         last_id.set(previous_id)
 
     def load_previous(text_widget, width_input, height_input, last_id):
@@ -582,6 +583,9 @@ def win_main():
         next_id, text, width, height = row
         set_current_label(height, height_input, last_id, next_id, text, text_widget, width, width_input)
 
+    def modified(text, event):
+        text.tag_add('label', '1.0', tk.END)
+
     def setup_ui(root, label_model):
         root.title('Simple Label')
         dialog = tk.Frame(root)
@@ -590,12 +594,9 @@ def win_main():
         text = tk.Text(dialog)
         text.focus_set()
 
-        def modified(event):
-            text.tag_add('label', '1.0', tk.END)
-
         text.tag_config('label', justify='center', font=(fonts_to_try[0], settings['font_size']))
-        text.bind('<Key>', modified)
-        text.bind('<<Modified>>', modified)
+        text.bind('<Key>', lambda e: modified(text, e))
+        text.bind('<<Modified>>', lambda e: modified(text, e))
         text.pack(anchor=tk.N)
 
         ui_label(dialog, text='Width: [cm]')
@@ -650,7 +651,6 @@ def win_main():
         }
 
         last_id = tk.IntVar()
-        print_ = getattr(args, 'print')
         panel = tk.Frame(dialog)
 
         tk.Button(panel, text='<', width='3', height='3',
