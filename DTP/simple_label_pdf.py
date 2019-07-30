@@ -312,6 +312,13 @@ def run_migrations(cursor):
     # 4. time-based prev / next views
     if file_version < 4:
         print('Migration 4: create newer_label / older_label.')
+        # note the hack with selecting id from outprints, without it
+        # being grouped by it. It happens to be the id of the row
+        # which has max(outprint_date)
+        # SQL orthodoxes hate this (not really portable),
+        # and offer even scarier things with "partition by" etc.
+        # https://dba.stackexchange.com/questions/158602/get-id-of-row-in-aggregate/158603
+        # https://stackoverflow.com/questions/7745609/sql-select-only-rows-with-max-value-on-a-column
         cursor.executescript("""
             create view newest_outprint as
             select label_id, max(outprint_date) as last_date, id
@@ -419,22 +426,42 @@ def get_next_label(current):
             close_database(conn, cursor)
 
 
-def get_previous_label_filtered(current, pattern):
-    print('Now were talking...')
+def get_previous_label_filtered(current, pattern, back=False):
+    print('Searching for:', pattern, '(backwards)' if back else '')
     conn = cursor = None
     try:
         conn, cursor = open_database()
         if current == 0:
-            prev_id = _fetch_one(cursor, '''
-            select o.label_id
-            from outprints o
-            join labels l on o.label_id = l.id
-            where l.text like ?
-            order by o.outprint_date desc limit 1''', ('%{}%'.format(pattern),))
+            prev_id = _fetch_one(
+                cursor,
+                '''select o.label_id
+                from outprints o
+                join labels l on o.label_id = l.id
+                where l.text like ?
+                order by o.outprint_date {} limit 1'''.format('' if back else 'desc'),
+                ('%{}%'.format(pattern),)
+            )
         else:
-            # TODO: filtered query
-            prev_id = _fetch_one(cursor, 'select prev_label_id from older_label where label_id=?', (current,))
-        if not prev_id[0]:
+            forward_values = ('<', 'desc')
+            backward_values = ('>', '')
+            # no hacks, 3 subqueries, 1 condtion between 2 subqueries, and order by subquery...
+            # plain SQL algebra.
+            prev_id = _fetch_one(
+                cursor,
+                '''select lbl.id
+                from labels lbl
+                where lbl.id <> ?
+                    and lbl.text like ?
+                    and
+                        (select max(outprint_date) from outprints where label_id=lbl.id)
+                        {}
+                        (select max(outprint_date) from outprints where label_id=?)
+                order by (select max(outprint_date) from outprints where label_id=lbl.id) {}
+                limit 1'''.format(*(backward_values if back else forward_values)),
+                (current, '%{}%'.format(pattern), current)
+            )
+
+        if not prev_id or not prev_id[0]:
             return None
 
         return _load_label(cursor, prev_id)
@@ -598,17 +625,29 @@ def win_main():
             row = get_previous_label_filtered(label_model.last_id.get(), label_model.filter.get())
         else:
             row = get_previous_label(current=label_model.last_id.get())
+
         if row is None:
             print('No [more] previous records')
             return
+
         previous_id, text, width, height = row
         set_current_label(height, height_input, previous_id, text, text_widget, width, width_input)
 
     def load_next(text_widget, width_input, height_input):
-        row = get_next_label(current=label_model.last_id.get())
+        if label_model.filter.get():
+            # next is just previous but backwards:
+            row = get_previous_label_filtered(
+                label_model.last_id.get(),
+                label_model.filter.get(),
+                back=True
+            )
+        else:
+            row = get_next_label(current=label_model.last_id.get())
+
         if row is None:
             print('No [more] records')
             return
+
         next_id, text, width, height = row
         set_current_label(height, height_input, next_id, text, text_widget, width, width_input)
 
