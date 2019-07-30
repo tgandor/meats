@@ -417,6 +417,30 @@ def get_next_label(current):
     finally:
         if conn and cursor:
             close_database(conn, cursor)
+
+
+def get_previous_label_filtered(current, pattern):
+    print('Now were talking...')
+    conn = cursor = None
+    try:
+        conn, cursor = open_database()
+        if current == 0:
+            prev_id = _fetch_one(cursor, '''
+            select o.label_id
+            from outprints o
+            join labels l on o.label_id = l.id
+            where l.text like ?
+            order by o.outprint_date desc limit 1''', ('%{}%'.format(pattern),))
+        else:
+            # TODO: filtered query
+            prev_id = _fetch_one(cursor, 'select prev_label_id from older_label where label_id=?', (current,))
+        if not prev_id[0]:
+            return None
+
+        return _load_label(cursor, prev_id)
+    finally:
+        if conn and cursor:
+            close_database(conn, cursor)
 # endregion
 
 
@@ -570,7 +594,10 @@ def win_main():
         label_model.last_id.set(previous_id)
 
     def load_previous(text_widget, width_input, height_input):
-        row = get_previous_label(current=label_model.last_id.get())
+        if label_model.filter.get():
+            row = get_previous_label_filtered(label_model.last_id.get(), label_model.filter.get())
+        else:
+            row = get_previous_label(current=label_model.last_id.get())
         if row is None:
             print('No [more] previous records')
             return
