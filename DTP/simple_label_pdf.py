@@ -521,12 +521,14 @@ def win_main():
         def __init__(self):
             self.is_serial = tk.IntVar()
             self.is_round = tk.IntVar()
+            self.repeat = tk.IntVar()
             self.filter = tk.StringVar()
             self.print_mode = tk.StringVar(value='Generate')
             self.width = tk.DoubleVar()
             self.height = tk.DoubleVar()
             self.text = tk.StringVar()
-            self.font_size = tk.IntVar()
+            self.font_size = tk.IntVar(value=settings['font_size'])
+            self.last_id = tk.IntVar()
 
     def ui_label(parent, text):
         tk.Label(parent, text=text, font=ui_font).pack(anchor=tk.N)
@@ -536,7 +538,7 @@ def win_main():
         widget.delete('1.0', tk.END)
         widget.insert(tk.END, value)
 
-    def generate(text_widget, width_input, height_input, num_serial, canvas_state):
+    def generate(text_widget, width_input, height_input, canvas_state):
         label_text = text_widget.get('1.0', 'end').strip()
         w = float(width_input.get().replace(',', '.')) * cm
         h = float(height_input.get().replace(',', '.')) * cm
@@ -546,10 +548,10 @@ def win_main():
         state = canvas_state.get('label_state') or LabelState()
 
         if label_model.is_serial.get():
-            multi_label(label_text, w, h, int(num_serial.get()), canvas=c, label_state=state)
+            multi_label(label_text, w, h, label_model.repeat.get(), canvas=c, label_state=state)
         else:
             save_label(label_text, w, h, None, label_settings())
-            for _ in range(int(num_serial.get())):
+            for _ in range(label_model.repeat.get()):
                 label(c, label_text, w, h, state)
 
         if label_model.print_mode.get() == 'Enqueue':
@@ -560,28 +562,28 @@ def win_main():
             canvas_state['canvas'] = None
             canvas_state['label_state'] = None
 
-    def set_current_label(height, height_input, last_id, previous_id, text, text_widget, width, width_input):
+    def set_current_label(height, height_input, previous_id, text, text_widget, width, width_input):
         set_text(text_widget, text)
         width_input.set(width)
         height_input.set(height)
         modified(text_widget, None)
-        last_id.set(previous_id)
+        label_model.last_id.set(previous_id)
 
-    def load_previous(text_widget, width_input, height_input, last_id):
-        row = get_previous_label(current=last_id.get())
+    def load_previous(text_widget, width_input, height_input):
+        row = get_previous_label(current=label_model.last_id.get())
         if row is None:
             print('No [more] previous records')
             return
         previous_id, text, width, height = row
-        set_current_label(height, height_input, last_id, previous_id, text, text_widget, width, width_input)
+        set_current_label(height, height_input, previous_id, text, text_widget, width, width_input)
 
-    def load_next(text_widget, width_input, height_input, last_id):
-        row = get_next_label(current=last_id.get())
+    def load_next(text_widget, width_input, height_input):
+        row = get_next_label(current=label_model.last_id.get())
         if row is None:
             print('No [more] records')
             return
         next_id, text, width, height = row
-        set_current_label(height, height_input, last_id, next_id, text, text_widget, width, width_input)
+        set_current_label(height, height_input, next_id, text, text_widget, width, width_input)
 
     def modified(text, event):
         text.tag_add('label', '1.0', tk.END)
@@ -600,15 +602,15 @@ def win_main():
         text.pack(anchor=tk.N)
 
         ui_label(dialog, text='Width: [cm]')
-        width = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
+        width = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f", textvariable=label_model.width)
         width.set("21.0").pack(anchor=tk.N)
 
         ui_label(dialog, text='Height: [cm]')
-        height = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f")
+        height = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f", textvariable=label_model.height)
         height.set("8.0").pack(anchor=tk.N)
 
         ui_label(dialog, 'Repeat count:')
-        serial_count = Spinbox(dialog, from_=1, to=100)
+        serial_count = Spinbox(dialog, from_=1, to=100, textvariable=label_model.repeat)
         serial_count.pack(anchor=tk.N)
 
         tk.Checkbutton(
@@ -635,9 +637,8 @@ def win_main():
 
         ui_label(dialog, 'Font size [pt]:')
 
-        font_size = tk.IntVar(dialog, value=settings['font_size'])
-        Spinbox(dialog, values=list(range(20, 74, 2)), textvariable=font_size).pack(anchor=tk.N)
-        font_size.trace('w', lambda *_: change_font(font_size))
+        Spinbox(dialog, values=list(range(20, 74, 2)), textvariable=label_model.font_size).pack(anchor=tk.N)
+        label_model.font_size.trace('w', lambda *_: change_font(label_model.font_size))
 
         ui_label(dialog, 'Print mode:')
         cb_print_mode = ttk.Combobox(dialog, textvariable=label_model.print_mode)
@@ -650,18 +651,20 @@ def win_main():
             'label_state': None,
         }
 
-        last_id = tk.IntVar()
         panel = tk.Frame(dialog)
 
-        tk.Button(panel, text='<', width='3', height='3',
-                command=lambda: load_previous(text, width, height, last_id)).grid(row=0, column=0)
-        go_button = tk.Button(
+        tk.Button(
+            panel, text='<', width='3', height='3',
+            command=lambda: load_previous(text, width, height)
+        ).grid(row=0, column=0)
+        tk.Button(
             panel, textvariable=label_model.print_mode, font=ui_font, width=47, height=3,
-            command=lambda: generate(text, width, height, serial_count, canvas_state)
-        )
-        go_button.grid(row=0, column=1)
-        tk.Button(panel, text='>', width='3', height='3',
-                command=lambda: load_next(text, width, height, last_id)).grid(row=0, column=2)
+            command=lambda: generate(text, width, height, canvas_state)
+        ).grid(row=0, column=1)
+        tk.Button(
+            panel, text='>', width='3', height='3',
+            command=lambda: load_next(text, width, height)
+        ).grid(row=0, column=2)
 
         # TODO: filter
         # simple (in a good way) tk docs:
