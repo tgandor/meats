@@ -42,6 +42,7 @@ parser.add_argument('--repeat', type=int, default=1, help="Times to repeat each 
 parser.add_argument('--print', action='store_true', help="Try to print directly, instead of opening")
 parser.add_argument('--gui', action='store_true', help="Open a tkinter GUI to create labels")
 parser.add_argument('--db-shell', action='store_true', help="Open a connection do DB and query from console")
+parser.add_argument('--multiline', action='store_true', help="For DB shell: require semicolon (multiline queries)")
 parser.add_argument('--import', '-i', type=str, help="Import a labels.db file to default database")
 parser.add_argument('args', type=str, nargs='*', help='Old arguments.')
 
@@ -755,7 +756,7 @@ def win_main():
     root.mainloop()
 
 
-def db_shell_main():
+def db_shell_main(multiline=False):
     try:
         import readline  # pylint disable=unused-import
     except ImportError:
@@ -768,12 +769,31 @@ def db_shell_main():
 
     conn = cursor = None
 
+    def get_query():
+        if not multiline:
+            return six.moves.input('sqlite> ')
+
+        query = six.moves.input('sqlite> ')
+
+        if query.strip() in ('exit', 'quit', ''):
+            return query.strip()
+
+        lines = [query.strip()]
+
+        while not lines[-1].endswith(';'):
+
+            lines.append(six.moves.input('... ').strip())
+
+        return '\n'.join(lines)
+
     try:
         conn, cursor = open_database()
         while True:
-            query = six.moves.input('sqlite> ')
-            if len(query) == 0 or query == 'exit':
+            query = get_query()
+
+            if query in ('exit', 'quit', ''):
                 break
+
             for row in _fetch_all(cursor, query):
                 print(row)
             print('-' * 50)
@@ -838,7 +858,7 @@ if __name__ == '__main__':
     settings['round_label'] = args.round
 
     if args.db_shell:
-        db_shell_main()
+        db_shell_main(args.multiline)
     elif getattr(args, 'import'):
         import_database()
     elif args.gui or len(argv) == 0:
