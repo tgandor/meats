@@ -60,6 +60,7 @@ parser.add_argument('--width', '-W', type=int)
 parser.add_argument('--height', '-H', type=int)
 parser.add_argument('--fourcc', help='Set FourCC for video source (hack)')
 parser.add_argument('--delay', '-s', type=float, help='Time to sleep between frames (seconds)')
+parser.add_argument('--frame', type=int, help='Starting frame to (try to) skip to.', default=0)
 parser.add_argument('device', type=str, nargs='?',
                     help='device number, video file name or network stream URL', default='0')
 args = parser.parse_args()
@@ -72,6 +73,7 @@ if args.width:
 if args.height:
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, args.height)
 
+
 initial_fps = cap.get(cv2.CAP_PROP_FPS)
 print('Opened with FPS:', initial_fps)
 print('Frame count:', cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -80,6 +82,12 @@ print('FourCC:', [chr(((initial_fourcc >> (8*i)) & 0xff)) for i in range(4)] if 
 print('Format:', cap.get(cv2.CAP_PROP_FORMAT))
 print('Width:', cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 print('Height:', cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+print('Frame Count:', cap.get(cv2.CAP_PROP_FRAME_COUNT))
+print('Frame Pos:', cap.get(cv2.CAP_PROP_POS_FRAMES))
+
+if args.frame:
+    cap.set(cv2.CAP_PROP_POS_FRAMES, args.frame)
+    print('New Frame Pos:', cap.get(cv2.CAP_PROP_POS_FRAMES))
 
 if args.fps:
     cap.set(cv2.CAP_PROP_FPS, args.fps)
