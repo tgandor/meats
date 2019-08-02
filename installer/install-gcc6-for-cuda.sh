@@ -17,7 +17,9 @@ sudo update-alternatives --set cc /usr/bin/gcc
 sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
 sudo update-alternatives --set c++ /usr/bin/g++
 
-echo "Alternatives definded. Running configurations (choose gcc/g++ 6):"
+echo "----------------------------------------------------------------"
+echo "Alternatives defined. Running configurations (choose gcc/g++ 6):"
+echo "----------------------------------------------------------------"
 
 sudo update-alternatives --config gcc
 sudo update-alternatives --config g++
