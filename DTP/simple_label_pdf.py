@@ -61,7 +61,7 @@ default_length = None
 default_output_file = os.path.join(tempfile.gettempdir(), 'simple_label_output.pdf')
 
 # region rendering
-fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial', 'DejaVuSans']
+fonts_to_try = ['Ubuntu-L', 'Verdana', 'Arial', 'DejaVuSans', 'Vera', 'Helvetica']
 last_font = []  # needs to be reloaded after new page
 
 
@@ -98,6 +98,8 @@ class LabelState:
 
 
 def label(c, text, width=default_width, height=default_height, state=LabelState()):
+    print('Drawing label:', repr(text))
+
     # convenience hack
     width, height = [min(x, max(A4)) for x in (width, height)]
 
