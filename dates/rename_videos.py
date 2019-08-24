@@ -11,9 +11,11 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument('files', nargs='+')
-parser.add_argument('--player', default='mplayer')
+parser.add_argument('--player')
 parser.add_argument('--infix', '-i', default='VID-')
 args = parser.parse_args()
+
+PLAYERS = ['mplayer', 'mpv', 'ffplay', 'vlc']
 
 event_name = ''
 event_date = None
@@ -32,9 +34,28 @@ def move(name, target_directory):
     os.rename(name, os.path.join(target_directory, name))
 
 
+player = None
+
+if args.player:
+    player = args.player
+
+try:
+    from shutil import which
+    for player_candidate in PLAYERS:
+        if which(player_candidate):
+            player = player_candidate
+            break
+except ImportError:
+    pass
+
+if player is None:
+    print('No player found. Tried:', PLAYERS)
+    print('Exiting.')
+    exit()
+
 for filename in sorted(itertools.chain.from_iterable(map(glob.glob, args.files))):
     while True:
-        os.system(args.player + ' ' + filename)
+        os.system(player + ' ' + filename)
         print('Event name (empty = {}, delete/rm/del/- = move to _trash)'.format(event_name))
         answer = sys.stdin.readline().strip()
 
