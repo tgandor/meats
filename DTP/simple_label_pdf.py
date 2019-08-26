@@ -155,10 +155,17 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
     # seems like transform IS part of state
     c.translate(1*cm if settings['round_label'] else 0.0, h_offset)
 
-    # borders
+    # borders - with margins to not 'fit to printing area' too much
     if settings['line_width'] > 0 and not settings['round_label']:
-        c.line(0, inv(height), width, inv(height))
-        c.line(width, inv(0), width, inv(height))
+        # horizontal line between labels
+        c.line(0.2 * cm, inv(height), width - 0.2 * cm, inv(height))
+
+        # vertical line right to label
+        if width < page_width - 0.2 * cm:
+            # print(f'width ({width}) < page_width ({page_width})')
+            # width (595.275590551181) < page_width (595.2755905511812)
+            # floats... can never be trusted.
+            c.line(width, inv(0), width, inv(height))
 
     # text breaking...
     font_size = settings['font_size']
