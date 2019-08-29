@@ -56,8 +56,18 @@ if args.ascii:
         df.df_date = df[['df_date']].apply((lambda x: int(x[0].timestamp())), axis=1)
         xlabel = 'timestamp'
 
+    kwargs = dict(
+        label='used GB',
+        xlabel=xlabel,
+        width=args.width,
+        height=args.height
+    )
+
+    if args.absolute:
+        kwargs['ylim'] = (0, df['size'].max() / 1024)
+
     fig = asciiplotlib.figure()
-    fig.plot(x=df['df_date'], y=df['used'] / 1024, label='used GB', xlabel=xlabel, width=args.width, height=args.height)
+    fig.plot(x=df['df_date'], y=df['used'] / 1024, **kwargs)
     fig.show()
 else:
     from matplotlib import pyplot as plt
