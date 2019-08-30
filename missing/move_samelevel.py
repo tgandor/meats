@@ -7,6 +7,7 @@ import os
 import shutil
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--copy', '-c', action='store_true', help='copy instead of moving')
 parser.add_argument('files', nargs='+')
 parser.add_argument('target_directory')
 args = parser.parse_args()
@@ -31,5 +32,12 @@ for filename in args.files:
 
     target_dir = os.path.dirname('/'.join(source_chunks))
     os.makedirs(target_dir, exist_ok=True)
-    print('Moving', filename, 'to', target_dir)
-    shutil.move(filename, target_dir)
+    if not args.copy:
+        print('Moving', filename, 'to', target_dir)
+        shutil.move(filename, target_dir)
+    else:
+        print('Copying', filename, 'to', target_dir)
+        if os.path.isdir(filename):
+            shutil.copytree(filename, os.path.join(target_dir, filename))
+        else:
+            shutil.copy(filename, target_dir)
