@@ -124,6 +124,11 @@ public:
 
 std::string dec(const Bignum& num)
 {
+    if (num == Bignum())
+    {
+        return "0";
+    }
+
     std::string result;
     for(int i = 0; i < num.chunks().size() - 1; ++i)
     {
@@ -314,6 +319,11 @@ TEST(Bignum, dec)
     GTEST_ASSERT_EQ("987654321", dec(Bignum(987654321)));
 }
 
+TEST(Bignum, dec_0)
+{
+    GTEST_ASSERT_EQ("0", dec(Bignum()));
+}
+
 TEST(Bignum, plus_equal)
 {
     Bignum a(2345);
@@ -354,6 +364,12 @@ TEST(Bignum, power)
 {
     Bignum result = power(Bignum(12), Bignum(34));
     GTEST_ASSERT_EQ("4922235242952026704037113243122008064", dec(result));
+}
+
+TEST(Bignum, power_0)
+{
+    Bignum result = power(Bignum(0), Bignum(34));
+    GTEST_ASSERT_EQ("0", dec(result));
 }
 
 int main(int argc, char *argv[])
