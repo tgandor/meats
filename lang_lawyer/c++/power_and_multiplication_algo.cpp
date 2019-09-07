@@ -1,4 +1,5 @@
 // compile (link) with: -lgtest
+// in WSL Ubuntu: -lgtest -lpthread
 
 #include <gtest/gtest.h>
 
@@ -94,11 +95,26 @@ public:
 
     Bignum(const Bignum& other) = default;
 
-    Bignum operator+(const Bignum& other);
+    Bignum operator+(const Bignum& other) const;
+
+    Bignum& operator+=(const Bignum& other)
+    {
+        return *this = (*this + other);
+    }
 
     bool operator==(const Bignum& other) const
     {
         return dec_segments == other.dec_segments && bin_segments == other.bin_segments;
+    }
+
+    Bignum operator*(const Bignum& other) const
+    {
+        return multiply(*this, other);
+    }
+
+    Bignum& operator*=(const Bignum& other)
+    {
+        return *this = (*this * other);
     }
 
     const std::vector<int>& chunks() const { return dec_segments; }
@@ -155,7 +171,7 @@ std::vector<int> sum_vectors(const std::vector<int>& a, const std::vector<int>& 
     return result;
 }
 
-Bignum Bignum::operator+(const Bignum& other)
+Bignum Bignum::operator+(const Bignum& other) const
 {
     Bignum result;
     result.bin_segments = sum_vectors(this->bin_segments, other.bin_segments, BIN_MOD);
@@ -298,6 +314,18 @@ TEST(Bignum, dec)
     GTEST_ASSERT_EQ("987654321", dec(Bignum(987654321)));
 }
 
+TEST(Bignum, plus_equal)
+{
+    Bignum a(2345);
+    a += Bignum(1234);
+    GTEST_ASSERT_EQ(Bignum(3579), a);
+}
+
+TEST(Bignum, multiply)
+{
+    GTEST_ASSERT_EQ(Bignum(3579) * Bignum(4321), Bignum(15464859));
+}
+
 TEST(BignumBitsIter, compare_with_int_bits_length)
 {
     const int VALUE = 12345678;
@@ -320,6 +348,12 @@ TEST(BignumBitsIter, compare_with_int_bits_values)
     auto int_bits = bits(VALUE);
     auto bignum_bits = bits(Bignum(VALUE));
     GTEST_ASSERT_EQ(true, std::equal(int_bits.begin(), int_bits.end(), bignum_bits.begin()));
+}
+
+TEST(Bignum, power)
+{
+    Bignum result = power(Bignum(12), Bignum(34));
+    GTEST_ASSERT_EQ("4922235242952026704037113243122008064", dec(result));
 }
 
 int main(int argc, char *argv[])
