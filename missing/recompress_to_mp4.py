@@ -27,7 +27,7 @@ parser.add_argument('--nvenc', '-nve', action='store_true')
 parser.add_argument('--quality', '-q', type=int, default=23)
 parser.add_argument('--scale', '-s', help='scale video filter, eg. 960:-1')
 parser.add_argument('--stabilize', '-stab', action='store_true')
-parser.add_argument('--start', '-ss', type=float, help='Start time for encoding in seconds')
+parser.add_argument('--start', '-ss', help='Start time for encoding in seconds or [HH:]MM:SS')
 parser.add_argument('files_or_globs', nargs='+')
 
 
@@ -208,7 +208,7 @@ if __name__ == '__main__':
             filters += ' -vf vidstabtransform,unsharp=5:5:0.8:3:3:0.4'
 
         if args.start:
-            filters += ' -ss {:.2f}'.format(args.start)
+            filters += ' -ss {}'.format(args.start)
 
         commandline = '{} {} -i "{}" {} -c:a {} -c:v {} "{}"'.format(
             converter,
