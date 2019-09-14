@@ -39,7 +39,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--font-size', type=int, default=20)
 parser.add_argument('--round', action='store_true', help='Set default shape to round (mostly for commandline)')
 parser.add_argument('--repeat', type=int, default=1, help="Times to repeat each label verbatim (without series)")
-parser.add_argument('--print', action='store_true', help="Try to print directly, instead of opening")
+parser.add_argument('--print', action='store_true', help="Try to print directly, instead of opening", dest='print_')
 parser.add_argument('--gui', action='store_true', help="Open a tkinter GUI to create labels")
 parser.add_argument('--db-shell', action='store_true', help="Open a connection do DB and query from console")
 parser.add_argument('--multiline', action='store_true', help="For DB shell: require semicolon (multiline queries)")
@@ -201,15 +201,14 @@ def label(c, text, width=default_width, height=default_height, state=LabelState(
 def _finish_rendering(canvas):
     canvas.showPage()
     canvas.save()
-    print_ = getattr(args, 'print')
 
     if sys.platform.startswith('linux'):
-        if print_:
+        if args.print_:
             os.system('lp "%s"' % default_output_file)
         else:
             os.system('xdg-open "%s"' % default_output_file)
     else:
-        os.startfile(default_output_file, 'print' if print_ else 'open')
+        os.startfile(default_output_file, 'print' if args.print_ else 'open')
 
 
 #endregion
@@ -584,7 +583,7 @@ def win_main():
             self.is_round = tk.IntVar()
             self.repeat = tk.IntVar()
             self.filter = tk.StringVar()
-            self.print_mode = tk.StringVar(value='Generate')
+            self.print_mode = tk.StringVar(value='Print' if args.print_ else 'Generate')
             self.width = tk.DoubleVar()
             self.height = tk.DoubleVar()
             self.text = tk.StringVar()
@@ -717,9 +716,10 @@ def win_main():
         label_model.font_size.trace('w', lambda *_: change_font(label_model.font_size))
 
         ui_label(dialog, 'Print mode:')
+        PRINT_MODES = ('Generate', 'Print', "Enqueue")
         cb_print_mode = ttk.Combobox(dialog, textvariable=label_model.print_mode)
-        cb_print_mode['values'] = ('Generate', 'Print', "Enqueue")
-        cb_print_mode.current(0)
+        cb_print_mode['values'] = PRINT_MODES
+        cb_print_mode.current(PRINT_MODES.index(label_model.print_mode.get()))
         cb_print_mode.pack(anchor=tk.N)
 
         canvas_state = {
@@ -754,8 +754,10 @@ def win_main():
         dialog.pack(fill=tk.BOTH, expand=1)
 
         # region: event handlers
-        cb_print_mode.bind('<<ComboboxSelected>>', lambda event: setattr(
-            args, 'print', label_model.print_mode.get() == 'Print'))
+        cb_print_mode.bind('<<ComboboxSelected>>', lambda e:
+            # why no args.print_ = ...? SyntaxError: lambda cannot contain assignment
+            setattr(args, 'print_', label_model.print_mode.get() == 'Print')
+        )
         # endregion
 
     root = tk.Tk()
