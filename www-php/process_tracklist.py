@@ -8,10 +8,13 @@ You need a file with lines containing:
 <mp3 file basename> <description to put into file.txt>
 """
 
+import argparse
 import glob
 import itertools
 import os
 import sys
+
+VERBOSE = False
 
 
 def _eager_groupby(iterable, keyfunc=None):
@@ -50,7 +53,7 @@ def generate_by_basename_on_first_column(description_filename):
     return processed_count
 
 
-def generate_by_unique_prefix(description_filename):
+def generate_by_unique_prefix(description_filename, cut=0, delete=''):
     processed_count = 0
     mp3s = glob.glob('*.mp3')
     descriptions = set(open(description_filename).read().split('\n'))
@@ -62,10 +65,15 @@ def generate_by_unique_prefix(description_filename):
     prefix = 0
     while True:
         prefix += 1
-        def key(name):
-            return name[:prefix]
+
+        def file_key(name):
+            return name[cut:cut+prefix].replace(delete, '')
+
+        def key(line):
+            return line[:prefix]
+
         print('Trying prefix', prefix)
-        mp3_groups = _eager_groupby(mp3s, key)
+        mp3_groups = _eager_groupby(mp3s, file_key)
         descrption_groups = dict(_eager_groupby(descriptions, key))
 
         if not all(len(values) == 1 for _, values in mp3_groups):
@@ -79,6 +87,13 @@ def generate_by_unique_prefix(description_filename):
                 for prefix_key, values in mp3_groups 
                 if len(descrption_groups.get(prefix_key, [])) <= 0][:3]
             )
+            if VERBOSE:
+                from pprint import pprint as pp
+                print('descrption_groups:')
+                pp(descrption_groups)
+                print('mp3_groups:')
+                pp(mp3_groups)
+
             return 0
 
         if all(len(descrption_groups[prefix_key]) == 1 for prefix_key, _ in mp3_groups):
@@ -96,7 +111,15 @@ def generate_by_unique_prefix(description_filename):
 
 
 if __name__ == '__main__':
-    if generate_by_basename_on_first_column(sys.argv[1]) > 0:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('description_file')
+    parser.add_argument('--cut', '-c', type=int, default=0, help='number of characters to remove from filename prefix')
+    parser.add_argument('--delete', '-d', default='', help='string to remove from filenames when matching')
+    parser.add_argument('--verbose', '-v', action='store_true')
+    args = parser.parse_args()
+    VERBOSE = args.verbose
+
+    if generate_by_basename_on_first_column(args.description_file) > 0:
         exit()
     print('No file processed normally, trying costly heuristic...')
-    generate_by_unique_prefix(sys.argv[1])
+    generate_by_unique_prefix(args.description_file, args.cut, args.delete)
