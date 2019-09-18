@@ -497,6 +497,11 @@ def scan_directories(args):
 
 
 def sort_groups(groups, custom_attr=None):
+    # this can be useful for custom_attr == 'files'
+    # so it's useful to do it before the 'outer' sorting
+    for group in groups:
+        sort_members(group)
+
     if custom_attr:
         import operator
         groups.sort(key=operator.attrgetter(custom_attr))
@@ -504,9 +509,6 @@ def sort_groups(groups, custom_attr=None):
         groups.sort(key=group_waste)
     else:
         groups.sort(key=len)
-
-    for group in groups:
-        sort_members(group)
 
 
 if __name__ == '__main__':
