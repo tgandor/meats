@@ -15,13 +15,20 @@ args = parser.parse_args()
 
 def maybe_rename(filename, old, new):
     if old != new:
-        print(filename)
         new_name = filename.replace(old, new)
+
+        if new_name == filename:
+            return filename
+
         if not os.path.exists(new_name):
-            print(' ->', new_name)
+            print(filename, ' ->', new_name, '(dry run)' if args.dry_run else '')
+            if not args.dry_run:
+                os.rename(filename, new_name)
             return new_name
         else:
+            print(filename)
             print('  Cannot rename, already exists:', new_name)
+
     return filename
 
 
@@ -43,7 +50,7 @@ def main():
             filename = maybe_rename(filename, old_date, new_date)
 
 
-        time = re.search(r'(\d+)h(\d+)m(\d+)s0?', filename)
+        time = re.search(r'(\d+)h(\d+)m(\d+)s', filename)
         if time:
             old_time = time.group()
             new_time = '%02dh%02dm%02ds' % tuple(map(int, time.groups()))
