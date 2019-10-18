@@ -13,7 +13,8 @@ input_data = sys.stdin.read()
 suffix = '.png'
 
 for i, match in enumerate(b64_regex.finditer(input_data)):
-    print(i, match, '({:,} characters)'.format(match.span[1] - match.span[0]))
+    s = match.span()
+    print(i, match, '({:,} characters)'.format(s[1] - s[0]))
     data = match.group().encode()
     out_filename = 'b64_decoded_{}{}'.format(i, suffix)
     with open(out_filename, 'wb') as out_file:
