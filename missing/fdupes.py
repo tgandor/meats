@@ -182,7 +182,6 @@ def regroup(group_list, attr='basename', out_unique=None):
             '|/-\\'[ctr % 4], worked, total, time.time() - since))
         sys.stdout.flush()
 
-
     def _regroup():
         for group in group_list:
             done[0] += 1
@@ -214,12 +213,29 @@ def group_summary(group):
         return 'files: {}'.format(len(group))
 
 
-def process_groups(group_list):
+def total_duplicates(group_list):
+    return sum((len(group) - 1 for group in group_list), 0)
+
+
+def total_waste(group_list):
+    if not group_list:
+        return None
+
+    if not hasattr(group_list[0], 'size'):
+        return None
+
+    return sum(group.size for group in group_list)
+
+
+def print_groups(group_list):
     for group in group_list:
         print(group.features)
         for file in group:
             print(file)
         print('-' * 20, group_summary(group), '-' * 20)
+
+    print('Total duplicates: {:,}'.format(total_duplicates(group_list)))
+    print('Total (apparent) waste: {:,} B'.format(total_waste(group_list)))
 
 
 def _as_dict(group):
@@ -264,17 +280,16 @@ def sort_members(group, key=suitability_max_len_penalize_spaces):
 
 
 def save_groups(group_list, prefix='', unique_files=None):
-    if len(group_list) == 0:
-        print('Not saving empty groups.')
-        return
-
+    # emptiness check handled by MIN_GROUPS_TO_SAVE
     print('Saving {} groups and {} unique files...'.format(len(group_list), len(unique_files or [])))
     json_dump = prefix + 'fdupes_groups_{}.json'.format(time.strftime('%Y%m%d_%H%M%S'))
     with open(json_dump, 'w') as dump:
         json.dump({
             'count': len(group_list),
             'groups': [_as_dict(group) for group in group_list],
-            'unique': unique_files
+            'unique': unique_files,
+            'total_duplicates': total_duplicates(group_list),
+            'total_waste': total_waste(group_list)
         }, dump, default=custom_dumper, indent=2)
     print('Groups saved in:', json_dump)
 
@@ -297,6 +312,7 @@ def parse_args():
     parser.add_argument('--delete', '-d', action='store_true', help='Delete the duplicates interactively')
     parser.add_argument('--delete-command', help='Use a different command to delete duplicates, e.g. "git rm"')
     parser.add_argument('--delete-now', '-D', action='store_true', help='Delete the duplicates automatically')
+    parser.add_argument('--force-save', action='store_true', help='Save groups if present, overrides --no-save')
     parser.add_argument('--groups', '-i', help='Saved group files to load instead of scanning')
     parser.add_argument('--hardlink', '-H', action='store_true', help='Hardlink the duplicate files')
     parser.add_argument('--min-size', '-m', help='Min size in B of deleted files (auto mode)', type=int, default=1)
@@ -323,7 +339,6 @@ class Profiler:
 
     def total_time(self):
         return self.times[-1] - self.times[0]
-
 
 
 def delete_interactive(groups):
@@ -445,15 +460,17 @@ def main():
     sort_groups(groups, args.sort)
 
     if not args.no_print:
-        process_groups(groups)
+        print_groups(groups)
         profiler.finish_phase('printing groups')
 
-    if not args.no_save and (
+    if args.force_save or not args.no_save and (
         profiler.total_time() > MIN_ELAPSED_TO_SAVE
         and len(groups) > MIN_GROUPS_TO_SAVE
     ):
         save_groups(groups, args.prefix, unique_files)
         profiler.finish_phase('saving groups')
+    else:
+        print('Not saving groups.')
 
     if args.delete:
         delete_interactive(groups)
@@ -505,7 +522,7 @@ def sort_groups(groups, custom_attr=None):
     if custom_attr:
         import operator
         groups.sort(key=operator.attrgetter(custom_attr))
-    elif any(hasattr(group, 'size') for group in groups):
+    elif all(hasattr(group, 'size') for group in groups):
         groups.sort(key=group_waste)
     else:
         groups.sort(key=len)
