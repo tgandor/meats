@@ -674,7 +674,7 @@ def win_main():
         text.tag_config('label', justify='center', font=(fonts_to_try[0], settings['font_size']))
         text.bind('<Key>', lambda e: modified(text, e))
         text.bind('<<Modified>>', lambda e: modified(text, e))
-        text.pack(anchor=tk.N)
+        text.pack(anchor=tk.N, expand=True, fill='both')
 
         ui_label(dialog, text='Width: [cm]')
         width = Spinbox(dialog, from_=0, to=30, increment=0.1, format="%.1f", textvariable=label_model.width)
