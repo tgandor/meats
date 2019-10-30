@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tqdm
 
-from skimage.measure import structural_similarity as ssim, mean_squared_error as mse
+from skimage.measure import compare_ssim as ssim, compare_mse as mse
 
 
 timer = time.clock if sys.version_info < (3,) else time.perf_counter
@@ -54,21 +54,24 @@ size = image.nbytes
 
 fig = plt.figure(filename + ' JPEG performance')
 
-ax = fig.add_subplot(1, 3, 1)
-ax.set_title('Size ratio and Structural Similarity Index')
+ax = fig.add_subplot(2, 2, 1)
+ax.set_title('Size ratio (blue) and Structural Similarity Index (orange)')
 plt.plot(np.array(sizes) / size)
 plt.axhline(size1 / size, color='red')
 plt.axhline(size9 / size, color='green')
 plt.plot(ssims, color='orange')
 
-ax = fig.add_subplot(1, 3, 2)
+ax = fig.add_subplot(2, 2, 2)
 ax.set_title('Mean Squared Error')
 plt.plot(mses)
 
-ax = fig.add_subplot(1, 3, 3)
+ax = fig.add_subplot(2, 2, 3)
 ax.set_title('Compression (blue) vs decompression (orange) time')
 plt.plot(compression_times, color='blue')
 plt.plot(decompression_times, color='orange')
+
+ax = fig.add_subplot(2, 2, 4)
+ax.imshow(cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB))
 
 plt.show()
 
