@@ -16,8 +16,18 @@ args = parser.parse_args()
 
 def get_page_numbers(page_specs):
     for spec in page_specs:
-        if re.match('\d+$', spec):
+        if re.match(r'\d+$', spec):
             yield int(spec) - 1
+            continue
+
+        m = re.match(r'(\d+)-(\d+)$', spec)
+        if m:
+            low = int(m.group(1)) - 1
+            high = int(m.group(2))
+
+            for i in range(low, high):
+                yield i
+
             continue
 
 

@@ -11,7 +11,7 @@
 # set-date -date (wget google.com).Headers['Date']
 
 # Do You Trust this Computer?
-$response = wget google.com
+$response = wget -UseBasicParsing google.com
 
 $date = $response.Headers['Date']
 echo Changing date to $date
