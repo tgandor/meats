@@ -156,6 +156,10 @@ def quick_view_directory(directory_name, args=None):
 def view_file(filename, args=None):
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     image = _load_image(filename, args)
+
+    if image is None:
+        return
+
     cv2.imshow('image', image)
     cv2.resizeWindow('image', image.shape[1], image.shape[0])
     cv2.setMouseCallback('image', mouse_info)
