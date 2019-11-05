@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from __future__ import division
 
 import argparse
 import glob
@@ -153,6 +154,17 @@ def quick_view_directory(directory_name, args=None):
             return True
 
 
+def fhd_fit(image):
+    w, h = 1920, 1080
+    hi, wi = image.shape[:2]
+
+    if hi > h or wi > w:
+        down_scale = max(wi / w, hi / h)
+        hi, wi = [int(x / down_scale) for x in (hi, wi)]
+
+    cv2.resizeWindow('image', (wi, hi))
+
+
 def view_file(filename, args=None):
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     image = _load_image(filename, args)
@@ -161,7 +173,10 @@ def view_file(filename, args=None):
         return
 
     cv2.imshow('image', image)
-    cv2.resizeWindow('image', image.shape[1], image.shape[0])
+
+    if args and args.fit:
+        fhd_fit(image)
+
     cv2.setMouseCallback('image', mouse_info)
 
     while True:
@@ -170,22 +185,21 @@ def view_file(filename, args=None):
             res, res, res % 256,
             repr(chr(res % 256)) if res % 256 < 128 else '?'
         ))
-        if res % 256 in [27, ord('q')]:
+        if res % 256 in (27, ord('q'), ord('x')):
             return True
-        elif res % 256 == 32:
+        elif res % 256 in (32, 13):
             break
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mse', type=float, help='min MSE between images in directory to display', default=0)
-    parser.add_argument('--downsample', type=int, help='display image downsampled N times (stride)', default=1)
-    parser.add_argument('--delay', type=int, help='miliseconds to wait beween directory images', default=1)
-    parser.add_argument('--delete-similar', action='store_true', help='remove directory images below MSE')
-    parser.add_argument('--yolo-bbox', action='store_true', help='try to load and draw YOLO boundinb boxes')
     parser.add_argument('--chessboard', help='chesboard size to detect and show')
+    parser.add_argument('--downsample', type=int, help='display image downsampled N times (stride)', default=1)
+    parser.add_argument('--fit', '-f', action='store_true', help='resize window to 1080p (can help on some backends)')
+    parser.add_argument('--mse', type=float, help='min MSE between images in directory to display', default=0)
     parser.add_argument('--rot180', action='store_true', help='rotate image 180 degrees')
     parser.add_argument('--verbose', '-v', action='store_true', help='increase verbosity')
+    parser.add_argument('--yolo-bbox', action='store_true', help='try to load and draw YOLO boundinb boxes')
     parser.add_argument('files', nargs='+')
     args = parser.parse_args()
     quit = False
@@ -194,6 +208,19 @@ if __name__ == '__main__':
             quit = view_file(name, args)
         elif os.path.isdir(name):
             quit = quick_view_directory(name, args)
+        elif '**' in name:
+            # it's not 2020 yet, being nice to Py2
+            for path in glob.glob(name, recursive=True):
+                print(name, '->', path)
+                quit = view_file(path, args)
+                if quit:
+                    break
+        elif '*' in name:
+            for path in glob.glob(name):
+                print(name, '->', path)
+                quit = view_file(path, args)
+                if quit:
+                    break
         else:
             print('WARNING: argument ignored: {}'.format(name))
         if quit:
