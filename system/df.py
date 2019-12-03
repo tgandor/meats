@@ -66,7 +66,13 @@ def windows_emulation():
 
     for drive in enumerate_windows_drives():
         print('Checking:', drive)
-        usage = shutil.disk_usage(drive)
+
+        try:
+            usage = shutil.disk_usage(drive)
+        except FileNotFoundError:
+            print('Failed to get usage for', drive, '- a disconnected network drive?')
+            continue
+
         print('{:.1f}% used, {}, {:,} Bytes free'.format(usage.used * 100 / usage.total, usage, usage.free))
         cursor.execute(
             'insert into df (filesystem, size, used, available, use, mountpoint, df_date) values (?,?,?,?,?,?,?)',
