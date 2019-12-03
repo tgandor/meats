@@ -46,7 +46,10 @@ args = parser.parse_args()
 
 import numpy as np
 import tensorflow as tf
-tf.enable_eager_execution()
+
+if hasattr(tf, 'enable_eager_execution'):
+    # pre 2.0 (1.13, 1.14)
+    tf.enable_eager_execution()
 
 def main():
     """Main program.
@@ -64,7 +67,7 @@ def main():
         while True:
             start = prompt('Enter initial sequence: ')
 
-            if not start:
+            if not start.strip():
                 print('bye')
                 break
 
@@ -191,7 +194,7 @@ def train_model():
         example_batch_loss  = loss(target_example_batch, example_batch_predictions)
         print('Loss on initial example:', example_batch_loss.numpy().mean())
 
-    model.compile(optimizer=tf.train.AdamOptimizer(), loss=loss)
+    model.compile(optimizer=tf.optimizers.Adam(), loss=loss)
 
     if args.verbose:
         model.summary()
@@ -275,7 +278,12 @@ def build_model(vocab_size, embedding_dim, rnn_units, batch_size):
     if tf.test.is_gpu_available() and not args.cpu:
         if args.verbose:
             print('using GPU')
-        rnn = tf.keras.layers.CuDNNGRU
+        if hasattr(tf.keras.layers, 'CuDNNGRU'):
+            # old stuff
+            rnn = tf.keras.layers.CuDNNGRU
+        else:
+            # TF 2.0?
+            rnn = tf.keras.layers.GRU
     else:
         if args.verbose:
             print('using CPU')
@@ -324,7 +332,7 @@ def generate_text(model, start_string, char2idx, idx2char, num_generate=1000):
 
   # Here batch size == 1
   model.reset_states()
-  for i in range(num_generate):
+  for _ in range(num_generate):
       predictions = model(input_eval)
       # remove the batch dimension
       predictions = tf.squeeze(predictions, 0)
