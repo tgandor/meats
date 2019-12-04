@@ -20,13 +20,20 @@ if not path.startswith('/'):
     path = '/' + path
 
 if sys.platform == 'win32':
-    config = os.popen('ipconfig').read()
-    regexp = r'IP(?:v4)? Address(?:[ .]*):\s*([0-9.]+)'
+    # 8-bit encodings...
+    # config = os.popen('ipconfig').read()
+    import subprocess
+    config, _ = subprocess.Popen('ipconfig', stdout=subprocess.PIPE).communicate()
+    regexp = r'IP(?:v4)? Address(?:[ .]*):\s*([0-9.]+)'.encode()
 else:
     config = os.popen('ifconfig').read()
     regexp = 'inet (?:addr:)?([0-9.]+)'
 
 for ip in re.findall(regexp, config):
+    if type(ip) is bytes:
+        ip = ip.decode()
+
     if ip == '127.0.0.1':
         continue
+
     print("http://%s%s%s" % (ip, port, path))
