@@ -63,7 +63,7 @@ def windows_emulation():
     df_date = datetime.datetime.now()
 
     conn, cursor = open_database()
-
+    print(time.strftime('%D %T'))
     for drive in enumerate_windows_drives():
         print('Checking:', drive)
 
