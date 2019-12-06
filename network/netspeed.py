@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import os
 import sys
 import time
@@ -16,6 +18,7 @@ interface = sys.argv[1]
 if len(sys.argv) > 2:
     interval = int(sys.argv[2])
 
+
 def get_bytes():
     data = os.popen('ifconfig '+interface).read()
     m = re.search("RX (?:packets \d+\s*)bytes(?::? *)(\d+)", data)
@@ -23,6 +26,7 @@ def get_bytes():
     m = re.search("TX (?:packets \d+\s*)bytes(?::? *)(\d+)", data)
     txb = int(m.group(1))
     return rxb, txb
+
 
 try:
     rxb0, txb0 = get_bytes()
@@ -34,6 +38,7 @@ except Exception as e:
 print("If you see this, it's working. Exit with Ctrl-C.")
 sys.stdout.flush()
 
+
 def human_format(n):
     if n > 2**20:
         return "%6.1f MB" % (n/2.0**20,)
@@ -41,6 +46,21 @@ def human_format(n):
         return "%6.1f KB" % (n/2.0**10,)
     return "%6d B " % n
 
+
+class Blinker:
+    def __init__(self):
+        self.last_status = 0  # success
+
+    def on(self):
+        if self.last_status == 0:
+            self.last_status = os.system('xset led 3')
+
+    def off(self):
+        if self.last_status == 0:
+            self.last_status = os.system('xset -led 3')
+
+
+blinker = Blinker()
 idle_secs = 0
 maxtx, maxrx = 0, 0
 next_report = interval
@@ -48,7 +68,7 @@ next_report = interval
 while True:
     try:
         time.sleep(interval)
-        os.system('xset -led 3')
+        blinker.off()
     except:
         print()
         break
@@ -74,14 +94,18 @@ while True:
             print(time.strftime('%H:%M:%S') + " resume after %d seconds" % idle_secs)
         idle_secs = 0
         next_report = interval
-    os.system('xset led 3')
-    print(time.strftime('%H:%M:%S')
-        + " Recv %s, Send %s. Total: %s, %s." % tuple(
-            map(human_format, (rxb-rxb0, txb-txb0, rxb, txb))))
+    blinker.on()
+    print(
+        time.strftime('%H:%M:%S'),
+        "Recv %s, Send %s. Total: %s, %s." % tuple(
+            map(human_format, (rxb-rxb0, txb-txb0, rxb, txb))
+        )
+    )
     sys.stdout.flush()
     maxtx = max(maxtx, txb-txb0)
     maxrx = max(maxrx, rxb-rxb0)
     rxb0, txb0 = rxb, txb
 
-print("Bye, max speeds were: %s/s, %s/s." % (
-                human_format(maxrx/interval), human_format(maxtx/interval)))
+print("Bye, max speeds were: {}/s, {}/s.".format(
+    human_format(maxrx/interval), human_format(maxtx/interval)
+))
