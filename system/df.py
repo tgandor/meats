@@ -70,7 +70,10 @@ def windows_emulation():
         try:
             usage = shutil.disk_usage(drive)
         except FileNotFoundError:
-            print('Failed to get usage for', drive, '- a disconnected network drive?')
+            print('Failed to get usage for', drive, '- a disconnected network drive? (FileNotFoundError)')
+            continue
+        except PermissionError:
+            print('Failed to get usage for', drive, '- not ready USB storage? (PermissionError)')
             continue
 
         print('{:.1f}% used, {}, {:,} Bytes free'.format(usage.used * 100 / usage.total, usage, usage.free))
