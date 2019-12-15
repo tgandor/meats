@@ -1,5 +1,9 @@
 from itertools import islice, chain, repeat
 
+# I guess today we should look into:
+# https://more-itertools.readthedocs.io/en/stable/api.html#more_itertools.chunked
+# and the like, instead of reinventing the wheel.
+
 
 def chunk_pad(it, size, padval=None):
     it = chain(iter(it), repeat(padval))
@@ -10,7 +14,7 @@ _no_padding = object()
 
 
 def chunk(it, size, padval=_no_padding):
-    if padval == _no_padding:
+    if padval is _no_padding:
         it = iter(it)
         sentinel = ()
     else:
