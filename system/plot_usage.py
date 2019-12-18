@@ -21,6 +21,7 @@ parser.add_argument('--ascii', '-t', action='store_true')
 parser.add_argument('--fake-date', '-d', action='store_true')
 parser.add_argument('--mountpoint', '-m', default='/', help='mountpoint to show')
 parser.add_argument('--absolute', '-a', action='store_true', help='Y axis from 0 to size')
+parser.add_argument('--style', default='-', help='matplotlib plotting style')
 parser.add_argument('--list-mountpoints', action='store_true', help='mountpoint to show')
 parser.add_argument('--days', '-D', type=int, help='number of last days to show')
 parser.add_argument('--width', '-w', type=int, help='width of plot (--ascii only)', default=170)
@@ -72,7 +73,7 @@ if args.ascii:
 else:
     from matplotlib import pyplot as plt
 
-    df.plot(x='df_date', y='used')
+    df.set_index('df_date').used.plot(style=args.style)
     if args.absolute:
         # unfortunately, 'size' is a bad column name in Pandas. df.size returns int, df['size'] - Series
         plt.ylim(bottom=0, top=df['size'].max())

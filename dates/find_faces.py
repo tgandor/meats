@@ -94,8 +94,10 @@ for result in tqdm(files):
         # name for high delay, generic for fast viewing
 
         if fast:
+            cv2.namedWindow('face detection', cv2.WINDOW_NORMAL)
             cv2.imshow('face detection', image)
         else:
+            cv2.namedWindow(result, cv2.WINDOW_NORMAL)
             cv2.imshow(result, image)
 
         res = cv2.waitKey(args.delay) & 0xff
