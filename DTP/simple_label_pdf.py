@@ -587,7 +587,7 @@ def win_main():
             self.width = tk.DoubleVar()
             self.height = tk.DoubleVar()
             self.text = tk.StringVar()
-            self.font_size = tk.IntVar(value=settings['font_size'])
+            self.font_size = tk.StringVar(value=str(args.font_size))  # tk.IntVar(value=args.font_size)
             self.last_id = tk.IntVar()
 
     def ui_label(parent, text):
@@ -712,7 +712,11 @@ def win_main():
 
         ui_label(dialog, 'Font size [pt]:')
 
-        Spinbox(dialog, values=list(range(20, 74, 2)), textvariable=label_model.font_size).pack(anchor=tk.N)
+        # somehow is textvariable not enough...
+        font_size = Spinbox(dialog, values=list(range(20, 74, 2)), textvariable=label_model.font_size)
+        font_size.set(settings['font_size'])
+        font_size.pack(anchor=tk.N)
+
         label_model.font_size.trace('w', lambda *_: change_font(label_model.font_size))
 
         ui_label(dialog, 'Print mode:')
@@ -863,10 +867,13 @@ def import_database():
 
 if __name__ == '__main__':
     locale.setlocale(locale.LC_ALL, '')
-    args = parser.parse_args(sys.argv[1:])
+    args = parser.parse_args()
+    # print(args)
+
     argv = args.args
     settings['font_size'] = args.font_size
     settings['round_label'] = args.round
+    # print(settings)
 
     if args.db_shell:
         db_shell_main(args.multiline)
