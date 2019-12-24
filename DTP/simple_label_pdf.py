@@ -707,7 +707,7 @@ def win_main():
                 return
 
             # TODO: fonts_to_try vs last_font?
-            settings['font_size'] = value
+            settings['font_size'] = float(value)
             text.tag_config('label', font=(fonts_to_try[0], settings['font_size']))
 
         ui_label(dialog, 'Font size [pt]:')
