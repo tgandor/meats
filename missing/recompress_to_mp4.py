@@ -142,7 +142,7 @@ if __name__ == '__main__':
     if args.hwaccel:
         input_options += '-hwaccel {}'.format(args.hwaccel)
 
-    common_options = ' -map_metadata 0 -pix_fmt yuv420p -strict -2'
+    common_options = ' -hide_banner -map_metadata 0 -pix_fmt yuv420p -strict -2'
 
     if args.deinterlace:
         common_options += ' -vf yadif'
