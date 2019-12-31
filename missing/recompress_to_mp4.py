@@ -12,6 +12,7 @@ from itertools import chain
 parser = argparse.ArgumentParser()
 parser.add_argument('--amf', action='store_true', help='use h264_amf codec (e.g. Windows on AMD)')
 parser.add_argument('--bitrate', '-b', help='specify output bitrate for video')
+parser.add_argument('--bitrate-audio', '-ba', help='specify output bitrate for audio')
 parser.add_argument('--converter', help='Manually specify [full path to] ffmpeg or avconv')
 parser.add_argument('--classify', '-k', action='store_true', help='detect weak or negative (nocebo) compression')
 parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. for cutting or remuxing')
@@ -157,7 +158,7 @@ if __name__ == '__main__':
         # encoder_options = ('h264_nvenc -preset llhq -rc:v vbr_minqp -qmin:v 19 -qmax:v 21 -b:v 2500k '
         #                    '-maxrate:v 5000k -profile:v high ' + common_options)
     elif args.amf:
-        encoder_options = 'h264_amf'
+        encoder_options = 'h264_amf {}'.format(common_options)
         if not args.bitrate:
             print('Warning - using --amf codec without --bitrate/-b specified.')
     else:
@@ -215,12 +216,18 @@ if __name__ == '__main__':
         if args.start:
             filters += ' -ss {}'.format(args.start)
 
+        audio_options = 'aac'
+        if args.copy_audio or args.copy:
+            audio_options = 'copy'
+        elif args.bitrate_audio:
+            audio_options += ' -b:a ' + args.bitrate_audio
+
         commandline = '{} {} -i "{}" {} -c:a {} -c:v {} "{}"'.format(
             converter,
             input_options,
             original,
             filters,
-            'copy' if args.copy_audio or args.copy else 'aac',
+            audio_options,
             'copy' if args.copy else encoder_options,
             converted)
         ts.run(commandline)
