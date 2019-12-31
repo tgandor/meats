@@ -10,6 +10,7 @@ import time
 from itertools import chain
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--amf', action='store_true', help='use h264_amf codec (e.g. Windows on AMD)')
 parser.add_argument('--bitrate', '-b', help='specify output bitrate for video')
 parser.add_argument('--converter', help='Manually specify [full path to] ffmpeg or avconv')
 parser.add_argument('--classify', '-k', action='store_true', help='detect weak or negative (nocebo) compression')
@@ -141,7 +142,7 @@ if __name__ == '__main__':
     if args.hwaccel:
         input_options += '-hwaccel {}'.format(args.hwaccel)
 
-    common_options = ' -map_metadata 0 -pix_fmt yuv420p  -strict -2'
+    common_options = ' -map_metadata 0 -pix_fmt yuv420p -strict -2'
 
     if args.deinterlace:
         common_options += ' -vf yadif'
@@ -155,6 +156,10 @@ if __name__ == '__main__':
         # https://superuser.com/a/1236387/269542
         # encoder_options = ('h264_nvenc -preset llhq -rc:v vbr_minqp -qmin:v 19 -qmax:v 21 -b:v 2500k '
         #                    '-maxrate:v 5000k -profile:v high ' + common_options)
+    elif args.amf:
+        encoder_options = 'h264_amf'
+        if not args.bitrate:
+            print('Warning - using --amf codec without --bitrate/-b specified.')
     else:
         encoder_options = 'h264 -crf {} -preset veryslow {}'.format(args.quality, common_options)
 
