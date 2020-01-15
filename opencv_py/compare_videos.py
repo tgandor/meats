@@ -6,16 +6,23 @@ import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-v3', action='store_true', help='compare 3-way')
+parser.add_argument('--full', action='store_true', help='display full filenames in window title')
+parser.add_argument('--delay', type=int, help='wait between frames [ms]. 0 = forever', default=40)
+parser.add_argument('files', nargs='*')
 args = parser.parse_args()
 
-paths = [
-    input('Video path {}: '.format(i))
-    for i in range(3 if args.v3 else 2)
-]
+paths = args.files
+
+if not paths:
+    paths = [
+        input('Video path {}: '.format(i))
+        for i in range(3 if args.v3 else 2)
+    ]
 
 readers = [cv2.VideoCapture(path) for path in paths]
 
-window = ' vs '.join(map(os.path.basename, paths))
+names = paths if args.full else map(os.path.basename, paths)
+window = ' vs '.join(names)
 
 cv2.namedWindow(window, cv2.WINDOW_NORMAL)
 
