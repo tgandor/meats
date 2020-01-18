@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import sys
 import time
 
@@ -8,10 +9,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tqdm
 
-from skimage.measure import compare_ssim as ssim, compare_mse as mse
-
+# this is (being) deprecated:
+# from skimage.measure import compare_ssim as ssim, compare_mse as mse
+from skimage.metrics import structural_similarity as ssim, mean_squared_error as mse
 
 timer = time.clock if sys.version_info < (3,) else time.perf_counter
+
 
 def check_compression(image, quality):
     start = timer()
@@ -26,10 +29,17 @@ def check_lossless_compression(image, level):
     data = cv2.imencode('.png', image, [cv2.IMWRITE_PNG_COMPRESSION, level])[1]
     return data
 
+parser = argparse.ArgumentParser()
+parser.add_argument('file')
+parser.add_argument('--downsample', type=int)
+args = parser.parse_args()
 
-filename = sys.argv[1]
+filename = args.file
 
 orig_image = cv2.imread(filename, cv2.IMREAD_COLOR)
+
+if args.downsample:
+    orig_image = orig_image[::args.downsample, ::args.downsample]
 
 sizes = []
 mses = []
