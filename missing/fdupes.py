@@ -83,7 +83,10 @@ class File:
 
     @LazyProperty
     def md5(self):
-        return md5sum(self.file_path)
+        try:
+            return md5sum(self.file_path)
+        except IOError:
+            return None
 
     def as_dict(self):
         result = self.__dict__.copy()
