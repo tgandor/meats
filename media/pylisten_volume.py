@@ -27,7 +27,9 @@ def show_timers(args):
     time_quiet = datetime.timedelta()
     loud = False
     refresh = datetime.timedelta(seconds=1)
-    t = datetime.datetime.combine(datetime.date.today(), datetime.datetime.min.time())
+    # t = datetime.datetime.combine(datetime.date.today(), datetime.datetime.min.time())
+    # see discussion in: https://stackoverflow.com/questions/1937622/convert-date-to-datetime-in-python
+    t = datetime.datetime.combine(datetime.date.today(), datetime.time())
 
     for features in FeatureListener(lambda x: [abs(x).mean()], 1024, 10):
         now = datetime.datetime.now()
