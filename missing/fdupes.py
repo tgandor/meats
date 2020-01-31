@@ -301,7 +301,7 @@ def load_groups(filename):
     with open(filename) as stream:
         data = json.load(stream)
 
-    groups = [Group([File(file_dict['path']) for file_dict in group_dict['files']],
+    groups = [Group([File(file_dict['file_path']) for file_dict in group_dict['files']],
                     group_dict['features'])
               for group_dict in data['groups']]
     return groups
