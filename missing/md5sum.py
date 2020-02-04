@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from zlib import crc32
+
 import argparse
 import glob
 import hashlib
@@ -8,6 +10,7 @@ import sys
 parser = argparse.ArgumentParser()
 parser.add_argument('--sha256', '-S', action='store_true', help='Use SHA256 instead of MD5')
 parser.add_argument('--sha', '-s', action='store_true', help='Use SHA-1 instead of MD5')
+parser.add_argument('--crc', '-c', action='store_true', help='Use CRC32 instead of MD5')
 parser.add_argument('files', nargs='*')
 args = parser.parse_args()
 
@@ -20,6 +23,11 @@ def do_md5(file_obj):
         hasher = hashlib.sha256()
     elif args.sha:
         hasher = hashlib.sha1()
+    elif args.crc:
+        # FIXME: in memory CRC - may fail for large streams:
+        # https://stackoverflow.com/questions/30092226/how-to-calculate-crc32-with-python-to-match-online-results
+        # - see about signedness.
+        return hex(crc32(file_obj.read()) & 0xffffffff).upper()[2:]
     else:
         hasher = hashlib.md5()
     for chunk in iter(lambda: file_obj.read(4096), b""):
