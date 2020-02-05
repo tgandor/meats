@@ -13,7 +13,10 @@ FROM
     INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
 where
     p.rows = 0 and
-    t.object_id not in (select referenced_object_id from sys.foreign_keys)
+    t.object_id not in (
+        select referenced_object_id from sys.foreign_keys
+        where parent_object_id <> t.object_id  -- tables which only self-reference are fair game
+    )
 
 -- SELECT for showing empty tables which have foreign keys refering to them
 -- (with the names of these keys together with the parent table)
@@ -53,7 +56,10 @@ BEGIN
         INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
     where
         p.rows = 0 and
-        t.object_id not in (select referenced_object_id from sys.foreign_keys)
+        t.object_id not in  (
+            select referenced_object_id from sys.foreign_keys
+            where parent_object_id <> t.object_id
+        )
     GROUP BY s.name, t.Name -- not sure if 'distinct @sql = ...' would be possible
 
     if @sql = ''
