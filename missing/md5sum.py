@@ -18,19 +18,33 @@ args = parser.parse_args()
 # http://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file
 
 
+class Crc32:
+    def __init__(self):
+        self.value = 0
+
+    def update(self, data):
+        # see about signedness:
+        # https://stackoverflow.com/questions/30092226/how-to-calculate-crc32-with-python-to-match-online-results
+        self.value = crc32(data, self.value) & 0xffffffff
+
+    def hexdigest(self):
+        # return hex(self.value).upper()[2:]
+        return '{:08X}'.format(self.value)
+
+
 def do_md5(file_obj):
     if args.sha256:
         hasher = hashlib.sha256()
     elif args.sha:
         hasher = hashlib.sha1()
     elif args.crc:
-        # FIXME: in memory CRC - may fail for large streams:
-        # https://stackoverflow.com/questions/30092226/how-to-calculate-crc32-with-python-to-match-online-results
-        # - see about signedness.
-        return hex(crc32(file_obj.read()) & 0xffffffff).upper()[2:]
+        # in memory CRC - may fail for large streams:
+        # return hex(crc32(file_obj.read()) & 0xffffffff).upper()[2:]
+        hasher = Crc32()
     else:
         hasher = hashlib.md5()
-    for chunk in iter(lambda: file_obj.read(4096), b""):
+
+    for chunk in iter(lambda: file_obj.read(2**22), b""):
         hasher.update(chunk)
     return hasher.hexdigest()
 
