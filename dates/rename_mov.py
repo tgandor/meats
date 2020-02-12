@@ -4,8 +4,10 @@ from __future__ import print_function
 
 # usage: rename_mov.py dscn0001.mov...
 # see also: exif_rename.sh (where possible)
+# note: this script also works for .mp4 files (with right metadata...)
 
 import datetime
+import glob
 import os
 import re
 import struct
@@ -13,7 +15,7 @@ import sys
 import time
 
 dry_run = False
-strftime_format = '%Y%m%d_%H%M%S.mov'
+strftime_format = '%Y%m%d_%H%M%S'
 sample_len = 2**20
 mov_epoch = datetime.datetime(1904, 1, 1, 0, 0)
 
@@ -26,7 +28,8 @@ def classify(iterable, func):
 
 
 def rename(f):
-    if os.path.splitext(f)[1].lower() != '.mov':
+    ext =  os.path.splitext(f)[1].lower()
+    if ext not in ('.mov', '.mp4') :
         print('Not a mov file:', f)
         return
 
@@ -52,7 +55,7 @@ def rename(f):
     #     + time.mktime(datetime.datetime(1903, 12, 31, 23, 24).timetuple())
     # ).timetuple()
 
-    new_name = time.strftime(strftime_format, parsed)
+    new_name = time.strftime(strftime_format, parsed) + ext
 
     if not os.path.exists(new_name):
         print('{} -> {}'.format(f, new_name))
@@ -69,5 +72,6 @@ if __name__=='__main__':
         print('(simulation)')
         dry_run = True
 
-    for mov in args:
-        rename(mov)
+    for p in args:
+        for mov in glob.glob(p):
+            rename(mov)

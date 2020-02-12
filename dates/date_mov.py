@@ -5,6 +5,7 @@ from __future__ import print_function
 # usage: date_mov.py dscn0001.mov
 
 import datetime
+import glob
 import os
 import re
 import struct
@@ -43,4 +44,6 @@ def info(f):
 
 
 if __name__ == '__main__':
-    list(map(info, sys.argv[1:]))
+    for pattern in sys.argv[1:]:
+        for fn in glob.glob(pattern):
+            info(fn)
