@@ -55,7 +55,10 @@ def rename(f):
     #     + time.mktime(datetime.datetime(1903, 12, 31, 23, 24).timetuple())
     # ).timetuple()
 
-    new_name = time.strftime(strftime_format, parsed) + ext
+    new_name = os.path.join(
+        os.path.dirname(f),
+        time.strftime(strftime_format, parsed) + ext
+    )
 
     if not os.path.exists(new_name):
         print('{} -> {}'.format(f, new_name))
