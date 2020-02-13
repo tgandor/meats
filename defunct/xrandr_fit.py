@@ -30,7 +30,7 @@ def get_resolutions(xrandr_output):
     if resolutions:
         devices.append(sorted(resolutions, key=KEY))
 
-    return zip(names, devices)
+    return list(zip(names, devices))
 
 
 def find_best_pairs(local, remote):
@@ -49,9 +49,9 @@ def find_best_pairs(local, remote):
 
 def print_devices(results):
     for name, resolutions in results:
-        print name
+        print(name)
         for res in resolutions:
-            print '%4.2f MPix' % (res[0]*res[1]*1e-6,), res
+            print('%4.2f MPix' % (res[0]*res[1]*1e-6,), res)
 
 if __name__ == '__main__':
     xrandr_output = os.popen('xrandr').read()
@@ -79,6 +79,6 @@ if __name__ == '__main__':
             for best in find_best_pairs(local, remote):
                 mpix = best[3][0] * best[3][1] / 1.0e6
                 percent = 100.0 * (best[3][0] * best[3][1]) / (best[1][0] * best[1][1])
-                print "On {2:6}: use {5:14} ({0:.2f} MPix, {1:.1f}%)".format(mpix, percent, *best)
-                print "    rdesktop -g {0}x{1}".format(*best[3])
-                print "    xrandr -s {0}x{1}".format(*best[3])
+                print("On {2:6}: use {5:14} ({0:.2f} MPix, {1:.1f}%)".format(mpix, percent, *best))
+                print("    rdesktop -g {0}x{1}".format(*best[3]))
+                print("    xrandr -s {0}x{1}".format(*best[3]))
