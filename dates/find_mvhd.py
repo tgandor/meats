@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import glob
 import sys
 import mmap
 
@@ -19,4 +20,5 @@ def process(filename):
 
 if __name__ == '__main__':
     for argument in sys.argv[1:]:
-        process(argument)
+        for fn in glob.glob(argument):
+            process(fn)
