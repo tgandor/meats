@@ -74,6 +74,7 @@ else:
     from matplotlib import pyplot as plt
 
     df.set_index('df_date').used.plot(style=args.style)
+    plt.title('Usage of ' + args.mountpoint)
     if args.absolute:
         # unfortunately, 'size' is a bad column name in Pandas. df.size returns int, df['size'] - Series
         plt.ylim(bottom=0, top=df['size'].max())
