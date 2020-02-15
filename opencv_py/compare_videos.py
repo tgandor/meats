@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import os
 
@@ -8,6 +10,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-v3', action='store_true', help='compare 3-way')
 parser.add_argument('--full', action='store_true', help='display full filenames in window title')
 parser.add_argument('--delay', type=int, help='wait between frames [ms]. 0 = forever', default=40)
+parser.add_argument('--vcrop', '-H', type=int, help='crop frames to H lines of image')
+parser.add_argument('--hcrop', '-W', type=int, help='crop frames to W columns of image')
 parser.add_argument('files', nargs='*')
 args = parser.parse_args()
 
@@ -34,6 +38,12 @@ while True:
         break
 
     frames = [frame for _, frame in rets_frames]
+
+    if args.hcrop:
+        frames = [frame[:, :args.hcrop] for frame in frames]
+
+    if args.vcrop:
+        frames = [frame[:args.vcrop] for frame in frames]
 
     assert len({frame.shape for frame in frames}) == 1, 'Frame shapes must be equal'
 
