@@ -194,6 +194,7 @@ def view_file(filename, args=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--chessboard', help='chesboard size to detect and show')
+    parser.add_argument('--delay', type=int, help='miliseconds to wait beween directory images', default=1)
     parser.add_argument('--downsample', type=int, help='display image downsampled N times (stride)', default=1)
     parser.add_argument('--fit', '-f', action='store_true', help='resize window to 1080p (can help on some backends)')
     parser.add_argument('--mse', type=float, help='min MSE between images in directory to display', default=0)
