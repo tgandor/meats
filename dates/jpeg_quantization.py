@@ -95,22 +95,19 @@ def find_quantization_tables(filename):
                         print(filename, '- DEFINE_QUANTIZATION_TABLE not found')
                     return
 
-                if idx % 2 == 0:
-                    payload_kind = mapped_file[idx+2:idx+4]
-                    double = False
+                payload_kind = mapped_file[idx+2:idx+4]
 
-                    if payload_kind == SINGLE_TABLE_PAYLOAD_DATA:
-                        print(filename, '- DEFINE_QUANTIZATION_TABLE + Single QT found at offset:', idx, 'hex:', hex(idx))
-                        # break
-                    elif payload_kind == DOUBLE_TABLE_PAYLOAD_DATA:
-                        print(filename, '- DEFINE_QUANTIZATION_TABLE + Double QT found at offset:', idx, 'hex:', hex(idx))
-                        double = True
-                        # break
-                    elif DEBUG:
-                        print(filename, idx, ': Neither Single nor Double QT found...')
-                        continue
-                    else:
-                        continue
+                if payload_kind == SINGLE_TABLE_PAYLOAD_DATA:
+                    print(filename, '- DEFINE_QUANTIZATION_TABLE + Single QT found at offset:', idx, 'hex:', hex(idx))
+                    double = False
+                elif payload_kind == DOUBLE_TABLE_PAYLOAD_DATA:
+                    print(filename, '- DEFINE_QUANTIZATION_TABLE + Double QT found at offset:', idx, 'hex:', hex(idx))
+                    double = True
+                elif DEBUG:
+                    # print(filename, idx, ': Neither Single nor Double QT found...')
+                    continue
+                else:
+                    continue
 
                 # this might have been after break, but there can be many tables...
                 # or maybe stray markers, followed by some bytes...
