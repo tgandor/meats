@@ -6,6 +6,11 @@ if [ "$1" == "" ]; then
     exit
 fi
 
+if ! which dpkg &>/dev/null ; then
+    pacman -F $1
+    exit
+fi
+
 function processCommand {
     if ! which $1 > /dev/null; then
         echo >&2 "Command not found: $1"
