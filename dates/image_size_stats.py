@@ -54,6 +54,9 @@ for path, directories, files in os.walk(args.directory):
             except piexif.InvalidImageDataError:
                 print('Error reading EXIF (invalid file [type]?):', realname)
                 size = None
+            except Exception as e:
+                print('Other error reading EXIF:', e, 'in', realname)
+                size = None
 
             size2 = imagesize.get(realname)
 
