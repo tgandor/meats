@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from __future__ import print_function
 
 import glob
@@ -6,7 +8,6 @@ import os
 from itertools import chain
 import numpy as np
 import matplotlib.pyplot as plt
-
 
 files = list(chain.from_iterable(map(glob.glob, sys.argv[1:])))
 files.sort(key=lambda x: (os.path.basename(x), len(x), x))
