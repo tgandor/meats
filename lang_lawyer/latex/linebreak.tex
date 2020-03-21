@@ -1,0 +1,137 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{polski}
+\usepackage{graphicx}
+\usepackage{subfig}
+% \usepackage{subcaption}
+%\usepackage{cleveref}
+%\usepackage{picture}
+\usepackage{tikz}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+
+% probably tikz/pgfplots already uses it
+% so need not import this:
+%\usepackage{pgf}
+
+\begin{document}
+
+Something in this document. This paragraph contains no information 
+and its purposes is to provide an example on how to insert white 
+spaces and lines breaks.\\
+Something in this document. This paragraph contains no information 
+and its purposes is to provide an example on how to and lines breaks again.\hfill\break % samo \break: unerful hbox
+Something in this document. This paragraph contains no information 
+and its purposes is to provide an example on how to and lines breaks again.\newline
+When a line break is inserted, the text is not indented, there are 
+a couple of extra commands do line breaks. \hfill tia...
+Test. \break
+No i co? 
+
+But this is a separate para?
+
+%\vfill
+\vspace{4cm}
+
+Uwaga, tutaj też jest info. ĄĆĘŁ...
+
+% Telling the subfig package the desired caption position
+\captionsetup[subfigure]{position=b}
+
+\begin{figure}
+\centering
+\subfloat[first]{
+  \label{sf:first}
+  \includegraphics[width=32mm]{it}
+}
+\subfloat[second]{
+  \includegraphics[width=32mm]{it}
+}
+\hspace{0mm}
+\subfloat[third]{
+  \includegraphics[width=32mm]{it}
+}
+\subfloat[forth]{
+  \includegraphics[width=32mm]{it}
+}
+\hspace{0mm}
+%\hbox{} 
+\subfloat[fifth]{
+  \includegraphics[width=.25\textwidth]{it}
+}
+\caption{caption, \protect\subref{sf:first} QR of something, etc.}
+
+\end{figure}
+
+Seeing here subref: \subref{sf:first} something... ref: \ref{sf:first}
+
+
+% \begin{tabular}{l|l|l}\hline 
+% This is the first column (It has a very long sentence in it) & Second Column & Third Column \\  \hline 
+% \end{tabular}
+
+\begin{tabular}{p{.25\textwidth}|p{.25\textwidth}|p{.25\textwidth}}\hline 
+This is the first column (It has a very long sentence in it) & Second Column & Third Column \\  \hline 
+\end{tabular}
+
+
+% this is BAD! Don't use it! (unless forced - bare \latex has it)
+\setlength{\unitlength}{1cm}
+% \linethickness{1pt}
+%\thicklines
+\begin{picture}(10,6)
+\put(2, 2.2){\line(1, 2){2}}
+\put(2, 2.2){\line(1, 1){2}}
+\put(2, 2.2){\line(1, 0){2}}
+%\put(2, 2.2){\circle{2}}
+%\put(6, 2.2){\oval(4,2)[r]}
+\end{picture}
+
+\begin{tikzpicture}
+\begin{axis}
+\addplot[color=red]{exp(x)};
+\end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}
+\begin{axis}
+\addplot3[
+    surf,
+]
+{exp(-x^2-y^2)*x};
+\end{axis}
+\end{tikzpicture}
+
+% mesh was my guess
+\begin{tikzpicture}
+\begin{axis}
+\addplot3[
+    mesh,
+]
+{exp(-x^2-y^2)*y};
+\end{axis}
+\end{tikzpicture}
+
+\begin{figure}
+\centering
+\input{wykres2.pgf} 
+%\includegraphics{wykres2}
+\caption{AP and AP50 going up.}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{tabular}{cc}
+  \includegraphics[width=45mm]{it} &   \includegraphics[width=45mm]{it} \\
+ (a) first & (b) second \\[6pt]
+  \null &   \includegraphics[width=45mm]{it} \\
+  \null & (c) right column \\[6pt]
+\multicolumn{2}{c}{\includegraphics[width=45mm]{it} }\\
+\multicolumn{2}{c}{(d) centered}
+\end{tabular}
+\caption{Laying out plots using table (manual)}
+\end{figure}
+
+
+\end{document}

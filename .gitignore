@@ -14,3 +14,7 @@ df_log.csv
 .idea
 .vscode
 missing/*.exe
+
+# latex
+*.aux
+*.log
