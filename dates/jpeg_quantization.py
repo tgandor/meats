@@ -4,6 +4,9 @@
 # https://codereview.stackexchange.com/questions/171370/read-quantization-tables-from-jpeg-files
 # taking magics etc. from there
 
+from __future__ import print_function
+
+import argparse
 import glob
 import mmap
 import sys
@@ -15,6 +18,11 @@ DOUBLE_TABLE_PAYLOAD_DATA = b'\x00\x84'
 WHOLE_FILE = 0
 
 DEBUG = True
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--oneline', '-q', action='store_true', help='print in short format')
+parser.add_argument('files', nargs='+')
+args = parser.parse_args()
 
 
 def zigzag(n):
@@ -97,11 +105,14 @@ def find_quantization_tables(filename):
 
                 payload_kind = mapped_file[idx+2:idx+4]
 
+
                 if payload_kind == SINGLE_TABLE_PAYLOAD_DATA:
-                    print(filename, '- DEFINE_QUANTIZATION_TABLE + Single QT found at offset:', idx, 'hex:', hex(idx))
+                    if not args.oneline:
+                        print(filename, '- DEFINE_QUANTIZATION_TABLE + Single QT found at offset:', idx, 'hex:', hex(idx))
                     double = False
                 elif payload_kind == DOUBLE_TABLE_PAYLOAD_DATA:
-                    print(filename, '- DEFINE_QUANTIZATION_TABLE + Double QT found at offset:', idx, 'hex:', hex(idx))
+                    if not args.oneline:
+                        print(filename, '- DEFINE_QUANTIZATION_TABLE + Double QT found at offset:', idx, 'hex:', hex(idx))
                     double = True
                 elif DEBUG:
                     # print(filename, idx, ': Neither Single nor Double QT found...')
@@ -116,7 +127,14 @@ def find_quantization_tables(filename):
                 tab_size = 130 if double else 65
 
                 table = mapped_file[tab_start:tab_start + tab_size]
-                if double:
+
+                if args.oneline:
+                    try:
+                        print(table.hex(), filename)
+                    except AttributeError:
+                        # Python 2.7
+                        print(table.encode('hex'), filename)
+                elif double:
                     display(table[:65])
                     display(table[65:])
                 else:
@@ -128,7 +146,8 @@ def find_quantization_tables(filename):
 
 
 if __name__ == '__main__':
-    for argument in sys.argv[1:]:
+    for argument in args.files:
         for fn in glob.glob(argument):
             find_quantization_tables(fn)
-            print('-' * 60)
+            if not args.oneline:
+                print('-' * 60)
