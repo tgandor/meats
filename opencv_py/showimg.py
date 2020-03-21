@@ -64,7 +64,14 @@ def _load_image(filename, args=None):
         tqdm.write('Skipping: {} (rejected extension: {})'.format(filename, ext))
         return None
 
-    image = cv2.imread(filename)
+    if args.glymur and ext.lower() == '.jp2':
+        # https://glymur.readthedocs.io/en/latest/how_do_i.html#read-images
+        import glymur
+        jp2 = glymur.Jp2k(filename)
+        # of course, glymur has normal color channels:
+        image = cv2.cvtColor(jp2[:], cv2.COLOR_RGB2BGR)
+    else:
+        image = cv2.imread(filename)
 
     if image is None:
         tqdm.write('Failed to load: {}'.format(filename))
@@ -197,6 +204,7 @@ if __name__ == '__main__':
     parser.add_argument('--delay', type=int, help='miliseconds to wait beween directory images', default=1)
     parser.add_argument('--downsample', type=int, help='display image downsampled N times (stride)', default=1)
     parser.add_argument('--fit', '-f', action='store_true', help='resize window to 1080p (can help on some backends)')
+    parser.add_argument('--glymur', action='store_true', help='use glymur library to load .jp2 images (OpenJPEG, no JasPer)')
     parser.add_argument('--mse', type=float, help='min MSE between images in directory to display', default=0)
     parser.add_argument('--rot180', action='store_true', help='rotate image 180 degrees')
     parser.add_argument('--verbose', '-v', action='store_true', help='increase verbosity')
