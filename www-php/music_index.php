@@ -6,6 +6,7 @@
 ?><!doctype html>
 <html lang="en">
   <head>
+    <title><?php echo $title ?> - Music Index</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -20,9 +21,8 @@
         padding: 0 15px;
     }
     </style>
-
-    <title><?php echo $title ?> - Music Index</title>
   </head>
+
   <body>
     <div class="container">
         <div class="jumbotron d-none d-md-block">
@@ -38,51 +38,47 @@
             <div class="col-12">
                 <p>
                     Path:
-                    <?php $path = ''; ?>
-                    <?php foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $i => $dir): ?>
-                    <?php $path .= "$dir/" ?>
+<?php $path = ''; ?>
+<?php foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $i => $dir): ?>
+<?php $path .= "$dir/" ?>
                     / <a href="<?php echo $path ?>"><?php echo $dir ? $dir : '&#8962;'  ?></a>
-                    <?php endforeach ?>
+<?php endforeach ?>
                 </p>
             </div>
             <div class="col-12">
                 <p>
-                    Loop:
-                    <?php if ($loop): ?>
-                        ON <a href="?loop=false">disable</a>
-                    <?php else: ?>
-                        OFF <a href="?loop=true">enable</a>
-                    <?php endif ?>
+                    Loop: <?php if ($loop): ?> ON <a href="?loop=false">disable</a> <?php else: ?> OFF <a href="?loop=true">enable</a><?php endif ?>
+
                 </p>
             </div>
         </div>
 
         <div class="row">
-        <?php foreach($files as $i => $music_file): ?>
+<?php foreach($files as $i => $music_file): ?>
             <div class="col-sm-6 col-md-4 col-lg-3 py-3">
                 <p><?php echo $i + 1; ?>. <a href="<?php echo $music_file ?>"><?php echo $music_file ?></a></p>
-                <?php if (file_exists(basename("$music_file", "mp3") . "txt")): ?>
+<?php if (file_exists(basename("$music_file", "mp3") . "txt")): ?>
                 <p class="small"><?php readfile(basename("$music_file", "mp3") . "txt") ?></p>
-                <?php endif ?>
+<?php endif ?>
                 <audio controls="controls" preload="none"<?php if($loop): ?> loop="loop"<?php endif ?>>
                     <source src="<?php echo $music_file ?>" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
             </div>
-        <?php endforeach ?>
+<?php endforeach ?>
 
-        <?php if(count($files) > 10): ?>
+<?php if(count($files) > 10): ?>
             <div class="col-12">
                 <p>
                     Path:
-                    <?php $path = ''; ?>
-                    <?php foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $i => $dir): ?>
-                    <?php $path .= "$dir/" ?>
+<?php $path = ''; ?>
+<?php foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $i => $dir): ?>
+<?php $path .= "$dir/" ?>
                     / <a href="<?php echo $path ?>"><?php echo $dir ? $dir : '&#8962;'  ?></a>
-                    <?php endforeach ?>
+<?php endforeach ?>
                 </p>
             </div>
-        <?php endif ?>
+<?php endif ?>
         </div>
     </div>
 
