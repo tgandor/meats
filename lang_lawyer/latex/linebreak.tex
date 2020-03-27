@@ -15,6 +15,8 @@
 % so need not import this:
 %\usepackage{pgf}
 
+\usetikzlibrary{positioning}
+
 \begin{document}
 
 Something in this document. This paragraph contains no information 
@@ -132,6 +134,33 @@ This is the first column (It has a very long sentence in it) & Second Column & T
 \end{tabular}
 \caption{Laying out plots using table (manual)}
 \end{figure}
+
+% the Overleaf example:
+
+\begin{tikzpicture}
+\draw[gray, thick] (-1,2) -- (2,-4);
+\draw[gray, thick] (-1,-1) -- (2,2);
+\filldraw[black] (0,0) circle (2pt) node[anchor=west] {Intersection point};
+\end{tikzpicture}
+
+% https://tex.stackexchange.com/questions/131635/writing-a-backslash-in-the-texttt-environment
+First flowchart (requires \verb|\usetikzlibrary{positioning}|, BTW):
+
+\vspace{12pt}
+
+\begin{tikzpicture}[
+squarednode/.style={rectangle, draw=black, very thick, minimum size=5mm},
+rectnode/.style={rectangle, draw=black!30, thick}, % i.e. gray
+]
+
+% Nodes
+\node[squarednode] (step1) {Input};
+\node[rectnode] (step2) [right=of step1] {Output};
+
+% Arrows
+\draw[->] (step1.east) -- (step2.west);
+
+\end{tikzpicture}
 
 
 \end{document}
