@@ -230,7 +230,14 @@ if __name__ == '__main__':
             audio_options,
             'copy' if args.copy else encoder_options,
             converted)
-        ts.run(commandline)
+
+        try:
+            ts.run(commandline)
+        except RuntimeError:
+            if os.path.getsize(converted) == 0:
+                print('WARNING: removing empty:', converted)
+                os.unlink(converted)
+            raise
 
         ratio = stats.add(original, converted)
 
