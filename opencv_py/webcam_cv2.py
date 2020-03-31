@@ -196,6 +196,25 @@ while True:
         mean = not mean
     elif key == ord('M'):
         median = not median
+    elif key == ord('h'):
+        print('''Key bindings:
+    h - print key bindings
+    r - reset settings
+    b - toggle grayscale
+    i - toggle info OSD
+    I - cycle through OSD modes
+    l - mirror (flip vertically) 'looking glass'
+    m - mean filter
+    M - median filter
+    s - save jpg screenshot
+    S - save png screenshot
+    v - toggle 'record video' - i.e. screenshot every frame to:
+        time.strftime('%Y%m%d_%H%M%S_') + str(frame_idx) + '.jpg'
+    / - original size (resize window; only for CV_WINDOW_NORMAL)
+
+    Space - pause
+    q - quit
+    ''')
     elif key in (ord('s'), ord('S')):
         filename = time.strftime('%Y%m%d_%H%M%S') + ('.jpg' if key == ord('s') else '.png')
         cv2.imwrite(filename, frame)
