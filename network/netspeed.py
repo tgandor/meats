@@ -40,12 +40,12 @@ print("If you see this, it's working. Exit with Ctrl-C.")
 sys.stdout.flush()
 
 
-def human_format(n):
-    if n > 2**20:
-        return "{:6,.1f} MB".format(n/2**20)
+def human_format(n, mb=True):
+    if n > 2**20 and mb:
+        return "{:8,.1f} MB".format(n/2**20)
     if n > 2**10:
-        return "%6.1f KB" % (n/2**10)
-    return "%6d B " % n
+        return "{:8,.1f} KB".format(n/2**10)
+    return "%8d B " % n
 
 
 class Blinker:
@@ -96,12 +96,13 @@ while True:
         idle_secs = 0
         next_report = interval
     blinker.on()
-    print(
+    print("{} Recv {}, Send {}. Total: {}, {}.".format(
         time.strftime('%H:%M:%S'),
-        "Recv %s, Send %s. Total: %s, %s." % tuple(
-            map(human_format, (rxb-rxb0, txb-txb0, rxb, txb))
-        )
-    )
+        human_format(rxb-rxb0, False),
+        human_format(txb-txb0, False),
+        human_format(rxb),
+        human_format(txb),
+    ))
     sys.stdout.flush()
     maxtx = max(maxtx, txb-txb0)
     maxrx = max(maxrx, rxb-rxb0)
