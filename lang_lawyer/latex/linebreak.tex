@@ -17,6 +17,8 @@
 
 \usetikzlibrary{positioning}
 
+\usepackage{amsmath}
+
 \begin{document}
 
 Something in this document. This paragraph contains no information 
@@ -162,5 +164,27 @@ rectnode/.style={rectangle, draw=black!30, thick}, % i.e. gray
 
 \end{tikzpicture}
 
+% based on: https://www.overleaf.com/learn/latex/Spacing_in_math_mode
+
+\begin{align*}
+f(x) =& x^2\! +3x\! +2 \\
+f(x) =& x^2+3x+2 \\             % same
+f(x) =& x^2 + 3x + 2 \\         % same
+f(x) =& x^2 + 3 x + 2 \\        % same
+f(x) =& x^2\, +3x\, +2 \\
+f(x) =& x^2\: +3x\: +2 \\
+f(x) =& x^2\; +3x\; +2 \\
+f(x) =& x^2\ +3x\ +2 \\
+f(x) =& x^2\quad +3x\quad +2 \\
+f(x) =& x^2\qquad +3x\qquad +2
+\end{align*}
+
+% https://tex.stackexchange.com/questions/9514/whats-the-difference-between-align-and-align
+% yes, it's mostly about numbeed vs non-numbered...
+
+\begin{align}
+f(x) =& x^2\! +3x\! +2 \\
+f(x) =& x^2+3x+2  % another \\ here would create an empty (3)
+\end{align}
 
 \end{document}
