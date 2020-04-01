@@ -187,4 +187,55 @@ f(x) =& x^2\! +3x\! +2 \\
 f(x) =& x^2+3x+2  % another \\ here would create an empty (3)
 \end{align}
 
+% arrow with label (node)
+% but coming from nowhere:
+% cf. https://tex.stackexchange.com/questions/354191/label-following-arrow-in-tikz
+
+\begin{tikzpicture}
+    \node (A) at (0,0) {};
+    \node (B) at (-2,-1) {$\bullet$};
+    \draw[thick,->] (A) -- (B) node[midway,sloped,left,rotate=270] {$\frac 34$};
+\end{tikzpicture}
+
+This is not great:
+
+\begin{tikzpicture}[
+squarednode/.style={rectangle, draw=black, very thick, minimum size=5mm},
+rectnode/.style={rectangle, draw=black!30, thick}, % i.e. gray
+]
+
+% Nodes
+\node (nothing) {};
+\node[squarednode] (step1) [right=of nothing] {Input};
+\node[rectnode] (step2) [right=of step1] {Output};
+\node (nothing2) [right=of step2] {};
+
+% Arrows
+% https://tex.stackexchange.com/questions/205040/specify-the-length-of-the-arrow-in-tikz
+\draw[->] (nothing.east) -- ++(2cm,0) (step1.west) node[midway,above] {anecdotes};
+\draw[->] (step1.east) -- (step2.west) node[midway,above] {data};
+\draw[->] (step2.east) --  (nothing2.west) node[midway,above] {facts};
+
+\end{tikzpicture}
+
+This looks better. Multi-line nodes still a mystery:
+
+\begin{tikzpicture}[
+squarednode/.style={rectangle, draw=black, very thick, minimum size=5mm},
+rectnode/.style={rectangle, draw=black!30, thick}, % i.e. gray
+]
+
+% Arrows
+\draw[->] (0,0) -- ++(3cm,0) node[midway,above] {anecdotes} node[right,squarednode] (step1) {Computer};
+
+% Nodes
+\node[rectnode] (step2) [right=of step1] {Printer};
+% \node (nothing2) [right=of step2] {};
+
+% More arrows
+\draw[->] (step1.east) -- (step2.west) node[midway,above] {data};
+\draw[->] (step2.east) --  ++(2cm,0) node[midway,above] {facts};
+
+\end{tikzpicture}
+
 \end{document}
