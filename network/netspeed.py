@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from __future__ import division
 
 import os
 import sys
@@ -41,9 +42,9 @@ sys.stdout.flush()
 
 def human_format(n):
     if n > 2**20:
-        return "%6.1f MB" % (n/2.0**20,)
+        return "{:6,.1f} MB".format(n/2**20)
     if n > 2**10:
-        return "%6.1f KB" % (n/2.0**10,)
+        return "%6.1f KB" % (n/2**10)
     return "%6d B " % n
 
 
