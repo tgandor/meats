@@ -19,6 +19,7 @@ parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. 
 parser.add_argument('--copy-audio', '-c', action='store_true')
 parser.add_argument('--deinterlace', '-d', action='store_true', help='deinterlace with yadif (requires recoding)')
 parser.add_argument('--duration', '-t', help='Duration limit for encoding')
+parser.add_argument('--fix-avidemux', action='store_true', help='rotate 90 via metadata (use as only option)')
 parser.add_argument('--framerate', '-r', help='specify output FPS for video')
 parser.add_argument('--hwaccel', '-hw', help='specify input hardware acceleration')
 parser.add_argument('--move', '-m', action='store_true', help='move original file to original/ directory')
@@ -216,8 +217,11 @@ if __name__ == '__main__':
         if args.start:
             filters += ' -ss {}'.format(args.start)
 
+        if args.fix_avidemux:
+            filters += ' -metadata:s:v rotate="270"'
+
         audio_options = 'aac'
-        if args.copy_audio or args.copy:
+        if args.copy_audio or args.copy or args.fix_avidemux:
             audio_options = 'copy'
         elif args.bitrate_audio:
             audio_options += ' -b:a ' + args.bitrate_audio
@@ -228,7 +232,7 @@ if __name__ == '__main__':
             original,
             filters,
             audio_options,
-            'copy' if args.copy else encoder_options,
+            'copy' if (args.copy or args.fix_avidemux) else encoder_options,
             converted)
 
         try:
