@@ -245,7 +245,7 @@ if __name__ == '__main__':
 
         ratio = stats.add(original, converted)
 
-        if ratio < 1.25:
+        if ratio < 1.25 and not (args.copy or args.fix_avidemux):
             dump_dir = 'placebo' if ratio > 1 else 'nocebo'
             print(basename, 'compressed {:.1f}x'.format(ratio), 'which is', dump_dir)
             makedirs(dump_dir, exist_ok=True)
