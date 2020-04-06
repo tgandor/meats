@@ -3,10 +3,12 @@
 from __future__ import print_function
 
 import argparse
+import functools
 import hashlib
 import itertools
 import json
 import logging
+import multiprocessing
 import os
 import sys
 import time
@@ -15,6 +17,8 @@ from threading import Event, Thread
 
 MIN_ELAPSED_TO_SAVE = 5  # Never save groups if faster than this time
 MIN_GROUPS_TO_SAVE = 20  # Less will fit on the screen
+
+_pool = None
 
 
 def md5sum(filename, chunk_size=2**12):
@@ -145,12 +149,18 @@ class Group:
         }
 
 
-def group_files(files, attr='basename', out_unique=None):
+def eagerize(file_obj, name):
+    getattr(file_obj, name)
+    return file_obj
+
+
+def group_files(files, attr='basename', out_unique=None, parallel=False):
     """
     Group files into lists with identical value of attr.
     :param files: Union[List[File], Group] list of files to sort
     :param attr: str Attribute to group by the files
     :param out_unique: List[File] output argument for unique files discarded in regroup
+    :param parallel: bool eagerize the attribute using multiprocessing, experimental
     :return: Generator[List[File]]
 
     >>> list(group_files([]))
@@ -160,6 +170,17 @@ def group_files(files, attr='basename', out_unique=None):
     """
     key = attrgetter(attr)
     features = files.features if hasattr(files, 'features') else {}
+
+    if parallel and len(files) > 16:
+        # this doesn't speed up much on HDDs,
+        # and is a disaster for many small groups
+        global _pool
+        if _pool is None:
+            _pool = multiprocessing.Pool()
+        # print('Mapping file attributes in parallel.')
+        files = _pool.map(functools.partial(eagerize, name=attr), files)
+        # print('Done mapping attributes in parallel.')
+
     for key_value, group in itertools.groupby(sorted(files, key=key), key):
         candidate = list(group)
         if len(candidate) > 1:
