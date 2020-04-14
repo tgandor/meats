@@ -96,6 +96,8 @@ uiqis = []
 compression_times = []
 decompression_times = []
 
+print('UIQI(x, x) = ', universal_image_quality_index(orig_image, orig_image))
+print('SSIM(x, x) = ', ssim(orig_image, orig_image, multichannel=True))
 
 for quality in tqdm.trange(101):
     data, image, time_c, time_d = check_compression(orig_image, quality)
@@ -109,7 +111,6 @@ for quality in tqdm.trange(101):
 size1 = len(check_lossless_compression(image, 1))
 size9 = len(check_lossless_compression(image, 9))
 print('PNG compression range:', size9, size1)
-print('UIQI(x, x) = ', universal_image_quality_index(orig_image, orig_image))
 
 size = image.nbytes
 

@@ -15,7 +15,7 @@
 % so need not import this:
 %\usepackage{pgf}
 
-\usetikzlibrary{positioning}
+\usetikzlibrary{shapes.misc, positioning}
 
 \usepackage{amsmath}
 
@@ -235,6 +235,24 @@ rectnode/.style={rectangle, draw=black!30, thick}, % i.e. gray
 % More arrows
 \draw[->] (step1.east) -- (step2.west) node[midway,above] {data};
 \draw[->] (step2.east) --  ++(2cm,0) node[midway,above] {facts};
+
+\end{tikzpicture}
+
+\begin{tikzpicture}[
+lossless/.style={rectangle, draw=black, very thick, minimum size=5mm},
+lossy/.style={rounded rectangle, draw=black!30, thick}, % i.e. gray
+]
+
+% Arrows
+\draw[->] (0,0) -- ++(1cm,0) node[midway,above] {RGB} node[right, lossless, text width=2cm, align=center] (step1) {Colorspace transform};
+
+% Nodes
+\node[lossy, text width=2cm, align=center] (step2) [right=of step1] {Discrete Cosine Transform};
+% \node (nothing2) [right=of step2] {};
+
+% More arrows
+\draw[->] (step1.east) -- (step2.west);
+\draw[->] (step2.east) --  ++(2cm,0) node[midway,above] {compressed data};
 
 \end{tikzpicture}
 
