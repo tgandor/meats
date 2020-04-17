@@ -84,7 +84,8 @@ def temp_graph():
     # look at the l variable => this is "python's let in functional list comprehension"
     print('; '.join(
         '{} x {}'.format(k, l) if l > 1 else k
-        for k, g in itertools.groupby(sensors) for l in (len(list(g)),)
+        for k, g in itertools.groupby(sensors)
+        for l in (len(list(g)),)
     ))
     init_temps = cpu_temps()
     window = [deque([i] * 300) for i in init_temps]
