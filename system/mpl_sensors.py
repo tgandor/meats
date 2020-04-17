@@ -2,10 +2,12 @@
 
 from __future__ import print_function
 
+import atexit
+import itertools
+import operator
 import os
 import re
 import sys
-import atexit
 from collections import deque
 
 # Pre-checks for dependencies
@@ -43,7 +45,7 @@ if missing:
     os.system('sudo apt-get install ' + packages)
     exit()
 
-number_with_plus_after_colon = ':\s*\+([\d\.]+)'
+number_with_plus_after_colon = r':\s*\+([\d\.]+)'
 
 
 def sensor_names():
@@ -68,7 +70,7 @@ def cpu_temps():
 
 def cpu_freq():
     dta = open('/proc/cpuinfo').read()
-    return map(float, re.findall('cpu MHz\s*:\s*([\d\.]+)', dta))
+    return map(float, re.findall(r'cpu MHz\s*:\s*([\d\.]+)', dta))
 
 
 def temp_graph():
@@ -79,7 +81,11 @@ def temp_graph():
     from time import time, sleep
     from threading import Thread
     sensors = sensor_names()
-    print(' '.join(sensors))
+    # look at the l variable => this is "python's let in functional list comprehension"
+    print('; '.join(
+        '{} x {}'.format(k, l) if l > 1 else k
+        for k, g in itertools.groupby(sensors) for l in (len(list(g)),)
+    ))
     init_temps = cpu_temps()
     window = [deque([i] * 300) for i in init_temps]
     fig = figure()
@@ -93,8 +99,13 @@ def temp_graph():
     def update():
         if update.live and fig.canvas.manager.window:
             temps = cpu_temps()
-            print('Current temperatures: '
-                  + ', '.join('{:4.1f}'.format(t) for t in temps), end='\r')
+            # unfortunately, the sensors are sometimes repeated
+            # maybe it would be better to prune it beforehand...
+            grouped = sorted(set(
+                k + ' ' + ' '.join('{:4.1f}'.format(t[1]) for t in g)
+                for k, g in itertools.groupby(zip(sensors, temps), key=operator.itemgetter(0))
+            ))
+            print('Current: ' + ', '.join(grouped), end='\r')
             sys.stdout.flush()
             for win, temp, line in zip(window, temps, lines):
                 win.append(temp)
