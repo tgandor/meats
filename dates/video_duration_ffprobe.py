@@ -31,18 +31,28 @@ def parse_duration(s):
 
 def get_duration(filename, verbose=False):
     result = subprocess.Popen(
-        ["ffprobe", filename],
+        ['ffprobe', '-hide_banner', filename],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT
     )
 
-    duration = [x.decode() for x in result.stdout.readlines() if b'Duration' in x]
+    durations = [x.decode() for x in result.stdout.readlines() if b'duration' in x.lower()]
     if verbose:
-        print(filename, duration)
-    time_string = re.search(r'Duration:\s*([\d:]+)', duration[0]).group(1)
-    if verbose:
-        print('extracted time:', time_string)
-    return time_string
+        print(filename, 'durations:\n', durations)
+
+    for duration in durations:
+        time_match = re.search(r'Duration:\s*([\d:]+)', duration, re.IGNORECASE)
+
+        if not time_match:
+            # sometimes there is metadata about segmented streaming...
+            continue
+
+        time_string = time_match.group(1)
+        if verbose:
+            print('extracted time:', time_string)
+        return time_string
+
+    return None
 
 
 if __name__ == '__main__':
@@ -52,6 +62,11 @@ if __name__ == '__main__':
     for pattern in args.files:
         for name in natsorted(glob.glob(pattern)):
             duration = get_duration(name, args.verbose)
+
+            if duration is None:
+                print('{}{}{}'.format(name, args.separator, 'N/A'))
+                continue
+
             deltas.append(parse_duration(duration))
             print('{}{}{}'.format(name, args.separator, duration))
 

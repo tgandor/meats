@@ -15,6 +15,6 @@ for f in "$@"; do
 		echo "$f - target same as source"
 	else
 		echo "$f -> $new_name"
-		$conv -i "$f" -vn -y "`basename "$new_name"`" 2>&1
+		$conv -hide_banner -i "$f" -vn -y "`basename "$new_name"`" 2>&1
 	fi
 done

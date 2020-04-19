@@ -44,6 +44,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--regexp', '-x', help='Use regular expression for searching', action='store_true')
     parser.add_argument('--dry-run', '-n', help='Do not rename anything, just print messages', action='store_true')
+    parser.add_argument('--no-glob', help='treat arguments verbatim, without trying to glob', action='store_true')
     parser.add_argument('search', help='Search string or regular expression')
     parser.add_argument('replace', help='Replacement string/expression')
     parser.add_argument('files', nargs='+', help='Files to rename')
@@ -56,5 +57,7 @@ if __name__ == '__main__':
     else:
         replacer = string_replacer(args.search, args.replace)
 
-    for fn in chain(*(glob.glob(g) for g in args.files)):
+    files = args.files if args.no_glob else chain(*(glob.glob(g) for g in args.files))
+
+    for fn in files:
         renamer(fn, replacer)
