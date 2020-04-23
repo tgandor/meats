@@ -3,10 +3,13 @@
 # https://github.com/MycroftAI/pylisten
 
 import argparse
+import array
 import datetime
 import math
+import wave
 
 from pylisten import Listener, WindowListener, FeatureListener
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--window', action='store_true')
@@ -17,6 +20,9 @@ parser.add_argument('--output', '-o', help='output file for volume')
 parser.add_argument('--limit', '-l', type=int, help='max samples to process / save')
 parser.add_argument('--sqrt', action='store_true', help='sqare root of volume (stars)')
 parser.add_argument('--threshold', '-t', type=float, default=0.15)
+parser.add_argument('--tui', action='store_true')
+parser.add_argument('--no-record', action='store_false')
+parser.add_argument('--rate', type=int, default=44100, help='sampling rate in Hz')
 parser.add_argument('--debug', action='store_true')
 args = parser.parse_args()
 
@@ -59,6 +65,46 @@ def show_timers(args):
         last_check = now
 
 
+def record_sound(rate=44100, save=True):
+    # ideas from: https://stackoverflow.com/questions/892199/detect-record-audio-in-python
+    data = array.array('h')
+    print('Press Ctrl-C to finish...')
+    start_time = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    # this is so wrong! If I want a WAV file why use pa.paFloat32 ?
+    # I should go for pyaudio next time, and set my own __atexit__ etc.
+
+    try:
+        listener = Listener(frames_per_buffer=1024, rate=rate)
+        # sample_size = listener.p.get_sample_size()
+        for chunk in listener:
+            # print(chunk)
+            # print(type(chunk))
+            # here goes the (unnecessary) conversion from pa.paFloat32 to pa.paInt16
+
+            amplitude = chunk.max() - chunk.min()
+            vol = int(amplitude * 30) + 1  # (up to ~60 cols)
+            print(datetime.datetime.now(), '{:.3f}'.format(amplitude), '*' * vol)
+            data.extend((chunk * (2**15-1)).astype(np.int16))
+    except KeyboardInterrupt:
+        pass
+
+    # look Ma! no questionable:
+    # data = pack('<' + ('h'*len(data)), *data)
+    # (data is already a buffer I guess...)
+
+    if save:
+        wf = wave.open(start_time + '.wav', 'wb')
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(rate)
+        wf.writeframes(data)
+        wf.close()
+        print('\nSound written to ', start_time+'.wav')
+    else:
+        print('\nFinished (no recording).')
+
+
 if args.listener:
     for chunk in Listener(frames_per_buffer=1024, rate=44100):
         print(chunk.shape, 'Current volume:', abs(chunk).mean(), 'span:', chunk.min(), chunk.max())
@@ -70,7 +116,7 @@ elif args.window:
         print(window.shape, 'Volume of last 10 chunks:', abs(window).mean())
 elif args.timers:
     show_timers(args)
-else:
+elif args.tui:
     # inspired by:
     # https://www.swharden.com/wp/2016-07-19-realtime-audio-visualization-in-python/
     count = 0
@@ -91,3 +137,5 @@ else:
     finally:
         if output:
             output.close()
+else:
+    record_sound(args.rate, args.no_record)
