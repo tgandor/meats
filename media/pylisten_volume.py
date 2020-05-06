@@ -74,6 +74,13 @@ def record_sound(rate=44100, save=True):
     # this is so wrong! If I want a WAV file why use pa.paFloat32 ?
     # I should go for pyaudio next time, and set my own __atexit__ etc.
 
+    # TODO: voice activated recording
+    # maybe there's a better measure of loudness than amplitude, but this:
+    # https://stackoverflow.com/questions/13243690/decibel-values-at-specific-points-in-wav-file/
+    # i.e.:
+    # dbs = [20*log10( sqrt(mean(chunk**2)) ) for chunk in chunks]
+    # looks bad for e.g. silence... well. (log(0)? but mean(abs()) is not zero that often)
+
     try:
         listener = Listener(frames_per_buffer=1024, rate=rate)
         # sample_size = listener.p.get_sample_size()
