@@ -22,30 +22,30 @@ except ImportError:
     natsorted = sorted
 
 CHUNK = 512 * 1024
-user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:67.0) Gecko/20100101 Firefox/67.0'
+user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:76.0) Gecko/20100101 Firefox/76.0'
 
 
 def urlopen3(url):
-	import urllib.request
-	req = urllib.request.Request(
-		url,
-		data=None,
-		headers={'User-Agent': user_agent}
-	)
-	return urllib.request.urlopen(req)
+    import urllib.request
+    req = urllib.request.Request(
+        url,
+        data=None,
+        headers={'User-Agent': user_agent}
+    )
+    return urllib.request.urlopen(req)
 
 try:
-	six.moves.urllib.request.URLopener.version = user_agent
-	urlopen = six.moves.urllib.request.urlopen
+    six.moves.urllib.request.URLopener.version = user_agent
+    urlopen = six.moves.urllib.request.urlopen
 except AttributeError:
-	urlopen = urlopen3
+    urlopen = urlopen3
 
 
 def info(s, eol='\n'):
-	try:
-		print(s.encode('utf-8')+eol)
-	except TypeError:
-		print(s)
+    try:
+        print(s.encode('utf-8')+eol)
+    except TypeError:
+        print(s)
 
 
 def human(x):
