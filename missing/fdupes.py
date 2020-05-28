@@ -338,6 +338,7 @@ def parse_args():
     parser.add_argument('--delete-now', '-D', action='store_true', help='Delete the duplicates automatically')
     parser.add_argument('--force-save', action='store_true', help='Save groups if present, overrides --no-save')
     parser.add_argument('--groups', '-i', help='Saved group files to load instead of scanning')
+    parser.add_argument('--group-folders', action='store_true', help='group duplicates by folders (experimental)')
     parser.add_argument('--hardlink', '-H', action='store_true', help='Hardlink the duplicate files')
     parser.add_argument('--min-size', '-m', help='Min size in B of deleted files (auto mode)', type=int, default=1)
     parser.add_argument('--no-md5', '-5', action='store_true', help='Skip grouping by md5 sum')
@@ -448,6 +449,82 @@ def link_groups_hard(groups):
             os.link(single.file_path, file_.file_path)
 
 
+class Folder:
+    def __init__(self, path):
+        self.path = path
+        self.files = []
+
+    def add(self, file):
+        self.files.append(file)
+
+
+class FolderDupe:
+    def __init__(self, key, folder1, folder2):
+        self.key = key
+        self.folder1 = folder1
+        self.folder2 = folder2
+        self.groups = []
+
+    def add(self, group):
+        self.groups.append(group)
+
+
+def folder_dupes(groups, unique_files=None):
+    """Group duplicates into folders.
+    Arguments:
+    groups List[Group]"""
+    print('grouping folders with duplicates')
+    try:
+        from tqdm import tqdm
+    except ImportError:
+        tqdm = lambda x: x
+
+    folders = {}
+    dup_folders = {}
+
+    for group in tqdm(groups):
+        for mem1, mem2 in itertools.combinations(group.files, 2): # type: Tuple(File, File)
+            path1 = os.path.dirname(mem1.file_path)
+            path2 = os.path.dirname(mem2.file_path)
+
+            if path1 == path2:
+                # Nah! no folder dupes in same folder!
+                continue
+
+            if path1 not in folders:
+                folders[path1] = Folder(path1)
+            if path2 not in folders:
+                folders[path2] = Folder(path2)
+
+            dupe_key = tuple(sorted([path1, path2]))
+            if dupe_key not in dup_folders:
+                dup_folders[dupe_key] = FolderDupe(dupe_key, folders[path1], folders[path2])
+
+            folders[path1].add(mem1)
+            folders[path2].add(mem2)
+
+            dup_folders[dupe_key].add(group)
+
+    # acutally, --group-folders should imply --unique
+    if unique_files is not None:
+        for uf in unique_files:
+            dir_path = os.path.dirname(uf.file_path)
+
+            if dir_path not in folders:
+                continue
+
+            folders[dir_path].add(uf)
+
+    full_dups = [
+        dupe for dupe in dup_folders.values()
+        if len(dupe.groups) == len(dupe.folder1.files) == len(dupe.folder2.files)
+    ]
+
+    # import code; code.interact(local=locals())
+
+    return full_dups
+
+
 def main():
     args = parse_args()
     profiler = Profiler()
@@ -462,6 +539,11 @@ def main():
         all_files = scan_directories(args)
         groups = [Group(all_files)]
         profiler.finish_phase('scanning directories')
+
+    if args.group_folders and not args.unique:
+        # this is to dangerous to just let be (false positive folder duplicates!)
+        logging.warning('Forcing --unique to True')
+        args.unique = True
 
     unique_files = [] if args.unique else None
 
@@ -495,6 +577,14 @@ def main():
         profiler.finish_phase('saving groups')
     else:
         print('Not saving groups.')
+
+    if args.group_folders:
+        full_dups = folder_dupes(groups, unique_files)
+        print('Possible folder duplicates:')
+        for fd in full_dups:
+            print(fd.key)
+        # TODO: proper subsets
+        print('Remember to check for subfolders! (not checked above)')
 
     if args.delete:
         delete_interactive(groups)
