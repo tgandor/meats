@@ -468,6 +468,22 @@ class FolderDupe:
     def add(self, group):
         self.groups.append(group)
 
+    def is_duplicate(self):
+        """Are files in both folders common. Subfolders ignored."""
+        return len(self.groups) == len(self.folder1.files) == len(self.folder2.files)
+
+    def is_subset(self):
+        """Is one of the folders a (not necessarily proper) subset of the other."""
+        return len(self.groups) in (len(self.folder1.files), len(self.folder2.files))
+
+    def min_folder(self):
+        """Smaller or equal folder."""
+        return self.folder1 if len(self.folder1.files) <= len(self.folder2.files) else self.folder2
+
+    def max_folder(self):
+        """Opposite of min_folder."""
+        return self.folder1 if len(self.folder1.files) > len(self.folder2.files) else self.folder2
+
 
 def folder_dupes(groups, unique_files=None):
     """Group duplicates into folders.
@@ -515,14 +531,27 @@ def folder_dupes(groups, unique_files=None):
 
             folders[dir_path].add(uf)
 
-    full_dups = [
-        dupe for dupe in dup_folders.values()
-        if len(dupe.groups) == len(dupe.folder1.files) == len(dupe.folder2.files)
-    ]
-
     # import code; code.interact(local=locals())
 
-    return full_dups
+    return dup_folders
+
+
+class FolderDupes:
+    def __init__(self, groups, unique_files=None):
+        self.dup_folders = folder_dupes(groups, unique_files)
+
+    def full_dups(self):
+        return [
+            dupe for dupe in self.dup_folders.values()
+            if dupe.is_duplicate()
+        ]
+
+    def subsets(self):
+        return [
+            (dupe.min_folder(), dupe.max_folder())
+            for dupe in self.dup_folders.values()
+            if not dupe.is_duplicate() and dupe.is_subset()
+        ]
 
 
 def main():
@@ -579,11 +608,15 @@ def main():
         print('Not saving groups.')
 
     if args.group_folders:
-        full_dups = folder_dupes(groups, unique_files)
+        folder_dups = FolderDupes(groups, unique_files)
         print('Possible folder duplicates:')
-        for fd in full_dups:
+        for fd in folder_dups.full_dups():
             print(fd.key)
-        # TODO: proper subsets
+
+        print('Possible subsets:')
+        for f1, f2 in folder_dups.subsets():
+            print(f1.path, 'C', f2.path)
+
         print('Remember to check for subfolders! (not checked above)')
 
     if args.delete:
