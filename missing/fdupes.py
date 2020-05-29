@@ -531,8 +531,6 @@ def folder_dupes(groups, unique_files=None):
 
             folders[dir_path].add(uf)
 
-    # import code; code.interact(local=locals())
-
     return dup_folders
 
 
