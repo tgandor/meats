@@ -29,6 +29,7 @@ names = paths if args.full else map(os.path.basename, paths)
 window = ' vs '.join(names)
 
 cv2.namedWindow(window, cv2.WINDOW_NORMAL)
+pause = False
 
 while True:
     rets_frames = [cap.read() for cap in readers]
@@ -50,13 +51,20 @@ while True:
     tiles = np.hstack(frames)
 
     cv2.imshow(window, tiles)
-    ret = cv2.waitKey(40)
 
-    if ret & 0xff == ord('q'):
+    ret = cv2.waitKey(args.delay)
+
+    if ret & 0xff in (ord('q'), 27):
         break
 
-    elif ret & 0xff == ord(' '):
+    elif ret & 0xff == ord(' ') or ret & 0xff == ord('.')  or pause:
+        pause = True
         while True:
             ret = cv2.waitKey(1000)
             if ret & 0xff == ord(' '):
+                pause = False
                 break
+            if ret & 0xff == ord('.'):
+                break
+            if ret & 0xff in (ord('q'), 27):
+                exit()
