@@ -1,6 +1,7 @@
 <?php
     $title = basename(dirname($_SERVER['PHP_SELF']));
-    $files = glob('*.mp3');
+    // mp3 and m4a, case insensitive (false positives: mpa, m43)
+    $files = glob('*.[Mm][Pp4][Aa3]');
     natsort($files);
     $loop = (isset($_GET['loop']) && $_GET['loop'] == 'true');
 ?><!doctype html>
