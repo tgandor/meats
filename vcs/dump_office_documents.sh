@@ -18,7 +18,7 @@ convert() {
 }
 
 find_and_convert() {
-    echo "Searching for $1 ..."
+    echo "... Searching for $1 ..."
     find -name "$1" | while read f; do
         convert "$f" "$2" $3
     done
