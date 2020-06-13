@@ -457,6 +457,10 @@ class Folder:
     def add(self, file):
         self.files.append(file)
 
+    @property
+    def size(self):
+        return len(self.files)
+
 
 class FolderDupe:
     def __init__(self, key, folder1, folder2):
@@ -470,19 +474,19 @@ class FolderDupe:
 
     def is_duplicate(self):
         """Are files in both folders common. Subfolders ignored."""
-        return len(self.groups) == len(self.folder1.files) == len(self.folder2.files)
+        return len(self.groups) == self.folder1.size == self.older2.size
 
     def is_subset(self):
         """Is one of the folders a (not necessarily proper) subset of the other."""
-        return len(self.groups) in (len(self.folder1.files), len(self.folder2.files))
+        return len(self.groups) in (self.folder1.size, self.folder2.size)
 
     def min_folder(self):
         """Smaller or equal folder."""
-        return self.folder1 if len(self.folder1.files) <= len(self.folder2.files) else self.folder2
+        return self.folder1 if self.folder1.size <= self.folder2.size else self.folder2
 
     def max_folder(self):
         """Opposite of min_folder."""
-        return self.folder1 if len(self.folder1.files) > len(self.folder2.files) else self.folder2
+        return self.folder1 if self.folder1.size > self.folder2.size else self.folder2
 
 
 def folder_dupes(groups, unique_files=None):
@@ -613,7 +617,7 @@ def main():
 
         print('Possible subsets:')
         for f1, f2 in folder_dups.subsets():
-            print(f1.path, 'C', f2.path)
+            print(f1.path, 'C', f2.path, '({} of {} files common)'.format(f1.size, f2.size))
 
         print('Remember to check for subfolders! (not checked above)')
 

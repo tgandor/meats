@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('expression', help='The expression to evaluate on the JSON object, e.g. x["name"]')
 parser.add_argument('files', nargs='+')
 parser.add_argument('--name', '-n', action='store_true', help='print filename before value')
+parser.add_argument('--name-after', '-N', action='store_true', help='print filename after value')
 parser.add_argument('--skip-none', '-q', action='store_true', help='print only when result != None')
 args = parser.parse_args()
 
@@ -21,6 +22,8 @@ for f in args.files:
 
     if args.name:
         print(f, result)
+    elif args.name_after:
+        print(result, f)
     else:
         print(result)
 
