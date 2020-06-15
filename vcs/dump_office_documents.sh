@@ -26,7 +26,9 @@ find_and_convert() {
 
 find_and_convert '*.docx' 'txt:Text (encoded):UTF8'
 find_and_convert '*.doc' 'txt:Text (encoded):UTF8'
+find_and_convert '*.odt' 'txt:Text (encoded):UTF8'
 # this is so ghasty:
 # https://unix.stackexchange.com/questions/259361/specify-encoding-with-libreoffice-convert-to-csv
 find_and_convert '*.xlsx' csv --infilter=CSV:44,34,76,1
 find_and_convert '*.xls' csv --infilter=CSV:44,34,76,1
+find_and_convert '*.ods' csv --infilter=CSV:44,34,76,1
