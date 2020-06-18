@@ -26,13 +26,22 @@ if [ -f $file ] ; then
     exit
 fi
 
-# echo "Generating $gb GB image... (this may take some time)"
+echo "Generating $gb GB image... (this may take some time)"
+
+# overkill: random data is costly
 # dd if=/dev/urandom of=$file bs=1G count=$gb iflag=fullblock
 
 # wow, this is quite safe, and won't actually destroy $file accidentally
-dd if=/dev/zero of=$file bs=1G count=0 seek=$gb
+dd if=/dev/zero of=$file bs=1G count=0 seek=$gb status=progress
 
-sudo cryptsetup luksFormat $file --use-urandom
+# dd if=/dev/zero of=$file bs=1G count=$gb iflag=fullblock status=progress
+
+echo "Running cryptsetup..."
+echo "Caution: Type 'YES' below (in caps), or all the rest will FAIL"
+if ! sudo cryptsetup luksFormat $file --use-urandom ; then
+    echo "Aborted. Maybe you need to remove $file now."
+    exit
+fi
 
 echo "Opening file as /dev/mapper/$file"
 sudo cryptsetup open $file $file
