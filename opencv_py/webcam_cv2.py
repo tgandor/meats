@@ -143,7 +143,8 @@ while True:
         else:
             message = 'Mode not supported ;)'
 
-        cv2.putText(frame,
+        # sometimes this assignment is not necessary:
+        frame = cv2.putText(frame,
             message,
             (0, 20),
             cv2.FONT_HERSHEY_SIMPLEX,
