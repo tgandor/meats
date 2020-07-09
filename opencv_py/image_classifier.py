@@ -25,6 +25,7 @@ parser.add_argument('--seed', type=int, default=1000)
 parser.add_argument('--epochs', type=int, default=100)
 parser.add_argument('--batch', type=int, default=10, help='Batch size for training')
 parser.add_argument('--gray', action='store_true')
+parser.add_argument('--debug', action='store_true')
 parser.add_argument('--retrain', action='store_true', help='Retrain model even when loaded')
 parser.add_argument('--generator', '-g', action='store_true')
 parser.add_argument('--rename', '-w', action='store_true', help='Move files to predicted classes')
@@ -45,13 +46,23 @@ classes = sorted(d.replace(os.path.sep, '') for d in glob.glob('*/'))
 num_classes = len(classes)
 
 
+def _is_image(image_filename):
+    return os.path.splitext(image_filename.lower())[1] in ('.png', '.jpg', '.bmp', '.gif')
+
+
 def get_training_set():
     # Load the dataset
     X = []
     Y = []
 
     for index, d in enumerate(classes):
+        if args.debug:
+            print('Getting training images from', d)
         for image_filename in glob.glob(d+'/*.*'):
+            if not _is_image(image_filename):
+                continue
+            if args.debug:
+                print(image_filename)
             img = image.img_to_array(image.load_img(image_filename, target_size=size, grayscale=args.gray))
             # import code; code.interact(local=locals())
             # cv2.imshow('train', img)
@@ -146,12 +157,15 @@ if __name__ == '__main__':
     image_files = [
         image_filename
         for image_filename in to_classify
-        if os.path.splitext(image_filename.lower())[1] in ('.png', '.jpg', '.bmp', '.gif')
+        if _is_image(image_filename)
     ]
 
     if not to_classify:
         print('No images to classify in current directory.')
         exit()
+
+    if args.debug:
+        print('Loading to classify:', to_classify)
 
     X_test = np.asarray([
         image_scaling(
@@ -159,7 +173,7 @@ if __name__ == '__main__':
                 image.load_img(image_filename, target_size=size, grayscale=args.gray)
             ).astype(np.float32)
         )
-        for image_filename in image_files
+        for image_filename in to_classify
     ])
 
     print('Classifying...', classes)
@@ -167,7 +181,7 @@ if __name__ == '__main__':
 
     print('Done.')
 
-    for preds, filename in zip(Y_test, image_files):
+    for preds, filename in zip(Y_test, to_classify):
         print(preds, filename, classes[np.argmax(preds)])
         if args.rename:
             idx = np.argmax(preds)
