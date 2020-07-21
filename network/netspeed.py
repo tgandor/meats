@@ -3,6 +3,7 @@
 from __future__ import print_function
 from __future__ import division
 
+import datetime
 import os
 import sys
 import time
@@ -22,9 +23,9 @@ if len(sys.argv) > 2:
 
 def get_bytes():
     data = os.popen('ifconfig '+interface).read()
-    m = re.search("RX (?:packets \d+\s*)bytes(?::? *)(\d+)", data)
+    m = re.search(r"RX (?:packets \d+\s*)bytes(?::? *)(\d+)", data)
     rxb = int(m.group(1))
-    m = re.search("TX (?:packets \d+\s*)bytes(?::? *)(\d+)", data)
+    m = re.search(r"TX (?:packets \d+\s*)bytes(?::? *)(\d+)", data)
     txb = int(m.group(1))
     return rxb, txb
 
@@ -64,7 +65,9 @@ class Blinker:
 blinker = Blinker()
 idle_secs = 0
 maxtx, maxrx = 0, 0
+prev_rxb, prev_txb = rxb0, txb0
 next_report = interval
+started = datetime.datetime.now()
 
 while True:
     try:
@@ -80,7 +83,7 @@ while True:
         print("Error retrieving data, quitting!")
         break
 
-    if (rxb, txb) == (rxb0, txb0):
+    if (rxb, txb) == (prev_rxb, prev_txb):
         idle_secs += interval
         if idle_secs == next_report:
             print(time.strftime('%H:%M:%S') + " %d seconds idle" % idle_secs)
@@ -96,17 +99,21 @@ while True:
         idle_secs = 0
         next_report = interval
     blinker.on()
-    print("{} Recv {}, Send {}. Total: {}, {}.".format(
+    duration = datetime.datetime.now() - started
+    print("{} Recv {}, Send {}. Session ({}): Rx {}, Tx {}, avg: {}/s, {}/s.".format(
         time.strftime('%H:%M:%S'),
-        human_format(rxb-rxb0, False),
-        human_format(txb-txb0, False),
-        human_format(rxb),
-        human_format(txb),
+        human_format(rxb - prev_rxb, False),
+        human_format(txb - prev_txb, False),
+        '{}'.format(duration).split('.')[0],
+        human_format(rxb - rxb0),
+        human_format(txb - txb0),
+        human_format((rxb - rxb0) // duration.seconds),
+        human_format((txb - txb0) // duration.seconds),
     ))
     sys.stdout.flush()
-    maxtx = max(maxtx, txb-txb0)
-    maxrx = max(maxrx, rxb-rxb0)
-    rxb0, txb0 = rxb, txb
+    maxtx = max(maxtx, txb - prev_txb)
+    maxrx = max(maxrx, rxb - prev_rxb)
+    prev_rxb, prev_txb = rxb, txb
 
 print("Bye, max speeds were: {}/s, {}/s.".format(
     human_format(maxrx/interval), human_format(maxtx/interval)
