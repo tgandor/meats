@@ -75,6 +75,11 @@ def main(args):
     print("If you see this, it's working. Exit with Ctrl-C.")
     sys.stdout.flush()
 
+    print('{} Initial interface stats: Rx {} Tx {}'.format(
+            time.strftime('%H:%M:%S'),
+            human_format(rxb0),
+            human_format(txb0),
+    ))
 
     blinker = Blinker()
     idle_secs = 0
@@ -128,6 +133,12 @@ def main(args):
         maxtx = max(maxtx, txb - prev_txb)
         maxrx = max(maxrx, rxb - prev_rxb)
         prev_rxb, prev_txb = rxb, txb
+
+    print('{} Final interface stats: Rx {} Tx {}'.format(
+            time.strftime('%H:%M:%S'),
+            human_format(rxb),
+            human_format(txb),
+    ))
 
     print("Bye, max speeds were: {}/s, {}/s.".format(
         human_format(maxrx/interval), human_format(maxtx/interval)
