@@ -338,7 +338,7 @@ def parse_args():
     parser.add_argument('--delete-now', '-D', action='store_true', help='Delete the duplicates automatically')
     parser.add_argument('--force-save', action='store_true', help='Save groups if present, overrides --no-save')
     parser.add_argument('--groups', '-i', help='Saved group files to load instead of scanning')
-    parser.add_argument('--group-folders', action='store_true', help='group duplicates by folders (experimental)')
+    parser.add_argument('--group-folders', '-g', action='store_true', help='group duplicates by folders (experimental)')
     parser.add_argument('--hardlink', '-H', action='store_true', help='Hardlink the duplicate files')
     parser.add_argument('--min-size', '-m', help='Min size in B of deleted files (auto mode)', type=int, default=1)
     parser.add_argument('--no-md5', '-5', action='store_true', help='Skip grouping by md5 sum')
@@ -474,7 +474,7 @@ class FolderDupe:
 
     def is_duplicate(self):
         """Are files in both folders common. Subfolders ignored."""
-        return len(self.groups) == self.folder1.size == self.older2.size
+        return len(self.groups) == self.folder1.size == self.folder2.size
 
     def is_subset(self):
         """Is one of the folders a (not necessarily proper) subset of the other."""
