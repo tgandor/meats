@@ -9,11 +9,12 @@ import re
 TABU = [
     '/.git',
     '/.hg',
-    '/.svn',
     '/.idea',
-    '/.vscode',
     '/.ipynb_checkpoints',
+    '/.svn',
+    '/.vscode',
     '/__pycache__',
+    'node_modules',
 ]
 
 
@@ -27,6 +28,7 @@ EXLUCDED = [
     '.exe',
     '.gz',
     '.h5',
+    '.ico',
     '.jpeg',
     '.jpg',
     '.json', # questionable, but often they don't have EOL at EOF
