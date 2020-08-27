@@ -10,3 +10,6 @@ echo "Spawning runner to background"
 # https://docs.gitlab.com/runner/install/docker.html
 docker run -d --name gitlab-runner --restart always -v gitlab-runner-config:/etc/gitlab-runner gitlab/gitlab-runner:latest
 
+echo "Done. (hopefully)"
+echo "To restart the container, type:"
+echo "docker restart gitlab-runner"
