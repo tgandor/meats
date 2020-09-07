@@ -40,6 +40,7 @@ EXLUCDED = [
     '.out', # a.out ...
     '.pdf',
     '.png',
+    '.sqlite3',
     '.ttf',
 ]
 
