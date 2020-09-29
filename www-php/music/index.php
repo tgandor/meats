@@ -27,7 +27,7 @@
     <div class="container">
         <div class="jumbotron d-none d-md-block">
             <h1><?php echo $title ?></h1>
-            <p class="lead">Showing MP3s as HTML5 audio.</p>
+            <p class="lead" title="v2.0-2020.09.29">Showing MP3s as HTML5 audio.</p>
         </div>
 
         <div class="page-header d-block d-md-none">
