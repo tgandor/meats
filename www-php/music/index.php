@@ -3,7 +3,6 @@
     // mp3 and m4a, case insensitive (false positives: mpa, m43)
     $files = glob('*.[Mm][Pp4][Aa3]');
     natsort($files);
-    $loop = (isset($_GET['loop']) && $_GET['loop'] == 'true');
 ?><!doctype html>
 <html lang="en">
   <head>
@@ -46,11 +45,19 @@
 <?php endforeach ?>
                 </p>
             </div>
-            <div class="col-12">
-                <p>
-                    Loop: <?php if ($loop): ?> ON <a href="?loop=false">disable</a> <?php else: ?> OFF <a href="?loop=true">enable</a><?php endif ?>
 
+            <div class="col-12">
+            <form>
+                <p>
+                    Loop:
+                    <input type="radio" name="loop" id="loop_none" checked>
+                    <label for="loop_none">None</label>
+                    <input type="radio" name="loop" id="loop_one">
+                    <label for="loop_one">One</label>
+                    <input type="radio" name="loop" id="loop_all">
+                    <label for="loop_all">All</label>
                 </p>
+            </form>
             </div>
         </div>
 
@@ -61,7 +68,7 @@
 <?php if (file_exists(basename("$music_file", "mp3") . "txt")): ?>
                 <p class="small"><?php readfile(basename("$music_file", "mp3") . "txt") ?></p>
 <?php endif ?>
-                <audio controls="controls" preload="none"<?php if($loop): ?> loop="loop"<?php endif ?> id="a_<?php echo $i + 1 ?>">
+                <audio controls="controls" preload="none" id="a_<?php echo $i + 1 ?>">
                     <source src="<?php echo $music_file ?>" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
@@ -90,8 +97,22 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
     <script>
     /* https://stackoverflow.com/questions/2551859/html-5-video-or-audio-playlist */
-    var audio = null;
-    // TODO: "auto play"
+    const n = <?php echo count($files) ?>;
+    const audios = document.getElementsByTagName('audio');
+    function make_onended(i)
+    {
+        return function() {
+            if ( document.getElementById('loop_one').checked ) {
+                audios[i].play();
+            } else if ( document.getElementById('loop_all').checked ) {
+                audios[(i+1)%n].play()
+            }
+        }
+    }
+    for (let i in audios)
+    {
+        audios[i].onended = make_onended(i);
+    }
     </script>
   </body>
 </html>
