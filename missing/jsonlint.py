@@ -29,7 +29,7 @@ def rglob(expr):
 
 files = list(itertools.chain.from_iterable(map(rglob, args.files)))
 
-if len(files) > 1:
+if len(files) >= 1:
     for filename in args.files:
         with open(filename) as f:
             json_object = json.load(f)
@@ -37,8 +37,9 @@ if len(files) > 1:
             with open(filename, "w") as f:
                 json.dump(json_object, f, indent=2, sort_keys=True)
         else:
-            print(filename)
+            if len(files) > 1:
+                print(filename)
             print(json.dumps(json_object, indent=2, sort_keys=True))
 else:
-    input_json = sys.stdin.read() if len(files) == 0 else open(files[0]).read()
+    input_json = sys.stdin.read()
     print(json.dumps(json.loads(input_json), indent=2, sort_keys=True))
