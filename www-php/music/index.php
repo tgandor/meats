@@ -109,7 +109,7 @@
             }
         }
     }
-    for (let i in audios)
+    for (let i=0; i<n; ++i)
     {
         audios[i].onended = make_onended(i);
     }
