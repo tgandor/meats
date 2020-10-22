@@ -17,10 +17,13 @@ parser.add_argument('--converter', help='Manually specify [full path to] ffmpeg 
 parser.add_argument('--classify', '-k', action='store_true', help='detect weak or negative (nocebo) compression')
 parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. for cutting or remuxing')
 parser.add_argument('--copy-audio', '-c', action='store_true')
+parser.add_argument('--copy-video', '-cv', action='store_true')
 parser.add_argument('--deinterlace', '-d', action='store_true', help='deinterlace with yadif (requires recoding)')
 parser.add_argument('--duration', '-t', help='Duration limit for encoding')
+parser.add_argument('--evaluate', '-e', action='store_true', help='move result to placebo/ if size after > 80%')
 parser.add_argument('--fix-avidemux', action='store_true', help='rotate 90 via metadata (use as only option)')
 parser.add_argument('--framerate', '-r', help='specify output FPS for video')
+parser.add_argument('--here', action='store_true', help='convert to the same place (only from other format)')
 parser.add_argument('--hwaccel', '-hw', help='specify input hardware acceleration')
 parser.add_argument('--move', '-m', action='store_true', help='move original file to original/ directory')
 parser.add_argument('--name-suffix', '-ns', help='')
@@ -106,6 +109,10 @@ class CompressionStats:
         return size_pre / size_post
 
     def report(self):
+        if not self.items:
+            print('No compression stats to report.')
+            return
+
         for name, before, after in self.items:
             print('{}\t{}'.format(name, ratio_format(before, after)))
         print('Total:\t{}'.format(ratio_format(self.total_pre, self.total_post)))
@@ -135,22 +142,16 @@ except ImportError:
         return None
 
 
-if __name__ == '__main__':
-    args = parser.parse_args()
+def _validate_args(args):
+    if args.here and args.evaluate:
+        raise ValueError('--here and --evaluate are conflicting options.')
 
-    input_options = ''
-    if args.nv or args.nvdec:
-        input_options += '-hwaccel nvdec'
-    if args.hwaccel:
-        input_options += '-hwaccel {}'.format(args.hwaccel)
 
+def _get_encoder_options(args):
     common_options = ' -hide_banner -map_metadata 0 -pix_fmt yuv420p -strict -2'
 
-    if args.deinterlace:
-        common_options += ' -vf yadif'
-
-    if args.scale:
-        common_options += ' -vf scale=' + args.scale
+    if args.copy or args.fix_avidemux or args.copy_video:
+        return 'copy' + common_options
 
     if args.nv or args.nvenc:
         encoder_options = 'h264_nvenc -cq {} -preset slow {}'.format(args.quality, common_options)
@@ -174,9 +175,49 @@ if __name__ == '__main__':
     if args.duration:
         encoder_options += ' -t {}'.format(args.duration)
 
+    return encoder_options
+
+
+def _get_filters(args):
+    filters = ''
+
+    if args.deinterlace:
+        filters += ' -vf yadif'
+
+    if args.scale:
+        filters += ' -vf scale=' + args.scale
+
+    if args.stabilize:
+        preprocessing = '{} -i "{}" -vf vidstabdetect -f null -'.format(
+            converter,
+            original
+        )
+        ts.run(preprocessing)
+        filters += ' -vf vidstabtransform,unsharp=5:5:0.8:3:3:0.4'
+
+    if args.start:
+        filters += ' -ss {}'.format(args.start)
+
+    if args.fix_avidemux:
+        filters += ' -metadata:s:v rotate="270"'
+
+    return filters
+
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    _validate_args(args)
+
+    input_options = ''
+    if args.nv or args.nvdec:
+        input_options += '-hwaccel nvdec'
+    if args.hwaccel:
+        input_options += '-hwaccel {}'.format(args.hwaccel)
+
     if args.move:
         makedirs('original', exist_ok=True)
-    makedirs('converted', exist_ok=True)
+    if not args.here:
+        makedirs('converted', exist_ok=True)
 
     converter = args.converter
     if converter is None:
@@ -204,21 +245,13 @@ if __name__ == '__main__':
         else:
             original = filename
 
-        converted = os.path.splitext(os.path.join('converted', basename))[0] + '.mp4'
-        filters = ''
-        if args.stabilize:
-            preprocessing = '{} -i "{}" -vf vidstabdetect -f null -'.format(
-                converter,
-                original
-            )
-            ts.run(preprocessing)
-            filters += ' -vf vidstabtransform,unsharp=5:5:0.8:3:3:0.4'
-
-        if args.start:
-            filters += ' -ss {}'.format(args.start)
-
-        if args.fix_avidemux:
-            filters += ' -metadata:s:v rotate="270"'
+        if args.here:
+            converted = os.path.splitext(filename)[0] + '.mp4'
+            if converted == filename:
+                print('Cannot convert', filename, 'here (same file).')
+                continue
+        else:
+            converted = os.path.splitext(os.path.join('converted', basename))[0] + '.mp4'
 
         audio_options = 'aac'
         if args.copy_audio or args.copy or args.fix_avidemux:
@@ -230,10 +263,11 @@ if __name__ == '__main__':
             converter,
             input_options,
             original,
-            filters,
+            _get_filters(args),
             audio_options,
-            'copy' if (args.copy or args.fix_avidemux) else encoder_options,
-            converted)
+            _get_encoder_options(args),
+            converted
+        )
 
         try:
             ts.run(commandline)
@@ -245,7 +279,7 @@ if __name__ == '__main__':
 
         ratio = stats.add(original, converted)
 
-        if ratio < 1.25 and not (args.copy or args.fix_avidemux):
+        if args.evaluate and ratio < 1.25:
             dump_dir = 'placebo' if ratio > 1 else 'nocebo'
             print(basename, 'compressed {:.1f}x'.format(ratio), 'which is', dump_dir)
             makedirs(dump_dir, exist_ok=True)
