@@ -128,7 +128,7 @@ except ImportError:
         def is_exe(file_path):
             return os.path.isfile(file_path) and os.access(file_path, os.X_OK)
 
-        fpath, fname = os.path.split(program)
+        fpath, _ = os.path.split(program)
         if fpath:
             if is_exe(program):
                 return program
