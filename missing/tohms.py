@@ -31,7 +31,7 @@ else:
 secs = float(hms[0])
 for limb in hms[1:]:
     secs *= 60
-    secs += float(limb)
+    secs += float(limb.replace(',', '.'))
 
 print_secs(secs)
 
