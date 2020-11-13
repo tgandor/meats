@@ -195,24 +195,26 @@ def _get_filters(args):
         ts.run(preprocessing)
         filters += ' -vf vidstabtransform,unsharp=5:5:0.8:3:3:0.4'
 
-    if args.start:
-        filters += ' -ss {}'.format(args.start)
-
     if args.fix_avidemux:
         filters += ' -metadata:s:v rotate="270"'
 
     return filters
 
 
-if __name__ == '__main__':
-    args = parser.parse_args()
-    _validate_args(args)
-
+def _get_input_options(args):
     input_options = ''
     if args.nv or args.nvdec:
         input_options += '-hwaccel nvdec'
     if args.hwaccel:
         input_options += '-hwaccel {}'.format(args.hwaccel)
+    if args.start:
+        input_options += ' -ss {}'.format(args.start)
+    return input_options
+
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    _validate_args(args)
 
     if args.move:
         makedirs('original', exist_ok=True)
@@ -261,12 +263,12 @@ if __name__ == '__main__':
 
         commandline = '{} {} -i "{}" {} -c:a {} -c:v {} "{}"'.format(
             converter,
-            input_options,
+            _get_input_options(args),
             original,
             _get_filters(args),
             audio_options,
             _get_encoder_options(args),
-            converted
+            converted,
         )
 
         try:
