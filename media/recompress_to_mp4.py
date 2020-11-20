@@ -217,9 +217,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     _validate_args(args)
 
-    if args.move:
+    if args.move and not args.dry_run:
         makedirs('original', exist_ok=True)
-    if not args.here:
+    if not args.here and not args.dry_run:
         makedirs('converted', exist_ok=True)
 
     converter = args.converter
@@ -244,7 +244,8 @@ if __name__ == '__main__':
 
         if args.move:
             original = os.path.join('original', basename)
-            os.rename(filename, original)
+            if not args.dry_run:
+                os.rename(filename, original)
         else:
             original = filename
 
