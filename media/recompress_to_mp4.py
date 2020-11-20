@@ -19,8 +19,9 @@ parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. 
 parser.add_argument('--copy-audio', '-c', action='store_true')
 parser.add_argument('--copy-video', '-cv', action='store_true')
 parser.add_argument('--deinterlace', '-d', action='store_true', help='deinterlace with yadif (requires recoding)')
+parser.add_argument('--dry-run', '-n', action='store_true', help='print commands, but do nothing')
 parser.add_argument('--duration', '-t', help='Duration limit for encoding')
-parser.add_argument('--evaluate', '-e', action='store_true', help='move result to placebo/ if size after > 80%')
+parser.add_argument('--evaluate', '-e', action='store_true', help='move result to placebo/ if size after > 80%%')
 parser.add_argument('--fix-avidemux', action='store_true', help='rotate 90 via metadata (use as only option)')
 parser.add_argument('--framerate', '-r', help='specify output FPS for video')
 parser.add_argument('--here', action='store_true', help='convert to the same place (only from other format)')
@@ -271,6 +272,10 @@ if __name__ == '__main__':
             converted,
         )
 
+        if args.dry_run:
+            print(commandline)
+            continue
+
         try:
             ts.run(commandline)
         except RuntimeError:
@@ -287,5 +292,6 @@ if __name__ == '__main__':
             makedirs(dump_dir, exist_ok=True)
             os.rename(converted, os.path.join(dump_dir, os.path.basename(converted)))
 
-    ts.report()
-    stats.report()
+    if not args.dry_run:
+        ts.report()
+        stats.report()
