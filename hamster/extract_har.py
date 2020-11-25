@@ -23,7 +23,7 @@ def unpack_single(har_filename):
             print('Bad filename in entry', i)
             continue
 
-        mime_type = entry['response']['content']['mimeType']
+        mime_type = entry['response']['content'].get('mimeType')
         print('Entry', i, mime_type, filename, 'status', entry['response']['status'])
         data = entry['response']['content'].get('text')
 
@@ -33,15 +33,23 @@ def unpack_single(har_filename):
 
         if entry['response']['content'].get('encoding') == 'base64':
             data = base64.b64decode(data)
+        else:
+            data = data.encode()
+
+        assert type(data) is bytes
 
         if os.path.exists(filename):
             print(filename, 'EXISTS! Not overwriting.')
             continue
 
-        with open(filename, 'wb') as data_file:
-            data_file.write(data)
-        total_output += len(data)
-        print('File {} - {:,} bytes written.'.format(filename, len(data)))
+        try:
+            with open(filename, 'wb') as data_file:
+                data_file.write(data)
+            total_output += len(data)
+            print('File {} - {:,} bytes written.'.format(filename, len(data)))
+        except OSError:
+            print('Failed to write: {} - {:,} bytes.'.format(filename, len(data)))
+
     print('Done extracting:', har_filename, 'total: {:,} B.'.format(total_output))
     return total_output
 
