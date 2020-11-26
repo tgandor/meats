@@ -13,7 +13,9 @@ from operator import itemgetter
 from six.moves import range
 from six.moves import zip
 from six.moves import input
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.error
 
 try:
     from natsort import natsorted
@@ -22,7 +24,7 @@ except ImportError:
     natsorted = sorted
 
 CHUNK = 512 * 1024
-user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:76.0) Gecko/20100101 Firefox/76.0'
+user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:83.0) Gecko/20100101 Firefox/83.0'
 
 
 def urlopen3(url):
@@ -33,6 +35,7 @@ def urlopen3(url):
         headers={'User-Agent': user_agent}
     )
     return urllib.request.urlopen(req)
+
 
 try:
     six.moves.urllib.request.URLopener.version = user_agent
@@ -71,7 +74,8 @@ def get_content(url, cache=[True]):
     if os.path.exists(url_file):
         saved_url = open(url_file).read()
         if saved_url != url:
-            info("You're lucky! Found a md5 collision between:\n%s\nand:\n%s" % (saved_url, url))
+            info("You're lucky! Found a md5 collision between:\n%s\nand:\n%s" %
+                 (saved_url, url))
         cache[0] = True
         if os.path.exists(content_file):
             return open(content_file).read()
@@ -156,12 +160,14 @@ class VideoHandler(Handler):
     fileext = '.flv'
 
     def get_data(self, file_id):
-        url = "https://%s/Video.ashx?id=%s&type=1&file=video" % (self.hostname, file_id)
+        url = "https://%s/Video.ashx?id=%s&type=1&file=video" % (
+            self.hostname, file_id)
         return download_url(url)
 
 
 def _extract_tasks(handler, contents):
-    task_groups = (handler.pattern.findall(content.decode('utf-8')) for content in contents)
+    task_groups = (handler.pattern.findall(content.decode('utf-8'))
+                   for content in contents)
     joined = set(sum(task_groups, []))
     return natsorted(joined, key=itemgetter(0))
 
@@ -213,7 +219,7 @@ def _gather_contents(the_url):
         unquoted = six.moves.urllib.parse.unquote(next_page)
         last = contents[-1]
         try:
-            if last.find(next_page) == -1 and last.find(unquoted) == -1:
+            if last.find(next_page.encode()) == -1 and last.find(unquoted.encode()) == -1:
                 break
         except:
             break
@@ -263,10 +269,11 @@ def command_ls(the_url):
     print(msg, '\n'+'-'*len(msg))
     _print_tasks(_extract_tasks(MusicHandler(), contents), '.mp3')
 
+
 interesting = []
 
 
-def command_rls(the_url, level = 2, verbose=False):
+def command_rls(the_url, level=2, verbose=False):
     contents = _get_inner_content(the_url)
     base_dir = re.search('/.*$', the_url.replace('http://', '')).group()
     print(' '*level + "Searching %s" % base_dir)
