@@ -25,6 +25,8 @@ else:
 
 if data.endswith('s'):
     hms = data[:-1].split('m')
+    if 'h' in hms[0]:
+        hms = hms[0].split('h') + [hms[1]]
 else:
     hms = data.split(':')
 
