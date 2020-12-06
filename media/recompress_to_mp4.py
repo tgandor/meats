@@ -215,7 +215,7 @@ def _get_input_options(args):
     if args.start:
         input_options += ' -ss {}'.format(args.start)
     if args.duration:
-        encoder_options += ' -t {}'.format(args.duration)
+        input_options += ' -t {}'.format(args.duration)
 
     return input_options
 
