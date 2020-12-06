@@ -11,13 +11,13 @@ from itertools import chain
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--amf', action='store_true', help='use h264_amf codec (e.g. Windows on AMD)')
-parser.add_argument('--bitrate', '-b', help='specify output bitrate for video')
 parser.add_argument('--bitrate-audio', '-ba', help='specify output bitrate for audio')
-parser.add_argument('--converter', help='Manually specify [full path to] ffmpeg or avconv')
+parser.add_argument('--bitrate', '-b', help='specify output bitrate for video')
 parser.add_argument('--classify', '-k', action='store_true', help='detect weak or negative (nocebo) compression')
-parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. for cutting or remuxing')
+parser.add_argument('--converter', help='Manually specify [full path to] ffmpeg or avconv')
 parser.add_argument('--copy-audio', '-c', action='store_true')
 parser.add_argument('--copy-video', '-cv', action='store_true')
+parser.add_argument('--copy', '-C', action='store_true', help='No-op copy, e.g. for cutting or remuxing')
 parser.add_argument('--deinterlace', '-d', action='store_true', help='deinterlace with yadif (requires recoding)')
 parser.add_argument('--dry-run', '-n', action='store_true', help='print commands, but do nothing')
 parser.add_argument('--duration', '-t', help='Duration limit for encoding')
@@ -25,6 +25,7 @@ parser.add_argument('--evaluate', '-e', action='store_true', help='move result t
 parser.add_argument('--fix-avidemux', action='store_true', help='rotate 90 via metadata (use as only option)')
 parser.add_argument('--framerate', '-r', help='specify output FPS for video')
 parser.add_argument('--here', action='store_true', help='convert to the same place (only from other format)')
+parser.add_argument('--hevc', action='store_true', help='use h.265 (HEVC) codec')
 parser.add_argument('--hwaccel', '-hw', help='specify input hardware acceleration')
 parser.add_argument('--move', '-m', action='store_true', help='move original file to original/ directory')
 parser.add_argument('--name-suffix', '-ns', help='')
@@ -155,16 +156,21 @@ def _get_encoder_options(args):
         return 'copy' + common_options
 
     if args.nv or args.nvenc:
-        encoder_options = 'h264_nvenc -cq {} -preset slow {}'.format(args.quality, common_options)
+        codec = 'hevc_nvenc' if args.hevc else 'h264_nvenc'
+        encoder_options = '{} -cq {} -preset slow {}'.format(codec, args.quality, common_options)
         # this looks promising, but for now produces overkill
         # https://superuser.com/a/1236387/269542
         # encoder_options = ('h264_nvenc -preset llhq -rc:v vbr_minqp -qmin:v 19 -qmax:v 21 -b:v 2500k '
         #                    '-maxrate:v 5000k -profile:v high ' + common_options)
     elif args.amf:
+        if args.hevc:
+            raise ValueError('Not implemented')
         encoder_options = 'h264_amf {}'.format(common_options)
         if not args.bitrate:
             print('Warning - using --amf codec without --bitrate/-b specified.')
     else:
+        if args.hevc:
+            raise ValueError('Not implemented')
         encoder_options = 'h264 -crf {} -preset veryslow {}'.format(args.quality, common_options)
 
     if args.bitrate:
@@ -172,9 +178,6 @@ def _get_encoder_options(args):
 
     if args.framerate:
         encoder_options += ' -r {}'.format(args.framerate)
-
-    if args.duration:
-        encoder_options += ' -t {}'.format(args.duration)
 
     return encoder_options
 
@@ -204,12 +207,16 @@ def _get_filters(args):
 
 def _get_input_options(args):
     input_options = ''
+
     if args.nv or args.nvdec:
         input_options += '-hwaccel nvdec'
     if args.hwaccel:
         input_options += '-hwaccel {}'.format(args.hwaccel)
     if args.start:
         input_options += ' -ss {}'.format(args.start)
+    if args.duration:
+        encoder_options += ' -t {}'.format(args.duration)
+
     return input_options
 
 
