@@ -14,7 +14,6 @@ sudo apt install -y "$@" \
     mc \
     net-tools \
     python3-pip \
-    python-pip \
     rar \
     screen \
     smbclient \
