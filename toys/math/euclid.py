@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# euclid algorithm in steps
+# letters: m, n - like in AoCP 1.1
+
 import sys
 
 m, n = map(int, sys.argv[1:])
