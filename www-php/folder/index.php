@@ -1,4 +1,15 @@
-<!doctype html>
+<?php
+    $title = basename(dirname($_SERVER['PHP_SELF']));
+    $crumbs = array();
+    $path = '';
+    foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $dir)
+    {
+        $path .= "$dir/";
+        $crumbs[$path] = $dir;
+    }
+    $subfolders = glob('*', GLOB_ONLYDIR);
+    $files = array_values(array_diff(glob('*'), $subfolders));
+?><!doctype html>
 <html lang="en">
   <head>
     <!-- Required meta tags -->
@@ -19,7 +30,6 @@
     }
     </style>
 
-    <?php $title = basename(dirname($_SERVER['PHP_SELF'])); ?>
     <title><?php echo $title ?> - Folder listing</title>
   </head>
 
@@ -38,10 +48,8 @@
             <div class="col-12">
                 <p>
                     Path:
-                    <?php $path = ''; ?>
-                    <?php foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $i => $dir): ?>
-                    <?php $path .= "$dir/" ?>
-                    / <a href="<?php echo $path ?>"><?php echo $dir ? $dir : '&#8962;'  ?></a>
+                    <?php foreach($crumbs as $path => $dir): ?>
+                    / <a href="<?php echo $path ?>"><?php echo $dir ?: '&#8962;'  ?></a>
                     <?php endforeach ?>
                 </p>
             </div>
@@ -51,7 +59,7 @@
             <div class="col-12">
                 <h2>Subfolders</h2>
             </div>
-        <?php foreach(glob('*', GLOB_ONLYDIR) as $i => $subfolder): ?>
+        <?php foreach($subfolders as $i => $subfolder): ?>
             <div class="col-sm-6 col-md-4 col-lg-3 py-3 o-hidden">
                 <h3><?php echo $i + 1; ?>.&nbsp;<a href="<?php echo $subfolder ?>"><?php echo $subfolder ?></a></h3>
             </div>
@@ -59,7 +67,7 @@
             <div class="col-12">
                 <h2>Files</h2>
             </div>
-        <?php foreach(array_values(array_diff(glob('*'), glob('*', GLOB_ONLYDIR))) as $i => $file): ?>
+        <?php foreach($files as $i => $file): ?>
             <div class="col-sm-12 col-md-6 col-lg-4 o-hidden">
                 <p><?php echo $i + 1; ?>.&nbsp;<a href="<?php echo $file ?>"><?php echo $file ?></a></p>
             </div>
