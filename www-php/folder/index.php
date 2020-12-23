@@ -9,6 +9,7 @@
     }
     $subfolders = glob('*', GLOB_ONLYDIR);
     $files = array_values(array_diff(glob('*'), $subfolders));
+    unset($files[array_search('index.php', $files)]);
 ?><!doctype html>
 <html lang="en">
   <head>
@@ -48,9 +49,9 @@
             <div class="col-12">
                 <p>
                     Path:
-                    <?php foreach($crumbs as $path => $dir): ?>
+<?php foreach($crumbs as $path => $dir): ?>
                     / <a href="<?php echo $path ?>"><?php echo $dir ?: '&#8962;'  ?></a>
-                    <?php endforeach ?>
+<?php endforeach ?>
                 </p>
             </div>
         </div>
