@@ -57,22 +57,29 @@
         </div>
 
         <div class="row">
+
+<?php if ($subfolders): ?>
             <div class="col-12">
                 <h2>Subfolders</h2>
             </div>
-        <?php foreach($subfolders as $i => $subfolder): ?>
+    <?php foreach($subfolders as $i => $subfolder): ?>
             <div class="col-sm-6 col-md-4 col-lg-3 py-3 o-hidden">
                 <h3><?php echo $i + 1; ?>.&nbsp;<a href="<?php echo $subfolder ?>"><?php echo $subfolder ?></a></h3>
             </div>
-        <?php endforeach ?>
+    <?php endforeach ?>
+<?php endif ?>
+
+<?php if ($files): ?>
             <div class="col-12">
                 <h2>Files</h2>
             </div>
-        <?php foreach($files as $i => $file): ?>
+    <?php foreach($files as $i => $file): ?>
             <div class="col-sm-12 col-md-6 col-lg-4 o-hidden">
                 <p><?php echo $i + 1; ?>.&nbsp;<a href="<?php echo $file ?>"><?php echo $file ?></a></p>
             </div>
-        <?php endforeach ?>
+    <?php endforeach ?>
+<?php endif ?>
+
         </div>
     </div>
 
