@@ -5,7 +5,7 @@ import argparse
 # info source: https://www.impulseadventure.com/photo/jpeg-decoder.html
 
 parser = argparse.ArgumentParser()
-parser.add_argument('file')
+parser.add_argument('files', nargs='+')
 parser.add_argument('--verbose', '-v', action='store_true')
 parser.add_argument('--skip-scan', '-s', action='store_true')
 parser.add_argument('--select', '-m', help='markers to show')
@@ -66,39 +66,40 @@ if args.select:
         exit()
     to_show = markers[args.select]
 
+for filename in args.files:
+    with open(filename, 'rb') as f:
+        while True:
+            ch = f.read(1)
+            if not ch:
+                break
+            c = ord(ch)
+            if c == 0xff:
+                d = ord(f.read(1))
 
-with open(args.file, 'rb') as f:
-    while True:
-        ch = f.read(1)
-        if not ch:
-            break
-        c = ord(ch)
-        if c == 0xff:
-            d = ord(f.read(1))
+                if d in standalone:
+                    if d == to_show:
+                        print(
+                            filename if args.name else '',
+                            "%6d" % f.tell(),
+                            hex(256*c+d)[2:],
+                            '%5s' % names.get(d, ' ? '),
+                            '(standalone)',
+                        )
+                    continue
 
-            if d in standalone:
-                if d == to_show:
+                h = ord(f.read(1))
+                l = ord(f.read(1))
+                size = 256 * h + l
+                data = f.read(size - 2)  # 2 bytes already there
+                if (to_show is None or d == to_show) and d:
                     print(
+                        filename if args.name else '',
                         "%6d" % f.tell(),
                         hex(256*c+d)[2:],
                         '%5s' % names.get(d, ' ? '),
-                        '(standalone)',
+                        'size: {:,}'.format(size),
+                        repr(data) if args.verbose else ''
                     )
-                continue
 
-            h = ord(f.read(1))
-            l = ord(f.read(1))
-            size = 256 * h + l
-            data = f.read(size - 2)  # 2 bytes already there
-            if (to_show is None or d == to_show) and d:
-                print(
-                    args.file if args.name else '',
-                    "%6d" % f.tell(),
-                    hex(256*c+d)[2:],
-                    '%5s' % names.get(d, ' ? '),
-                    'size: {:,}'.format(size),
-                    repr(data) if args.verbose else ''
-                )
-
-            if d == markers['SOS'] and args.skip_scan:
-                break
+                if d == markers['SOS'] and args.skip_scan:
+                    break
