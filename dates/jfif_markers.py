@@ -13,6 +13,30 @@ parser.add_argument('--name', '-n', action='store_true',
                     help='prefix with filename')
 args = parser.parse_args()
 
+
+def decode_sof0(data):
+    # http://www.vip.sugovica.hu/Sardi/kepnezo/JPEG%20File%20Layout%20and%20Format.htm
+    return {
+        "bits": data[0],
+        "height": data[1] * 256 + data[2],
+        "width": data[3] * 256 + data[4],
+        "num_components": data[5],
+        "components": [
+            {
+                "id": data[6+3*i],
+                "v_sampling": data[7+3*i] & 0xf,
+                "h_sampling": data[7+3*i] >> 4,
+                "QT": data[8+3*i],
+            }
+            for i in range(data[5])
+        ]
+    }
+
+
+decodable = {
+    "SOF0": decode_sof0
+}
+
 names = {
     0xc4: 'DHT',
     0xd8: 'SOI',
@@ -100,6 +124,9 @@ for filename in args.files:
                         'size: {:,}'.format(size),
                         repr(data) if args.verbose else ''
                     )
+
+                if args.select and args.select in decodable and d == to_show:
+                    print(decodable[args.select](data))
 
                 if d == markers['SOS'] and args.skip_scan:
                     break
