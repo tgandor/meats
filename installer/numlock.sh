@@ -6,6 +6,6 @@
 # So this is still an open research problem ;)
 
 if ! grep -Hn numlockx /etc/X11/xinit/xinitrc ; then
-    echo if "which numlockx ; then numlockx ; fi" | sudo tee -a /etc/X11/xinit/xinitrc
+    echo if "which numlockx ; then numlockx on ; fi" | sudo tee -a /etc/X11/xinit/xinitrc
 fi
 
