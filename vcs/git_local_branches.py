@@ -5,7 +5,12 @@ List branches, which are not in any remote.
 They may be new, or someone might deleted them from the remote accidentaly.
 """
 
+import argparse
 import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--run', action='store_true')
+args = parser.parse_args()
 
 branches = {
     line[2:].strip()
@@ -21,4 +26,14 @@ remotes = {
 
 local_branches = set(filter(lambda x: not x.startswith('remotes/'), branches))
 
-print('\n'.join('git branch -d {}'.format(branch) for branch in (local_branches - remotes)))
+commands = ['git branch -d {}'.format(branch) for branch in (local_branches - remotes)]
+
+if not args.run:
+    if commands:
+        print('\n'.join(commands))
+else:
+    for cmd in commands:
+        print(cmd)
+        os.system(cmd)
+    if not commands:
+        print('Nothing to do.')
