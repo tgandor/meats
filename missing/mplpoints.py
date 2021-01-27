@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-labels', '-n', action='store_true')
+parser.add_argument('--line', '-l', action='store_true')
 args = parser.parse_args()
 
 x = []
@@ -26,7 +27,11 @@ for i, line in enumerate(sys.stdin.readlines()):
     x.append(xi)
     y.append(yi)
 
-plt.scatter(x, y)
+if args.line:
+    plt.plot(x, y)
+else:
+    plt.scatter(x, y)
+
 
 if not args.no_labels:
     # limit labels to about 100 (by skipping)
