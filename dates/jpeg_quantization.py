@@ -20,7 +20,9 @@ WHOLE_FILE = 0
 DEBUG = True
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--oneline', '-q', action='store_true', help='print in short format')
+parser.add_argument('--oneline', '-q', action='store_true',
+                    help='print in short format')
+parser.add_argument('--tex', action='store_true', help='print as LaTeX arrays')
 parser.add_argument('files', nargs='+')
 args = parser.parse_args()
 
@@ -50,7 +52,7 @@ def zigzag(n):
 
 
 #for i, j in zigzag(3): print(i, j)
-#exit()
+# exit()
 
 
 def reorder(src, dest):
@@ -64,13 +66,15 @@ def reorder(src, dest):
 
 
 def display(table):
-    print(table)
+    if not args.tex:
+        print(table)
     try:
         import numpy as np
         reshaped = np.array(list(table[1:]), dtype=np.uint8).reshape(8, -1)
         reordered = np.empty_like(reshaped)
         reorder(reshaped, reordered)
-        print(reordered)
+        if not args.tex:
+            print(reordered)
     except ImportError:
         # cheap substitute
         import pprint
@@ -81,7 +85,17 @@ def display(table):
         ]
         reordered = copy.deepcopy(reshaped)
         reorder(reshaped, reordered)
-        pprint.pprint(reordered)
+        if not args.tex:
+            pprint.pprint(reordered)
+    if args.tex:
+        print(
+            r'$\begin{array}{cccccccc} '
+            + r' \\ '.join(
+                ' & '.join(str(q) for q in row)
+                for row in reordered
+            )
+            + r' \end{array}$'
+        )
 
 
 def find_quantization_tables(filename):
@@ -105,14 +119,15 @@ def find_quantization_tables(filename):
 
                 payload_kind = mapped_file[idx+2:idx+4]
 
-
                 if payload_kind == SINGLE_TABLE_PAYLOAD_DATA:
                     if not args.oneline:
-                        print(filename, '- DEFINE_QUANTIZATION_TABLE + Single QT found at offset:', idx, 'hex:', hex(idx))
+                        print(
+                            filename, '- DEFINE_QUANTIZATION_TABLE + Single QT found at offset:', idx, 'hex:', hex(idx))
                     double = False
                 elif payload_kind == DOUBLE_TABLE_PAYLOAD_DATA:
                     if not args.oneline:
-                        print(filename, '- DEFINE_QUANTIZATION_TABLE + Double QT found at offset:', idx, 'hex:', hex(idx))
+                        print(
+                            filename, '- DEFINE_QUANTIZATION_TABLE + Double QT found at offset:', idx, 'hex:', hex(idx))
                     double = True
                 elif DEBUG:
                     # print(filename, idx, ': Neither Single nor Double QT found...')
