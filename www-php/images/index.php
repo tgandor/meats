@@ -1,8 +1,9 @@
 <?php
     $title = basename(dirname($_SERVER['PHP_SELF']));
-    // jpg
-    $files = glob('*.[Jj][Pp][Gg]');
+    // jpg and png
+    $files = glob('*.[JjPp][PpNn][Gg]');
     natsort($files);
+    $subfolders = glob('*', GLOB_ONLYDIR);
     $crumbs = array();
     $path = '';
     foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $dir)
@@ -18,13 +19,13 @@
 ?><!doctype html>
 <html lang="en">
   <head>
-    <title><?php echo $title ?> - Music Index</title>
+    <title><?php echo $title ?> - Image Index</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="<?php echo $bs ?>">
+    <link rel="stylesheet" href="<?php echo $bs ?>"
         integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
         crossorigin="anonymous">
 
@@ -41,7 +42,7 @@
     <div class="container">
         <div class="jumbotron d-none d-md-block">
             <h1><?php echo $title ?></h1>
-            <p class="lead" title="v2.0-2020.09.29">Showing MP3s as HTML5 audio.</p>
+            <p class="lead" title="v1.0-2021-02-17">Pictures in folder.</p>
         </div>
 
         <div class="page-header d-block d-md-none">
@@ -68,6 +69,17 @@
                 </a>
             </div>
 <?php endforeach ?>
+
+<?php if ($subfolders): ?>
+            <div class="col-12">
+                <h2>Subfolders</h2>
+            </div>
+    <?php foreach($subfolders as $i => $subfolder): ?>
+            <div class="col-sm-6 col-md-4 col-lg-3 py-3 o-hidden">
+                <h3><?php echo $i + 1; ?>.&nbsp;<a href="<?php echo $subfolder ?>"><?php echo $subfolder ?></a></h3>
+            </div>
+    <?php endforeach ?>
+<?php endif ?>
 
 <?php if(count($files) > 10): ?>
             <div class="col-12">
