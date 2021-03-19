@@ -3,10 +3,11 @@
 # for nginx see here: 
 # https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/
 
+import argparse
 import base64
-import os
 import getpass
 import hashlib
+import os
 import sys
 
 try:
@@ -14,7 +15,12 @@ try:
 except:
     pass
 
-if os.path.exists('.htaccess'):
+parser = argparse.ArgumentParser()
+parser.add_argument('--force', '-f', action='store_true')
+parser.add_argument('--auth-name', '-n')
+args = parser.parse_args()
+
+if os.path.exists('.htaccess') and not args.force:
     print('.htaccess exists; exiting')
     exit()
 
@@ -28,9 +34,12 @@ Require valid-user
 if sys.version_info[0] == 2:
     input = raw_input
 
-auth_name = input('AuthName (Please login): ')
-if not auth_name:
-    auth_name = 'Please login'
+if not args.auth_name:
+    auth_name = input('AuthName (Please login): ')
+    if not auth_name:
+        auth_name = 'Please login'
+else:
+    auth_name = args.auth_name
 
 with open('.htaccess', 'w') as f:
     f.write(template.format(auth_name, os.getcwd()))
