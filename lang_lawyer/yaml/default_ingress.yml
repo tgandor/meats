@@ -1,0 +1,11 @@
+---
+# Check this with e.g. `yq` (frontend to `jq`)
+Resources:
+  Ingress:
+    - &ports_and_protocol
+      PortIn: 80
+      PortOut: 80
+      Protocol: tcp
+      Service: blog
+    - <<: *ports_and_protocol
+      Service: gallery
