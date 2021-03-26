@@ -12,36 +12,49 @@ def fake_date(dt):
     dt = dt[0]
     day = 100 * dt.month + dt.day
     # day += 10000 * (dt.year % 100)
-    fraction = (3600 * dt.hour + 60 * dt.minute  + dt.second) / float(24 * 3600)
+    fraction = (3600 * dt.hour + 60 * dt.minute + dt.second) / float(24 * 3600)
     return day + fraction
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ascii', '-t', action='store_true')
 parser.add_argument('--fake-date', '-d', action='store_true')
-parser.add_argument('--mountpoint', '-m', default='/', help='mountpoint to show')
-parser.add_argument('--absolute', '-a', action='store_true', help='Y axis from 0 to size')
+parser.add_argument('--mountpoint', '-m',
+                    default=('/',), help='mountpoint to show', nargs='+')
+parser.add_argument('--absolute', '-a', action='store_true',
+                    help='Y axis from 0 to size')
 parser.add_argument('--style', default='-', help='matplotlib plotting style')
 parser.add_argument('--list-mountpoints', '-l', action='store_true')
-parser.add_argument('--days', '-D', type=int, help='number of last days to show')
-parser.add_argument('--width', '-w', type=int, help='width of plot (--ascii only)', default=170)
-parser.add_argument('--height', '-H', type=int, help='height of plot (--ascii only)', default=60)
+parser.add_argument('--days', '-D', type=int,
+                    help='number of last days to show')
+parser.add_argument('--width', '-w', type=int,
+                    help='width of plot (--ascii only)', default=170)
+parser.add_argument('--height', '-H', type=int,
+                    help='height of plot (--ascii only)', default=60)
+parser.add_argument('--debug', '-v', action='store_true')
 args = parser.parse_args()
 
 conn = sqlite3.connect(os.path.expanduser('~/usage.db'))
 
 if args.list_mountpoints:
-    df = pd.read_sql_query('select distinct mountpoint from df order by mountpoint', conn)
+    df = pd.read_sql_query(
+        'select distinct mountpoint from df order by mountpoint', conn)
     for row in df['mountpoint']:
         print(row)
     conn.close()
     exit()
 
-params = (args.mountpoint,)
-query = 'select * from df where mountpoint=?'
+params = ()
+query = 'select * from df where mountpoint in ({})'.format(
+    ', '.join("'" + mp + "'" for mp in args.mountpoint)
+)
+
 if args.days:
     query += ' and df_date > ?'
     params += (datetime.datetime.now() - datetime.timedelta(days=args.days),)
+
+if args.debug:
+    print(query, params)
 
 df = pd.read_sql_query(query, conn, params=params)
 df.df_date = pd.to_datetime(df['df_date'])
@@ -54,7 +67,8 @@ if args.ascii:
         df.df_date = df[['df_date']].apply(fake_date, axis=1)
         xlabel = 'day.fraction'
     else:
-        df.df_date = df[['df_date']].apply((lambda x: int(x[0].timestamp())), axis=1)
+        df.df_date = df[['df_date']].apply(
+            (lambda x: int(x[0].timestamp())), axis=1)
         xlabel = 'timestamp'
 
     kwargs = dict(
@@ -74,7 +88,7 @@ else:
     from matplotlib import pyplot as plt
 
     df.set_index('df_date').used.plot(style=args.style)
-    plt.title('Usage of ' + args.mountpoint)
+    plt.title('Usage of ' + ', '.join(args.mountpoint))
     if args.absolute:
         # unfortunately, 'size' is a bad column name in Pandas. df.size returns int, df['size'] - Series
         plt.ylim(bottom=0, top=df['size'].max())
