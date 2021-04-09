@@ -3,13 +3,15 @@
 from __future__ import absolute_import
 
 import argparse
-import sys
+import datetime
 import os
-import re
-import time
 import random
+import re
+import sys
+import time
 from io import BytesIO
 from operator import itemgetter
+
 from six.moves import range
 from six.moves import zip
 from six.moves import input
@@ -121,8 +123,12 @@ def read_with_progress(resp):
         sys.stdout.flush()
     elapsed = time.time() - start
     info(
-        " done: %sB in %.1f s, %sB/s"
-        % (human(sio.tell()), elapsed, human(sio.tell() / (elapsed or 1)))
+        "\n{} done: {}B in {:.1f} s, {}B/s".format(
+            datetime.datetime.now(),
+            human(sio.tell()),
+            elapsed,
+            human(sio.tell() / (elapsed or 1)),
+        )
     )
     return sio.getvalue()
 
@@ -200,8 +206,9 @@ def retrieve_all(handler, tasks, targetdir, min_sleep=10, rng_sleep=10):
             open(filename, "wb").write(data)
         if i == total:
             break
-        info("Sleeping...")
-        time.sleep(random.random() * rng_sleep + min_sleep)
+        dream_time = random.random() * rng_sleep + min_sleep
+        info("Sleeping {:.1f} s...".format(dream_time))
+        time.sleep(dream_time)
 
 
 def _get_inner_content(the_url):
