@@ -20,11 +20,11 @@ import six.moves.urllib.error
 try:
     from natsort import natsorted
 except ImportError:
-    print('WARNING: natsorted is missing')
+    print('WARNING: natsorted() is missing (pip install natsort)')
     natsorted = sorted
 
 CHUNK = 512 * 1024
-user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:83.0) Gecko/20100101 Firefox/83.0'
+user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:87.0) Gecko/20100101 Firefox/87.0'
 
 
 def urlopen3(url):
@@ -172,7 +172,7 @@ def _extract_tasks(handler, contents):
     return natsorted(joined, key=itemgetter(0))
 
 
-def retrieve_all(handler, tasks, targetdir):
+def retrieve_all(handler, tasks, targetdir, min_sleep=10, rng_sleep=10):
     info("Starting download loop, exit easily with Ctrl-C while sleeping.")
     total = len(tasks)
     i = 0
@@ -198,7 +198,7 @@ def retrieve_all(handler, tasks, targetdir):
         if i == total:
             break
         info('Sleeping...')
-        time.sleep(random.random() * 8 + 2)
+        time.sleep(random.random() * rng_sleep + min_sleep)
 
 
 def _get_inner_content(the_url):
