@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     input_options = '-framerate {} -pattern_type glob'.format(args.framerate)
 
-    common_options = '-pix_fmt yuv420p'
+    common_options = '-hide_banner -pix_fmt yuv420p'
 
     if args.deinterlace:
         common_options += ' -vf yadif'
