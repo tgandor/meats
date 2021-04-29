@@ -1,0 +1,23 @@
+2019-08-12 (pon) 14:28
+
+Integrate with jpeg_benchmark.py
+
+https://upload.wikimedia.org/wikipedia/commons/d/d3/PSNR-example-base.png
+
+File: PSNR-example-base.png (downloaded)
+
+
+Original uncompressed image
+
+Q=90, PSNR 45.53dB
+
+Q=30, PSNR 36.81dB
+
+Q=10, PSNR 31.45dB
+
+Example luma PSNR values for a cjpeg compressed image at various quality levels.
+
+LUMA!
+
+In the absence of noise, the two images I and K are identical, and thus the MSE is zero. In this case the PSNR is infinite (or undefined, see Division by zero).[7]
+
