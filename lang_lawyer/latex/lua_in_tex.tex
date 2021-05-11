@@ -1,0 +1,14 @@
+% use lualatex to compile!
+% kudos:
+% http://www.tcs.uni-luebeck.de/downloads/mitarbeiter/tantau/2012-gd-presentation.pdf
+
+\documentclass[border=20pt]{standalone}
+\begin{document}
+$\sum\limits_{n=1}^{100} n = \directlua{
+    local sum = 0
+    for i=1,100 do
+        sum = sum + i
+    end
+    tex.print(sum)
+}$
+\end{document}

@@ -1,0 +1,34 @@
+% I don't understand how this looping works:
+\documentclass[tikz,convert=false,border=40pt]{standalone}
+\usetikzlibrary{shadows}
+\tikzset{
+  copy shadow label/.style={
+    at={(\myCopyshadownode.north east)},
+    anchor=north east,
+    inner sep=+2pt},
+  labeled copy shadow xshift/.initial=1em,
+  labeled copy shadow yshift/.initial=-1em,
+  labeled copy shadow/.style={
+    append after command={
+      \pgfextra{\let\myCopyshadownode\tikzlastnode}
+      node[copy shadow label/.try] {0}
+    },
+    @labeled copy shadow/.list={#1,...,1}},
+  @labeled copy shadow/.style={
+    copy shadow={
+      shadow xshift={#1*\pgfkeysvalueof{/tikz/labeled copy shadow xshift}},
+      shadow yshift={#1*\pgfkeysvalueof{/tikz/labeled copy shadow yshift}}},
+    append after command={
+      node[copy shadow label/.try,
+           xshift=#1*\pgfkeysvalueof{/tikz/labeled copy shadow xshift},
+           yshift=#1*\pgfkeysvalueof{/tikz/labeled copy shadow yshift}] {#1}
+    }
+  }
+}
+\begin{document}
+\begin{tikzpicture}
+  \node [
+    minimum size=+3cm, draw, fill=white,
+    labeled copy shadow=3] {};
+\end{tikzpicture}
+\end{document}
