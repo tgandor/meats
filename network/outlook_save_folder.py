@@ -21,12 +21,12 @@ data = []
 for message in inbox.items:
     data.append({
         'subject': message.subject,
-        'sender': message.sender,
-        'date': message.senton.strftime('%Y%m%d %H:%M:%S'),
+        'sender': getattr(message, 'sender', 'unknown sender'),
+        'date': message.senton.strftime('%Y-%m-%d %H:%M:%S'),
         'body': message.body,
     })
 
 json_file = f"{args.folder or 'Inbox'}.json"
 
 with open(json_file, "w") as jsf:
-    jsf.write(json.dumps(data))
+    jsf.write(json.dumps(data, indent=2))
