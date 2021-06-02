@@ -1,5 +1,6 @@
 import argparse
 import getpass
+import itertools
 import pathlib
 import time
 import typing
@@ -47,24 +48,76 @@ class ConnParams(typing.NamedTuple):
 def _parse_cli() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("master_credentials", type=pathlib.Path)
-    # parser.add_argument("databases", type=pathlib.Path)
-    # parser.add_argument("grants", type=pathlib.Path)
+    parser.add_argument("databases", type=pathlib.Path)
+    parser.add_argument("grants", type=pathlib.Path)
     parser.add_argument("username", nargs="?")
     parser.add_argument("password", nargs="?")
+    parser.add_argument("--verbose", "-v", action="store_true")
     return parser.parse_args()
 
 
-def create_login(conn: pyodbc.Connection, username: str, password: str):
+def create_login(conn: pyodbc.Connection, username: str, password: str, v: bool):
     cursor = conn.cursor()
-    cursor.execute(f"""
-    IF NOT EXISTS(
-        SELECT principal_id FROM sys.server_principals WHERE name='{username}'
-    ) BEGIN
-        CREATE LOGIN {username}
-        WITH PASSWORD = '{password}'
-    END
-    """)
+    sql = f"""
+        IF NOT EXISTS(
+            SELECT principal_id
+            FROM sys.server_principals
+            WHERE name='{username}'
+        ) BEGIN
+            CREATE LOGIN {username}
+            WITH PASSWORD = '{password}'
+        END
+    """
+    if v:
+        print(sql)
+    cursor.execute(sql)
     conn.commit()
+
+
+def add_login_to_databases(
+    conn: pyodbc.Connection, username: str, databases: typing.List[str], v: bool
+):
+    cursor = conn.cursor()
+
+    for database in databases:
+        sql = f"""
+            USE {database};
+            IF NOT EXISTS(
+                SELECT principal_id
+                FROM sys.database_principals
+                WHERE name='{username}'
+            ) BEGIN
+                CREATE USER {username} FOR LOGIN {username}
+            END
+        """
+        if v:
+            print(sql)
+        cursor.execute(sql)
+        conn.commit()
+
+
+def grant_permissions_to_user(
+    conn: pyodbc.Connection,
+    username: str,
+    databases: typing.List[str],
+    grants: typing.List[str],
+    v: bool,
+):
+    cursor = conn.cursor()
+
+    for database in databases:
+        sql = f"""
+            USE {database};
+            GRANT {', '.join(grants)} on DATABASE::[{database}] to {username}
+        """
+        if v:
+            print(sql)
+        cursor.execute(sql)
+        conn.commit()
+
+
+def _lines(path: pathlib.Path) -> typing.List[str]:
+    return path.read_text().strip().split("\n")
 
 
 def main():
@@ -72,4 +125,12 @@ def main():
     conn = ConnParams.from_file(args.master_credentials).get_connection()
     username = args.username or getpass.getuser()
     password = args.password or getpass.getpass()
-    create_login(conn, username, password)
+    create_login(conn, username, password, args.verbose)
+    databases = _lines(args.databases)
+    add_login_to_databases(conn, username, databases, args.verbose)
+    grants = _lines(args.grants)
+    grant_permissions_to_user(conn, username, databases, grants, args.verbose)
+
+
+if __name__ == "__main__":
+    main()
