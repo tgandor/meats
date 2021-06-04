@@ -46,8 +46,9 @@ class ConnParams(typing.NamedTuple):
         return pyodbc.connect(self.connection_string())
 
 
-def create_login(conn: pyodbc.Connection, username: str, password: str, v: bool):
-    cursor = conn.cursor()
+def create_login(
+    conn: pyodbc.Connection, username: str, password: str, v: bool, dry: bool
+):
     sql = f"""
         IF NOT EXISTS(
             SELECT principal_id
@@ -60,15 +61,19 @@ def create_login(conn: pyodbc.Connection, username: str, password: str, v: bool)
     """
     if v:
         print(sql)
-    cursor.execute(sql)
-    conn.commit()
+    if not dry:
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        conn.commit()
 
 
 def add_login_to_databases(
-    conn: pyodbc.Connection, username: str, databases: typing.List[str], v: bool
+    conn: pyodbc.Connection,
+    username: str,
+    databases: typing.List[str],
+    v: bool,
+    dry: bool,
 ):
-    cursor = conn.cursor()
-
     for database in databases:
         sql = f"""
             USE {database};
@@ -82,8 +87,10 @@ def add_login_to_databases(
         """
         if v:
             print(sql)
-        cursor.execute(sql)
-        conn.commit()
+        if not dry:
+            cursor = conn.cursor()
+            cursor.execute(sql)
+            conn.commit()
 
 
 def grant_permissions_to_user(
@@ -92,8 +99,8 @@ def grant_permissions_to_user(
     databases: typing.List[str],
     grants: typing.List[str],
     v: bool,
+    dry: bool,
 ):
-    cursor = conn.cursor()
 
     for database in databases:
         sql = f"""
@@ -102,8 +109,10 @@ def grant_permissions_to_user(
         """
         if v:
             print(sql)
-        cursor.execute(sql)
-        conn.commit()
+        if not dry:
+            cursor = conn.cursor()
+            cursor.execute(sql)
+            conn.commit()
 
 
 def _lines(path: pathlib.Path) -> typing.List[str]:
@@ -118,23 +127,33 @@ def _parse_cli() -> argparse.Namespace:
     parser.add_argument("--grants", type=pathlib.Path, default="grants.txt")
     parser.add_argument("--databases", type=pathlib.Path, default="databases.txt")
     parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--dry-run", "-n", action="store_true")
     parser.add_argument("--test", "-t", action="store_true")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.dry_run:
+        args.verbose = True
+    return args
 
 
 def main():
     args = _parse_cli()
-    conn = ConnParams.from_file(args.credentials).get_connection()
+    conn = (
+        None
+        if args.dry_run
+        else ConnParams.from_file(args.credentials).get_connection()
+    )
     if args.test:
         print(conn)
         return
-    username = args.username or input()
+    username = args.username or input('Username: ')
     password = args.password or getpass.getpass()
     databases = _lines(args.databases)
     grants = _lines(args.grants)
-    create_login(conn, username, password, args.verbose)
-    add_login_to_databases(conn, username, databases, args.verbose)
-    grant_permissions_to_user(conn, username, databases, grants, args.verbose)
+    create_login(conn, username, password, args.verbose, args.dry_run)
+    add_login_to_databases(conn, username, databases, args.verbose, args.dry_run)
+    grant_permissions_to_user(
+        conn, username, databases, grants, args.verbose, args.dry_run
+    )
 
 
 if __name__ == "__main__":
