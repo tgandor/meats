@@ -1,8 +1,6 @@
 import argparse
 import getpass
-import itertools
 import pathlib
-import time
 import typing
 
 import pyodbc
@@ -32,6 +30,9 @@ class ConnParams(typing.NamedTuple):
                 "Trusted_Connection=yes"
             )
 
+        if set(self.password) == {"*"}:
+            self.password = getpass.getpass(f"Password for {self.user}")
+
         return (
             "Driver={SQL Server};"
             f"Server={self.host};"
@@ -47,11 +48,11 @@ class ConnParams(typing.NamedTuple):
 
 def _parse_cli() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("master_credentials", type=pathlib.Path)
-    parser.add_argument("databases", type=pathlib.Path)
-    parser.add_argument("grants", type=pathlib.Path)
+    parser.add_argument("credentials", type=pathlib.Path)
     parser.add_argument("username", nargs="?")
     parser.add_argument("password", nargs="?")
+    parser.add_argument("--grants", type=pathlib.Path, default="grants.txt")
+    parser.add_argument("--databases", type=pathlib.Path, default="databases.txt")
     parser.add_argument("--verbose", "-v", action="store_true")
     return parser.parse_args()
 
@@ -122,13 +123,13 @@ def _lines(path: pathlib.Path) -> typing.List[str]:
 
 def main():
     args = _parse_cli()
-    conn = ConnParams.from_file(args.master_credentials).get_connection()
-    username = args.username or getpass.getuser()
+    conn = ConnParams.from_file(args.credentials).get_connection()
+    username = args.username or input()
     password = args.password or getpass.getpass()
-    create_login(conn, username, password, args.verbose)
     databases = _lines(args.databases)
-    add_login_to_databases(conn, username, databases, args.verbose)
     grants = _lines(args.grants)
+    create_login(conn, username, password, args.verbose)
+    add_login_to_databases(conn, username, databases, args.verbose)
     grant_permissions_to_user(conn, username, databases, grants, args.verbose)
 
 
