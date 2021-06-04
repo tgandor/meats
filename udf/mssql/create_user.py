@@ -46,17 +46,6 @@ class ConnParams(typing.NamedTuple):
         return pyodbc.connect(self.connection_string())
 
 
-def _parse_cli() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("credentials", type=pathlib.Path)
-    parser.add_argument("username", nargs="?")
-    parser.add_argument("password", nargs="?")
-    parser.add_argument("--grants", type=pathlib.Path, default="grants.txt")
-    parser.add_argument("--databases", type=pathlib.Path, default="databases.txt")
-    parser.add_argument("--verbose", "-v", action="store_true")
-    return parser.parse_args()
-
-
 def create_login(conn: pyodbc.Connection, username: str, password: str, v: bool):
     cursor = conn.cursor()
     sql = f"""
@@ -121,9 +110,24 @@ def _lines(path: pathlib.Path) -> typing.List[str]:
     return path.read_text().strip().split("\n")
 
 
+def _parse_cli() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("credentials", type=pathlib.Path)
+    parser.add_argument("username", nargs="?")
+    parser.add_argument("password", nargs="?")
+    parser.add_argument("--grants", type=pathlib.Path, default="grants.txt")
+    parser.add_argument("--databases", type=pathlib.Path, default="databases.txt")
+    parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--test", "-t", action="store_true")
+    return parser.parse_args()
+
+
 def main():
     args = _parse_cli()
     conn = ConnParams.from_file(args.credentials).get_connection()
+    if args.test:
+        print(conn)
+        return
     username = args.username or input()
     password = args.password or getpass.getpass()
     databases = _lines(args.databases)
