@@ -66,7 +66,7 @@ def get_log_files(conn: pyodbc.Connection, v: bool = False):
             name AS file_name,
             cast(size/128.0 as integer) AS size_mb
         FROM sys.master_files
-        WHERE type IN (1) -- log file
+        WHERE type_desc='LOG' AND database_id > 4
         ORDER BY DB_NAME(database_id)
     """
     if v:
@@ -90,7 +90,6 @@ def shrink_log_files(conn: pyodbc.Connection, v: bool, dry: bool):
         if not dry:
             cursor = conn.cursor()
             cursor.execute(sql)
-            conn.commit()
 
     if not dry:
         print('After shrink:')
