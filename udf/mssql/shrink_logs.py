@@ -90,6 +90,8 @@ def shrink_log_files(conn: pyodbc.Connection, v: bool, dry: bool):
         if not dry:
             cursor = conn.cursor()
             cursor.execute(sql)
+            cursor.close()
+            conn.commit()
 
     if not dry:
         print('After shrink:')
