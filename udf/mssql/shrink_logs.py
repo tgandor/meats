@@ -77,8 +77,9 @@ def get_log_files(conn: pyodbc.Connection, v: bool = False):
 
 def shrink_log_files(conn: pyodbc.Connection, v: bool, dry: bool):
     print('Before shrink:')
-    logs = get_log_files()
+    logs = get_log_files(conn, v)
     print(logs)
+
     for i, row in logs.iterrows():
         sql = f"""
             USE [{row['database_name']}];
@@ -93,7 +94,7 @@ def shrink_log_files(conn: pyodbc.Connection, v: bool, dry: bool):
 
     if not dry:
         print('After shrink:')
-        logs = get_log_files()
+        logs = get_log_files(conn)
         print(logs)
 
 
