@@ -72,7 +72,7 @@ def dump_database(conn: pyodbc.Connection, output: str, v: bool = False, dry: bo
             print(sql)
         data = pd.read_sql(sql, conn)
         if v:
-            print(data.info())
+            data.info()
             print('-' * 60)
 
         out_file = out_dir / f"{schema}.{table}.csv"

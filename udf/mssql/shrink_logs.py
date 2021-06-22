@@ -1,6 +1,7 @@
 import argparse
 import getpass
 import pathlib
+import time
 import typing
 
 import pyodbc
@@ -109,4 +110,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    start = time.time()
+    try:
+        main()
+    finally:
+        print(f"Done. {time.time()-start:.3f} s")
