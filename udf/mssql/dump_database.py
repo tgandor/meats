@@ -60,7 +60,7 @@ ANSI_TABLES = """
 def dump_database(conn: pyodbc.Connection, output: str, v: bool = False, dry: bool = False):
     if v:
         print(ANSI_TABLES)
-    tables = pd.read_sql(ANSI_TABLES)
+    tables = pd.read_sql(ANSI_TABLES, conn)
 
     out_dir = pathlib.Path(output)
     if not dry:
@@ -70,7 +70,7 @@ def dump_database(conn: pyodbc.Connection, output: str, v: bool = False, dry: bo
         sql = f"select * from [{schema}].[{table}]"
         if v:
             print(sql)
-        data = pd.read_sql(sql)
+        data = pd.read_sql(sql, conn)
         if v:
             print(data.info())
             print('-' * 60)
