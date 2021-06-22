@@ -57,13 +57,14 @@ ANSI_TABLES = """
 """
 
 
-def dump_database(conn: pyodbc.Connection, output: str, v: bool = False):
+def dump_database(conn: pyodbc.Connection, output: str, v: bool = False, dry: bool = False):
     if v:
         print(ANSI_TABLES)
     tables = pd.read_sql(ANSI_TABLES)
 
     out_dir = pathlib.Path(output)
-    out_dir.mkdir(exist_ok=True)
+    if not dry:
+        out_dir.mkdir(exist_ok=True)
 
     for idx, (schema, table) in tables.iterrows():
         sql = f"select * from [{schema}].[{table}]"
@@ -75,13 +76,17 @@ def dump_database(conn: pyodbc.Connection, output: str, v: bool = False):
             print('-' * 60)
 
         out_file = out_dir / f"{schema}.{table}.csv"
-        pd.to_csv(out_file, index=False)
+        if not dry:
+            pd.to_csv(out_file, index=False)
+        else:
+            print(f'Not writing to {out_file} (dry run)')
 
 
 def _parse_cli() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("credentials", type=pathlib.Path)
     parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--dry-run", "-n", action="store_true")
     parser.add_argument("--output", "-o", help="Ouput folder")
     parser.add_argument("--test", "-t", action="store_true")
     args = parser.parse_args()
@@ -100,7 +105,7 @@ def main():
         return
 
     output = args.output or params.database
-    dump_database(conn, output, args.verbose)
+    dump_database(conn, output, args.verbose, args.dry_run)
 
 
 if __name__ == "__main__":
