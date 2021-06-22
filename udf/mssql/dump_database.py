@@ -78,7 +78,7 @@ def dump_database(conn: pyodbc.Connection, output: str, v: bool = False, dry: bo
 
         out_file = out_dir / f"{schema}.{table}.csv"
         if not dry:
-            pd.to_csv(out_file, index=False)
+            data.to_csv(out_file, index=False)
         else:
             print(f'Not writing to {out_file} (dry run)')
 
