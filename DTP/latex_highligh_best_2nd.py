@@ -47,7 +47,11 @@ rows = [[item.strip() for item in line[:-2].split("&")] for line in lines]
 
 cols = transpose(rows)
 
-new_rows = transpose(highlight(col) for col in cols)
+negatives = set(int(x) if int(x) >= 0 else len(cols) + int(x) for x in sys.argv[1:])
+
+new_rows = transpose(
+    highlight(col, reverse=i in negatives) for i, col in enumerate(cols)
+)
 
 for row in new_rows:
     print(" & ".join(row) + r" \\")
