@@ -58,7 +58,13 @@ ANSI_TABLES = """
 """
 
 
-def dump_database(conn: pyodbc.Connection, output: str, v: bool = False, dry: bool = False):
+def dump_database(
+    conn: pyodbc.Connection,
+    output: str,
+    v: bool = False,
+    dry: bool = False,
+    format: str = "csv",
+):
     if v:
         print(ANSI_TABLES)
     tables = pd.read_sql(ANSI_TABLES, conn)
@@ -74,13 +80,22 @@ def dump_database(conn: pyodbc.Connection, output: str, v: bool = False, dry: bo
         data = pd.read_sql(sql, conn)
         if v:
             data.info()
-            print('-' * 60)
+            print("-" * 60)
 
-        out_file = out_dir / f"{schema}.{table}.csv"
+        if len(data) == 0:
+            print(f"Skipping empty table: {schema}.{table}")
+            continue
+
+        out_file = out_dir / f"{schema}.{table}.{format}"
         if not dry:
-            data.to_csv(out_file, index=False)
+            if format == "csv":
+                data.to_csv(out_file, index=False)
+            elif format == "json":
+                data.to_json(out_file, indent=2)
+            else:
+                print(f"Error: format {format} not yet supported.")
         else:
-            print(f'Not writing to {out_file} (dry run)')
+            print(f"Not writing to {out_file} (dry run)")
 
 
 def _parse_cli() -> argparse.Namespace:
@@ -88,6 +103,7 @@ def _parse_cli() -> argparse.Namespace:
     parser.add_argument("credentials", type=pathlib.Path)
     parser.add_argument("--verbose", "-v", action="store_true")
     parser.add_argument("--dry-run", "-n", action="store_true")
+    parser.add_argument("--format", "-f", default="csv")
     parser.add_argument("--output", "-o", help="Ouput folder")
     parser.add_argument("--test", "-t", action="store_true")
     args = parser.parse_args()
@@ -106,7 +122,7 @@ def main():
         return
 
     output = args.output or params.database
-    dump_database(conn, output, args.verbose, args.dry_run)
+    dump_database(conn, output, args.verbose, args.dry_run, args.format)
 
 
 if __name__ == "__main__":
