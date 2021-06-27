@@ -18,6 +18,7 @@ def fake_date(dt):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ascii', '-t', action='store_true')
+parser.add_argument('--column', '-c', default="available")
 parser.add_argument('--fake-date', '-d', action='store_true')
 parser.add_argument('--mountpoint', '-m',
                     default=('/',), help='mountpoint to show', nargs='+')
@@ -87,9 +88,9 @@ if args.ascii:
 else:
     from matplotlib import pyplot as plt
 
-    df.set_index('df_date').used.plot(style=args.style)
-    plt.title('Usage of ' + ', '.join(args.mountpoint))
+    df.set_index('df_date')[args.column].plot(style=args.style)
+    plt.title(f"{args.column}  on {', '.join(args.mountpoint)}")
     if args.absolute:
-        # unfortunately, 'size' is a bad column name in Pandas. df.size returns int, df['size'] - Series
+        # 'size' is a bad column name in Pandas. df.size returns int, df['size'] - Series
         plt.ylim(bottom=0, top=df['size'].max())
     plt.show()
