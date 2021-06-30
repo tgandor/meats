@@ -78,6 +78,7 @@ def find_tables(conn, filter=None, v=False):
 
 
 def cast_bool_to_int(columns):
+    # could also be: f"cast({c[0]} as int) as {c[0]}"...
     return [(f"{c[0]}::int", "int", c[2]) if c[1] == "boolean" else c for c in columns]
 
 
