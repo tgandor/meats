@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
+import argparse
 import sys
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--no-comma", "-k", action="store_true")
+parser.add_argument("negatives", type=int, nargs="*")
+args = parser.parse_args()
 
 
 def transpose(nested):
@@ -9,7 +15,7 @@ def transpose(nested):
 
 def _parse(item):
     if "," in item:
-        thousand_comma = item.count(",") > 1 or "." in item
+        thousand_comma = item.count(",") > 1 or "." in item or args.no_comma
         item = item.replace(",", "" if thousand_comma else ".")
     return float(item.replace(" ", ""))
 
@@ -39,19 +45,24 @@ def highlight(col, reverse=False):
     return [markup(item, ranks[item]) for item in col]
 
 
-lines = [line.strip() for line in sys.stdin.readlines()]
+def main():
+    lines = [line.strip() for line in sys.stdin.readlines()]
 
-assert all(line.endswith(r"\\") for line in lines)
+    assert all(line.endswith(r"\\") for line in lines)
 
-rows = [[item.strip() for item in line[:-2].split("&")] for line in lines]
+    rows = [[item.strip() for item in line[:-2].split("&")] for line in lines]
 
-cols = transpose(rows)
+    cols = transpose(rows)
 
-negatives = set(int(x) if int(x) >= 0 else len(cols) + int(x) for x in sys.argv[1:])
+    negatives = set(x if x >= 0 else len(cols) + x for x in args.negatives)
 
-new_rows = transpose(
-    highlight(col, reverse=i in negatives) for i, col in enumerate(cols)
-)
+    new_rows = transpose(
+        highlight(col, reverse=i in negatives) for i, col in enumerate(cols)
+    )
 
-for row in new_rows:
-    print(" & ".join(row) + r" \\")
+    for row in new_rows:
+        print(" & ".join(row) + r" \\")
+
+
+if __name__ == "__main__":
+    main()
