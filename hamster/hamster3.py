@@ -252,13 +252,18 @@ def command_dl(the_url, filter_string=None):
         info("Directory %s seems to already exist." % dir_name)
 
     contents = _gather_contents(the_url)
-    handler = MusicHandler(hostname)
-    tasks = _extract_tasks(handler, contents)
+    for handler_type in [MusicHandler, VideoHandler]:
+        handler = handler_type(hostname)
+        tasks = _extract_tasks(handler, contents)
 
-    if filter_string:
-        tasks = list(filter(lambda task: filter_string in task[0], tasks))
+        if filter_string:
+            tasks = [t for t in tasks if filter_string in t[0]]
 
-    retrieve_all(handler, tasks, dir_name)
+        if not tasks:
+            print(f"No tasks for {handler_type}.")
+            continue
+
+        retrieve_all(handler, tasks, dir_name)
 
 
 def _print_tasks(tasks, ext):
