@@ -62,7 +62,8 @@ from pycuda.elementwise import ElementwiseKernel
 #
 #  """)
 import warnings
-warnings.filterwarnings('ignore', category=UserWarning)
+
+warnings.filterwarnings("ignore", category=UserWarning)
 
 blocks = 64
 block_size = 128
@@ -83,10 +84,12 @@ end = drv.Event()
 # SourceModele SECTION
 # We write the C code and the indexing and we have lots of control
 print(
-    'Source module with gpusin(): {}-times loop for {} blocks of {} threads each ...'
-    .format(n_iter, blocks, block_size)
+    "Source module with gpusin(): {}-times loop for {} blocks of {} threads each ...".format(
+        n_iter, blocks, block_size
+    )
 )
-mod = SourceModule("""
+mod = SourceModule(
+    """
 __global__ void gpusin(float *dest, float *a, int n_iter)
 {
   const int i = blockDim.x * blockIdx.x + threadIdx.x;
@@ -95,7 +98,8 @@ __global__ void gpusin(float *dest, float *a, int n_iter)
   }
   dest[i] = a[i];
 }
-""")
+"""
+)
 
 gpusin = mod.get_function("gpusin")
 
@@ -104,77 +108,79 @@ a = numpy.ones(nbr_values).astype(numpy.float32)
 # create a destination array that will receive the result
 dest = numpy.zeros_like(a)
 
-start.record() # start timing
-gpusin(drv.Out(dest), drv.In(a), numpy.int32(n_iter), grid=(blocks, 1), block=(block_size, 1, 1) )
-end.record() # end timing
+start.record()  # start timing
+gpusin(
+    drv.Out(dest),
+    drv.In(a),
+    numpy.int32(n_iter),
+    grid=(blocks, 1),
+    block=(block_size, 1, 1),
+)
+end.record()  # end timing
 # calculate the run length
 end.synchronize()
-secs = start.time_till(end)*1e-3
+secs = start.time_till(end) * 1e-3
 print("SourceModule time and first three results:")
 print("%fs, %s" % (secs, str(dest[:3])))
-print('-' * 40)
+print("-" * 40)
 
 #####################
 # Elementwise SECTION
 # use an ElementwiseKernel with sin in a for loop all in C call from Python
-print('ElementwiseKernel with {} times loop inside kernel ...'.format(n_iter))
+print("ElementwiseKernel with {} times loop inside kernel ...".format(n_iter))
 kernel = ElementwiseKernel(
     "float *a, int n_iter",
     "for(int n = 0; n < n_iter; n++) { a[i] = sin(a[i]);}",
-    "gpusin"
+    "gpusin",
 )
 
 a = numpy.ones(nbr_values).astype(numpy.float32)
 a_gpu = gpuarray.to_gpu(a)
-start.record() # start timing
-kernel(a_gpu, numpy.int(n_iter))
-end.record() # end timing
+start.record()  # start timing
+kernel(a_gpu, n_iter)
+end.record()  # end timing
 # calculate the run length
 end.synchronize()
-secs = start.time_till(end)*1e-3
+secs = start.time_till(end) * 1e-3
 print("Elementwise time and first three results:")
 print("%fs, %s" % (secs, str(a_gpu.get()[:3])))
-print('-' * 40)
+print("-" * 40)
 
 ####################################
 # Elementwise Python looping SECTION
 # as Elementwise but the for loop is in Python, not in C
-print('ElementWiseKernel, 1 sin() in kernel, called {} times ...'.format(n_iter))
-kernel = ElementwiseKernel(
-    "float *a",
-    "a[i] = sin(a[i]);",
-    "gpusin"
-)
+print("ElementWiseKernel, 1 sin() in kernel, called {} times ...".format(n_iter))
+kernel = ElementwiseKernel("float *a", "a[i] = sin(a[i]);", "gpusin")
 
 a = numpy.ones(nbr_values).astype(numpy.float32)
 a_gpu = gpuarray.to_gpu(a)
-start.record() # start timing
+start.record()  # start timing
 for i in range(n_iter):
     kernel(a_gpu)
-end.record() # end timing
+end.record()  # end timing
 # calculate the run length
 end.synchronize()
-secs = start.time_till(end)*1e-3
+secs = start.time_till(end) * 1e-3
 print("Elementwise Python looping time and first three results:")
 print("%fs, %s" % (secs, str(a_gpu.get()[:3])))
-print('-' * 40)
+print("-" * 40)
 
 ##################
 # GPUArray SECTION
 # The result is copied back to main memory on each iteration, this is a bottleneck
-print('GPUArray with pycuda.cumath.sin() called {} times ...'.format(n_iter))
+print("GPUArray with pycuda.cumath.sin() called {} times ...".format(n_iter))
 a = numpy.ones(nbr_values).astype(numpy.float32)
 a_gpu = gpuarray.to_gpu(a)
-start.record() # start timing
+start.record()  # start timing
 for i in range(n_iter):
     a_gpu = pycuda.cumath.sin(a_gpu)
-end.record() # end timing
+end.record()  # end timing
 # calculate the run length
 end.synchronize()
-secs = start.time_till(end)*1e-3
+secs = start.time_till(end) * 1e-3
 print("GPUArray time and first three results:")
 print("%fs, %s" % (secs, str(a_gpu.get()[:3])))
-print('-' * 40)
+print("-" * 40)
 
 
 #############
@@ -182,15 +188,15 @@ print('-' * 40)
 # use numpy the calculate the result on the CPU for reference
 
 a = numpy.ones(nbr_values).astype(numpy.float32)
-start.record() # start timing
+start.record()  # start timing
 start.synchronize()
 
 for i in range(n_iter):
     a = numpy.sin(a)
 
-end.record() # end timing
+end.record()  # end timing
 # calculate the run length
 end.synchronize()
-secs = start.time_till(end)*1e-3
+secs = start.time_till(end) * 1e-3
 print("CPU time and first three results:")
 print("%fs, %s" % (secs, str(a[:3])))
