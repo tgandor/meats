@@ -7,7 +7,7 @@ import sys
 
 def convert(filename):
     with open(filename, 'r') as fp:
-        config = yaml.load(fp, loader=yaml.SafeLoader)
+        config = yaml.safe_load(fp)
     new_config = {
         key: json.dumps(json.loads(val), indent=2)
         for key, val in config.items()
