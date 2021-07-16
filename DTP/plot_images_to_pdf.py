@@ -17,6 +17,7 @@ def to_title(filename):
 parser = argparse.ArgumentParser()
 parser.add_argument("image_files", nargs="+")
 parser.add_argument("--scale", "-s", type=float, default=1)
+parser.add_argument("--letters", "-l", action='store_true')
 parser.add_argument("--output", "-o")
 args = parser.parse_args()
 
@@ -31,7 +32,10 @@ for i, filename in enumerate(args.image_files):
     axes[i].axis('off')
     v_img = Image.open(filename)
     axes[i].imshow(v_img)
-    axes[i].set_title(to_title(filename))
+    title = to_title(filename)
+    if args.letters:
+        title = chr(ord('A') + i) + ': ' + title
+    axes[i].set_title(title)
 
 # bbox_inches='tight' is tight!
 # fig.tight_layout()
