@@ -6,6 +6,7 @@ from __future__ import division
 import argparse
 import glob
 import os
+import random
 
 import cv2
 import numpy as np
@@ -279,9 +280,13 @@ if __name__ == "__main__":
     )
     parser.add_argument("--dumb", "-d",  action="store_true", help="don't use cv2 WINDOW_NORMAL.")
     parser.add_argument("--title", "-t", action="store_true", help="use filename titles for images")
+    parser.add_argument("--shuffle", "-R", action='store_true', help="show arguments in random order")
     parser.add_argument("files", nargs="+")
     args = parser.parse_args()
     quit = False
+    files = args.files
+    if args.shuffle:
+        random.shuffle(files)
     for name in args.files:
         if os.path.isfile(name):
             quit = view_file(name, args)
