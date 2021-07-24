@@ -167,7 +167,10 @@ def quick_view_directory(directory_name, args=None):
             return True
 
 
-def fhd_fit(image):
+def fhd_fit(image, window):
+    """Resize the window to ~full HD size.
+
+    This needs cv2.WINDOW_NORMAL to even work."""
     w, h = 1920, 1080
     hi, wi = image.shape[:2]
 
@@ -175,21 +178,22 @@ def fhd_fit(image):
         down_scale = max(wi / w, hi / h)
         hi, wi = [int(x / down_scale) for x in (hi, wi)]
 
-    cv2.resizeWindow("image", (wi, hi))
+    cv2.resizeWindow(window, (wi, hi))
 
 
 def view_file(filename, args=None):
-    cv2.namedWindow("image", cv2.WINDOW_NORMAL)
     image = _load_image(filename, args)
 
     if image is None:
         return
 
     window = filename if args.title else "image"
+    if not args.dumb:
+        cv2.namedWindow(window, cv2.WINDOW_NORMAL)
     cv2.imshow(window, image)
 
     if args and args.fit:
-        fhd_fit(image)
+        fhd_fit(image, window)
 
     cv2.setMouseCallback(window, mouse_info)
 
@@ -203,6 +207,27 @@ def view_file(filename, args=None):
             return True
         elif res % 256 in (32, 13):
             break
+        elif res % 256 == ord("t"):
+            args.title = not args.title
+            break
+        elif res % 256 == ord("d"):
+            args.dumb = not args.dumb
+            break
+        elif res % 256 == ord("f"):
+            args.fit = not args.fit
+            break
+        elif res % 256 == ord("h"):
+            print(
+                """
+                Key bindings:
+                    space/enter - next image;
+                    q - quit;
+                    c - close old windows;
+                    f - toggle size fitting;
+                    d - switch to 'dumb' windows (no cv2.WINDOW_NORMAL);
+                    h - print this help.
+            """
+            )
         elif res % 256 == ord("c"):
             print("cls")
             cv2.destroyAllWindows()
@@ -252,7 +277,8 @@ if __name__ == "__main__":
         action="store_true",
         help="try to load and draw YOLO boundinb boxes",
     )
-    parser.add_argument("--title", action="store_true", help="use titles for images")
+    parser.add_argument("--dumb", "-d",  action="store_true", help="don't use cv2 WINDOW_NORMAL.")
+    parser.add_argument("--title", "-t", action="store_true", help="use filename titles for images")
     parser.add_argument("files", nargs="+")
     args = parser.parse_args()
     quit = False
