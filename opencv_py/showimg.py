@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-from __future__ import division
-
 import argparse
 import glob
 import os
@@ -23,7 +20,7 @@ except ImportError:
     tqdm.write = print
 
 
-def mse(img1, img2):
+def mse(img1: np.ndarray, img2: np.ndarray) -> float:
     return np.average((img1 - img2) ** 2)
 
 
@@ -31,12 +28,12 @@ def mouse_info(*args):
     print("Mouse callback:", args)
 
 
-def _get_color(class_idx):
+def _get_color(class_idx: int) -> int:
     class_idx += 1
     return (255 * (class_idx // 4), 255 * (class_idx // 2 % 2), 255 * (class_idx % 2))
 
 
-def _scale_rect(x, y, w, h, W, H):
+def _scale_rect(x, y, w, h, W, H) -> tuple:
     x, y, w, h = list(map(float, [x, y, w, h]))
     pt1 = tuple(map(int, ((x - w / 2) * W, (y - h / 2) * H)))
     pt2 = tuple(map(int, ((x + w / 2) * W, (y + h / 2) * H)))
@@ -63,7 +60,7 @@ ACCEPTED_EXTENSIONS = {
 }
 
 
-def _load_image(filename, args=None):
+def _load_image(filename: str, args: argparse.Namespace) -> np.ndarray:
     # leaving this to imread() lead to crashes on occasion:
     _, ext = os.path.splitext(filename)
     if ext.lower() not in ACCEPTED_EXTENSIONS:
@@ -124,7 +121,7 @@ def _load_image(filename, args=None):
     return image
 
 
-def quick_view_directory(directory_name, args=None):
+def quick_view_directory(directory_name: str, args: argparse.Namespace) -> bool:
     quit = ord("q")
     data = natsorted(glob.glob(directory_name + "/*.*"))
     prev = None
@@ -168,7 +165,7 @@ def quick_view_directory(directory_name, args=None):
             return True
 
 
-def fhd_fit(image, window):
+def fhd_fit(image: np.ndarray, window: str) -> None:
     """Resize the window to ~full HD size.
 
     This needs cv2.WINDOW_NORMAL to even work."""
@@ -182,7 +179,7 @@ def fhd_fit(image, window):
     cv2.resizeWindow(window, (wi, hi))
 
 
-def view_file(filename, args=None):
+def view_file(filename: str, args: argparse.Namespace) -> bool:
     image = _load_image(filename, args)
 
     if image is None:
@@ -193,10 +190,11 @@ def view_file(filename, args=None):
         cv2.namedWindow(window, cv2.WINDOW_NORMAL)
     cv2.imshow(window, image)
 
-    if args and args.fit:
+    if args.fit:
         fhd_fit(image, window)
 
-    cv2.setMouseCallback(window, mouse_info)
+    if args.mouse:
+        cv2.setMouseCallback(window, mouse_info)
 
     while True:
         res = cv2.waitKey(0)
@@ -235,7 +233,7 @@ def view_file(filename, args=None):
             break
 
 
-if __name__ == "__main__":
+def _parse_cli() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--chessboard", help="chesboard size to detect and show")
     parser.add_argument(
@@ -278,15 +276,27 @@ if __name__ == "__main__":
         action="store_true",
         help="try to load and draw YOLO boundinb boxes",
     )
-    parser.add_argument("--dumb", "-d",  action="store_true", help="don't use cv2 WINDOW_NORMAL.")
-    parser.add_argument("--title", "-t", action="store_true", help="use filename titles for images")
-    parser.add_argument("--shuffle", "-R", action='store_true', help="show arguments in random order")
+    parser.add_argument(
+        "--dumb", "-d", action="store_true", help="don't use cv2 WINDOW_NORMAL."
+    )
+    parser.add_argument(
+        "--title", "-t", action="store_true", help="use filename titles for images"
+    )
+    parser.add_argument(
+        "--shuffle", "-R", action="store_true", help="show arguments in random order"
+    )
+    parser.add_argument("--mouse", action="store_true", help="print mouse events")
     parser.add_argument("files", nargs="+")
-    args = parser.parse_args()
-    quit = False
-    files = args.files
+    return parser.parse_args()
+
+
+def main():
+    args = _parse_cli()
+
     if args.shuffle:
-        random.shuffle(files)
+        random.shuffle(args.files)
+
+    quit = False
     for name in args.files:
         if os.path.isfile(name):
             quit = view_file(name, args)
@@ -309,3 +319,7 @@ if __name__ == "__main__":
             print("WARNING: argument ignored: {}".format(name))
         if quit:
             break
+
+
+if __name__ == "__main__":
+    main()
