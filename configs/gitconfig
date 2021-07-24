@@ -35,12 +35,15 @@
     st = status
     # even lazier than JN
     up = pull --ff-only
+    pu = push  # what a symmetry
     cl = clone
     d = diff
     pub = publish
     # some extras
     ign = status --ignored=matching
     delign = clean -dfX
+    cim = ci -m
+    ciam = ci -am
 
     #BETTER VERSIONS OF BASIC COMMANDS
 
