@@ -222,15 +222,21 @@ def view_file(filename: str, args: argparse.Namespace) -> bool:
                     space/enter - next image;
                     q - quit;
                     c - close old windows;
+                    k/w - close current window;
                     f - toggle size fitting;
                     d - switch to 'dumb' windows (no cv2.WINDOW_NORMAL);
                     h - print this help.
             """
             )
+        elif res % 256 in {ord("k"), ord("w")}:
+            cv2.destroyWindow(window)
+            break
         elif res % 256 == ord("c"):
             print("cls")
             cv2.destroyAllWindows()
             break
+
+    return False
 
 
 def _parse_cli() -> argparse.Namespace:
