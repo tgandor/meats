@@ -1,3 +1,7 @@
+[core]
+    pager = less -R
+    editor = vim
+
 [branch]
     autosetupmerge = true
 
@@ -27,7 +31,7 @@
     untracked = cyan
 
 [alias]
-    #LAZY VERSIONS OF BASIC COMMANDS
+    # LAZY VERSIONS OF BASIC COMMANDS
 
     co = checkout
     br = branch
@@ -45,7 +49,7 @@
     cim = ci -m
     ciam = ci -am
 
-    #BETTER VERSIONS OF BASIC COMMANDS
+    # BETTER VERSIONS OF BASIC COMMANDS
 
     purr = pull --rebase
     puff = pull --ff-only
@@ -58,7 +62,7 @@
     makegitrepo = !git init && git add . && git commit -m \"initial commit\"
     fpush = push --force-with-lease
 
-    #BASIC HISTORY VIEWING
+    # BASIC HISTORY VIEWING
 
     hist = log --graph --date=relative \
         --format=format:'%C(auto)%h %C(bold blue)%an%C(auto)%d %C(green)%ad%C(reset)%n%w(80,8,8)%s'
@@ -69,28 +73,28 @@
     ls = log --pretty=format:'%C(yellow)%p..%h %C(white dim)%cd %<|(49,trunc)%an %C(reset)%s' --date=short --abbrev=8 --no-merges
     recent = for-each-ref --sort=-committerdate refs/heads/ --format='%(authordate:short) %(color:red)%(objectname:short) %(color:yellow)%(refname:short)%(color:reset) (%(color:green)%(committerdate:relative)%(color:reset))'
 
-    #BASIC REPO INFORMATION
+    # BASIC REPO INFORMATION
 
     whois = "!sh -c 'git log -i -1 --pretty=\"format::%an <%ae>\n\" --author=\"$1\"' -"
     whatis = show -s --pretty='tformat::%h (%s, %ad)' --date=short
     howmany = "!sh -c 'git log -a --pretty=oneline | wc -l'"
     howmanybywhom = shortlog -sn
 
-    #WHAT WAS GOING ON, WHILE YOU WERE AWAY
+    # WHAT WAS GOING ON, WHILE YOU WERE AWAY
 
-    anychanges = !sh -c 'git fetch' && git log --oneline HEAD..origin/$1
+    anychanges = !sh -c 'git fetch' && git log --oneline HEAD..origin/$(git branch-name)
     anychangesonmaster = !sh -c 'git fetch' && git log --oneline HEAD..origin/master
-    whoischanging = !sh -c 'git shortlog HEAD..origin/$0'
+    whoischanging = !sh -c 'git shortlog HEAD..origin/$(git branch-name)'
     whoischangingmaster = !sh -c 'git shortlog HEAD..origin/master'
 
-    #what branches you have on origin, with info on who is guilty and how long ago. Useful for gitflow and feature branches in general. Requires fetch up-front.
+    # what branches you have on origin, with info on who is guilty and how long ago. Useful for gitflow and feature branches in general. Requires fetch up-front.
     showorigin = "!sh -c 'for branch in `git branch -r | grep -v HEAD`;do echo `git show -s --format=\"%Cred%ci %C(green)%h %C(yellow)%cr %C(magenta)%an %C(blue)\" $branch | head -n 1` \\\t$branch; done | sort -r'"
 
-    #get remote branches
+    # get remote branches
     trackallbranches = !sh -c "for branchname in `git branch -r `; do git branch --track $branchname; done"
     updateallbranches = !sh -c "for branchname in `git branch -r `; do git checkout $branchname ; git pull; done"
 
-    #TAGS
+    # TAGS
 
     showtags = show-ref --tags
     pushtags = push --tags
@@ -102,7 +106,7 @@
     # Removes given tag from remote 'origin' repo (or the remote passed as the second parameter)
     unpublishtag = "!sh -c 'git push ${2:-origin} :refs/tags/$1' -"
 
-    #IGNORING
+    # IGNORING
 
     # fix .gitignore
     fixgitignore = !git rm -r --cached . && git add . && git commit -m \"Just a .gitignore fix \"
@@ -111,16 +115,16 @@
     hide = update-index --assume-unchanged
     unhide = update-index --no-assume-unchanged
 
-    #OTHER
-    
-    #Finds a filename in the git repository. Gives absolute location (from the git root).
+    # OTHER
+
+    # Finds a filename in the git repository. Gives absolute location (from the git root).
     find = !sh -c 'git ls-tree -r --name-only HEAD | grep --color $1' - 
 
-    #Deletes all branches that were safely merged into the master. All other are skipped (no worries).
-    #on osx xargs does not have -r argument, so it fail. If you remove -r, it will run at least once, making this not safe operation
+    # Deletes all branches that were safely merged into the master. All other are skipped (no worries).
+    # on osx xargs does not have -r argument, so it fail. If you remove -r, it will run at least once, making this not safe operation
     cleanup = !git branch --merged=master | grep -Ev '^\\* | master$' | xargs -r git branch -d
 
-    #Deletes orphaned remote branches (.git/refs/remotes/origin), clean up reflog and remove all untracked files
+    # Deletes orphaned remote branches (.git/refs/remotes/origin), clean up reflog and remove all untracked files
     cleanuplocal = !git remote prune origin && git gc && git clean -df
 
     # Check if any file in repo has whitespace errors
@@ -128,13 +132,13 @@
     check-whitespace = !git diff-tree --check $(git hash-object -t tree /dev/null) HEAD
 
     # Check if any file in repo has windows line endings
-    #Currently do not work as alias, works from comand line directly. There is a problem with \r
+    # Currently doesn't work as alias, works from comand line directly. There is a problem with \r
     check-eol = !git grep --files-with-matches $'\\r' HEAD
 
-    #Jira tickets (from: http://blogs.atlassian.com/2014/08/whats-new-git-2-1/)
+    # Jira tickets (from: http://blogs.atlassian.com/2014/08/whats-new-git-2-1/)
     issues = "!f() { : git log ; echo 'Printing issue keys'; git log --oneline $@ | egrep -o [A-Z]+-[0-9]+ | sort | uniq; }; f"
-    #version for git below 2.1
-    #issues = !sh -c 'git log --oneline $@ | egrep -o [A-Z]+-[0-9]+ | sort | uniq' -
+    # version for git below 2.1
+    # issues = !sh -c 'git log --oneline $@ | egrep -o [A-Z]+-[0-9]+ | sort | uniq' -
 
     # Gets the current branch name (not so useful in itself, but used in other aliases)
     branch-name = "!git rev-parse --abbrev-ref HEAD"
@@ -146,19 +150,18 @@
     # Fetch PR from GitHub by number/id
     fetchpr = "!sh -c 'git fetch origin pull/$0/head:pr/$0'"
 
-    #add all, commit with message and push to remote
+    # add all, commit with message and push to remote
     apm = "!f() { git add --all && git commit -m \"$@\" && git push; }; f"
 
 [apply]
     whitespace = nowarn
-[core]
-    pager = less -R
 [help]
-    autocorrect = 1 #fucking magic!
+    autocorrect = 1 # magic!
 
-#Kudos for (copied from):
-#http://git-scm.com/book/en/Customizing-Git-Git-Configuration
-#http://robots.thoughtbot.com/post/4747482956/streamline-your-git-workflow-with-aliases
-#http://oli.jp/2012/git-powerup/#conclusion
-#http://blog.blindgaenger.net/advanced_git_aliases.html
-#https://gist.github.com/robmiller/6018582 (branch-name, publish, unpublish)
+# Kudos for (copied from):
+# http://git-scm.com/book/en/Customizing-Git-Git-Configuration
+# http://robots.thoughtbot.com/post/4747482956/streamline-your-git-workflow-with-aliases
+# http://oli.jp/2012/git-powerup/#conclusion
+# http://blog.blindgaenger.net/advanced_git_aliases.html
+# https://gist.github.com/robmiller/6018582 (branch-name, publish, unpublish)
+# https://github.com/jakubnabrdalik/gitkurwa
