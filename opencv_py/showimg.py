@@ -147,8 +147,9 @@ def quick_view_directory(directory_name: str, args: argparse.Namespace) -> bool:
         else:
             prev = image
 
-        cv2.imshow(directory_name, image)
-        res = cv2.waitKey(args.delay if args else 1)
+        window = filename if args.title else directory_name
+        cv2.imshow(window, image)
+        res = cv2.waitKey(args.delay if args.delay is not None else 1)
 
         # pause
         if pause or res & 0xFF == 32:
@@ -197,14 +198,14 @@ def view_file(filename: str, args: argparse.Namespace) -> bool:
         cv2.setMouseCallback(window, mouse_info)
 
     while True:
-        res = cv2.waitKey(0)
+        res = cv2.waitKey(args.delay or 0)
         print(
             "You pressed %d (0x%x), LSB: %d (%s)"
             % (res, res, res % 256, repr(chr(res % 256)) if res % 256 < 128 else "?")
         )
         if res % 256 in (27, ord("q"), ord("x")):
             return True
-        elif res % 256 in (32, 13):
+        elif res % 256 in (32, 13, 255):
             break
         elif res % 256 == ord("t"):
             args.title = not args.title
@@ -244,9 +245,9 @@ def _parse_cli() -> argparse.Namespace:
     parser.add_argument("--chessboard", help="chesboard size to detect and show")
     parser.add_argument(
         "--delay",
+        "-w",
         type=int,
         help="miliseconds to wait beween directory images",
-        default=1,
     )
     parser.add_argument(
         "--downsample",
@@ -289,6 +290,9 @@ def _parse_cli() -> argparse.Namespace:
         "--title", "-t", action="store_true", help="use filename titles for images"
     )
     parser.add_argument(
+        "--stay", action="store_true", help="add extra waitKey(0) at end"
+    )
+    parser.add_argument(
         "--shuffle", "-R", action="store_true", help="show arguments in random order"
     )
     parser.add_argument("--mouse", action="store_true", help="print mouse events")
@@ -326,6 +330,8 @@ def main():
         if quit:
             break
 
+    if args.stay:
+        cv2.waitKey(0)
 
 if __name__ == "__main__":
     main()
