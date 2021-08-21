@@ -33,7 +33,7 @@ class Credentials:
     @classmethod
     def from_file(cls, file: pathlib.Path):
         with file.open() as f:
-            return cls(*f)
+            return cls(*[line.strip() for line in f])
 
     def save(self, file: pathlib.Path):
         with file.open("w") as f:
