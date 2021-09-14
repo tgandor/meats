@@ -91,7 +91,7 @@ def windows_emulation():
             continue
 
         print(
-            "{:, } B = {:.1f}% used, {:,} B free".format(
+            "{:,} B = {:.1f}% used, {:,} B free".format(
                 usage.used, usage.used * 100 / usage.total, usage.free
             )
         )
