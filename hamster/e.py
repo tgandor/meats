@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
-# OK, the target platform has no 'env'...
-
-from __future__ import absolute_import
-from __future__ import print_function
-
+import argparse
 import os
 import re
 import socket
@@ -17,6 +13,9 @@ import six.moves.urllib.parse
 import six.moves.urllib.request
 
 
+user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36"
+
+
 def human(x):
     for sufix in ['', 'K', 'M', 'G', 'T']:
         if x < 1024:
@@ -27,9 +26,14 @@ def human(x):
 
 def get(url):
     """Stubborn retrieve data."""
+    if os.path.isfile(url):
+        return open(url).read()
+
     while True:
         try:
-            return six.moves.urllib.request.urlopen(url).read()
+            req = six.moves.urllib.request.Request(url, data=None, headers={"User-Agent": user_agent})
+            resp = six.moves.urllib.request.urlopen(req)
+            return resp.read()
         except socket.timeout:
             print("Timed out. Retrying.")
         except socket.error as e:
@@ -86,7 +90,7 @@ def enter_folder(name):
     os.chdir(new_name)
 
 
-def download_all(url, search='mp3$'):
+def download_all(url, search='mp3$', attrib='href'):
     total = 0
     try:
         content_bin = get(url)
@@ -95,7 +99,7 @@ def download_all(url, search='mp3$'):
             dump.write(content_bin)
 
         links = sorted(set([link
-                            for link in re.findall('href="([^"]+)"', content, re.IGNORECASE)
+                            for link in re.findall(attrib + '="([^"]+)"', content, re.IGNORECASE)
                             if re.search(search, link)]))
         links = [six.moves.urllib.parse.urljoin(url, link)
                  if not link.startswith('http')
@@ -116,18 +120,14 @@ def download_all(url, search='mp3$'):
         print("Total downloaded: %sB" % human(total))
 
 
-if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        download_all(sys.argv[1])
-    elif len(sys.argv) == 3:
-        download_all(sys.argv[1], sys.argv[2])
-    else:
-        print("trying to retrieve from clipboard")
-        try:
-            import androidhelper
-        except ImportError:
-            print("Error: couldn't find androidhelper")
-            exit()
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('url')
+    parser.add_argument('search', nargs='?', default='mp3$')
+    parser.add_argument('attrib', nargs='?', default='href')
+    args = parser.parse_args()
+    download_all(args.url, args.search, args.attrib)
 
-        URL = androidhelper.Android().getClipboard().result
-        download_all(URL)
+
+if __name__ == '__main__':
+    main()
