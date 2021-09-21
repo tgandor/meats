@@ -1,6 +1,6 @@
 -- Reference: https://stackoverflow.com/questions/18907047/postgres-db-size-command
 
-create function
+create or replace function
 cnt_rows(schema text, tablename text) returns integer as
 $body$
 declare
