@@ -15,3 +15,5 @@ glxinfo | egrep "OpenGL vendor|OpenGL renderer*"
 # also useful in many situations
 # https://unix.stackexchange.com/a/413282/98519
 nvidia-smi -L
+
+echo You seem to have $(nvidia-smi -L | wc -l) GPU(s)
