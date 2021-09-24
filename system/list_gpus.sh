@@ -16,4 +16,4 @@ glxinfo | egrep "OpenGL vendor|OpenGL renderer*"
 # https://unix.stackexchange.com/a/413282/98519
 nvidia-smi -L
 
-echo You seem to have $(nvidia-smi -L | wc -l) GPU(s)
+echo "You seem to have $(nvidia-smi -L | wc -l) GPU(s)"
