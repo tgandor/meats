@@ -93,13 +93,18 @@ def enter_folder(name):
 def download_all(url, search='mp3$', attrib='href'):
     total = 0
     try:
-        content_bin = get(url)
+        if os.path.exists(url):
+            # even if last_content.html ;)
+            with open(url, "rb") as f:
+                content_bin = f.read()
+        else:
+            content_bin = get(url)
         content = content_bin.decode('utf-8')
         with open('last_content.html', 'wb') as dump:
             dump.write(content_bin)
 
         links = sorted(set([link
-                            for link in re.findall(attrib + '="([^"]+)"', content, re.IGNORECASE)
+                            for link in re.findall(attrib + '=["\']([^"\']+)["\']', content, re.IGNORECASE)
                             if re.search(search, link)]))
         links = [six.moves.urllib.parse.urljoin(url, link)
                  if not link.startswith('http')
@@ -107,7 +112,8 @@ def download_all(url, search='mp3$', attrib='href'):
     except Exception as e:
         print("Error retrieving file list:", e)
         return
-    print("Found:", links)
+    print("Found:")
+    print("\n".join(links))
     if not links:
         print("No URLs found to follow.")
         # print content
