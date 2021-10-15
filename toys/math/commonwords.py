@@ -2,12 +2,11 @@
 
 import re
 import sys
-import locale
 
 TOO_COMMON = 2
 
-lhs = open(sys.argv[1]).read().decode('UTF-8')
-rhs = open(sys.argv[2]).read().decode('UTF-8')
+lhs = open(sys.argv[1]).read()
+rhs = open(sys.argv[2]).read()
 
 try:
 	ngram = int(sys.argv[3])
@@ -27,5 +26,4 @@ numunique = 0
 for w in sorted(common):
 	if lhs.count(w) < TOO_COMMON and rhs.count(w) < TOO_COMMON:
 		numunique += 1
-		print numunique, w
-
+		print(numunique, w)
