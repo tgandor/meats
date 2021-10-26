@@ -15,6 +15,9 @@ def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs="*")
     parser.add_argument("--inplace", "-w", action="store_true")
+    parser.add_argument(
+        "--nbsp", "-s", action="store_true", help="use Unicode A0, not ~"
+    )
     args = parser.parse_args()
 
     if not args.files:
@@ -27,6 +30,9 @@ def _main():
             data = f.read()
 
         result = polish_monocharacters(data)
+
+        if args.nbsp:
+            result = result.replace('~', '\xA0')
 
         if args.inplace:
             with open(filename, "w") as f:
