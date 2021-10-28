@@ -46,7 +46,7 @@ while True:
     if args.vcrop:
         frames = [frame[:args.vcrop] for frame in frames]
 
-    assert len({frame.shape for frame in frames}) == 1, 'Frame shapes must be equal'
+    assert len({frame.shape[0] for frame in frames}) == 1, 'Frame heights must be equal'
 
     tiles = np.hstack(frames)
 
