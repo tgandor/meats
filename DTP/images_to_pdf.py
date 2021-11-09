@@ -69,7 +69,7 @@ def get_files(image_files):
     for path in image_files:
         if os.path.isfile(path):
             yield path
-        elif '*' in path:
+        elif '*' in path or '[' in path:
             # yield from glob.glob(path)
             for image in sort_function(glob.glob(path)):
                 yield image
