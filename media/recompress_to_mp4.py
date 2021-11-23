@@ -60,6 +60,7 @@ def _parse_cli():
     parser.add_argument("--framerate", "-r", help="specify output FPS for video")
     parser.add_argument(
         "--here",
+        "-H",
         action="store_true",
         help="convert to the same place (only from other format)",
     )
@@ -254,10 +255,6 @@ def _get_filters(args):
         filters += " -vf scale=" + args.scale
 
     if args.stabilize:
-        preprocessing = '{} -i "{}" -vf vidstabdetect -f null -'.format(
-            converter, original
-        )
-        ts.run(preprocessing)
         filters += " -vf vidstabtransform,unsharp=5:5:0.8:3:3:0.4"
 
     if args.fix_avidemux:
@@ -283,11 +280,11 @@ def _get_input_options(args):
 
 def _iter_files(files_or_globs):
     for pattern in files_or_globs:
-        if '*' in pattern:
-            for path in glob.glob(pattern):
-                yield pattern
-        else:
+        if os.path.exists(pattern):
             yield pattern
+        else:
+            for path in glob.glob(pattern):
+                yield path
 
 
 def _main():
@@ -325,6 +322,12 @@ def _main():
                 os.rename(filename, original)
         else:
             original = filename
+
+        if args.stabilize:
+            preprocessing = '{} -i "{}" -vf vidstabdetect -f null -'.format(
+                converter, original
+            )
+            ts.run(preprocessing)
 
         if args.here:
             converted = os.path.splitext(filename)[0] + ".mp4"
