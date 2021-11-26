@@ -7,6 +7,7 @@ RUN apt-get upgrade -y
 RUN DEBIAN_FRONTEND="noninteractive" TZ="Europe/Warsaw" apt-get install -y ffmpeg python3 python3-opencv
 # https://askubuntu.com/questions/320996/how-to-make-python-program-command-execute-python-3
 RUN apt-get install -y python-is-python3
+RUN apt-get install -y python3-tqdm
 
 # https://stackoverflow.com/questions/59904878/docker-compose-volume-name-is-too-short-names-should-be-at-least-two-alphanume
 # for manual _work_ this _works_ like this:
