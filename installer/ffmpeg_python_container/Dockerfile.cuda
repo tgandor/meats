@@ -10,7 +10,7 @@ RUN apt-get install -y python-is-python3
 
 # https://stackoverflow.com/questions/59904878/docker-compose-volume-name-is-too-short-names-should-be-at-least-two-alphanume
 # for manual _work_ this _works_ like this:
-# docker run --rm -it -v $(pwd)/:/work ffmpycu bash
+# docker run --runtime=nvidia --rm -it -v $(pwd)/:/work ffmpycu bash
 RUN mkdir /work
 WORKDIR /work
 
