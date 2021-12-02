@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import glob
-import os
+import datetime
 
 fields_of_interest = [
     "POWER_SUPPLY_ENERGY_FULL",
@@ -99,7 +99,7 @@ def format_fields_of_interest(data):
 def main():
     data = power_supply_data()
     # print(data)
-    print(format_fields_of_interest(data))
+    print(datetime.datetime.now(), format_fields_of_interest(data))
 
 
 if __name__ == "__main__":
