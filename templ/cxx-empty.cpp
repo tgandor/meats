@@ -1,7 +1,7 @@
-#include <iostream>
+#include <bits/stdc++.h>
 
-using namespace std;
-
-int main() {
-  return 0;
+int main()
+{
+    using namespace std;
+    return 0;
 }

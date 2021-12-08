@@ -1,16 +1,5 @@
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <algorithm>
-#include <numeric>
-#include <list>
-#include <deque>
-#include <iostream>
-#include <iterator>
-#include <string>
-#include <vector>
+#include <bits/stdc++.h>
 
-#define I int
 #define IN(x) int x; scanf("%d", &x)
 #define OUT(x) printf("%d\n", x)
 #define FRN(ii, ll, uu) for(int ii = (ll); ii < uu; ++ii)
