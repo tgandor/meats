@@ -14,6 +14,7 @@ import requests
 
 parser = argparse.ArgumentParser()
 parser.add_argument('url_or_path')
+parser.add_argument('--bare', '-b', action='store_true', help='all hrefs (no link text)')
 parser.add_argument('--text', '-t', action='store_true', help='Display link text')
 parser.add_argument('--nested', '-n', action='store_true', help='Match anchor tags which can include nested tags')
 args = parser.parse_args()
@@ -28,19 +29,22 @@ else:
 if args.nested:
     # match link text via non greedy .+
     link = re.compile(r'<a (?:\w+="[^"]+" )*href="(?P<href>[^"]+)"(?: \w+="[^"]+")*>(?P<text>.+?)</a>', re.IGNORECASE)
+elif args.bare:
+    link = re.compile(r'href=["\'](?P<href>[^"\']+)["\']', re.IGNORECASE)
 else:
-    link = re.compile(r'<a (?:\w+="[^"]+" )*href="(?P<href>[^"]+)"(?: \w+="[^"]+")*>(?P<text>[^<]+)</a>', re.IGNORECASE)
+    link = re.compile(r'href="(?P<href>[^"]+)"(?: \w+="[^"]+")*>(?P<text>.+?)</a>', re.IGNORECASE)
 
 # tag and closing tag near match
 tag = re.compile(r'<[^>]+?>')
 
 for match in link.finditer(data):
     d = match.groupdict()
-
     if args.text:
         text = d['text']
         if args.nested:
             text, _ = tag.subn('', text)
         print(urllib_parse.urljoin(url_or_path, d['href']), text)
+    elif args.bare:
+        print(d['href'])
     else:
         print(urllib_parse.urljoin(url_or_path, d['href']))
