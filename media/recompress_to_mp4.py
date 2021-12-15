@@ -64,6 +64,7 @@ def _parse_cli():
         action="store_true",
         help="convert to the same place (only from other format)",
     )
+    parser.add_argument("--delete", "-D", action="store_true", help="DELETE original")
     parser.add_argument("--hevc", action="store_true", help="use h.265 (HEVC) codec")
     parser.add_argument("--hwaccel", "-hw", help="specify input hardware acceleration")
     parser.add_argument(
@@ -374,6 +375,10 @@ def _main():
             print(basename, "compressed {:.1f}x".format(ratio), "which is", dump_dir)
             makedirs(dump_dir, exist_ok=True)
             os.rename(converted, os.path.join(dump_dir, os.path.basename(converted)))
+
+        if args.delete:
+            print("Deleting:", original)
+            os.unlink(original)
 
     if not args.dry_run:
         ts.report()
