@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import argparse
+from ast import pattern
 import glob
+import os
+from re import A
 from sys import path
 
 import cv2
@@ -23,6 +26,12 @@ def inpaint_subtible(frame_file, shape, radius, algorithm):
     new_frame = cv2.inpaint(frame, mask2, radius, algorithm)
     cv2.imwrite(frame_file, new_frame)
 
+def _get_pattern(args):
+    pattern = args.files_glob
+    if os.path.isdir(pattern):
+        pattern += '/*'
+    return pattern
+
 
 def _parallel_inpaint(args):
     # https://stackoverflow.com/a/59905309/1338797
@@ -36,7 +45,8 @@ def _parallel_inpaint(args):
         algorithm=args.algorithm,
     )
 
-    files = sorted(glob.glob(args.files_glob))
+    pattern = _get_pattern(args)
+    files = sorted(glob.glob(pattern))
 
     process_map(mapper, files, chunksize=32)
 
@@ -67,7 +77,8 @@ def _main():
 
     shape = (args.augument, args.augument)
 
-    for frame_file in tqdm.tqdm(sorted(glob.glob(args.files_glob))):
+    pattern = _get_pattern(args)
+    for frame_file in tqdm.tqdm(sorted(glob.glob(pattern))):
         frame = cv2.imread(frame_file)
         frame_bw = cv2.imread(frame_file, cv2.IMREAD_GRAYSCALE)
 
