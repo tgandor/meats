@@ -6,9 +6,15 @@ else
 	conv=ffmpeg
 fi
 
+if [ "$MP3" == "" ] ; then
+    EXT=mp3
+else
+    EXT=$MP3
+fi
+
 for f in "$@"; do
 	basename="${f%.*}"
-	new_name=${basename}.mp3
+	new_name=${basename}.$EXT
 # this approach was limited:
 # new_name=`echo $f | sed 's/.ogg$\|.m4a$\|.flv$\|.mp4$\|.opus$\|.mkv$/.mp3/'`
 	if [ "$f" == "$new_name" ] ; then
