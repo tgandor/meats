@@ -7,7 +7,7 @@ import sys
 def print_secs(secs):
     h, s = divmod(secs, 3600)
     m, s = divmod(s, 60)
-    print("%d seconds - %02d:%02d:%02d" % (secs, h, m, s))
+    print("%d seconds - %02d:%02d - %02d:%02d:%02d" % (secs, 60*h+m, s, h, m, s))
 
 
 if len(sys.argv) < 2:
