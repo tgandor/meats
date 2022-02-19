@@ -2,6 +2,8 @@
 
 import argparse
 import itertools as it
+from os import system
+from os.path import splitext, exists
 
 import numpy as np
 from scipy.io import wavfile
@@ -11,10 +13,18 @@ from scipy.io import wavfile
 parser = argparse.ArgumentParser()
 parser.add_argument("--min-silence", "-m", type=float, default=0.2)
 parser.add_argument("--min-amp", type=int, default=1000)
-parser.add_argument("wave_file")
+parser.add_argument("file")
 args = parser.parse_args()
 
-rate, data = wavfile.read(args.wave_file)
+if not args.file.lower().endswith('.wav'):
+    wave_file = splitext(args.file)[0] + '.wav'
+    if not exists(wave_file):
+        print(f"Warning: {wave_file} does not exist, creating...")
+        system(f'ffmpeg -i "{args.file}" "{wave_file}"')
+else:
+    wave_file = args.file
+
+rate, data = wavfile.read(wave_file)
 low = np.abs(data[:, 0]) // args.min_amp
 limit = args.min_silence * rate
 
