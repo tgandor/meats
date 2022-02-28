@@ -21,10 +21,12 @@ def search_recursive(data, pattern, path=None):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("json_file")
 parser.add_argument("pattern")
+parser.add_argument("json_file", nargs="+")
 args = parser.parse_args()
 
-stream = sys.stdin if args.json_file == "-" else open(args.json_file)
-data = json.load(stream)
-search_recursive(data, args.pattern)
+for path in args.json_file:
+    print(path)
+    stream = sys.stdin if path == "-" else open(path)
+    data = json.load(stream)
+    search_recursive(data, args.pattern)
