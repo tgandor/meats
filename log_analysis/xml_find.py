@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Find string in XML (tags, attribute names, attribute values).
+Find string in XML (tags, attribute names, attribute values, and #text).
 """
 
 import argparse
@@ -27,6 +27,12 @@ def search_recursive(node: ET.Element, pattern, path=None, **options):
 
     if check(node.tag, pattern, **options):
         print("/".join(path))
+
+    if node.text and check(node.text, pattern, **options):
+        print("/".join(path + [f"#text = {node.text}"]))
+
+    if node.tail and check(node.tail, pattern, **options):
+        print("/".join(path + [f"#tail = {node.text}"]))
 
     for key, val in node.attrib.items():
         if check(key, pattern, **options) or check(val, pattern, **options):
