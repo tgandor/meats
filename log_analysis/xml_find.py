@@ -5,12 +5,19 @@ Find string in XML (tags, attribute names, attribute values, and #text).
 """
 
 import argparse
+import re
 from xml.etree import ElementTree as ET
 
 
 def check(value: str, pattern: str, **options):
-    if options.get("case_insensitive"):
+    ci = options.get("case_insensitive")
+
+    if options.get("regex"):
+        return re.search(pattern, value, re.IGNORECASE if ci else 0)
+
+    if ci:
         return pattern.casefold() in value.casefold()
+
     return pattern in value
 
 
@@ -69,6 +76,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("pattern")
 parser.add_argument("xml_file", nargs="+")
 parser.add_argument("--case-insensitive", "-c", action="store_true")
+parser.add_argument("--regex", "-x", action="store_true")
+
 args = parser.parse_args()
 
 for path in args.xml_file:
@@ -77,5 +86,8 @@ for path in args.xml_file:
     if nsmap:
         print(nsmap)
     search_recursive(
-        root, args.pattern, case_insensitive=args.case_insensitive, nsmap=nsmap
+        root, args.pattern,
+        case_insensitive=args.case_insensitive,
+        nsmap=nsmap,
+        regex=args.regex,
     )
