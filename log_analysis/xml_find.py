@@ -86,7 +86,8 @@ for path in args.xml_file:
     if nsmap:
         print(nsmap)
     search_recursive(
-        root, args.pattern,
+        root,
+        args.pattern,
         case_insensitive=args.case_insensitive,
         nsmap=nsmap,
         regex=args.regex,
