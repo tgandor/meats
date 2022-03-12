@@ -47,9 +47,9 @@ else:
 if args.reverse:
     import dns.reversename
     name = dns.reversename.from_address(args.url)
-    answers = res.query(name, 'PTR')
+    answers = res.resolve(name, 'PTR')
 else:
-    answers = res.query(args.url, 'A')
+    answers = res.resolve(args.url, 'A')
 
 for rdata in answers:
     if args.ip:
