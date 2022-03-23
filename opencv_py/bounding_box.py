@@ -5,7 +5,7 @@ import itertools as it
 import os
 
 import cv2
-from matplotlib.pyplot import axis
+import numpy as np
 
 
 def bounding_box(img):
@@ -30,8 +30,9 @@ def bounding_box(img):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs="+")
-    parser.add_argument("--show", "-s", action="store_true")
+    parser.add_argument("--center", "-c", action="store_true")
     parser.add_argument("--outdir", "-o")
+    parser.add_argument("--show", "-s", action="store_true")
     args = parser.parse_args()
 
     for path in args.files:
@@ -40,13 +41,21 @@ def main():
         x0, x1, y0, y1 = bbox
         h, w = img.shape[:2]
         print(path, bbox, (x0, y0), (w - x1, h - y1))
+
         if args.show or args.outdir:
             cv2.rectangle(img, (x0, y0), (w - x1, h - y1), (255, 0, 0), 2)
+
+        if args.center:
+            print(f"Rolling by {(x1-x0) // 2}")
+            img = np.roll(img, (x1 - x0) // 2, axis=1)
+
+        if args.show or args.outdir:
             cv2.rectangle(img, (0, 0), (w, h), (0, 0, 255), 2)
 
         if args.show:
             cv2.imshow(path, img)
-            cv2.waitKey(0)
+            if cv2.waitKey(0) & 0xFF == ord("q"):
+                break
 
         if args.outdir:
             out = os.path.join(args.outdir, path)
