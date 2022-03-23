@@ -31,9 +31,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs="+")
     parser.add_argument("--center", "-c", action="store_true")
+    parser.add_argument("--draw", "-d", action="store_true")
     parser.add_argument("--outdir", "-o")
     parser.add_argument("--show", "-s", action="store_true")
+    parser.add_argument("--vmargin", "-v", type=int)
     args = parser.parse_args()
+
+    v_margins = []
 
     for path in args.files:
         img = cv2.imread(path)
@@ -42,14 +46,19 @@ def main():
         h, w = img.shape[:2]
         print(path, bbox, (x0, y0), (w - x1, h - y1))
 
-        if args.show or args.outdir:
+        if args.draw:
             cv2.rectangle(img, (x0, y0), (w - x1, h - y1), (255, 0, 0), 2)
 
         if args.center:
-            print(f"Rolling by {(x1-x0) // 2}")
+            print(f"Rolling left by {(x1-x0) // 2}")
             img = np.roll(img, (x1 - x0) // 2, axis=1)
+            v_margins.append((y0 + y1) // 2)
 
-        if args.show or args.outdir:
+        if args.vmargin:
+            print(f"Rolling down by {args.vmargin - y0}")
+            img = np.roll(img, args.vmargin - y0, axis=0)
+
+        if args.draw:
             cv2.rectangle(img, (0, 0), (w, h), (0, 0, 255), 2)
 
         if args.show:
@@ -60,6 +69,10 @@ def main():
         if args.outdir:
             out = os.path.join(args.outdir, path)
             cv2.imwrite(out, img)
+
+    if args.center:
+        print(v_margins)
+        print("Min V margin:", min(v_margins))
 
 
 if __name__ == "__main__":
