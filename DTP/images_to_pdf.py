@@ -62,6 +62,9 @@ def create_image_pdf(images, args):
             )
             c.drawCentredString(A4[0] / 2, args.footer_y * cm, text)
         c.showPage()
+        if args.empty_after == page_num:
+            c.showPage()
+
         print("Processed {} - page {}".format(filename, page_num))
     c.save()
     if sys.platform.startswith("linux"):
@@ -125,6 +128,7 @@ def main():
         "--no-center", action="store_true", help="No centering on page, just margins"
     )
     parser.add_argument("--title", help="PDF title")
+    parser.add_argument("--empty-after", type=int, help="put empty page after specified page")
     parser.add_argument("image_files", nargs="+", help="Input images")
     args = parser.parse_args()
     images = list(get_files(args.image_files))
