@@ -27,7 +27,15 @@ def update_settings():
 
 
 def create_image_pdf(images, args):
-    c = canvas.Canvas(args.output)
+    if not args.output:
+        if args.title:
+            output = args.title.replace(" ", "_") + ".pdf"
+        else:
+            output = "images.pdf"
+    else:
+        output = args.output
+
+    c = canvas.Canvas(output)
 
     format = A4
     if args.landscape:
@@ -68,9 +76,9 @@ def create_image_pdf(images, args):
         print("Processed {} - page {}".format(filename, page_num))
     c.save()
     if sys.platform.startswith("linux"):
-        os.system('xdg-open "%s"' % args.output)
+        os.system('xdg-open "%s"' % output)
     else:
-        os.system('start "" "%s"' % args.output)
+        os.system('start "" "%s"' % output)
 
 
 def get_files(image_files):
@@ -93,7 +101,7 @@ def get_files(image_files):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output", "-o", help="Output PDF file", default="images.pdf")
+    parser.add_argument("--output", "-o", help="Output PDF file")
     parser.add_argument(
         "--margin-x",
         help="Left and right margin in cm",
@@ -128,7 +136,9 @@ def main():
         "--no-center", action="store_true", help="No centering on page, just margins"
     )
     parser.add_argument("--title", help="PDF title")
-    parser.add_argument("--empty-after", type=int, help="put empty page after specified page")
+    parser.add_argument(
+        "--empty-after", type=int, help="put empty page after specified page"
+    )
     parser.add_argument("image_files", nargs="+", help="Input images")
     args = parser.parse_args()
     images = list(get_files(args.image_files))
