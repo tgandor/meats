@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import sys
 
 import win32com.client
 
@@ -24,6 +25,7 @@ def get_email():
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", default=ITER_FOLDER)
+    parser.add_argument("--output", "-o", help="output file")
     parser.add_argument("search", nargs="?", default=SUBJ_SEARCH_STRING)
     return parser.parse_args()
 
@@ -39,15 +41,22 @@ def main():
     item_count = out_iter_folder.Items.Count
 
     if item_count == 0:
-        print("No items found in: {}".format(args.folder))
+        print(f"No items found in: {args.folder}")
         return
+
+    if args.output:
+        outf = open(args.output, "w")
+    else:
+        outf = sys.stdout
 
     for i in range(item_count, 0, -1):
         message = out_iter_folder.Items[i]
         if "_MailItem" in str(type(message)):
             if args.search in message.Subject:
-                print(message.Subject)
+                print(message.Subject, file=outf)
 
+    if args.output:
+        outf.close()
 
 if __name__ == "__main__":
     main()
