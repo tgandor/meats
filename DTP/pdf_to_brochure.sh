@@ -9,4 +9,4 @@ if ! which pdfbook2 ; then
 fi
 
 echo "Use short-edge double sided printing."
-pdftk -s "$@"
+pdfbook2 --short-edge "$@"
