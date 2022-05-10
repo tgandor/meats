@@ -1,26 +1,41 @@
 #!/usr/bin/env python
 
+import argparse
 import os
 import sys
 from collections import defaultdict, Counter
 
-TOTAL = 'Total'  # magic summary key
+TOTAL = "Total"  # magic summary key
 
 
 class FileStats:
-    def __init__(self):
+    def __init__(self, multi=False):
+        self.multi = multi
         self.stats_b = defaultdict(int)
         self.stats_4K = defaultdict(int)
         self.extension_counter = Counter()
         self.counted_files = set()
 
+    def _get_ext(self, filepath):
+        if not self.multi:
+            return os.path.splitext(filepath)[1].lower()
+        filepath = os.path.basename(filepath)
+        chunks = filepath.split(".")
+        if chunks[0] == '':
+            # hidden file is not an extension
+            chunks.pop(0)
+        if len(chunks) <= 1:
+            # no extension(s)
+            return ''
+        return "." + ".".join(chunks[1:])
+
     def process_file(self, filepath):
         if filepath in self.counted_files or os.path.islink(filepath):
             return
         self.counted_files.add(filepath)
-        ext = os.path.splitext(filepath)[1].lower()
+        ext = self._get_ext(filepath)
         size = os.stat(filepath).st_size
-        blocks = (size + 2**12 - 1) // (2 ** 12)
+        blocks = (size + 2 ** 12 - 1) // (2 ** 12)
         self.stats_b[ext] += size
         self.stats_b[TOTAL] += size
         self.extension_counter[ext] += 1
@@ -46,41 +61,58 @@ class FileStats:
         return sorted(self.stats_4K.items(), key=lambda x: -x[1])
 
     def summary_b(self):
-        print('Summary of size in bytes:')
+        print("Summary of size in bytes:")
         max_ext = max(len(x) for x in self.stats_b.keys()) + 1
         total_b = max(self.stats_b.values())
-        max_size = len('{:,}'.format(total_b))
-        max_count = len('{:,}'.format(max(self.extension_counter.values())))
+        max_size = len("{:,}".format(total_b))
+        max_count = len("{:,}".format(max(self.extension_counter.values())))
         for ext, size in self.get_stats_b():
-            print('{:{}s} {:{},} B ({:5.1f}%), count: {:{},}, average {:,} B'.format(
-                ext + ':', max_ext, size, max_size, 100.0 * size / total_b,
-                self.extension_counter[ext], max_count, size // self.extension_counter[ext]
-            ))
+            print(
+                "{:{}s} {:{},} B ({:5.1f}%), count: {:{},}, average {:,} B".format(
+                    ext + ":",
+                    max_ext,
+                    size,
+                    max_size,
+                    100.0 * size / total_b,
+                    self.extension_counter[ext],
+                    max_count,
+                    size // self.extension_counter[ext],
+                )
+            )
 
     def summary_4K(self):
-        print('Summary of size in KB, assuming ceil(size/4KB):')
+        print("Summary of size in KB, assuming ceil(size/4KB):")
         max_ext = max(len(x) for x in self.stats_4K.keys()) + 1
         total_4K = max(self.stats_4K.values())
-        max_blocks = len('{:,}'.format(total_4K * 4))
+        max_blocks = len("{:,}".format(total_4K * 4))
         for ext, blocks in self.get_stats_4K():
-            print('{:{}s} {:{},} KB ({:3.1f}%)'.format(
-                ext + ':', max_ext, blocks * 4, max_blocks, 100.0 * blocks / total_4K))
+            print(
+                "{:{}s} {:{},} KB ({:3.1f}%)".format(
+                    ext + ":",
+                    max_ext,
+                    blocks * 4,
+                    max_blocks,
+                    100.0 * blocks / total_4K,
+                )
+            )
 
 
 def main():
-    paths = sys.argv[1:]
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--multi", "-m", action="store_true", help="handle multiple, like .tar.gz"
+    )
+    parser.add_argument("paths", nargs="*", default=["."])
+    args = parser.parse_args()
 
-    if not paths:
-        paths.append('.')
+    file_stats = FileStats(args.multi)
 
-    file_stats = FileStats()
-
-    for path in paths:
+    for path in args.paths:
         file_stats.process(path)
 
     file_stats.summary_b()
     # file_stats.summary_4K()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
