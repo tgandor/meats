@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 
 import argparse
-from ast import pattern
 import glob
 import os
-from re import A
-from sys import path
 
 import cv2
 import numpy as np
-from numpy.core.fromnumeric import shape
 import tqdm
 
 
