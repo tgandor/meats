@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# This is a bad UI, TODO: https://tkdocs.com/tutorial/grid.html#resize
+
 import os
 import sys
 import time

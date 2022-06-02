@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# This is a bad UI, TODO: https://tkdocs.com/tutorial/grid.html#resize
+
 from __future__ import print_function
 from __future__ import division
 
