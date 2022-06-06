@@ -10,9 +10,9 @@ KEEP = {
     "wheel",
 }
 
-for_real = len(sys.argv) > 1 and sys.argv[1] == '-y'
+for_real = len(sys.argv) > 1 and sys.argv[1] == "-y"
 
-packages = os.popen(sys.executable + " -m pip freeze").read().strip().split("\n")
+packages = os.popen('"' + sys.executable + '" -m pip freeze').read().strip().split("\n")
 
 for line in packages:
     if "==" not in line:
@@ -27,7 +27,7 @@ for line in packages:
 
     if for_real:
         print("Deleting:", name)
-        os.popen(sys.executable + " -m pip uninstall " + name)
+        os.popen('"' + sys.executable + '" -m pip uninstall ' + name)
     else:
         print("Would delete:", name)
 
