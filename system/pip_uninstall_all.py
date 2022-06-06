@@ -3,7 +3,6 @@
 import os
 import sys
 
-
 KEEP = {
     "pip",
     "setuptools",
@@ -27,10 +26,13 @@ for line in packages:
 
     if for_real:
         print("Deleting:", name)
-        res = os.system('"' + sys.executable + '" -m pip uninstall ' + name)
+        res = os.system(
+            '"' + sys.executable + '" -m pip uninstall ' + " ".join(sys.argv[2:]) + name
+        )
         print("Result:", res)
     else:
         print("Would delete:", name)
 
 if not for_real:
     print("This is a DRY RUN. Please pass -y as only argument to really do delete.")
+    print("If you specify it twice, it will run without confirmation.")
