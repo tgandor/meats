@@ -27,7 +27,8 @@ for line in packages:
 
     if for_real:
         print("Deleting:", name)
-        os.popen('"' + sys.executable + '" -m pip uninstall ' + name)
+        res = os.system('"' + sys.executable + '" -m pip uninstall ' + name)
+        print("Result:", res)
     else:
         print("Would delete:", name)
 
