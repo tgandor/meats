@@ -97,11 +97,11 @@ compression_times = []
 decompression_times = []
 
 print('UIQI(x, x) = ', universal_image_quality_index(orig_image, orig_image))
-print('SSIM(x, x) = ', ssim(orig_image, orig_image, multichannel=True))
+print('SSIM(x, x) = ', ssim(orig_image, orig_image, channel_axis=-1))
 
 for quality in tqdm.trange(101):
     data, image, time_c, time_d = check_compression(orig_image, quality)
-    ssims.append(ssim(orig_image, image, multichannel=True))
+    ssims.append(ssim(orig_image, image, channel_axis=-1))
     sizes.append(len(data))
     mses.append(mse(image, orig_image))
     uiqis.append(universal_image_quality_index(image, orig_image))
