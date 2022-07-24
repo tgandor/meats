@@ -301,13 +301,13 @@ def groups_summary(groups):
     )
 
 
-def sort_members(group, key=suitability_max_len_penalize_spaces):
+def sort_members(group, key=suitability_max_len_penalize_spaces, reverse=False):
     """
     Sort files inside group by some criterion.
     :param key: Callable[[File], Any]
     :type group: Group
     """
-    group.files.sort(key=key)
+    group.files.sort(key=key, reverse=reverse)
 
 
 def save_groups(group_list, prefix="", unique_files=None):
@@ -411,6 +411,7 @@ def parse_args():
     parser.add_argument(
         "--prefix", "-p", help="Prefix for saving the groups", default=""
     )
+    parser.add_argument("--reverse-members", action="store_true", help="Sort members in reverse (e.g. for -D).")
     parser.add_argument("--sort", help="Custom sorting attribute")
     parser.add_argument(
         "--unique", "-u", action="store_true", help="Keep track of unique files"
@@ -682,7 +683,7 @@ def main():
             print("{} unique files found.".format(len(unique_files)))
         exit()
 
-    sort_groups(groups, args.sort)
+    sort_groups(groups, args.sort, args.reverse_members)
 
     if not args.no_print:
         print_groups(groups)
@@ -764,11 +765,11 @@ def scan_directories(args):
     return all_files
 
 
-def sort_groups(groups, custom_attr=None):
+def sort_groups(groups, custom_attr=None, reverse_members=False):
     # this can be useful for custom_attr == 'files'
     # so it's useful to do it before the 'outer' sorting
     for group in groups:
-        sort_members(group)
+        sort_members(group, reverse=reverse_members)
 
     if custom_attr:
         import operator
