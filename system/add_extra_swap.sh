@@ -10,10 +10,12 @@ else
 fi
 
 if [ -z "$2" ] ; then
-    file=/tmp/swapfile
+    file=swapfile
 else
     file="$2"
 fi
+
+file=`realpath $file`
 
 # this won't work, fails with:
 # swapon: /tmp/swapfile: skipping - it appears to have holes.
