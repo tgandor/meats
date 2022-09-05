@@ -21,10 +21,15 @@ class ConnParams(typing.NamedTuple):
 
     def connection_string(self) -> str:
         assert self.engine == "mssql"
+        driver = 'SQL Server'
+        for available in pyodbc.drivers():
+            if 'SQL Server' in available:
+                driver = available
+                break
 
         if self.user == "TRUSTED" and self.password == "CONNECTION":
             return (
-                "Driver={SQL Server};"
+                f"Driver={{{driver}}};"
                 f"Server={self.host};"
                 f"Database={self.database};"
                 "Trusted_Connection=yes"
@@ -34,7 +39,7 @@ class ConnParams(typing.NamedTuple):
             self.password = getpass.getpass(f"Password for {self.user}")
 
         return (
-            "Driver={SQL Server};"
+            f"Driver={{{driver}}};"
             f"Server={self.host};"
             f"Database={self.database};"
             f"UID={self.user};"
