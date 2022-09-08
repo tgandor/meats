@@ -126,7 +126,7 @@ def windows_emulation():
 
 def enumerate_windows_drives():
     try:
-        import win32api
+        import win32api  # pylint: disable=import-error
 
         # print(repr(win32api.GetLogicalDriveStrings()))
         for drive in win32api.GetLogicalDriveStrings().split("\0"):

@@ -1,9 +1,18 @@
 #!/usr/bin/env python
 
+import argparse
 import sys
 import re
 
-tokener = re.compile("^([0-9.,]+)([KkMGT]?)")
+parser = argparse.ArgumentParser()
+parser.add_argument("--anywhere", "-a", action='store_true')
+args = parser.parse_args()
+
+if args.anywhere:
+    tokener = re.compile("([0-9.,]+)([KkMGT])")
+else:
+    tokener = re.compile("^([0-9.,]+)([KkMGT]?)")
+
 scale = {"K": 2**10, "k": 2**10, "M": 2**20, "G": 2**30, "T": 2**40}
 
 
