@@ -15,6 +15,8 @@ import time
 # tmpfs               1587      2      1586   1% /run
 # ...
 
+EXCLUDES = ["/dev/loop", "udev", "tmpfs"]  # snaps, devices, ramdrives...
+
 
 def open_database():
     labels_file = os.path.expanduser("~/usage.db")
@@ -51,6 +53,8 @@ def normal_df():
     for row in data:
         columns = row.split(None, 6)
         if len(columns) != 6:
+            continue
+        if any(ex in columns[0] for ex in EXCLUDES):
             continue
         cursor.execute(
             "insert into df (filesystem, size, used, available, use, mountpoint, df_date)"
