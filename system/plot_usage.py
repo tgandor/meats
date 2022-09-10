@@ -46,19 +46,32 @@ if args.used:
     args.column = "used"
 
 conn = sqlite3.connect(os.path.expanduser("~/usage.db"))
+mpts = pd.read_sql_query("select distinct mountpoint from df", conn)
 
 if args.list_mountpoints:
-    df = pd.read_sql_query(
-        "select distinct mountpoint from df order by mountpoint", conn
-    )
-    for row in df["mountpoint"]:
+    for row in mpts["mountpoint"].sort_values():
         print(row)
     conn.close()
     exit()
 
+known_mpts = set(mpts["mountpoint"])
+chosen_mpts = []
+for mp in args.mountpoint:
+    if mp in known_mpts:
+        chosen_mpts.append(mp)
+        continue
+    if mp.endswith("/") and mp[:-1] in known_mpts:
+        chosen_mpts.append(mp[:-1])
+        continue
+    print("Ignoring mountpoint:", mp)
+
+if not chosen_mpts:
+    print("No known mountpoints found.")
+    exit()
+
 params = ()
 query = "select * from df where mountpoint in ({})".format(
-    ", ".join("'" + mp + "'" for mp in args.mountpoint)
+    ", ".join(f"'{mp}'" for mp in chosen_mpts)
 )
 
 if args.days:
@@ -70,7 +83,6 @@ if args.debug:
 
 df = pd.read_sql_query(query, conn, params=params)
 df.df_date = pd.to_datetime(df["df_date"])
-# import code; code.interact(local=locals())
 
 if args.ascii:
     import asciiplotlib
@@ -93,8 +105,10 @@ if args.ascii:
 else:
     from matplotlib import pyplot as plt
 
-    df.set_index("df_date")[args.column].plot(style=args.style)
-    plt.title(f"{args.column}  on {', '.join(args.mountpoint)}")
+    # df.set_index("df_date")[args.column].plot(style=args.style)
+    pivot = df.pivot_table(index="df_date", columns="mountpoint", values=args.column)
+    pivot.plot()
+    plt.title(f"{args.column} on: {', '.join(chosen_mpts)}")
     if args.absolute:
         # 'size' is a bad column name in Pandas. df.size returns int, df['size'] - Series
         plt.ylim(bottom=0, top=df["size"].max())
