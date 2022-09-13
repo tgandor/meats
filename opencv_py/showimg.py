@@ -138,11 +138,30 @@ def quick_view_directory(directory_name: str, args: argparse.Namespace) -> bool:
         if prev is not None and args and args.mse > 0.0:
             current_mse = mse(prev, image)
             if current_mse < args.mse:
-                if args and args.delete_similar:
+                if args.delete_similar:
+                    if args.verbose:
+                        tqdm.write(
+                            "(MSE: {:6.3f}) DELETED: {}".format(
+                                current_mse,
+                                filename,
+                            )
+                        )
                     os.unlink(filename)
+                elif args.verbose:
+                    tqdm.write(
+                        "(MSE: {:6.3f}) . skip .: {}".format(
+                            current_mse,
+                            filename,
+                        )
+                    )
                 continue
             if args.verbose:
-                tqdm.write("Showing: {} (MSE: {})".format(filename, current_mse))
+                tqdm.write(
+                    "(MSE: {:6.3f}) Showing: {}".format(
+                        current_mse,
+                        filename,
+                    )
+                )
             prev = image
         else:
             prev = image
@@ -273,6 +292,11 @@ def _parse_cli() -> argparse.Namespace:
         default=0,
     )
     parser.add_argument(
+        "--delete-similar",
+        action="store_true",
+        help="when using --mse, delete images under threshold",
+    )
+    parser.add_argument(
         "--rot180", action="store_true", help="rotate image 180 degrees"
     )
     parser.add_argument(
@@ -332,6 +356,7 @@ def main():
 
     if args.stay:
         cv2.waitKey(0)
+
 
 if __name__ == "__main__":
     main()
