@@ -31,3 +31,19 @@ try:
 except ValueError:
     logging.exception("This throws:")
     # ValueError: 'NNW' is not a valid Ordinal
+
+class Rhumb(AutoName):
+    NW = auto()
+    SW = auto()
+    NE = auto()
+    SE = auto()
+
+
+# Unfortunately,
+# see: https://docs.python.org/3/library/enum.html#restricted-enum-subclassing
+try:
+    class Compass(Ordinal, Rhumb):
+        pass
+except TypeError:
+    logging.exception("This throws:")
+    # TypeError: Compass: cannot extend enumeration 'Ordinal'
