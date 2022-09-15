@@ -107,7 +107,7 @@ else:
 
     # df.set_index("df_date")[args.column].plot(style=args.style)
     pivot = df.pivot_table(index="df_date", columns="mountpoint", values=args.column)
-    pivot.plot()
+    pivot.plot(style=args.style)
     plt.title(f"{args.column} on: {', '.join(chosen_mpts)}")
     if args.absolute:
         # 'size' is a bad column name in Pandas. df.size returns int, df['size'] - Series
