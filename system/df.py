@@ -142,12 +142,40 @@ def enumerate_windows_drives():
                 yield path
 
 
+def clean_mountpoints(like_expr):
+    print("Size before: {:,}".format(os.stat(os.path.expanduser("~/usage.db")).st_size))
+    conn, cursor = open_database()
+    (n,) = cursor.execute("select count(*) from df").fetchone()
+    (m,) = cursor.execute(
+        "select count(*) from df where mountpoint like ?", (like_expr,)
+    ).fetchone()
+    print("Total rows: {:,}".format(n))
+    print("Match rows: {:,}".format(m))
+    cursor.execute("delete from df where mountpoint like ?", (like_expr,))
+    conn.commit()
+    cursor.execute("vacuum")
+    (n,) = cursor.execute("select count(*) from df").fetchone()
+    print("After rows: {:,}".format(n))
+    cursor.close()
+    conn.close()
+    print("Size after: {:,}".format(os.stat(os.path.expanduser("~/usage.db")).st_size))
+
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--clean", help="delete entries for a LIKE-expression (by mountpoint)"
+    )
     if os.name == "nt":
-        parser = argparse.ArgumentParser()
         parser.add_argument("--loop", "-l", action="store_true")
         parser.add_argument("--period", "-t", type=float, default=60)
-        args = parser.parse_args()
+    args = parser.parse_args()
+
+    if args.clean:
+        clean_mountpoints(args.clean)
+        exit()
+
+    if os.name == "nt":
         if args.loop:
             while True:
                 windows_emulation()
