@@ -11,4 +11,4 @@ args = parser.parse_args()
 df1 = pd.read_excel(args.data1)
 df2 = pd.read_excel(args.data2)
 
-print(df1.diff(df2))
+print(df1.compare(df2))
