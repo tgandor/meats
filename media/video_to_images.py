@@ -8,7 +8,8 @@ parser.add_argument("video")
 parser.add_argument("--dedup", "-d", action="store_true", help="drop duplicate frames")
 parser.add_argument("--nvdec", "-nv", action="store_true")
 parser.add_argument("--output", "-o", help="output directory for images")
-parser.add_argument("--frames", "-n", type=int, help="limit frames number")
+parser.add_argument("--frames", "-n", type=int, help="limit frame count")
+parser.add_argument("--rate", "-r", type=float, help="'output FPS', low values cause framedrop")
 parser.add_argument("--start", "-ss")
 parser.add_argument(
     "--quality", "-q", type=int, help="quality (JPG) 1(best) - 31(worst)"
@@ -34,6 +35,9 @@ if args.dedup:
 
 if args.frames:
     command += f" -vframes {args.frames}"
+
+if args.rate:
+    command += f" -r {args.rate}"
 
 if args.quality:
     if not (1 <= args.quality <= 31):
