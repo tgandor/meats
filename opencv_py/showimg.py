@@ -317,6 +317,9 @@ def _parse_cli() -> argparse.Namespace:
         "--stay", action="store_true", help="add extra waitKey(0) at end"
     )
     parser.add_argument(
+        "--loop", "-l", action="store_true", help="repeat everything indefinetely"
+    )
+    parser.add_argument(
         "--shuffle", "-R", action="store_true", help="show arguments in random order"
     )
     parser.add_argument("--mouse", action="store_true", help="print mouse events")
@@ -327,31 +330,37 @@ def _parse_cli() -> argparse.Namespace:
 def main():
     args = _parse_cli()
 
-    if args.shuffle:
-        random.shuffle(args.files)
-
     quit = False
-    for name in args.files:
-        if os.path.isfile(name):
-            quit = view_file(name, args)
-        elif os.path.isdir(name):
-            quit = quick_view_directory(name, args)
-        elif "**" in name:
-            # it's not 2020 yet, being nice to Py2
-            for path in glob.glob(name, recursive=True):
-                print(name, "->", path)
-                quit = view_file(path, args)
-                if quit:
-                    break
-        elif "*" in name:
-            for path in glob.glob(name):
-                print(name, "->", path)
-                quit = view_file(path, args)
-                if quit:
-                    break
-        else:
-            print("WARNING: argument ignored: {}".format(name))
-        if quit:
+    while True:
+        # maybe loop
+
+        if args.shuffle:
+            random.shuffle(args.files)
+
+        for name in args.files:
+            if os.path.isfile(name):
+                quit = view_file(name, args)
+            elif os.path.isdir(name):
+                quit = quick_view_directory(name, args)
+            elif "**" in name:
+                # it's not 2020 yet, being nice to Py2
+                for path in glob.glob(name, recursive=True):
+                    print(name, "->", path)
+                    quit = view_file(path, args)
+                    if quit:
+                        break
+            elif "*" in name:
+                for path in glob.glob(name):
+                    print(name, "->", path)
+                    quit = view_file(path, args)
+                    if quit:
+                        break
+            else:
+                print("WARNING: argument ignored: {}".format(name))
+            if quit:
+                break
+
+        if not args.loop or quit:
             break
 
     if args.stay:
