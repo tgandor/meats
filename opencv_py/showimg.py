@@ -81,9 +81,9 @@ def _load_image(filename: str, args: argparse.Namespace) -> np.ndarray:
         tqdm.write("Failed to load: {}".format(filename))
         return None
 
-    if args and args.rot180:
+    if args and args.rot90:
         # this is (possibly) faster, but non-contiguous:
-        image = np.rot90(image, k=2)
+        image = np.rot90(image, k=args.rot90)
         # this is also nice, and gives a contiguous array right away:
         # image = cv2.rotate(image, cv2.ROTATE_180)
 
@@ -167,6 +167,8 @@ def quick_view_directory(directory_name: str, args: argparse.Namespace) -> bool:
             prev = image
 
         window = filename if args.title else directory_name
+        if not args.dumb:
+            cv2.namedWindow(window, cv2.WINDOW_NORMAL)
         cv2.imshow(window, image)
         res = cv2.waitKey(args.delay if args.delay is not None else 1)
 
@@ -297,7 +299,7 @@ def _parse_cli() -> argparse.Namespace:
         help="when using --mse, delete images under threshold",
     )
     parser.add_argument(
-        "--rot180", action="store_true", help="rotate image 180 degrees"
+        "--rot90", type=int, help="rotate image 90 degrees (k times)"
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="increase verbosity"
