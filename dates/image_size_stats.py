@@ -8,6 +8,9 @@ import argparse
 import os
 import datetime
 
+JPG = ".jpg"
+JPEGS = {JPG, ".jpeg"}
+
 try:
     import piexif
 except ImportError:
@@ -31,6 +34,7 @@ parser.add_argument(
 parser.add_argument(
     "--top", "-t", type=int, default=10, help="Number of most popular sizes to list"
 )
+parser.add_argument("--extension", "-x", default=".jpg")
 parser.add_argument("--verbose", "-v", action="store_true")
 args = parser.parse_args()
 
@@ -43,7 +47,7 @@ start = datetime.datetime.now()
 
 for path, directories, files in os.walk(args.directory):
     for basename in files:
-        if basename.lower().endswith(".jpg"):
+        if basename.lower().endswith(args.extension):
             realname = os.path.join(path, basename)
 
             try:
@@ -59,7 +63,8 @@ for path, directories, files in os.walk(args.directory):
                     # print('Error reading size from EXIF:', realname)
                     size = None
             except piexif.InvalidImageDataError:
-                print("Error reading EXIF (invalid file [type]?):", realname)
+                if args.extension in JPEGS:
+                    print("Error reading EXIF (invalid file [type]?):", realname)
                 size = None
             except Exception as e:
                 print("Other error reading EXIF:", e, "in", realname)
