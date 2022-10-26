@@ -30,10 +30,12 @@ def get_lines(data_file):
 parser = argparse.ArgumentParser()
 parser.add_argument("data_file")
 parser.add_argument("--wait", "-w", type=float, default=5)
-parser.add_argument("--delay", "-d", type=float, default=2)
+parser.add_argument("--delay", "-d", type=float, default=2.5)
 args = parser.parse_args()
 
-print(f"Preparing clipboard, waiting {args.wait}...")
+print(
+    f"Preparing clipboard, waiting {args.wait} s... (interval will be {args.delay} s)"
+)
 time.sleep(args.wait)
 
 for title, contents in get_lines(args.data_file):
