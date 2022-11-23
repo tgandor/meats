@@ -10,6 +10,7 @@ import requests
 parser = argparse.ArgumentParser()
 parser.add_argument("--get", "-g", help="prefix for sending the value via GET")
 parser.add_argument("--sleep", "-s", type=float, help="sleep between reads", default=60)
+parser.add_argument("--once", "-o", action="store_true")
 args = parser.parse_args()
 
 data_files = glob.glob("/sys/bus/w1/devices/28-*/w1_slave")
@@ -35,6 +36,9 @@ while True:
 
     if args.get:
         requests.get(args.get + temp)
+
+    if args.once:
+        break
 
     nap = max(0, next_time - time.time())
     time.sleep(nap)
