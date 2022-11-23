@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--get", "-g", help="prefix for sending the value via GET")
 parser.add_argument("--sleep", "-s", type=float, help="sleep between reads", default=60)
 parser.add_argument("--once", "-o", action="store_true")
+parser.add_argument("--quiet", "-q", action="store_true")
 args = parser.parse_args()
 
 data_files = glob.glob("/sys/bus/w1/devices/28-*/w1_slave")
@@ -32,7 +33,9 @@ while True:
         data = dtf.read()
 
     temp = re.search(r"t=(\d+)", data).group(1)
-    print(time.strftime("%Y-%m-%d %H:%M:%S ") + temp)
+
+    if not args.quiet:
+        print(time.strftime("%Y-%m-%d %H:%M:%S ") + temp)
 
     if args.get:
         requests.get(args.get + temp)
