@@ -26,13 +26,15 @@ if len(data_files) > 1:
 data_file = data_files[0]
 
 while True:
+    next_time = time.time() + args.sleep
     with open(data_file) as dtf:
         data = dtf.read()
 
     temp = re.search(r"t=(\d+)", data).group(1)
-    print(time.strftime("%Y-%m-%d %H:%M ") + temp)
+    print(time.strftime("%Y-%m-%d %H:%M:%S ") + temp)
 
     if args.get:
         requests.get(args.get + temp)
 
-    time.sleep(args.sleep)
+    nap = max(0, next_time - time.time())
+    time.sleep(nap)
