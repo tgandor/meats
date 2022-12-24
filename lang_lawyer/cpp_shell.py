@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
+from __future__ import absolute_import
+from __future__ import print_function
 import subprocess
 import os
 import readline
 import atexit
+from six.moves import input
 
 histfile = os.path.expanduser("~/.cpp_history")
 try:
@@ -33,13 +36,13 @@ command = ['g++', '-o', TMPEXE]
 
 while True:
     try:
-        line = raw_input('c++> ')
+        line = input('c++> ')
     except EOFError:
         if os.path.exists(TMPCPP):
             os.unlink(TMPCPP)
         if os.path.exists(TMPEXE):
             os.unlink(TMPEXE)
-        print
+        print()
         break
 
     if line.strip() == '':
@@ -48,7 +51,7 @@ while True:
     if line.startswith('+inc'):
         if len(line.split()) > 1:
             headers.append(line.split()[1])
-        print 'Headers:', headers
+        print('Headers:', headers)
         continue
 
     if line.startswith('-inc'):
@@ -56,14 +59,14 @@ while True:
             try:
                 headers.remove(line.split()[1])
             except ValueError:
-                print "Error: no such header '%s'" % line.split()[1]
-        print 'Headers:', headers
+                print("Error: no such header '%s'" % line.split()[1])
+        print('Headers:', headers)
         continue
 
     if line.startswith('+opt '):
         if len(line.split()) > 1:
             command.append(line.split()[1])
-        print 'Compile command:', ' '.join(command)
+        print('Compile command:', ' '.join(command))
         continue
 
     if line.startswith('-opt '):
@@ -71,8 +74,8 @@ while True:
             try:
                 command.remove(line.split()[1])
             except ValueError:
-                print "Error: no such option '%s'" % line.split()[1]
-        print 'Compile command:', ' '.join(command)
+                print("Error: no such option '%s'" % line.split()[1])
+        print('Compile command:', ' '.join(command))
         continue
 
     context = {
