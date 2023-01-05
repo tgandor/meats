@@ -68,7 +68,8 @@ def create_image_pdf(images, args):
                 if args.no_total
                 else "{0} / {1:d}".format(page_num, num_pages)
             )
-            c.drawCentredString(A4[0] / 2, args.footer_y * cm, text)
+            w = int(args.landscape)  # landscape footer half as high
+            c.drawCentredString(A4[w] / 2, args.footer_y * cm / (1 + w), text)
         c.showPage()
         if args.empty_after == page_num:
             c.showPage()
