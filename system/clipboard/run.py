@@ -27,5 +27,9 @@ while True:
         command = [arg.replace(MARKER, new) for arg in args]
         if opts.verbose:
             print(command)
-        subprocess.call(command)
+        try:
+            subprocess.call(command)
+        except FileNotFoundError as e:
+            print("Warning, run failed:", e)
+
         old = new
