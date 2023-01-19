@@ -18,4 +18,4 @@ if ! which python2 ; then
     exit
 fi
 
-jbig2 -s -p -v "$@" && pdf.py output > out.pdf
+jbig2 -s -p -v "$@" && `dirname $0`/pdf3.py output > out.pdf
