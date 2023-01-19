@@ -16,4 +16,4 @@ else:
     exit()
 
 print(".".join(str(d) for d in ip))
-print("IP-" + "".join(f"{d:02x}" for d in ip))
+print("IP-" + "".join(f"{d:02X}" for d in ip))
