@@ -3,13 +3,25 @@
 import argparse
 import json
 import os
+import shutil
+import stat
 
-CONFIG = "monorepo.txt"
+CONFIG = "monorepo.json"
+LOCAL = "mr.py"
 
 
-def _load_cfg():
-    with open(CONFIG) as cfg:
-        return json.load(cfg)
+def _load_cfg(ignore_missing=False):
+    if os.path.exists(CONFIG):
+        with open(CONFIG) as cfg:
+            return json.load(cfg)
+    if ignore_missing:
+        print("Creating new monorepo config.")
+        if not os.path.exists(LOCAL):
+            shutil.copyfile(__file__, LOCAL)
+            mode = os.stat(LOCAL).st_mode
+            os.chmod(LOCAL, mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+            print(f"Local copy of script {LOCAL} created.")
+        return {}
 
 
 def _save_cfg(config):
@@ -19,13 +31,16 @@ def _save_cfg(config):
 
 
 def _url_to_dir(url):
-    return url.replace(".git", "").split("/")[-1]
+    chunks = url.replace(".git", "").split("/")
+    if chunks[-1] == "":
+        chunks.pop()
+    return chunks[-1]
 
 
 def up(args):
     config = _load_cfg()
     home = os.getcwd()
-    for directory in config.values():
+    for directory in config.keys():
         os.chdir(directory)
         print(directory)
         os.system("git pull")
@@ -33,11 +48,7 @@ def up(args):
 
 
 def add(args):
-    if os.path.exists(CONFIG):
-        config = _load_cfg()
-    else:
-        print("Creating new monorepo config.")
-        config = {}
+    config = _load_cfg(ignore_missing=True)
 
     if args.url in config:
         print(f"{args.url} already included.")
@@ -46,13 +57,14 @@ def add(args):
     directory = _url_to_dir(args.url)
     if os.path.exists(directory):
         print(f"directory {directory} already exists, not in config.")
+    else:
+        ret = os.system(f"git clone {args.url}")
+        if ret != 0:
+            print("Clone failed")
         return
 
-    ret = os.system(f"git clone {args.url}")
-    if ret != 0:
-        print("Clone failed")
+    config[directory] = {"origin": args.url}
 
-    config[args.url] = directory
     _save_cfg(config)
 
 
