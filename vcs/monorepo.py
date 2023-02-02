@@ -71,7 +71,7 @@ def add(args):
         ret = os.system(f"git clone {args.url}")
         if ret != 0:
             print("Clone failed")
-        return
+            return
 
     config[directory] = {"origin": args.url}
 
@@ -108,6 +108,32 @@ def grep(args):
         os.chdir(home)
 
 
+def _find(args, prefix="."):
+    pat = args.pattern
+    if args.case_insensitive:
+        pat = pat.casefold()
+
+    for p, d, f in os.walk("."):
+        if "/.git" in p:
+            continue
+        for fn in f:
+            path = os.path.join(p, fn)
+            name = os.path.join(prefix, path.replace("." + os.path.sep, ""))
+            if args.case_insensitive:
+                fn = fn.casefold()
+            if pat in fn:
+                print(name)
+
+
+def find(args):
+    config = _load_cfg()
+    home = os.getcwd()
+    for directory in config.keys():
+        os.chdir(directory)
+        _find(args, directory)
+        os.chdir(home)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="cmd", required=True)
@@ -117,6 +143,9 @@ if __name__ == "__main__":
     grep_parser = subparsers.add_parser("grep")
     grep_parser.add_argument("expr")
     grep_parser.add_argument("--list", "-l", action="store_true")
+    find_parser = subparsers.add_parser("find")
+    find_parser.add_argument("pattern")
+    find_parser.add_argument("--case-insensitive", "-i", action="store_true")
 
     args = parser.parse_args()
 
