@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import argparse
+import glob
 import json
 import os
+import re
 import shutil
 import stat
 
@@ -31,6 +33,14 @@ def _save_cfg(config):
 
 
 def _url_to_dir(url):
+    if os.path.isdir(url):
+        return url
+
+    if "*" in url:
+        matches = glob.glob(url)
+        if len(matches) == 1 and os.path.isdir(m := matches[0]):
+            return m
+
     chunks = url.replace(".git", "").split("/")
     if chunks[-1] == "":
         chunks.pop()
@@ -68,12 +78,45 @@ def add(args):
     _save_cfg(config)
 
 
+def _wcgrep(args, prefix="."):
+    regex = re.compile(args.expr)
+
+    for p, d, f in os.walk("."):
+        if "/.git" in p:
+            continue
+        for fn in f:
+            path = os.path.join(p, fn)
+            name = os.path.join(prefix, path.replace("." + os.path.sep, ""))
+            try:
+                with open(path) as fp:
+                    for ln, line in enumerate(fp, start=1):
+                        if regex.search(line):
+                            if args.list:
+                                print(name)
+                                break
+                            print(name, ":", ln, ": ", line, sep="")
+            except UnicodeDecodeError:
+                continue
+
+
+def grep(args):
+    config = _load_cfg()
+    home = os.getcwd()
+    for directory in config.keys():
+        os.chdir(directory)
+        _wcgrep(args, directory)
+        os.chdir(home)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="cmd", required=True)
     add_parser = subparsers.add_parser("add")
     add_parser.add_argument("url")
     up_parser = subparsers.add_parser("up")
+    grep_parser = subparsers.add_parser("grep")
+    grep_parser.add_argument("expr")
+    grep_parser.add_argument("--list", "-l", action="store_true")
 
     args = parser.parse_args()
 
