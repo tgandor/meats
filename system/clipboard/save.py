@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
 import argparse
-import contextlib
-import itertools
 import pathlib
+import re
 import time
-import sys
 
 from pyperclip import paste
 
@@ -29,17 +27,47 @@ def save(line, path, mode):
             print(line, file=f)
 
 
+def date_to_iso(line, time=False):
+    from dateutil.parser import parse, ParserError
+
+    if not re.match(r"[0-9 :/AMPT+-]+$", line):
+        return line
+
+    try:
+        date = parse(line)
+    except ParserError:
+        return line
+
+    if time:
+        return date.strftime("%Y-%m-%d %H:%M")
+    return date.strftime("%Y-%m-%d")
+
+
+def _transform(line, args):
+    if args.parse_timestamps:
+        return date_to_iso(line, True)
+    if args.parse_dates:
+        return date_to_iso(line)
+    return line
+
+
 def main():
     parser = argparse.ArgumentParser("Save text files from the clipboard")
     parser.add_argument("output", type=pathlib.Path, nargs="?")
     parser.add_argument(
         "--all", "-a", action="store_true", help="save the initial clipboard contents"
     )
-    parser.add_argument("--mode", "-m", help="file mode (a/w)", default="a")
+    parser.add_argument(
+        "--mode", "-m", help="file mode (a/w)", default="a", choices=["a", "w"]
+    )
+    parser.add_argument("--parse-dates", action="store_true")
+    parser.add_argument("--parse-timestamps", action="store_true")
     args = parser.parse_args()
 
     for line in gen_clipboard(args.all):
+        line = _transform(line, args)
         save(line, args.output, args.mode)
+
 
 if __name__ == "__main__":
     main()
