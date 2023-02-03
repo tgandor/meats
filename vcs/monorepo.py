@@ -113,10 +113,13 @@ def _find(args, prefix="."):
     if args.case_insensitive:
         pat = pat.casefold()
 
+    if pat in (prefix.casefold() if args.case_insensitive else prefix):
+        print(prefix)
+
     for p, d, f in os.walk("."):
         if "/.git" in p:
             continue
-        for fn in f:
+        for fn in d + f:
             path = os.path.join(p, fn)
             name = os.path.join(prefix, path.replace("." + os.path.sep, ""))
             if args.case_insensitive:
@@ -129,6 +132,7 @@ def find(args):
     config = _load_cfg()
     home = os.getcwd()
     for directory in config.keys():
+
         os.chdir(directory)
         _find(args, directory)
         os.chdir(home)
