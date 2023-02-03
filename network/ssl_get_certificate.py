@@ -8,7 +8,11 @@ import ssl
 import socket
 import json
 from datetime import datetime
-import OpenSSL
+try:
+    import OpenSSL
+except ImportError:
+    print("Please install pyOpenSSL")
+    exit()
 
 
 def get_certificate(host, port=443, timeout=10):

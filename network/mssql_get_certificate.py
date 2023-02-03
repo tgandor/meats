@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-import sys
-import pprint
-import struct
+import argparse
+import datetime
+import json
 import socket
 import ssl
+import struct
+import sys
 from time import sleep
 
 # Source: https://gist.github.com/lnattrass/a4a91dbf439fc1719d69f7865c1b1791
@@ -68,14 +70,48 @@ def recv_tdspacket(sock):
         sleep(0.05)
 
 
-# Ensure we have a commandline
-if len(sys.argv) != 3:
-    print("Usage: {} <hostname> <port>".format(sys.argv[0]))
-    sys.exit(1)
+def reformat_date(raw):
+    return datetime.strptime(raw.decode(), "%Y%m%d%H%M%SZ").strftime("%Y-%m-%d")
 
-hostname = sys.argv[1]
-port = int(sys.argv[2])
 
+def cert_info(certificate):
+    try:
+        import OpenSSL
+    except ImportError:
+        print("WARNING: Please install pyOpenSSL for parsed information.")
+        return False
+
+    x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, certificate)
+
+    result = {
+        "subject": dict(map(bytes.decode, x) for x in x509.get_subject().get_components()),
+        "issuer": dict(map(bytes.decode, x) for x in x509.get_issuer().get_components()),
+        "serialNumber": x509.get_serial_number(),
+        "version": x509.get_version(),
+        "notBefore": reformat_date(x509.get_notBefore()),
+        "notAfter": reformat_date(x509.get_notAfter()),
+    }
+
+    extensions = (x509.get_extension(i) for i in range(x509.get_extension_count()))
+    extension_data = {e.get_short_name().decode(): str(e) for e in extensions}
+    if args.details:
+        result.update(extension_data)
+
+    try:
+        print(json.dumps(result, indent=2))
+    except TypeError as e:
+        print(e)
+        print(result)
+
+    return True
+
+parser = argparse.ArgumentParser()
+parser.add_argument("hostname")
+parser.add_argument("port", type=int, nargs="?", default=1433)
+args = parser.parse_args()
+
+hostname = args.hostname
+port = args.port
 
 # Setup SSL
 if hasattr(ssl, "PROTOCOL_TLS"):
@@ -116,7 +152,8 @@ for i in range(0, 5):
         tlssock.do_handshake()
         print("# Handshake completed, dumping certificates")
         peercert = ssl.DER_cert_to_PEM_cert(tlssock.getpeercert(True))
-        print(peercert)
+        if not cert_info(peercert):
+            print(peercert)
         with open(f"{hostname}.pem", "w") as pem:
             print(peercert, file=pem)
         print(f"Certificate saved to: {hostname}.pem")
