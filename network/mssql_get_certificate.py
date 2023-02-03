@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import argparse
-import datetime
 import json
 import socket
 import ssl
 import struct
 import sys
 from time import sleep
+from datetime import datetime
 
 # Source: https://gist.github.com/lnattrass/a4a91dbf439fc1719d69f7865c1b1791
 
