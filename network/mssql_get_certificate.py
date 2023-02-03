@@ -108,6 +108,7 @@ def cert_info(certificate):
 parser = argparse.ArgumentParser()
 parser.add_argument("hostname")
 parser.add_argument("port", type=int, nargs="?", default=1433)
+parser.add_argument("--details", "-v", action="store_true")
 args = parser.parse_args()
 
 hostname = args.hostname
