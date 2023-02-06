@@ -105,6 +105,33 @@ def cert_info(certificate):
 
     return True
 
+
+def save_cert_info(name_base, certificate):
+    import OpenSSL
+    x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, certificate)
+
+    result = {
+        "subject": dict(map(bytes.decode, x) for x in x509.get_subject().get_components()),
+        "issuer": dict(map(bytes.decode, x) for x in x509.get_issuer().get_components()),
+        "serialNumber": x509.get_serial_number(),
+        "version": x509.get_version(),
+        "notBefore": reformat_date(x509.get_notBefore()),
+        "notAfter": reformat_date(x509.get_notAfter()),
+    }
+
+    extensions = (x509.get_extension(i) for i in range(x509.get_extension_count()))
+    extension_data = {e.get_short_name().decode(): str(e) for e in extensions}
+    result.update(extension_data)
+
+    try:
+        with open(f"{name_base}.json", w) as jsf:
+            print(json.dumps(result, indent=2), file=jsf)
+        print(f"Saved info to: {name_base}.json")
+    except TypeError as e:
+        print(e)
+        print(result)
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("hostname")
 parser.add_argument("port", type=int, nargs="?", default=1433)
@@ -155,6 +182,8 @@ for i in range(0, 5):
         peercert = ssl.DER_cert_to_PEM_cert(tlssock.getpeercert(True))
         if not cert_info(peercert):
             print(peercert)
+        else:
+            save_cert_info(hostname, peercert)
         with open(f"{hostname}.pem", "w") as pem:
             print(peercert, file=pem)
         print(f"Certificate saved to: {hostname}.pem")
