@@ -133,7 +133,7 @@ def save_cert_info(name_base, certificate):
     result.update(extension_data)
 
     try:
-        with open(f"{name_base}.json", w) as jsf:
+        with open(f"{name_base}.json", "w") as jsf:
             print(json.dumps(result, indent=2), file=jsf)
         print(f"Saved info to: {name_base}.json")
     except TypeError as e:
