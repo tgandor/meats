@@ -10,6 +10,7 @@ MARKER = "{}"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--verbose", "-v", action="store_true")
+parser.add_argument("--single-word", "-S", action="store_true")
 parser.add_argument("args", nargs=argparse.REMAINDER)
 opts = parser.parse_args()
 
@@ -24,6 +25,12 @@ while True:
     time.sleep(0.1)
     new = paste()
     if new != old:
+        old = new
+
+        if args.single_word and len(new.split()) > 1:
+            print("Skipping:", new)
+            continue
+
         command = [arg.replace(MARKER, new) for arg in args]
         if opts.verbose:
             print(command)
@@ -31,5 +38,3 @@ while True:
             subprocess.call(command)
         except FileNotFoundError as e:
             print("Warning, run failed:", e)
-
-        old = new
