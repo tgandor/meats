@@ -79,10 +79,11 @@ def add(args):
 
 
 def _wcgrep(args, prefix="."):
+    GIT = os.path.sep + ".git"
     regex = re.compile(args.expr)
 
     for p, d, f in os.walk("."):
-        if "/.git" in p:
+        if GIT in p:
             continue
         for fn in f:
             path = os.path.join(p, fn)
@@ -109,6 +110,7 @@ def grep(args):
 
 
 def _find(args, prefix="."):
+    GIT = os.path.sep + ".git"
     pat = args.pattern
     if args.case_insensitive:
         pat = pat.casefold()
@@ -117,7 +119,7 @@ def _find(args, prefix="."):
         print(prefix)
 
     for p, d, f in os.walk("."):
-        if "/.git" in p:
+        if GIT in p:
             continue
         for fn in d + f:
             path = os.path.join(p, fn)
