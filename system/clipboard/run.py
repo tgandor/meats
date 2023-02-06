@@ -27,7 +27,7 @@ while True:
     if new != old:
         old = new
 
-        if args.single_word and len(new.split()) > 1:
+        if opts.single_word and len(new.split()) > 1:
             print("Skipping:", new)
             continue
 

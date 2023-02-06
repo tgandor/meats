@@ -84,8 +84,12 @@ def cert_info(certificate):
     x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, certificate)
 
     result = {
-        "subject": dict(map(bytes.decode, x) for x in x509.get_subject().get_components()),
-        "issuer": dict(map(bytes.decode, x) for x in x509.get_issuer().get_components()),
+        "subject": dict(
+            map(bytes.decode, x) for x in x509.get_subject().get_components()
+        ),
+        "issuer": dict(
+            map(bytes.decode, x) for x in x509.get_issuer().get_components()
+        ),
         "serialNumber": x509.get_serial_number(),
         "version": x509.get_version(),
         "notBefore": reformat_date(x509.get_notBefore()),
@@ -108,11 +112,16 @@ def cert_info(certificate):
 
 def save_cert_info(name_base, certificate):
     import OpenSSL
+
     x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, certificate)
 
     result = {
-        "subject": dict(map(bytes.decode, x) for x in x509.get_subject().get_components()),
-        "issuer": dict(map(bytes.decode, x) for x in x509.get_issuer().get_components()),
+        "subject": dict(
+            map(bytes.decode, x) for x in x509.get_subject().get_components()
+        ),
+        "issuer": dict(
+            map(bytes.decode, x) for x in x509.get_issuer().get_components()
+        ),
         "serialNumber": x509.get_serial_number(),
         "version": x509.get_version(),
         "notBefore": reformat_date(x509.get_notBefore()),
