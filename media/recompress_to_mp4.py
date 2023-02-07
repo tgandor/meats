@@ -85,6 +85,8 @@ def _parse_cli():
     parser.add_argument("--quality", "-q", type=int, default=23)
     parser.add_argument("--scale", "-s", help="scale video filter, eg. 960:-1")
     parser.add_argument("--rot180", action="store_true", help="rotate video 180 degrees")
+    parser.add_argument("--rotR", action="store_true", help="rotate video 90 degrees CW")
+    parser.add_argument("--rotL", action="store_true", help="rotate video 90 degrees CCW")
     parser.add_argument("--stabilize", "-stab", action="store_true")
     parser.add_argument(
         "--start", "-ss", help="Start time for encoding in seconds or [HH:]MM:SS"
@@ -264,6 +266,12 @@ def _get_filters(args):
 
     if args.rot180:
         filters += ' -vf vflip,hflip'
+
+    if args.rotL:
+        filters += ' -vf transpose=2'
+
+    if args.rotR:
+        filters += ' -vf transpose=1'
 
     return filters
 
