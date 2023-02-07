@@ -31,6 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("data_file")
 parser.add_argument("--wait", "-w", type=float, default=5)
 parser.add_argument("--delay", "-d", type=float, default=2.5)
+parser.add_argument("--loop", "-l", action="store_true")
 args = parser.parse_args()
 
 print(
@@ -38,7 +39,10 @@ print(
 )
 time.sleep(args.wait)
 
-for title, contents in get_lines(args.data_file):
-    pyperclip.copy(contents)
-    print(f"Copied {title}: ", "***" if title == "password" else contents)
-    time.sleep(args.delay)
+while True:
+    for title, contents in get_lines(args.data_file):
+        pyperclip.copy(contents)
+        print(f"Copied {title}: ", "***" if title == "password" else contents)
+        time.sleep(args.delay)
+    if not args.loop:
+        break
