@@ -118,7 +118,7 @@
     # OTHER
 
     # Finds a filename in the git repository. Gives absolute location (from the git root).
-    find = !sh -c 'git ls-tree -r --name-only HEAD | grep --color $1' - 
+    find = !sh -c 'git ls-tree -r --name-only HEAD | grep --color $1' -
 
     # Deletes all branches that were safely merged into the master. All other are skipped (no worries).
     # on osx xargs does not have -r argument, so it fail. If you remove -r, it will run at least once, making this not safe operation
@@ -152,6 +152,9 @@
 
     # add all, commit with message and push to remote
     apm = "!f() { git add --all && git commit -m \"$@\" && git push; }; f"
+
+    # checkout branch by partial match
+    cb = "!f() { git checkout $(git branch | grep -i \"$@\" | head -n 1); }; f"
 
 [apply]
     whitespace = nowarn
