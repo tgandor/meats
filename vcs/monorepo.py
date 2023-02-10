@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import datetime
 import glob
 import json
 import os
@@ -12,6 +13,13 @@ CONFIG = "monorepo.json"
 LOCAL = "mr.py"
 
 
+def _install():
+    shutil.copyfile(__file__, LOCAL)
+    mode = os.stat(LOCAL).st_mode
+    os.chmod(LOCAL, mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    print(f"Local copy '{LOCAL}' of script '{__file__}' created.")
+
+
 def _load_cfg(ignore_missing=False):
     if os.path.exists(CONFIG):
         with open(CONFIG) as cfg:
@@ -19,10 +27,7 @@ def _load_cfg(ignore_missing=False):
     if ignore_missing:
         print("Creating new monorepo config.")
         if not os.path.exists(LOCAL):
-            shutil.copyfile(__file__, LOCAL)
-            mode = os.stat(LOCAL).st_mode
-            os.chmod(LOCAL, mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-            print(f"Local copy of script {LOCAL} created.")
+            _install()
         return {}
 
 
@@ -140,6 +145,28 @@ def find(args):
         os.chdir(home)
 
 
+def reset(args):
+    config = _load_cfg()
+    home = os.getcwd()
+    for directory in config.keys():
+
+        os.chdir(directory)
+        res = os.system("git checkout main")
+        if res:
+            res = os.system("git checkout master")
+        if res:
+            print(f"ERROR: {directory} checkout failed.")
+
+        os.chdir(home)
+
+
+def upgrade(args):
+    if os.path.abspath(__file__) == os.path.abspath(LOCAL):
+        print("Running locally, can't upgrade myself.")
+    else:
+        _install()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="cmd", required=True)
@@ -152,7 +179,12 @@ if __name__ == "__main__":
     find_parser = subparsers.add_parser("find")
     find_parser.add_argument("pattern")
     find_parser.add_argument("--case-insensitive", "-i", action="store_true")
+    subparsers.add_parser("reset")
+    subparsers.add_parser("upgrade")
 
     args = parser.parse_args()
-
+    start = datetime.datetime.now()
     locals()[args.cmd](args)
+    print(
+        f"{str(datetime.datetime.now())[:-7]} Finished in {datetime.datetime.now() - start}."
+    )
