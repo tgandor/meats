@@ -22,6 +22,9 @@ class FileModel:
         return [(f, f) for f in self.last_untracked]
 
     def delete(self, filename):
+        if filename is None:
+            raise StopApplication("All deleted.")
+
         os.unlink(filename)
 
         n = len(self.last_untracked)
@@ -73,6 +76,8 @@ class ListView(Frame):
     def _delete_one(self):
         self.save()
         next_value = self._model.delete(self._list_view.value)
+        if next_value is None:
+            raise StopApplication("All deleted")
         self._reload_list(next_value)
 
     @staticmethod
@@ -93,6 +98,7 @@ last_scene = None
 while True:
     try:
         Screen.wrapper(main, catch_interrupt=True, arguments=[last_scene])
+        print("Done.")
         sys.exit(0)
     except ResizeScreenError as e:
         last_scene = e.scene
