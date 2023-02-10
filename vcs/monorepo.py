@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import stat
+import subprocess
 
 CONFIG = "monorepo.json"
 LOCAL = "mr.py"
@@ -83,13 +84,22 @@ def add(args):
     _save_cfg(config)
 
 
-def _wcgrep(args, prefix="."):
+def _walk(path="."):
     GIT = os.path.sep + ".git"
-    regex = re.compile(args.expr)
+    TOX = os.path.sep + ".tox"
 
     for p, d, f in os.walk("."):
         if GIT in p:
             continue
+        if TOX in p:
+            continue
+        yield p, d, f
+
+
+def _wcgrep(args, prefix="."):
+    regex = re.compile(args.expr)
+
+    for p, d, f in _walk():
         for fn in f:
             path = os.path.join(p, fn)
             name = os.path.join(prefix, path.replace("." + os.path.sep, ""))
@@ -114,8 +124,19 @@ def grep(args):
         os.chdir(home)
 
 
+def exe(args):
+    config = _load_cfg()
+    home = os.getcwd()
+    for directory in config.keys():
+        print(directory)
+        print("=" * len(directory))
+        os.chdir(directory)
+        subprocess.call(args.commands)
+        os.chdir(home)
+        print("-" * 60)
+
+
 def _find(args, prefix="."):
-    GIT = os.path.sep + ".git"
     pat = args.pattern
     if args.case_insensitive:
         pat = pat.casefold()
@@ -123,9 +144,7 @@ def _find(args, prefix="."):
     if pat in (prefix.casefold() if args.case_insensitive else prefix):
         print(prefix)
 
-    for p, d, f in os.walk("."):
-        if GIT in p:
-            continue
+    for p, d, f in _walk():
         for fn in d + f:
             path = os.path.join(p, fn)
             name = os.path.join(prefix, path.replace("." + os.path.sep, ""))
@@ -139,7 +158,6 @@ def find(args):
     config = _load_cfg()
     home = os.getcwd()
     for directory in config.keys():
-
         os.chdir(directory)
         _find(args, directory)
         os.chdir(home)
@@ -172,13 +190,15 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="cmd", required=True)
     add_parser = subparsers.add_parser("add")
     add_parser.add_argument("url")
-    up_parser = subparsers.add_parser("up")
-    grep_parser = subparsers.add_parser("grep")
-    grep_parser.add_argument("expr")
-    grep_parser.add_argument("--list", "-l", action="store_true")
+    exe_parser = subparsers.add_parser("exe")
+    exe_parser.add_argument("commands", nargs=argparse.REMAINDER)
     find_parser = subparsers.add_parser("find")
     find_parser.add_argument("pattern")
     find_parser.add_argument("--case-insensitive", "-i", action="store_true")
+    grep_parser = subparsers.add_parser("grep")
+    grep_parser.add_argument("expr")
+    grep_parser.add_argument("--list", "-l", action="store_true")
+    subparsers.add_parser("up")
     subparsers.add_parser("reset")
     subparsers.add_parser("upgrade")
 
