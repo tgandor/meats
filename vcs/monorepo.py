@@ -9,16 +9,28 @@ import re
 import shutil
 import stat
 import subprocess
+import sys
 
 CONFIG = "monorepo.json"
 LOCAL = "mr.py"
+SYMLINK = True
 
 
 def _install():
-    shutil.copyfile(__file__, LOCAL)
-    mode = os.stat(LOCAL).st_mode
-    os.chmod(LOCAL, mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-    print(f"Local copy '{LOCAL}' of script '{__file__}' created.")
+    if sys.platform.startswith("linux"):
+        if not SYMLINK:
+            shutil.copyfile(__file__, LOCAL)
+            mode = os.stat(LOCAL).st_mode
+            os.chmod(LOCAL, mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+            print(f"Local copy '{LOCAL}' of script '{__file__}' created.")
+        else:
+            os.symlink(LOCAL, os.path.abspath(__file__))
+            print(f"Local symlink '{LOCAL}' to '{__file__}' created.")
+    else:
+        with open("mr.bat", "w") as mr:
+            print("@echo off", file=mr)
+            print(f'"{sys.executable}" "{os.path.abspath(__file__)}" %*', file=mr)
+            print(f"Local entrypoint 'mr.bat' to '{__file__}' created.")
 
 
 def _load_cfg(ignore_missing=False):
