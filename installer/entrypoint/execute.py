@@ -29,7 +29,7 @@ if alias not in cache:
         if GIT in path:
             continue
         for fn in files:
-            if alias in fn:
+            if alias in fn and fn.endswith(".py"):  # TODO: handle other scripts...
                 found.append(os.path.join(path, fn))
     if len(found) > 1:
         print(f"Alias {alias} is not unique. Matching files:")
