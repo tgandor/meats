@@ -1,14 +1,31 @@
+#!/usr/bin/env python
+
+import uuid
 import os
 import stat
 import string
 import sys
+
+
+def is_writable(dirpath):
+    if sys.platform.startswith("linux"):
+        return os.access(dirpath, os.W_OK)
+
+    try:
+        test_file = os.path.join(dirpath, str(uuid.uuid4()) + ".txt")
+        with open(test_file, "w") as test:
+            test.write("hello")
+        os.unlink(test_file)
+    except OSError:
+        return False
+
 
 # find writable path
 path = os.getenv("PATH").split(os.pathsep)
 good = []
 
 for dirpath in path:
-    writable = os.access(dirpath, os.W_OK)
+    writable = is_writable(dirpath)
     print(dirpath, ":", writable)
     if writable:
         good.append(dirpath)
@@ -18,10 +35,10 @@ if not good:
 
 if len(good) > 1:
     print("Choose path destination:")
-    paths = dict(zip(string.ascii_lowercase, good))
+    paths = dict(zip(string.ascii_letters, good))
     for c, target in paths.items():
         print(c, "-", target)
-    ans = input("Choice (default: a):").lower()
+    ans = input("Choice (default: a):")
     target = paths.get(ans, paths["a"])
 else:
     target = good[0]
