@@ -73,8 +73,8 @@ else:
     with open(LOCAL + ".bat", "w") as mts:
         print("@echo off", file=mts)
         print(
-            sys.executable,
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "execute.py")),
+            f'"{sys.executable}"',
+            f'"{os.path.abspath(os.path.join(os.path.dirname(__file__), "execute.py"))}"',
             "%*",
             file=mts,
         )
