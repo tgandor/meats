@@ -1,20 +1,57 @@
 #!/usr/bin/env python
 
 import argparse
+import queue
 import subprocess
+import threading
 import time
 
 from pyperclip import paste
+
+
+class Runner:
+    def __init__(self, verbose) -> None:
+        self.verbose = verbose
+    def run(self, command):
+        if self.verbose:
+            print(command)
+        subprocess.call(command)
+        if self.verbose:
+            print("done.")
+
+
+class AsyncRunner(Runner):
+    def __init__(self, verbose) -> None:
+        super().__init__(verbose)
+        self.queue = queue.Queue()
+        self.worker = threading.Thread(target=self._worker, daemon=True)
+        self.worker.start()
+
+    def run(self, command):
+        self.queue.put(command)
+        if self.verbose:
+            print(command, "(queued)")
+
+    def _worker(self):
+        while True:
+            command = self.queue.get()
+            try:
+                super().run(command)
+            except FileNotFoundError as e:
+                print("Warning, run failed:", e)
+
 
 MARKER = "{}"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--verbose", "-v", action="store_true")
 parser.add_argument("--single-word", "-S", action="store_true")
+parser.add_argument("--queue", "-q", action="store_true", help="use async queue")
 parser.add_argument("args", nargs=argparse.REMAINDER)
 opts = parser.parse_args()
 
 args = opts.args
+runner = (AsyncRunner if opts.queue else Runner)(opts.verbose)
 
 if not any(MARKER in arg for arg in args):
     args.append(MARKER)
@@ -32,9 +69,4 @@ while True:
             continue
 
         command = [arg.replace(MARKER, new) for arg in args]
-        if opts.verbose:
-            print(command)
-        try:
-            subprocess.call(command)
-        except FileNotFoundError as e:
-            print("Warning, run failed:", e)
+        runner.run(command)
