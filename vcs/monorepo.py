@@ -24,7 +24,7 @@ def _install():
             os.chmod(LOCAL, mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
             print(f"Local copy '{LOCAL}' of script '{__file__}' created.")
         else:
-            os.symlink(LOCAL, os.path.abspath(__file__))
+            os.symlink(os.path.abspath(__file__), LOCAL)
             print(f"Local symlink '{LOCAL}' to '{__file__}' created.")
     else:
         with open("mr.bat", "w") as mr:
@@ -83,6 +83,11 @@ def add(args):
         return
 
     directory = _url_to_dir(args.url)
+
+    if directory in config:
+        print(f"Directory {directory} already in config")
+        return
+
     if os.path.exists(directory):
         print(f"directory {directory} already exists, not in config.")
     else:
@@ -175,6 +180,24 @@ def find(args):
         os.chdir(home)
 
 
+def forget(args):
+    config = _load_cfg()
+    if not args.like:
+        if args.name not in config:
+            exit(f"Error: no {args.name} in current repositories. Use --like for substring match.")
+        del config[args.name]
+        _save_cfg(config)
+        return
+    matches = [k for k in config.keys() if args.name in k]
+    if not matches:
+        exit(f"No repositories matched {args.name}")
+
+    for k in matches:
+        print(f"Forgetting: {k}")
+        del config[k]
+    _save_cfg(config)
+
+
 def reset(args):
     config = _load_cfg()
     home = os.getcwd()
@@ -207,6 +230,9 @@ if __name__ == "__main__":
     find_parser = subparsers.add_parser("find")
     find_parser.add_argument("pattern")
     find_parser.add_argument("--case-insensitive", "-i", action="store_true")
+    forget_parser = subparsers.add_parser("forget")
+    forget_parser.add_argument("--like", "-l", action="store_true")
+    forget_parser.add_argument("name")
     grep_parser = subparsers.add_parser("grep")
     grep_parser.add_argument("expr")
     grep_parser.add_argument("--list", "-l", action="store_true")
