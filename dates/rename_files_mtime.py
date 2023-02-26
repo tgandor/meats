@@ -9,7 +9,8 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument("files", nargs="+")
 parser.add_argument("--format", "-f", default="%Y%m%d_%H%M%S")
-parser.add_argument("--dry-run", "-n", action="store_true")
+parser.add_argument("--dry-run", "-n", action="store_true", help="print, don't rename")
+parser.add_argument("--prefix", "-p", action="store_true", help="only add date prefix")
 args = parser.parse_args()
 
 files = sorted(itertools.chain.from_iterable(map(glob.glob, args.files)))
@@ -17,13 +18,16 @@ files = sorted(itertools.chain.from_iterable(map(glob.glob, args.files)))
 for fn in files:
     base, ext = os.path.splitext(fn)
     stat = os.stat(fn)
-    name = datetime.datetime.fromtimestamp(stat.st_mtime).strftime(args.format) + ext
+    name = datetime.datetime.fromtimestamp(stat.st_mtime).strftime(args.format)
+    if args.prefix:
+        name += "_" + base
+    name += ext
 
     if name == fn:
         print(fn, "already correct")
         continue
 
-    print(fn, '->', name)
+    print(fn, "->", name)
 
     if os.path.exists(name):
         print("Error:", name, "exists")
