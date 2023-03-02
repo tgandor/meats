@@ -9,7 +9,7 @@ import sys
 import time
 from glob import glob
 
-strftime_format = '%Y%m%d_%H%M%S.jpg'
+strftime_format = "%Y%m%d_%H%M%S.jpg"
 
 
 def classify(iterable, func):
@@ -20,29 +20,42 @@ def classify(iterable, func):
 
 
 def rename(f):
-    if not os.path.exists(f) and '*' in f:
+    if not os.path.exists(f) and "*" in f:
         for i in glob(f):
             rename(i)
         return
 
-    some_data = open(f, 'rb').read(2 ** 12)
-    date_match = re.search(b'\d{4}([ :]\d\d){5}', some_data)
+    some_data = open(f, "rb").read(2**12)
+    date_match = re.search(b"\d{4}([ :]\d\d){5}", some_data)
 
     if not date_match:
-        print('No date information in: {}'.format(f))
+        print("No date information in: {}".format(f))
         return
 
     parsed = time.strptime(date_match.group().decode(), "%Y:%m:%d %H:%M:%S")
     new_name = time.strftime(strftime_format, parsed)
 
+    if new_name == f:
+        print("File {} is already named correctly.".format(f))
+        return
+
     if not os.path.exists(new_name):
-        print('{} -> {}'.format(f, new_name))
+        print("{} -> {}".format(f, new_name))
         os.rename(f, new_name)
     else:
-        print('{} -!> {} (file exists)'.format(f, new_name))
+        print("{} -!> {} (file exists)".format(f, new_name))
+        suffix = 1
+        while True:
+            alt_name = new_name.replace(".jpg", "_{}.jpg".format(suffix))
+            if not os.path.exists(alt_name):
+                print("{} -> {}".format(f, alt_name))
+                os.rename(f, alt_name)
+                return
+            print("{} -!> {} (file exists)".format(f, alt_name))
+            suffix += 1
 
 
-if __name__ == '__main__':
-    args, opts = classify(sys.argv[1:], lambda x: x.startswith('-'))
+if __name__ == "__main__":
+    args, opts = classify(sys.argv[1:], lambda x: x.startswith("-"))
     # print (opts, args)
     list(map(rename, args))
