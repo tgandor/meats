@@ -20,6 +20,17 @@ else:
         cache = json.load(cf)
 
 alias = sys.argv[1]
+prefix = False
+if alias.startswith("/"):
+    alias = alias[1:]
+    prefix = True
+
+
+def _match():
+    if prefix:
+        return fn.startswith(alias)
+    return alias in fn
+
 
 if alias not in cache:
     GIT = os.path.sep + ".git"
@@ -29,7 +40,7 @@ if alias not in cache:
         if GIT in path:
             continue
         for fn in files:
-            if alias in fn and fn.endswith(".py"):  # TODO: handle other scripts...
+            if _match() and fn.endswith(".py"):  # TODO: handle other scripts...
                 found.append(os.path.join(path, fn))
     if len(found) > 1:
         print(f"Alias {alias} is not unique. Matching files:")
