@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import logging
 import socket
 import ssl
 import struct
@@ -58,13 +59,13 @@ def recv_tdspacket(sock):
 
     for i in range(0, 5):
         tdspacket += sock.recv(4096)
-        print("\n# get_tdspacket: {}, tdspacket len: {} ".format(i, len(tdspacket)))
+        logging.debug("\n# get_tdspacket: {}, tdspacket len: {} ".format(i, len(tdspacket)))
         if len(tdspacket) >= 8:
             header = read_header(tdspacket[:8])
-            print("# Header: ", header)
+            logging.debug("# Header: ", header)
             if len(tdspacket) >= header["length"]:
                 tdspbuf = tdspacket[header["length"] :]
-                print("# Remaining tdspbuf length: {}\n".format(len(tdspbuf)))
+                logging.debug("# Remaining tdspbuf length: {}\n".format(len(tdspbuf)))
                 return header, tdspacket[8 : header["length"]]
 
         sleep(0.05)
@@ -145,10 +146,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("hostname")
 parser.add_argument("port", type=int, nargs="?", default=1433)
 parser.add_argument("--details", "-v", action="store_true")
+parser.add_argument("--debug", action="store_true")
 args = parser.parse_args()
 
 hostname = args.hostname
 port = args.port
+if args.debug:
+    logging.basicConfig(level=logging.DEBUG)
 
 # Setup SSL
 if hasattr(ssl, "PROTOCOL_TLS"):
@@ -182,12 +186,12 @@ while header["status"] == 0:
     data += ext_data
 
 
-print("# Starting TLS handshake loop..")
+logging.debug("# Starting TLS handshake loop..")
 # Craft the packet
 for i in range(0, 5):
     try:
         tlssock.do_handshake()
-        print("# Handshake completed, dumping certificates")
+        logging.debug("# Handshake completed, dumping certificates")
         peercert = ssl.DER_cert_to_PEM_cert(tlssock.getpeercert(True))
         if not cert_info(peercert):
             print(peercert)
@@ -199,7 +203,7 @@ for i in range(0, 5):
         sys.exit(0)
     except ssl.SSLWantReadError as err:
         # TLS wants to keep shaking hands, but because we're controlling the R/W buffers it throws an exception
-        print("# Shaking ({}/5)".format(i))
+        logging.debug("# Shaking ({}/5)".format(i))
 
     tls_data = tls_out_buf.read()
     s.sendall(prep_header(tls_data))
@@ -212,4 +216,4 @@ for i in range(0, 5):
 
     tls_in_buf.write(data)
 
-print("# Handshake did not complete / exiting")
+logging.error("# Handshake did not complete / exiting")
