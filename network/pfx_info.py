@@ -4,6 +4,7 @@ import argparse
 import os
 
 from cryptography import x509
+from cryptography.hazmat.primitives.hashes import SHA1
 from cryptography.hazmat.primitives.serialization.pkcs12 import load_pkcs12
 
 parser = argparse.ArgumentParser()
@@ -34,4 +35,6 @@ cn = cert_parsed.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0].val
 expiry_date = cert_parsed.not_valid_after
 
 print("CN:", cn)
+print("Serial:", hex(cert_parsed.serial_number)[2:])
+print("Thumbprint:", cert_parsed.fingerprint(SHA1()).hex())
 print("Expiry Date:", expiry_date)
