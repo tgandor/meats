@@ -1,7 +1,7 @@
 <?php
     $title = basename(dirname($_SERVER['PHP_SELF']));
     // mp3 and m4a, case insensitive (false positives: mpa, m43)
-    $files = glob('*.[Mm][Pp4][Aa3]');
+    $files = array_merge(glob('*.[Mm][Pp4][Aa3]'), glob('*.opus'));
     natsort($files);
 
     $crumbs = array();
@@ -12,17 +12,21 @@
         $crumbs[$path] = $dir;
     }
 
-    $other_files = array_values(array_diff(glob('*'), $files + ['index.php']));
-    unset($other_files[array_search('index.php', $other_files)]);
+    $ignore = array_slice($files, 0);
+    $ignore[] = 'index.php';
 
     $descriptions = array();
     foreach($files as  $i => $music_file)
     {
-        if (file_exists(basename("$music_file", "mp3") . "txt"))
+        $descr_file = pathinfo("$music_file", PATHINFO_FILENAME) . "txt";
+        if (file_exists($descr_file))
         {
-            $descriptions[$i] = file_get_contents(basename("$music_file", "mp3") . "txt");
+            $descriptions[$i] = file_get_contents($descr_file);
+            $ignore[] = $descr_file;
         }
     }
+
+    $other_files = array_values(array_diff(glob('*'), $ignore));
 ?><!doctype html>
 <html lang="en">
   <head>
@@ -50,7 +54,7 @@
     <div class="container">
         <div class="jumbotron d-none d-md-block">
             <h1><?php echo $title ?></h1>
-            <p class="lead" title="v2.0-2020.09.29">Showing MP3s as HTML5 audio.</p>
+            <p class="lead" title="v3.0-2023.04.25">Showing audio files using HTML5.</p>
         </div>
 
         <div class="page-header d-block d-md-none">
