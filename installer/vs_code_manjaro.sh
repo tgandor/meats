@@ -8,4 +8,7 @@ else
     makepkg -s
     mv visual-studio-code-bin*.pkg.tar.zst ..
     git clean -dfx
+    echo "Installing package..."
+    cd ..
+    sudo pacman -U visual-studio-code-bin*.pkg.tar.zst
 fi
