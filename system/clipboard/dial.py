@@ -12,12 +12,6 @@ except ImportError:
     pass
 
 
-# define button click handler function
-def handle_click(key, label):
-    pyperclip.copy(label)
-    print(f"Copied '{key}': {label}")
-
-
 def get_lines(data_file):
     if data_file.endswith(".json"):
         with open(data_file) as jsf:
@@ -33,6 +27,12 @@ def get_lines(data_file):
         yield key, value
 
 
+# define button click handler function
+def handle_click(key, label):
+    pyperclip.copy(label)
+    print(f"Copied '{key}': {label}")
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("data_file")
 args = parser.parse_args()
@@ -44,7 +44,10 @@ root.title("Clipboard dial")
 
 # create buttons with labels from text file
 for key, label in get_lines(args.data_file):
-    button = tk.Button(root, text=label, command=lambda key=key, label=label: handle_click(key, label))
+    tk.Label(root, text=key).pack()
+    button = tk.Button(
+        root, text=label, command=lambda key=key, label=label: handle_click(key, label)
+    )
     button.pack()
 
 # set "always on top" attribute

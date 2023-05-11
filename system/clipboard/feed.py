@@ -11,6 +11,11 @@ try:
 except ImportError:
     pass
 
+try:
+    import plyer
+except ImportError:
+    plyer = None
+
 
 def get_lines(data_file):
     if data_file.endswith(".json"):
@@ -27,10 +32,22 @@ def get_lines(data_file):
         yield key, value
 
 
+def info(title, contents):
+    message = f'Copied {title}: {"***" if title == "password" else contents}'
+    print(message)
+    if plyer:
+        plyer.notification.notify(
+            title="New data copied",
+            message=message,
+            app_name="Clipboard feeder",
+            timeout=3,
+        )
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("data_file")
-parser.add_argument("--wait", "-w", type=float, default=5)
-parser.add_argument("--delay", "-d", type=float, default=2.5)
+parser.add_argument("--wait", "-w", type=float, default=3)
+parser.add_argument("--delay", "-d", type=float, default=3)
 parser.add_argument("--loop", "-l", action="store_true")
 args = parser.parse_args()
 
@@ -42,7 +59,7 @@ time.sleep(args.wait)
 while True:
     for title, contents in get_lines(args.data_file):
         pyperclip.copy(contents)
-        print(f"Copied {title}: ", "***" if title == "password" else contents)
+        info(title, contents)
         time.sleep(args.delay)
     if not args.loop:
         break
