@@ -1,4 +1,5 @@
 <?php
+    $version = "v3.1-2023.05.13";
     $title = basename(dirname($_SERVER['PHP_SELF']));
     // mp3 and m4a, case insensitive (false positives: mpa, m43)
     $files = array_merge(glob('*.[Mm][Pp4][Aa3]'), glob('*.opus'));
@@ -18,10 +19,10 @@
     $descriptions = array();
     foreach($files as  $i => $music_file)
     {
-        $descr_file = pathinfo("$music_file", PATHINFO_FILENAME) . "txt";
+        $descr_file = pathinfo("$music_file", PATHINFO_FILENAME) . ".txt";
         if (file_exists($descr_file))
         {
-            $descriptions[$i] = file_get_contents($descr_file);
+            $descriptions[$music_file] = file_get_contents($descr_file);
             $ignore[] = $descr_file;
         }
     }
@@ -54,7 +55,7 @@
     <div class="container">
         <div class="jumbotron d-none d-md-block">
             <h1><?php echo $title ?></h1>
-            <p class="lead" title="v3.0-2023.04.25">Showing audio files using HTML5.</p>
+            <p class="lead" title="<?php echo $version ?>">Showing audio files using HTML5.</p>
         </div>
 
         <div class="page-header d-block d-md-none">
@@ -90,8 +91,8 @@
 <?php foreach($files as $i => $music_file): ?>
             <div class="col-sm-6 col-md-4 col-lg-3 py-3">
                 <p><?php echo $i + 1 ?>. <a href="<?php echo $music_file ?>"><?php echo $music_file ?></a></p>
-<?php if (isset($descriptions[$i])): ?>
-                <p class="small"><?php echo $descriptions[$i] ?></p>
+<?php if (isset($descriptions[$music_file])): ?>
+                <p class="small"><?php echo $descriptions[$music_file] ?></p>
 <?php endif ?>
                 <audio controls="controls" preload="none" id="a_<?php echo $i + 1 ?>">
                     <source src="<?php echo $music_file ?>" type="audio/mpeg">
