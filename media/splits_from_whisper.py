@@ -17,6 +17,12 @@ parser.add_argument("--verbose", "-v", action="store_true")
 parser.add_argument(
     "--text", "-t", action="store_true", help="print matching segment texts"
 )
+parser.add_argument(
+    "--descriptions",
+    "-d",
+    action="store_true",
+    help="generate .txt files for each split's beginning",
+)
 args = parser.parse_args()
 ci = not args.case_sensitive
 key = args.split_keyword.lower() if ci else args.split_keyword
@@ -28,6 +34,7 @@ for json_file in args.json_files:
         data = json.load(jsf)
 
     splits = []
+    descriptions = [data["segments"][0]["text"]]
 
     for segment in data["segments"]:
         text = segment["text"].lower() if ci else segment["text"]
@@ -39,8 +46,18 @@ for json_file in args.json_files:
                 print(segment)
             if args.text:
                 print(segment["text"])
+            descriptions.append(segment["text"])
 
     print(" ".join(str(s) for s in splits))
+
+    if args.descriptions:
+        basename, ext = os.path.splitext(json_file)
+        assert ext == '.json'
+        for chunk, description in enumerate(descriptions, start=1):
+            filename = f"{basename}_{chunk}.txt"
+            print(f"{filename}: {description}")
+            with open(filename, "w") as dfile:
+                print(description, file=dfile)
 
     if args.process:
         # Is this really how code re-use should work?
