@@ -65,6 +65,20 @@ def _url_to_dir(url):
     return chunks[-1]
 
 
+def st(args):
+    config = _load_cfg()
+    home = os.getcwd()
+    for directory in config.keys():
+        os.chdir(directory)
+        if os.popen("git status --porcelain").read() == "":
+            continue
+        print("=" * len(directory))
+        print(directory)
+        print("=" * len(directory))
+        os.system("git  status")
+        os.chdir(home)
+
+
 def up(args):
     config = _load_cfg()
     home = os.getcwd()
@@ -184,7 +198,9 @@ def forget(args):
     config = _load_cfg()
     if not args.like:
         if args.name not in config:
-            exit(f"Error: no {args.name} in current repositories. Use --like for substring match.")
+            exit(
+                f"Error: no {args.name} in current repositories. Use --like for substring match."
+            )
         del config[args.name]
         _save_cfg(config)
         return
@@ -238,6 +254,7 @@ if __name__ == "__main__":
     grep_parser.add_argument("--list", "-l", action="store_true")
     subparsers.add_parser("up")
     subparsers.add_parser("reset")
+    subparsers.add_parser("st")
     subparsers.add_parser("upgrade")
 
     args = parser.parse_args()
