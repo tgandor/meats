@@ -71,6 +71,7 @@ def st(args):
     for directory in config.keys():
         os.chdir(directory)
         if os.popen("git status --porcelain").read() == "":
+            os.chdir(home)
             continue
         print("=" * len(directory))
         print(directory)
