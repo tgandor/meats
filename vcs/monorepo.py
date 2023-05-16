@@ -65,6 +65,21 @@ def _url_to_dir(url):
     return chunks[-1]
 
 
+def br(args):
+    config = _load_cfg()
+    home = os.getcwd()
+    for directory in config.keys():
+        os.chdir(directory)
+        if len(os.popen("git branch").read().split("\n")) == 1:
+            os.chdir(home)
+            continue
+        print("=" * len(directory))
+        print(directory)
+        print("=" * len(directory))
+        os.system("git  branch")
+        os.chdir(home)
+
+
 def st(args):
     config = _load_cfg()
     home = os.getcwd()
@@ -253,6 +268,7 @@ if __name__ == "__main__":
     grep_parser = subparsers.add_parser("grep")
     grep_parser.add_argument("expr")
     grep_parser.add_argument("--list", "-l", action="store_true")
+    subparsers.add_parser("br")
     subparsers.add_parser("up")
     subparsers.add_parser("reset")
     subparsers.add_parser("st")
