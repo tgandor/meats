@@ -65,17 +65,21 @@ def _url_to_dir(url):
     return chunks[-1]
 
 
+def _h1(s):
+    print("=" * len(s))
+    print(s)
+    print("=" * len(s))
+
+
 def br(args):
     config = _load_cfg()
     home = os.getcwd()
     for directory in config.keys():
         os.chdir(directory)
-        if len(os.popen("git branch").read().split("\n")) == 1:
+        if len(os.popen("git branch").read().strip().split("\n")) == 1:
             os.chdir(home)
             continue
-        print("=" * len(directory))
-        print(directory)
-        print("=" * len(directory))
+        _h1(directory)
         os.system("git  branch")
         os.chdir(home)
 
@@ -88,9 +92,7 @@ def st(args):
         if os.popen("git status --porcelain").read() == "":
             os.chdir(home)
             continue
-        print("=" * len(directory))
-        print(directory)
-        print("=" * len(directory))
+        _h1(directory)
         os.system("git  status")
         os.chdir(home)
 
@@ -100,7 +102,7 @@ def up(args):
     home = os.getcwd()
     for directory in config.keys():
         os.chdir(directory)
-        print(directory)
+        _h1(directory)
         os.system("git pull")
         os.chdir(home)
 
@@ -175,12 +177,10 @@ def exe(args):
     config = _load_cfg()
     home = os.getcwd()
     for directory in config.keys():
-        print(directory)
-        print("=" * len(directory))
+        _h1(directory)
         os.chdir(directory)
         subprocess.call(args.commands)
         os.chdir(home)
-        print("-" * 60)
 
 
 def _find(args, prefix="."):
@@ -246,6 +246,7 @@ def reset(args):
 
 
 def upgrade(args):
+    """Deprecated since the introduction of mr.bat / SYMLINK."""
     if os.path.abspath(__file__) == os.path.abspath(LOCAL):
         print("Running locally, can't upgrade myself.")
     else:
