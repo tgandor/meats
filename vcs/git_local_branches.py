@@ -25,7 +25,9 @@ remotes = {
 
 local_branches = set(filter(lambda x: not x.startswith("remotes/"), branches))
 switch = "-D" if args.force else "-d"
-commands = ["git branch {} {}".format(switch, branch) for branch in (local_branches - remotes)]
+commands = [
+    "git branch {} {}".format(switch, branch) for branch in (local_branches - remotes)
+]
 
 if not args.run:
     if commands:
