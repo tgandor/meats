@@ -36,6 +36,8 @@ key = args.split_keyword.lower() if ci else args.split_keyword
 class Excludes:
     def __init__(self, excludes, case_sensitive) -> None:
         self.excludes = []
+        if excludes is None:
+            return
         for item in excludes:
             if os.path.exists(item):
                 self.excludes.extend(line.strip() for line in open(item))
@@ -80,13 +82,16 @@ for json_file in args.json_files:
         basename, ext = os.path.splitext(json_file)
         assert ext == ".json"
         for chunk, description in enumerate(descriptions, start=1):
-            filename = f"{basename}_{chunk}.txt"
+            filename = f"{basename}_{chunk}.txt" if len(descriptions) > 1 else f"{basename}.txt"
             print(f"{filename}: {description}")
             with open(filename, "w") as dfile:
                 print(description, file=dfile)
 
     if args.process:
         # Is this really how code re-use should work?
+        if not splits:
+            print(f"WARNING: no splits for {json_file}")
+            continue
         splitter = os.path.join(os.path.dirname(__file__), "split_video.py")
         target = json_file.replace("json", args.process)
         if not os.path.exists(target):
