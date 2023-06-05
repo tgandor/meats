@@ -15,6 +15,10 @@ def calculate_ssim(image1, image2):
     return score
 
 
+def ssim(t):
+    return calculate_ssim(*t)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Calculate SSIM values for consecutive image pairs"
@@ -24,9 +28,7 @@ def main():
 
     p = multiprocessing.Pool()
 
-    for image1, image2 in p.imap(
-        lambda t: calculate_ssim(*t), zip(args.files, args.files[1:])
-    ):
+    for image1, image2 in p.imap(ssim, zip(args.files, args.files[1:])):
         ssim_value = calculate_ssim(image1, image2)
         print(f"SSIM value between {image1} and {image2}: {ssim_value}")
 
