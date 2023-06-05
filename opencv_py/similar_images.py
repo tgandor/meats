@@ -4,19 +4,19 @@ import argparse
 import multiprocessing
 
 import cv2
-from skimage.metrics import structural_similarity as ssim
+from skimage.metrics import structural_similarity
 
 
 def calculate_ssim(image1, image2):
     img1 = cv2.imread(image1, cv2.IMREAD_GRAYSCALE)
     img2 = cv2.imread(image2, cv2.IMREAD_GRAYSCALE)
 
-    score, _ = ssim(img1, img2, full=True)
-    return score
+    score, _ = structural_similarity(img1, img2, full=True)
+    return float(score)
 
 
 def ssim(t):
-    return calculate_ssim(*t)
+    return t + (calculate_ssim(*t),)
 
 
 def main():
@@ -28,8 +28,7 @@ def main():
 
     p = multiprocessing.Pool()
 
-    for image1, image2 in p.imap(ssim, zip(args.files, args.files[1:])):
-        ssim_value = calculate_ssim(image1, image2)
+    for image1, image2, ssim_value in p.imap(ssim, zip(args.files, args.files[1:])):
         print(f"SSIM value between {image1} and {image2}: {ssim_value}")
 
 
