@@ -34,14 +34,18 @@ else:
 
 print(f"{days=}")
 principal = args.sum
-print(f"{principal=}")
+print(f"{principal=}\n")
+
 interest = args.rate / 100 * principal * days / 365
-print(f"{interest=}")
+print(f"{interest=:.2f}")
+capitalized_before_tax = principal + interest
+print(f"{capitalized_before_tax=:.2f}\n")
+
 tax = interest * args.tax / 100
-print(f"{tax=}")
+print(f"{tax=:.2f}")
 net_interest = interest - tax
-print(f"{net_interest=}")
+print(f"{net_interest=:.2f}")
 capitalized = principal + net_interest
-print(f"{capitalized=}")
+print(f"{capitalized=:.2f}")
 net_rate = net_interest / principal * 365 / days * 100
-print(f"{net_rate=}")
+print(f"{net_rate=:.2f}")
