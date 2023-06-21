@@ -1,3 +1,3 @@
 #!/bin/bash
 
-time parallel ffmpeg -i {} {.}.opus ::: "$@"
+time parallel ffmpeg -hide_banner -i {} $OPTS {.}.opus ::: "$@"
