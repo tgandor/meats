@@ -2,7 +2,6 @@
 
 # Based on: https://github.com/peterbrittain/asciimatics/blob/master/samples/contact_list.py
 
-import glob
 import os
 import sys
 
@@ -17,8 +16,8 @@ class FileModel:
         self.last_untracked = []
 
     def get_summary(self):
-        files = os.popen('git status --porcelain').read().split('\n')
-        self.last_untracked = [f[3:] for f in files if f.startswith('?? ')]
+        files = os.popen("git status --porcelain").read().split("\n")
+        self.last_untracked = [f[3:] for f in files if f.startswith("?? ")]
         return [(f, f) for f in self.last_untracked]
 
     def delete(self, filename):
@@ -30,20 +29,26 @@ class FileModel:
         n = len(self.last_untracked)
         if n > 1 and filename in self.last_untracked:
             idx = self.last_untracked.index(filename)
-            return self.last_untracked[idx+1] if idx < n - 1 else self.last_untracked[idx-1]
+            return (
+                self.last_untracked[idx + 1]
+                if idx < n - 1
+                else self.last_untracked[idx - 1]
+            )
 
         return None
 
 
 class ListView(Frame):
     def __init__(self, screen, model):
-        super(ListView, self).__init__(screen,
-                                       screen.height * 2 // 3,
-                                       screen.width * 2 // 3,
-                                       on_load=self._reload_list,
-                                       hover_focus=True,
-                                       can_scroll=False,
-                                       title="Untracked files")
+        super(ListView, self).__init__(
+            screen,
+            screen.height * 2 // 3,
+            screen.width * 2 // 3,
+            on_load=self._reload_list,
+            hover_focus=True,
+            can_scroll=False,
+            title="Untracked files",
+        )
         self._model = model
 
         # Create the form for displaying the files.
@@ -52,7 +57,8 @@ class ListView(Frame):
             model.get_summary(),
             name="untracked_files",
             add_scroll_bar=True,
-            on_select=self._delete_one)
+            on_select=self._delete_one,
+        )
         self._delete_button = Button("Delete All", self._delete)
 
         layout = Layout([100], fill_frame=True)
