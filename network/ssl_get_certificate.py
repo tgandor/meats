@@ -8,6 +8,7 @@ import ssl
 import socket
 import json
 from datetime import datetime
+
 try:
     import OpenSSL
 except ImportError:
@@ -59,4 +60,3 @@ try:
 except TypeError as e:
     print(e)
     print(result)
-
