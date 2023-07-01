@@ -12,6 +12,10 @@ import time
 import cv2
 
 MAX_SLOUCH_RATIO = 0.2  # relative to img height
+MODEL = "haarcascade_frontalface_default.xml"
+HAAR_URL = (
+    f"https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/{MODEL}"
+)
 
 initial_face_position = None
 is_slouching = False
@@ -20,15 +24,31 @@ cap = cv2.VideoCapture(0)
 
 # Create the haar cascade
 cascades = [
-    "/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml",
-    "haarcascade_frontalface_default.xml",
-    os.path.join(os.path.dirname(__file__), "haarcascade_frontalface_default.xml"),
+    MODEL,
+    f"/usr/share/opencv/haarcascades/{MODEL}",
+    os.path.join(os.path.dirname(__file__), MODEL),
 ]
 
 if hasattr(cv2, "data"):
-    cascades.insert(
-        0, os.path.join(cv2.data.haarcascades, "haarcascade_frontalface_default.xml")
-    )
+    cascades.insert(0, os.path.join(cv2.data.haarcascades, MODEL))
+
+if not any(os.path.isfile(p) for p in cascades):
+    print("No haarcascade_frontalface_default.xml found.")
+    answer = input("Downlod from Internet? [Yn] ")
+    if not answer or not answer.lower().startswith("n"):
+        import urllib
+
+        try:
+            response = urllib.request.urlopen(HAAR_URL)
+            if response.getcode() == 200:
+                with open(MODEL, "wb") as file:
+                    data = response.read()
+                    file.write(data)
+                print(f"Downloaded {MODEL}, {len(data):.,} B")
+            else:
+                print("GET request failed. Response Code:", response.getcode())
+        except urllib.error.URLError as e:
+            print("Error:", e)
 
 for path in cascades:
     if os.path.isfile(path):
@@ -36,11 +56,8 @@ for path in cascades:
         faceCascade = cv2.CascadeClassifier(path)
         break
 else:
-    print("No haarcascade_frontalface_default.xml found.")
     print("Try:\nsudo apt install opencv-data\nor:")
-    print(
-        "wget https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_default.xml"
-    )
+    print(f"wget {HAAR_URL}")
     exit()
 
 

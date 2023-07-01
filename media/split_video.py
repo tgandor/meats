@@ -30,7 +30,7 @@ codec = "" if args.reencode else "-c copy"
 
 for split in splits:
     command = (
-        'ffmpeg -hide_banner -ss {} -to {} -i "{}" {} -map_metadata 0 "{}_{}{}"'.format(
+        'ffmpeg -hide_banner -ss {} -i "{}" {} -map_metadata 0 -to {} "{}_{}{}"'.format(
             startpos, split, args.video_file, codec, basename, chunk, ext
         )
     )
