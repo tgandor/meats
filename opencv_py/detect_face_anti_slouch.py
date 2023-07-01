@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-
 # Acknowledgements:
 # https://realpython.com/face-recognition-with-python/
 # https://github.com/shantnu/FaceDetect/
@@ -22,7 +20,6 @@ is_slouching = False
 
 cap = cv2.VideoCapture(0)
 
-# Create the haar cascade
 cascades = [
     MODEL,
     f"/usr/share/opencv/haarcascades/{MODEL}",
