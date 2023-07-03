@@ -17,6 +17,11 @@ parser.add_argument(
 parser.add_argument(
     "--process", "-p", help="file extension to replace .json and run ./split_video.py"
 )
+parser.add_argument(
+    "--repair",
+    action="store_true",
+    help="fix chunks which had -to as ffmpeg output option.",
+)
 parser.add_argument("--case-sensitive", "-c", action="store_true")
 parser.add_argument("--verbose", "-v", action="store_true")
 parser.add_argument(
@@ -90,6 +95,27 @@ for json_file in args.json_files:
             print(f"{filename}: {description}")
             with open(filename, "w") as dfile:
                 print(description, file=dfile)
+
+    if args.repair:
+        assert args.process, "Repair requires and extension to process"
+        basename, ext = os.path.splitext(json_file)
+        assert ext == ".json"
+
+        if len(splits) < 2:
+            print(f"INFO: not enough splits for {json_file}")
+            continue
+
+        os.makedirs("bak", exist_ok=True)\
+
+        for chunk, (begin, end) in enumerate(zip(splits, splits[1:]), 2):
+            filename = f"{basename}_{chunk}.{args.process}"
+            backup = os.path.join("bak", filename)
+            os.rename(filename, backup)
+            command = f'ffmpeg -hide_banner -i "{backup}" -c copy -to {end-begin} "{filename}"'
+            print(command)
+            os.system(command)
+
+        continue
 
     if args.process:
         # Is this really how code re-use should work?
