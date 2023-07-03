@@ -82,7 +82,11 @@ for json_file in args.json_files:
         basename, ext = os.path.splitext(json_file)
         assert ext == ".json"
         for chunk, description in enumerate(descriptions, start=1):
-            filename = f"{basename}_{chunk}.txt" if len(descriptions) > 1 else f"{basename}.txt"
+            filename = (
+                f"{basename}_{chunk}.txt"
+                if len(descriptions) > 1
+                else f"{basename}.txt"
+            )
             print(f"{filename}: {description}")
             with open(filename, "w") as dfile:
                 print(description, file=dfile)
@@ -98,5 +102,8 @@ for json_file in args.json_files:
             raise ValueError(f"Target file {target} not found!")
 
         os.system(
-            " ".join([sys.executable, splitter, target] + [str(s) for s in splits])
+            " ".join(
+                [sys.executable, splitter, target, "--floats"]
+                + [str(s) for s in splits]
+            )
         )
