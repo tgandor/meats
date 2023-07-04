@@ -71,40 +71,40 @@ def _h1(s):
     print("=" * len(s))
 
 
+def _dirs(config, args):
+    home = os.getcwd()
+    filter = getattr(args, "filter", None)
+    for directory in config.keys():
+        if filter and filter not in directory:
+            continue
+        os.chdir(directory)
+        yield directory
+        os.chdir(home)
+
+
 def br(args):
     config = _load_cfg()
-    home = os.getcwd()
-    for directory in config.keys():
-        os.chdir(directory)
+    for directory in _dirs(config, args):
         if len(os.popen("git branch").read().strip().split("\n")) == 1:
-            os.chdir(home)
             continue
         _h1(directory)
-        os.system("git  branch")
-        os.chdir(home)
+        os.system("git branch")
 
 
 def st(args):
     config = _load_cfg()
-    home = os.getcwd()
-    for directory in config.keys():
-        os.chdir(directory)
+    for directory in _dirs(config, args):
         if os.popen("git status --porcelain").read() == "":
-            os.chdir(home)
             continue
         _h1(directory)
-        os.system("git  status")
-        os.chdir(home)
+        os.system("git status")
 
 
 def up(args):
     config = _load_cfg()
-    home = os.getcwd()
-    for directory in config.keys():
-        os.chdir(directory)
+    for directory in _dirs(config, args):
         _h1(directory)
         os.system("git pull")
-        os.chdir(home)
 
 
 def add(args):
@@ -234,7 +234,6 @@ def reset(args):
     config = _load_cfg()
     home = os.getcwd()
     for directory in config.keys():
-
         os.chdir(directory)
         res = os.system("git checkout main")
         if res:
@@ -269,10 +268,10 @@ if __name__ == "__main__":
     grep_parser = subparsers.add_parser("grep")
     grep_parser.add_argument("expr")
     grep_parser.add_argument("--list", "-l", action="store_true")
-    subparsers.add_parser("br")
-    subparsers.add_parser("up")
-    subparsers.add_parser("reset")
-    subparsers.add_parser("st")
+    subparsers.add_parser("br").add_argument("filter", nargs="?")
+    subparsers.add_parser("up").add_argument("filter", nargs="?")
+    subparsers.add_parser("reset").add_argument("filter", nargs="?")
+    subparsers.add_parser("st").add_argument("filter", nargs="?")
     subparsers.add_parser("upgrade")
 
     args = parser.parse_args()
