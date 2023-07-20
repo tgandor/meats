@@ -8,10 +8,12 @@ import hashlib
 import sys
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--sha256', '-S', action='store_true', help='Use SHA256 instead of MD5')
-parser.add_argument('--sha', '-s', action='store_true', help='Use SHA-1 instead of MD5')
-parser.add_argument('--crc', '-c', action='store_true', help='Use CRC32 instead of MD5')
-parser.add_argument('files', nargs='*')
+parser.add_argument(
+    "--sha256", "-S", action="store_true", help="Use SHA256 instead of MD5"
+)
+parser.add_argument("--sha", "-s", action="store_true", help="Use SHA-1 instead of MD5")
+parser.add_argument("--crc", "-c", action="store_true", help="Use CRC32 instead of MD5")
+parser.add_argument("files", nargs="*")
 args = parser.parse_args()
 
 # inspired by:
@@ -25,11 +27,11 @@ class Crc32:
     def update(self, data):
         # see about signedness:
         # https://stackoverflow.com/questions/30092226/how-to-calculate-crc32-with-python-to-match-online-results
-        self.value = crc32(data, self.value) & 0xffffffff
+        self.value = crc32(data, self.value) & 0xFFFFFFFF
 
     def hexdigest(self):
         # return hex(self.value).upper()[2:]
-        return '{:08X}'.format(self.value)
+        return "{:08X}".format(self.value)
 
 
 def do_md5(file_obj):
@@ -50,25 +52,25 @@ def do_md5(file_obj):
 
 
 def md5(filename):
-    if filename == '-':
+    if filename == "-":
         digest = do_md5(sys.stdin)
     else:
         with open(filename, "rb") as f:
             digest = do_md5(f)
-    print('{}  {}'.format(digest, filename))
+    print("{}  {}".format(digest, filename))
 
 
 def _main():
     if len(args.files) < 1:
-        md5('-')
+        md5("-")
     else:
         for expr in args.files:
-            if '*' in expr:
+            if "*" in expr:
                 for filename in glob.glob(expr):
                     md5(filename)
             else:
                 md5(expr)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     _main()
