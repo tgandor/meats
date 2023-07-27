@@ -9,16 +9,16 @@
 # so finally I went more or less with this:
 # https://willhaley.com/blog/encrypted-file-container-disk-image-in-linux/
 
-if [ -z "$2" ] ; then
+if [ -z "$1" ] ; then
     gb=10
 else
-    gb=$2
+    gb=$1
 fi
 
-if [ -z "$1" ] ; then
+if [ -z "$2" ] ; then
     file=image_.bin
 else
-    file="$1"
+    file="$2"
 fi
 
 if [ -f $file ] ; then
