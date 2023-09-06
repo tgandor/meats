@@ -13,7 +13,10 @@ def gen_clipboard(first=False):
     if first:
         yield old_clipboard
     while True:
-        time.sleep(0.2)
+        try:
+            time.sleep(0.2)
+        except KeyboardInterrupt:
+            break
         new_clipboard = paste()
         if new_clipboard != old_clipboard:
             yield new_clipboard
