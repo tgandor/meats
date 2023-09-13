@@ -18,7 +18,7 @@ parser.add_argument(
 parser.add_argument(
     "--days", type=int, help="specify days number directly (override --start and --end)"
 )
-parser.add_argument("--tax", type=float, default=19.0, help="capital gains tax (in %)")
+parser.add_argument("--tax", type=float, default=19.0, help="capital gains tax (in %%)")
 args = parser.parse_args()
 
 print(f"rate={args.rate}")
