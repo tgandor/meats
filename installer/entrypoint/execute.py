@@ -3,6 +3,7 @@
 from os.path import dirname, exists, expanduser
 import json
 import os
+import platform
 import subprocess
 import sys
 
@@ -21,18 +22,37 @@ else:
 
 alias = sys.argv[1]
 prefix = False
+search = False
+
 if alias.startswith("/"):
     alias = alias[1:]
     prefix = True
+if alias.startswith("%"):
+    alias = alias[1:]
+    search = True
 
 
-def _match():
+def _match(fn):
     if prefix:
         return fn.startswith(alias)
     return alias in fn
 
 
-if alias not in cache:
+def _open(file_path):
+    if not search:
+        assert entry.endswith(".py")
+        subprocess.call([sys.executable, entry] + sys.argv[2:])
+        return
+
+    if platform.system() == "Darwin":
+        subprocess.run(["open", file_path])
+    elif platform.system() == "Windows":
+        subprocess.run(["start", file_path], shell=True)
+    else:
+        subprocess.run(["xdg-open", file_path])
+
+
+def _crawl():
     GIT = os.path.sep + ".git"
     top = dirname(dirname(dirname(__file__)))
     found = []
@@ -40,8 +60,9 @@ if alias not in cache:
         if GIT in path:
             continue
         for fn in files:
-            if _match() and fn.endswith(".py"):  # TODO: handle other scripts...
+            if _match(fn) and (fn.endswith(".py") or search):
                 found.append(os.path.join(path, fn))
+
     if len(found) > 1:
         print(f"Alias {alias} is not unique. Matching files:")
         for fn in found:
@@ -58,10 +79,13 @@ if alias not in cache:
     with open(cache_path, "w") as cf:
         json.dump(cache, cf, indent=2)
         print(file=cf)
-else:
+
+    return entry
+
+
+if alias in cache:
     entry = cache[alias]
+else:
+    entry = _crawl()
 
-assert entry.endswith(".py")  # for now.
-
-
-subprocess.call([sys.executable, entry] + sys.argv[2:])
+_open(entry)
