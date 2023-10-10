@@ -56,7 +56,7 @@ def export_table_to_csv(
     try:
         cursor = conn.cursor()
 
-        cursor.execute(f"SELECT COUNT(*) FROM {table}")
+        cursor.execute(f"SELECT COUNT(*) FROM {schema}.{table}")
         total_rows = cursor.fetchone()[0]
         print(f"{total_rows=}")
 
@@ -64,13 +64,13 @@ def export_table_to_csv(
             csv_writer = csv.writer(csv_file)
 
             # Write column headers
-            cursor.execute(f"SELECT {', '.join(columns)} FROM {table} LIMIT 0")
+            cursor.execute(f"SELECT {', '.join(columns)} FROM {schema}.{table} LIMIT 0")
             column_names = [desc[0] for desc in cursor.description]
             csv_writer.writerow(column_names)
 
             offset = 0
             cursor.execute(
-                f"SELECT {', '.join(columns)} FROM {table} order by {', '.join(keys)}"
+                f"SELECT {', '.join(columns)} FROM {schema}.{table} order by {', '.join(keys)}"
             )
             while offset < total_rows:
                 # Fetch data in chunks using fetchmany()
