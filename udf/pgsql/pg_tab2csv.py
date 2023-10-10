@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument("table")
     parser.add_argument("--key", "-k", action="store_true", help="only save PK")
     parser.add_argument("--output", "-o")
-    parser.add_argument("--chunk", "-c", type=int, default=1000000)
+    parser.add_argument("--chunk", "-c", type=int, default=10**6)
     return parser.parse_args()
 
 
@@ -48,7 +48,7 @@ def get_primary_keys(conn, schema, table):
 
 
 def export_table_to_csv(
-    conn, schema, table, columns, keys, csv_filename=None, chunk_size=1000000
+    conn, schema, table, columns, keys, csv_filename=None, chunk_size=10**6
 ):
     if csv_filename is None:
         csv_filename = ".".join((schema, table, "csv"))
@@ -57,11 +57,12 @@ def export_table_to_csv(
         cursor = conn.cursor()
 
         cursor.execute(f"SELECT COUNT(*) FROM {schema}.{table}")
-        total_rows = cursor.fetchone()[0]
-        print(f"{total_rows=}")
+        total = cursor.fetchone()[0]
+        print(f"{total=:,}")
 
         with open(csv_filename, "w", newline="") as csv_file:
             csv_writer = csv.writer(csv_file)
+            start = datetime.datetime.now()
 
             # Write column headers
             cursor.execute(f"SELECT {', '.join(columns)} FROM {schema}.{table} LIMIT 0")
@@ -69,15 +70,19 @@ def export_table_to_csv(
             csv_writer.writerow(column_names)
 
             offset = 0
-            cursor.execute(
-                f"SELECT {', '.join(columns)} FROM {schema}.{table} order by {', '.join(keys)}"
-            )
-            while offset < total_rows:
-                # Fetch data in chunks using fetchmany()
-                rows = cursor.fetchmany(chunk_size)
+            while offset < total:
+                cursor.execute(
+                    f"""SELECT {', '.join(columns)} FROM {schema}.{table}
+                        order by {', '.join(keys)}
+                        LIMIT {chunk_size} OFFSET {offset}"""
+                )
+                rows = cursor.fetchall()
                 csv_writer.writerows(rows)
-                offset += chunk_size
-                print(datetime.datetime.now(), offset)
+                offset += len(rows)
+                now = datetime.datetime.now()
+                print(
+                    f"{now:%H:%M:%S} {offset:,} rows {offset/total*100:4.1f}% after {now-start}"
+                )
 
         print(f"Data from table '{table}' exported to '{csv_filename}' successfully.")
     except (psycopg2.Error, IOError) as e:
@@ -95,7 +100,13 @@ def main():
         pks = get_primary_keys(conn, args.schema, args.table)
         print(f"Primary key(s): {pks}")
         export_table_to_csv(
-            conn, args.schema, args.table, pks if args.key else "*", pks, args.output
+            conn,
+            args.schema,
+            args.table,
+            pks if args.key else "*",
+            pks,
+            args.output,
+            args.chunk,
         )
     finally:
         if conn:
