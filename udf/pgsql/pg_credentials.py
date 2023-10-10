@@ -9,7 +9,7 @@ import psycopg2
 from pyperclip import paste
 
 
-TEMPLATE = {"dbname": "", "user": "", "password": "", "host": "", "port": ""}
+TEMPLATE = {"dbname": "", "host": "", "port": "", "user": "", "password": ""}
 
 
 def gen_clipboard():
@@ -37,7 +37,7 @@ def load(path):
 
 def save(path, data):
     with open(path, "w") as p:
-        json.dump(data, p)
+        json.dump(data, p, indent=2)
 
 
 def test(data):
