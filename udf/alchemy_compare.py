@@ -1,5 +1,4 @@
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.schema import Table
+from sqlalchemy import create_engine
 
 lhs_connstr = open("lhs.txt").read()
 rhs_connstr = open("rhs.txt").read()
