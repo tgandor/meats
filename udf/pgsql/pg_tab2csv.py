@@ -36,7 +36,7 @@ def get_primary_keys(conn, schema, table):
         FROM information_schema.key_column_usage
         where key_column_usage.position_in_unique_constraint is null
         AND table_schema = '{schema}'
-        AND table = '{table}';
+        AND table_name = '{table}';
         """
         print(sql_query)
         cursor.execute(sql_query)
