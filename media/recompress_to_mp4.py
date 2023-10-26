@@ -7,7 +7,6 @@ import argparse
 import glob
 import os
 import time
-from itertools import chain
 
 
 def _parse_cli():
