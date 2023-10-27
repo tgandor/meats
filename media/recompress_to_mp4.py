@@ -325,7 +325,9 @@ def _main():
     ts = TimedSystem()
     stats = CompressionStats()
 
-    for filename in _iter_files(args.files_or_globs):
+    files = list(_iter_files(args.files_or_globs))
+    for i, filename in enumerate(files, 1):
+        print(i, "/", len(files), filename)
         basename = os.path.basename(filename)
 
         if args.move:
@@ -350,6 +352,10 @@ def _main():
             converted = (
                 os.path.splitext(os.path.join("converted", basename))[0] + ".mp4"
             )
+
+        if os.path.exists(converted):
+            print("Skipping, output exists:", converted)
+            continue
 
         audio_options = "aac"
         if args.copy_audio or args.copy or args.fix_avidemux:
