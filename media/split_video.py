@@ -27,7 +27,18 @@ basename, ext = os.path.splitext(args.video_file)
 startpos = "0"
 chunk = 1
 
-splits = args.splits
+
+def _gen_splits(splits):
+    for split in splits:
+        if os.path.exists(split):
+            for line in open(split):
+                yield line.split()[0]
+            continue
+        yield split
+
+
+splits = list(_gen_splits(args.splits))
+
 if args.fps:
     splits = [int(split) / args.fps for split in splits]
 
