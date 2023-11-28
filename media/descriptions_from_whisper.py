@@ -29,7 +29,7 @@ def extract_text_chunks(json_result, splits, n_chunks=2):
 
     for entry in json_result:
         start_seconds = float(entry["start"])
-        start_time = str(timedelta(seconds=start_seconds))
+        start_time = str(timedelta(seconds=int(start_seconds)))
         timestamp = datetime.strptime(start_time, "%H:%M:%S")
 
         for split in splits:
@@ -49,7 +49,7 @@ def main():
 
     splits = parse_splits(args.timestamps_file)
     with open(args.json_file, "r") as json_file:
-        json_result = json.load(json_file)
+        json_result = json.load(json_file)["segments"]
     text_chunks = extract_text_chunks(json_result, splits)
     width = len(str(len(splits)))
 
