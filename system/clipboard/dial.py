@@ -2,6 +2,7 @@
 
 import argparse
 import json
+from textwrap import shorten
 
 import pyperclip
 import tkinter as tk
@@ -27,7 +28,6 @@ def get_lines(data_file):
         yield key, value
 
 
-# define button click handler function
 def handle_click(key, label):
     pyperclip.copy(label)
     print(f"Copied '{key}': {label}")
@@ -38,20 +38,19 @@ parser.add_argument("data_file")
 args = parser.parse_args()
 
 
-# create Tkinter window
 root = tk.Tk()
 root.title("Clipboard dial")
 
-# create buttons with labels from text file
 for key, label in get_lines(args.data_file):
     tk.Label(root, text=key).pack()
+    text = "*" * len(label) if "pass" in key.lower() else shorten(label, 48)
     button = tk.Button(
-        root, text=label, command=lambda key=key, label=label: handle_click(key, label)
+        root,
+        text=text,
+        command=lambda key=key, label=label: handle_click(key, label),
     )
     button.pack()
 
 # set "always on top" attribute
 root.attributes("-topmost", True)
-
-# start Tkinter event loop
 root.mainloop()
