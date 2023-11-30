@@ -30,11 +30,15 @@ def get_lines(data_file):
 
 def handle_click(key, label):
     pyperclip.copy(label)
-    print(f"Copied '{key}': {label}")
+    if not args.quiet:
+        print(f"Copied '{key}': {label}")
+    else:
+        print(f"Copied '{key}'")
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("data_file")
+parser.add_argument("--quiet", "-q", action="store_true")
 args = parser.parse_args()
 
 
@@ -42,7 +46,10 @@ root = tk.Tk()
 root.title("Clipboard dial")
 
 for key, label in get_lines(args.data_file):
-    tk.Label(root, text=key).pack()
+    lbl = tk.Label(root, text=key)
+    lbl.bind("<Double-Button-1>", lambda *args, key=key: handle_click("Label", key))
+    lbl.pack()
+
     text = "*" * len(label) if "pass" in key.lower() else shorten(label, 48)
     button = tk.Button(
         root,
