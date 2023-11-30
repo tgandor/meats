@@ -14,6 +14,9 @@ def parse_args():
     parser.add_argument("schema")
     parser.add_argument("table")
     parser.add_argument("--key", "-k", action="store_true", help="only save PK")
+    parser.add_argument(
+        "--redshift", "-r", action="store_true", help="use redshift SVVs and SORTKEY"
+    )
     parser.add_argument("--output", "-o")
     parser.add_argument("--chunk", "-c", type=int, default=10**6)
     return parser.parse_args()
@@ -28,16 +31,27 @@ def connect(path):
     return psycopg2.connect(**load(path))
 
 
-def get_primary_keys(conn, schema, table):
+def get_primary_keys(conn, schema, table, redshift=False):
     try:
         cursor = conn.cursor()
         sql_query = f"""
         SELECT column_name
         FROM information_schema.key_column_usage
-        where key_column_usage.position_in_unique_constraint is null
-        AND table_schema = '{schema}'
-        AND table_name = '{table}';
+        WHERE key_column_usage.position_in_unique_constraint is null
+            AND table_schema = '{schema}'
+            AND table_name = '{table}';
         """
+        if redshift:
+            sql_query = f"""
+            SELECT a.attname AS column_name
+            FROM pg_constraint c
+            JOIN pg_class t ON c.conrelid = t.oid
+            JOIN pg_attribute a ON a.attnum = ANY(c.conkey) AND a.attrelid = t.oid
+            JOIN pg_namespace n ON t.relnamespace = n.oid
+            WHERE n.nspname = '{schema}'
+                AND t.relname = '{table}' AND
+                c.contype = 'p';
+            """
         print(sql_query)
         cursor.execute(sql_query)
         return [row[0] for row in cursor.fetchall()]
@@ -97,7 +111,7 @@ def main():
     args = parse_args()
     try:
         conn = connect(args.credentials_file)
-        pks = get_primary_keys(conn, args.schema, args.table)
+        pks = get_primary_keys(conn, args.schema, args.table, args.redshift)
         print(f"Primary key(s): {pks}")
         export_table_to_csv(
             conn,
