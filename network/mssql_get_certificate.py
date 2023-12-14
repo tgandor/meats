@@ -21,7 +21,7 @@ prelogin_msg = bytearray([
 ])
 # fmt: on
 
-# Prep Header function
+
 def prep_header(data):
     data_len = len(data)
     prelogin_head = bytearray([0x12, 0x01])
@@ -59,7 +59,9 @@ def recv_tdspacket(sock):
 
     for i in range(0, 5):
         tdspacket += sock.recv(4096)
-        logging.debug("\n# get_tdspacket: {}, tdspacket len: {} ".format(i, len(tdspacket)))
+        logging.debug(
+            "\n# get_tdspacket: {}, tdspacket len: {} ".format(i, len(tdspacket))
+        )
         if len(tdspacket) >= 8:
             header = read_header(tdspacket[:8])
             logging.debug("# Header: ", header)
@@ -136,7 +138,7 @@ def save_cert_info(name_base, certificate):
     try:
         with open(f"{name_base}.json", "w") as jsf:
             print(json.dumps(result, indent=2), file=jsf)
-        print(f"Saved info to: {name_base}.json")
+        print(f"Saved info to: {name_base}.json", file=sys.stderr)
     except TypeError as e:
         print(e)
         print(result)
@@ -199,10 +201,11 @@ for i in range(0, 5):
             save_cert_info(hostname, peercert)
         with open(f"{hostname}.pem", "w") as pem:
             print(peercert, file=pem)
-        print(f"Certificate saved to: {hostname}.pem")
+        print(f"Certificate saved to: {hostname}.pem", file=sys.stderr)
         sys.exit(0)
-    except ssl.SSLWantReadError as err:
-        # TLS wants to keep shaking hands, but because we're controlling the R/W buffers it throws an exception
+    except ssl.SSLWantReadError:
+        # TLS wants to keep shaking hands, but because we're controlling
+        # the R/W buffers it throws an exception
         logging.debug("# Shaking ({}/5)".format(i))
 
     tls_data = tls_out_buf.read()
