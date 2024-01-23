@@ -11,5 +11,5 @@ def human(x):
     return "%.1f P" % x
 
 if __name__ == '__main__':
-    print human(int(sys.argv[1]))
+    print(human(int(sys.argv[1])))
 
