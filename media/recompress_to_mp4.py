@@ -63,6 +63,12 @@ def _parse_cli():
         action="store_true",
         help="convert to the same place (only from other format)",
     )
+    parser.add_argument(
+        "--cwd",
+        "-X",
+        action="store_true",
+        help="convert to current working directory",
+    )
     parser.add_argument("--delete", "-D", action="store_true", help="DELETE original")
     parser.add_argument("--hevc", action="store_true", help="use h.265 (HEVC) codec")
     parser.add_argument("--hwaccel", "-hw", help="specify input hardware acceleration")
@@ -209,6 +215,8 @@ except ImportError:
 def _validate_args(args):
     if args.here and args.evaluate:
         raise ValueError("--here and --evaluate are conflicting options.")
+    if args.cwd and args.evaluate:
+        raise ValueError("--cwd/-X and --evaluate are conflicting options.")
 
 
 def _get_encoder_options(args):
@@ -348,6 +356,9 @@ def _main():
             if converted == filename:
                 print("Cannot convert", filename, "here (same file).")
                 continue
+        elif args.cwd:
+            converted = os.path.splitext(filename)[0] + ".mp4"
+            converted = os.path.basename(converted)
         else:
             converted = (
                 os.path.splitext(os.path.join("converted", basename))[0] + ".mp4"
