@@ -236,8 +236,9 @@ def _get_encoder_options(args):
         #                    '-maxrate:v 5000k -profile:v high ' + common_options)
     elif args.amf:
         if args.hevc:
-            raise ValueError("Not implemented")
-        encoder_options = "h264_amf {}".format(common_options)
+            encoder_options = "hevc_amf {}".format(common_options)
+        else:
+            encoder_options = "h264_amf {}".format(common_options)
         if not args.bitrate:
             print("Warning - using --amf codec without --bitrate/-b specified.")
     else:
