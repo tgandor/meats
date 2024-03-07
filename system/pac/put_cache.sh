@@ -18,7 +18,7 @@ if [ "$1" == "" ] ; then
     pattern="pacman-20??-??-??.tar"
     matches=($pattern)
     if [[ ${#matches[@]} -eq 1 ]]; then
-        echo "Guessing: $matches" 
+        echo "Guessing: $matches"
         tar_path=`realpath $matches`
     else
         echo "No files matched or more than one file matched: $matched"
@@ -31,8 +31,12 @@ fi
 cd /
 sudo tar xvf "$tar_path"
 echo "Finished unpacking $tar_path"
+if confirm "Remove $tar_path?"; then
+    rm $tar_path
+fi
 
 if confirm "Do you want to run: ~/meats/system/pac/upgrade.sh"; then
+    cd ~
     ~/meats/system/pac/upgrade.sh
     if confirm "~/meats/system/pac/clean_cache.sh --all"; then
         ~/meats/system/pac/clean_cache.sh --all
@@ -40,4 +44,3 @@ if confirm "Do you want to run: ~/meats/system/pac/upgrade.sh"; then
 else
     echo "Done."
 fi
-
