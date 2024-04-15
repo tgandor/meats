@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copy and Go</title>
+    <script>
+        function cleanURL(url, keepParam) {
+            var parsedURL = new URL(url);
+
+            var queryParams = new URLSearchParams(parsedURL.search);
+            queryParams.forEach(function(value, key) {
+                if (key !== keepParam) {
+                    queryParams.delete(key);
+                }
+            });
+
+            parsedURL.search = queryParams.toString();
+
+            return parsedURL.toString();
+        }
+
+        function copyText() {
+            var inputText = document.getElementById("urlInput");
+            inputText.value = cleanURL(inputText.value, "v");
+            inputText.select();
+            document.execCommand("copy");
+            alert("Copied to clipboard: " + inputText.value);
+        }
+
+        function goToUrl() {
+            var inputUrl = document.getElementById("urlInput").value;
+            inputUrl = cleanURL(inputUrl, "v");
+            window.open(inputUrl, "_blank", "noreferrer");
+        }
+    </script>
+</head>
+
+<body>
+    <input type="text" id="urlInput" placeholder="Enter URL">
+    <button onclick="copyText()">Copy</button>
+    <button onclick="goToUrl()">Go</button>
+</body>
+</html>
