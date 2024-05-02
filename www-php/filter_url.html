@@ -7,8 +7,8 @@
     <script>
         function cleanURL(url, keepParam) {
             var parsedURL = new URL(url);
-
             var queryParams = new URLSearchParams(parsedURL.search);
+
             queryParams.forEach(function(value, key) {
                 if (key !== keepParam) {
                     queryParams.delete(key);
@@ -16,16 +16,17 @@
             });
 
             parsedURL.search = queryParams.toString();
-
             return parsedURL.toString();
         }
 
         function copyText() {
             var inputText = document.getElementById("urlInput");
             inputText.value = cleanURL(inputText.value, "v");
-            inputText.select();
-            document.execCommand("copy");
-            alert("Copied to clipboard: " + inputText.value);
+            window.setTimeout(function() {
+                inputText.select();
+                document.execCommand("copy");
+                alert("Copied to clipboard: " + inputText.value);
+            }, 250)
         }
 
         function goToUrl() {
