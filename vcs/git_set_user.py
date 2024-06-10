@@ -8,6 +8,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("source_dir", nargs="?")
     parser.add_argument("-g", action="store_true")
+    parser.add_argument("--dry-run", "-n", action="store_true")
     args = parser.parse_args()
 
     target_dir = os.getcwd()
@@ -22,10 +23,12 @@ def main():
     os.chdir(target_dir)
     cmd = 'git config {} user.name "{}"'.format(g, ' '.join(author[1:-1]))
     print(cmd)
-    os.system(cmd)
+    if not args.dry_run:
+        os.system(cmd)
     cmd = 'git config {} user.email "{}"'.format(g, author[-1][1:-1])
     print(cmd)
-    os.system(cmd)
+    if not args.dry_run:
+        os.system(cmd)
 
 
 if __name__ == '__main__':
