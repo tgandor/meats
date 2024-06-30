@@ -15,6 +15,11 @@ parser.add_argument(
     help="all splits are floats in seconds. For legacy ffmpeg (OK with --fps/-f).",
 )
 parser.add_argument(
+    "--padding",
+    type=float,
+    help="overlap each segment by this many seconds (only with --floats)",
+)
+parser.add_argument(
     "--reencode",
     "-r",
     action="store_true",
@@ -69,6 +74,8 @@ for split in splits:
     print(command)
     os.system(command)
     startpos = split
+    if args.floats and args.padding:
+        startpos = float(startpos) - args.padding
     chunk += 1
     print(("=" * 60 + "\n") * 3)
 
