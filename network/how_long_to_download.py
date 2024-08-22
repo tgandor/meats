@@ -7,7 +7,12 @@ import re
 FACTORS = {suffix: 1024 ** (i + 1) for i, suffix in enumerate("KMGTP")}
 # no generator possible: dict size changed during iteration
 FACTORS.update([(k.lower(), v) for k, v in FACTORS.items()])
+# enable speed specification in e.g. Mb(its)/s
+bytes = [(k + "B", v) for k, v in FACTORS.items()]
+bits = [(k + "b", v // 8) for k, v in FACTORS.items()]
+FACTORS.update(bytes + bits)
 FACTORS[None] = 1
+HUMAN = r"(\d+)(\.\d*)?([kmgtp]?b?)$"
 
 
 def parse_human(size):
@@ -26,8 +31,8 @@ def parse_human(size):
         return 125 * FACTORS["M"]
 
     # normal parsing
-    m = re.match(r"(\d+)(\.\d*)?([kmgtp]?)$", size, re.IGNORECASE)
-    assert m, r"size must match (\d+)(\.\d*)?([kmgtp]?)$"
+    m = re.match(HUMAN, size, re.IGNORECASE)
+    assert m, f"size must match {HUMAN}"
     # print(m, m.groups())
     whole, frac, unit = m.groups()
 
@@ -44,9 +49,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("size")
     parser.add_argument("speed_per_second")
+    parser.add_argument("--current", "-c", help="current progress (already downloaded)")
     args = parser.parse_args()
 
     num_bytes = parse_human(args.size)
+    if args.current:
+        curr_bytes = parse_human(args.current)
+        num_bytes -= curr_bytes
+        print(f"Remaining to download: {num_bytes:,} bytes.")
     bauds = parse_human(args.speed_per_second)
 
     seconds = num_bytes / bauds
