@@ -3,18 +3,11 @@
 import argparse
 import queue
 import sys
+import tkinter as tk
 import threading
 
 
 def copy(data, wait_gui=False):
-    try:
-        import Tkinter as Tk
-
-        tk = Tk
-    except ImportError:
-        # welcome to Python3
-        import tkinter as tk
-
     pill_q = queue.Queue()
 
     r = tk.Tk()
