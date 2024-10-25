@@ -18,12 +18,17 @@ import time
 def _install_and_die(package):
     ans = input(f"Missing {package}, install with pip (Y/n)? ")
     if ans.lower().startswith("n"):
-        if os.path.isfile("/etc/issue"):
+        if os.path.isfile("/etc/apt/sources.list"):
             cmd = f"sudo apt install python3-{package}"
-            ans = input(f"Run '{cmd}' (Y/n)? ")
-            if ans.lower().startswith("n"):
-                exit(1)
-            ret = os.system(cmd)
+        elif os.path.isfile("/etc/pacman.conf"):
+            cmd = f"sudo pacman -S python-{package}"
+        else:
+            print("No alternative installation methods found.")
+            exit(1)
+        ans = input(f"Run '{cmd}' (Y/n)? ")
+        if ans.lower().startswith("n"):
+            exit(1)
+        ret = os.system(cmd)
     else:
         ret = os.system("pip install {}".format(package))
     if ret:
