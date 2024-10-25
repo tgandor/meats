@@ -3,9 +3,6 @@
 # TODO: https://tkdocs.com/tutorial/grid.html#resize ? maybe
 # https://stackoverflow.com/questions/53073534/tkinter-button-expand-using-grid
 
-from __future__ import print_function
-from __future__ import division
-
 import argparse
 import datetime
 import json
@@ -19,16 +16,20 @@ import time
 
 
 def _install_and_die(package):
-    print("Missing reportlab, trying to install...")
-    if os.getenv("VIRTUAL_ENV") or os.getenv("CONDA_DEFAULT_ENV"):
-        # assume no problems with permissions/sudo etc.
-        os.system("pip install {}".format(package))
+    ans = input(f"Missing {package}, install with pip (Y/n)? ")
+    if ans.lower().startswith("n"):
+        if os.path.isfile("/etc/issue"):
+            cmd = f"sudo apt install python3-{package}"
+            ans = input(f"Run '{cmd}' (Y/n)? ")
+            if ans.lower().startswith("n"):
+                exit(1)
+            ret = os.system(cmd)
     else:
-        os.system(
-            "sudo apt-get install python{}-{}".format(
-                "3" if sys.version_info.major == 3 else "", package
-            )
-        )
+        ret = os.system("pip install {}".format(package))
+    if ret:
+        print(f"Installation problems. Retry:\npip install {package}")
+        exit(1)
+    print("Installation successful. Please re-run.")
     exit()
 
 
@@ -631,18 +632,8 @@ def main():
 
 
 def win_main():
-    try:
-        import Tkinter as tk
-    except ImportError:
-        try:
-            import tkinter as tk
-        except ImportError:
-            _install_and_die("tk")
-
-    try:
-        from tkinter import ttk
-    except ImportError:
-        import ttk
+    import tkinter as tk
+    from tkinter import ttk
 
     ui_font = ("TkDefaultFont", 12)
 
