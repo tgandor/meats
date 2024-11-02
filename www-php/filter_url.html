@@ -31,8 +31,8 @@
 
         function goToUrl() {
             var inputUrl = document.getElementById("urlInput").value;
-            inputUrl = cleanURL(inputUrl, "v");
-            window.open(inputUrl, "_blank", "noreferrer");
+            var newUrl = cleanURL(inputUrl, "v");
+            window.open(newUrl, "_blank", "noreferrer");
         }
     </script>
 </head>
