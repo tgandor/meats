@@ -10,7 +10,12 @@ is_sourced() {
     return 1  # NOT sourced.
 }
 
-is_sourced || echo "Source this script, not execute it..." && exit 1
+is_sourced || echo "Source this script, not execute it..."
+is_sourced || exit 1
 
 # https://unix.stackexchange.com/questions/24419/terminal-autocomplete-cycle-through-suggestions
 bind TAB:menu-complete
+# Shift-Tab for backwards
+bind '"\e[Z":menu-complete-backward'
+# View available
+bind 'set show-all-if-ambiguous on'
