@@ -48,7 +48,7 @@ except ImportError:
     _install_and_die("reportlab")
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--font-size", type=int, default=20)
+parser.add_argument("--font-size", type=int, default=32)
 parser.add_argument(
     "--round",
     action="store_true",
@@ -85,8 +85,8 @@ parser.add_argument(
 parser.add_argument("args", type=str, nargs="*", help="Old arguments.")
 
 settings = dict(
-    font_size=20,
-    date_font=12,
+    font_size=32,
+    date_font=14,
     round_label=False,
     top_margin=0.0 * cm,
     bottom_margin=1.0 * cm,
@@ -799,7 +799,7 @@ def win_main():
             format="%.1f",
             textvariable=label_model.height,
         )
-        height.set("8.0").pack(side=tk.LEFT, padx=10)
+        height.set("5.9").pack(side=tk.LEFT, padx=10)
 
         def change_font(font_variable):
             # this won't work, happens inside tkinter:
