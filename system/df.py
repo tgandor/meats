@@ -29,14 +29,14 @@ def open_database():
             """
             create table df
             (
-                id integer not null primary key autoincrement,
-                filesystem varchar not null,
-                size integer not null,
-                used integer not null,
-                available integer not null,
-                use varchar not null,
-                mountpoint varchar not null,
-                df_date datetime not null
+                id         integer  not null primary key autoincrement,
+                filesystem varchar  not null,
+                size       integer  not null,
+                used       integer  not null,
+                available  integer  not null,
+                use        varchar  not null,
+                mountpoint varchar  not null,
+                df_date    datetime not null
             );
             """
         )
