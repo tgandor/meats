@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import glob
 import os
@@ -96,6 +93,7 @@ def _parse_cli():
     parser.add_argument(
         "--start", "-ss", help="Start time for encoding in seconds or [HH:]MM:SS"
     )
+    parser.add_argument("--quick", "-Q", action="store_true", help="Use veryfast preset (worse output size)")
     parser.add_argument("files_or_globs", nargs="+")
     return parser.parse_args()
 
@@ -244,8 +242,8 @@ def _get_encoder_options(args):
     else:
         if args.hevc:
             raise ValueError("Not implemented")
-        encoder_options = "h264 -crf {} -preset veryslow {}".format(
-            args.quality, common_options
+        encoder_options = "h264 -crf {} -preset very{} {}".format(
+            args.quality, "fast" if args.quick else "slow", common_options
         )
 
     if args.bitrate:
