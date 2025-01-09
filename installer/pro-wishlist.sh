@@ -1,10 +1,8 @@
 #!/bin/bash
 
+# git is already there, I guess
+
 sudo apt install -y "$@" \
-    aptitude \
-    apt-rdepends \
-    cifs-utils \
-    dstat \
     fdupes \
     ffmpeg \
     htop \
@@ -14,11 +12,9 @@ sudo apt install -y "$@" \
     mc \
     net-tools \
     python3-pip \
+    python3-virtualenv \
     rar \
-    screen \
-    smbclient \
     sqlite3 \
-    subversion \
     tmux \
     vim \
     zip \
