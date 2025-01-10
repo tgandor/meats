@@ -13,6 +13,7 @@ sudo apt install -y "$@" \
     net-tools \
     python3-pip \
     python3-virtualenv \
+    python-is-python3 \
     rar \
     sqlite3 \
     tmux \
