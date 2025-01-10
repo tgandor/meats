@@ -7,6 +7,7 @@ sudo apt install -y "$@" \
     ffmpeg \
     htop \
     iotop \
+    ipython3 \
     kdesdk-scripts \
     lm-sensors \
     mc \
@@ -20,3 +21,5 @@ sudo apt install -y "$@" \
     vim \
     zip \
 # end.
+
+sudo ln -sf /usr/bin/ipython3 /usr/bin/ipython
