@@ -4,6 +4,7 @@
     // mp3 and m4a, case insensitive (false positives: mpa, m43)
     $files = array_merge(glob('*.[Mm][Pp4][Aa3]'), glob('*.opus'));
     natsort($files);
+    $files = array_values($files);
 
     $crumbs = array();
     $path = '';

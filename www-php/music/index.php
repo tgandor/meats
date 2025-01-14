@@ -3,6 +3,8 @@
     // mp3 and m4a, case insensitive (false positives: mpa, m43)
     $files = glob('*.[Mm][Pp4][Aa3]');
     natsort($files);
+    $files = array_values($files);
+
     $crumbs = array();
     $path = '';
     foreach(explode('/', dirname($_SERVER['SCRIPT_NAME'])) as $dir)
