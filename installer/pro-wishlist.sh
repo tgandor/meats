@@ -13,6 +13,7 @@ sudo apt install -y "$@" \
     mc \
     net-tools \
     python3-pip \
+    python3-poetry \
     python3-virtualenv \
     python-is-python3 \
     rar \
