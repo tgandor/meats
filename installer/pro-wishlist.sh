@@ -3,6 +3,7 @@
 # git is already there, I guess
 
 sudo apt install -y "$@" \
+    curl \
     fdupes \
     ffmpeg \
     htop \
