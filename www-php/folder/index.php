@@ -1,4 +1,5 @@
 <?php
+    $version = "v3.2-fi-2025.01.22";
     $title = basename(dirname($_SERVER['PHP_SELF']));
     $crumbs = array();
     $path = '';
@@ -10,7 +11,13 @@
     $subfolders = glob('*', GLOB_ONLYDIR);
     $files = array_values(array_diff(glob('*'), $subfolders));
     unset($files[array_search('index.php', $files)]);
+    $bs = 'https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css';
+    if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/bootstrap.min.css'))
+        $bs = '/bootstrap.min.css';
+    elseif (file_exists('bootstrap.min.css'))
+        $bs = 'bootstrap.min.css';
 ?><!doctype html>
+<!-- <?php echo $version ?> -->
 <html lang="en">
   <head>
     <!-- Required meta tags -->
@@ -18,11 +25,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-<?php if(file_exists('bootstrap.min.css')): ?>
-    <link rel="stylesheet" href="bootstrap.min.css">
-<?php else: ?>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
-<?php endif ?>
+    <link rel="stylesheet" href="<?php echo $bs ?>"
+        integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
+        crossorigin="anonymous">
 
     <style>
     .container {
@@ -42,7 +47,7 @@
     <div class="container">
         <div class="jumbotron d-none d-md-block">
             <h1><?php echo $title ?></h1>
-            <p class="lead">Folder listing</p>
+            <p class="lead" title="<?php echo $version ?>">Folder listing</p>
         </div>
 
         <div class="page-header d-block d-md-none">

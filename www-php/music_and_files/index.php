@@ -1,8 +1,7 @@
 <?php
-    $version = "v3.1-2023.05.13";
+    $version = "v3.2-mf-2025.01.22";
     $title = basename(dirname($_SERVER['PHP_SELF']));
-    // mp3 and m4a, case insensitive (false positives: mpa, m43)
-    $files = array_merge(glob('*.[Mm][Pp4][Aa3]'), glob('*.opus'));
+    $files = glob('*.{mp3,MP3,m4a,M4A,opus}', GLOB_BRACE);
     natsort($files);
     $files = array_values($files);
 
@@ -29,7 +28,13 @@
     }
 
     $other_files = array_values(array_diff(glob('*'), $ignore));
+    $bs = 'https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css';
+    if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/bootstrap.min.css'))
+        $bs = '/bootstrap.min.css';
+    elseif (file_exists('bootstrap.min.css'))
+        $bs = 'bootstrap.min.css';
 ?><!doctype html>
+<!-- <?php echo $version ?> -->
 <html lang="en">
   <head>
     <title><?php echo $title ?> - Music Index</title>
@@ -38,11 +43,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-<?php if(file_exists('bootstrap.min.css')): ?>
-    <link rel="stylesheet" href="bootstrap.min.css">
-<?php else: ?>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
-<?php endif ?>
+    <link rel="stylesheet" href="<?php echo $bs ?>"
+        integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
+        crossorigin="anonymous">
+
     <style>
     .container {
         width: auto;

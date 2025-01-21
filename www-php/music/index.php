@@ -1,7 +1,7 @@
 <?php
+    $version = "v3.2-mi-2025.01.22";
     $title = basename(dirname($_SERVER['PHP_SELF']));
-    // mp3 and m4a, case insensitive (false positives: mpa, m43)
-    $files = glob('*.[Mm][Pp4][Aa3]');
+    $files = glob('*.{mp3,MP3,m4a,M4A,opus}', GLOB_BRACE);
     natsort($files);
     $files = array_values($files);
 
@@ -18,6 +18,7 @@
     elseif (file_exists('bootstrap.min.css'))
         $bs = 'bootstrap.min.css';
 ?><!doctype html>
+<!-- <?php echo $version ?> -->
 <html lang="en">
   <head>
     <title><?php echo $title ?> - Music Index</title>
@@ -43,7 +44,7 @@
     <div class="container">
         <div class="jumbotron d-none d-md-block">
             <h1><?php echo $title ?></h1>
-            <p class="lead" title="v2.0-2020.09.29">Showing MP3s as HTML5 audio.</p>
+            <p class="lead" title="<?php echo $version ?>">Showing MP3s as HTML5 audio.</p>
         </div>
 
         <div class="page-header d-block d-md-none">
