@@ -194,6 +194,21 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest-cov (>=5)", "pytest-
 type = ["mypy (>=1.11.2)"]
 
 [[package]]
+name = "pypdf2"
+version = "3.0.1"
+description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+crypto = ["pycryptodome"]
+dev = ["black", "pip-tools", "pre-commit (<2.18.0)", "pytest-cov", "flit", "wheel"]
+docs = ["sphinx", "sphinx-rtd-theme", "myst-parser"]
+full = ["pycryptodome", "pillow"]
+image = ["pillow"]
+
+[[package]]
 name = "scikit-image"
 version = "0.25.0"
 description = "Image processing in Python"
@@ -273,7 +288,7 @@ python-versions = ">=3.8"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "f953aa13ee57f4fecf500d8c8806bb2ac74a86f1d49ab2a7d6c0e12c404542b0"
+content-hash = "ce937ec85785ee9d77209e3a25326ddc46dfd7f7d3e371940f1d2c63f55097c0"
 
 [metadata.files]
 black = []
@@ -290,6 +305,7 @@ packaging = []
 pathspec = []
 pillow = []
 platformdirs = []
+pypdf2 = []
 scikit-image = []
 scipy = []
 tifffile = []

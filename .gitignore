@@ -21,3 +21,6 @@ missing/*.exe
 
 # OpenCV
 haarcascade_frontalface_default.xml
+
+# virtualenv
+.venv
