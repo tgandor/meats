@@ -12,6 +12,17 @@
         $path .= "$dir/";
         $crumbs[$path] = $dir;
     }
+
+    $descriptions = array();
+    foreach($files as  $i => $music_file)
+    {
+        $descr_file = pathinfo("$music_file", PATHINFO_FILENAME) . ".txt";
+        if (file_exists($descr_file))
+        {
+            $descriptions[$music_file] = file_get_contents($descr_file);
+        }
+    }
+
     $bs = 'https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css';
     if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/bootstrap.min.css'))
         $bs = '/bootstrap.min.css';
@@ -44,7 +55,7 @@
     <div class="container">
         <div class="jumbotron d-none d-md-block">
             <h1><?php echo $title ?></h1>
-            <p class="lead" title="<?php echo $version ?>">Showing MP3s as HTML5 audio.</p>
+            <p class="lead" title="<?php echo $version ?>">Showing audio files using HTML5.</p>
         </div>
 
         <div class="page-header d-block d-md-none">
@@ -80,8 +91,8 @@
 <?php foreach($files as $i => $music_file): ?>
             <div class="col-sm-6 col-md-4 col-lg-3 py-3">
                 <p><?php echo $i + 1 ?>. <a href="<?php echo $music_file ?>"><?php echo $music_file ?></a></p>
-<?php if (file_exists(basename("$music_file", "mp3") . "txt")): ?>
-                <p class="small"><?php readfile(basename("$music_file", "mp3") . "txt") ?></p>
+<?php if (isset($descriptions[$music_file])): ?>
+                <p class="small"><?php echo $descriptions[$music_file] ?></p>
 <?php endif ?>
                 <audio controls="controls" preload="none" id="a_<?php echo $i + 1 ?>">
                     <source src="<?php echo $music_file ?>" type="audio/mpeg">
@@ -124,9 +135,3 @@
     </script>
   </body>
 </html>
-<!-- Acknowledgements:
-* myself (music folder)
-* https://getbootstrap.com/docs/4.0/utilities/spacing/ (and other docs)
-* Michal Kortas
-* kiranvj's answer to: https://stackoverflow.com/questions/37944185/hide-element-for-medium-and-up-devices-bootstrap
--->
