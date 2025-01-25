@@ -21,7 +21,7 @@ MIN_GROUPS_TO_SAVE = 20  # Less will fit on the screen
 _pool = None
 
 
-def md5sum(filename, chunk_size=2 ** 12):
+def md5sum(filename, chunk_size=2**12):
     logging.getLogger().debug("MD5 %s", filename)
     hash_md5 = hashlib.md5()
     with open(filename, "rb") as file_obj:
@@ -250,10 +250,10 @@ def total_duplicates(group_list):
 
 def total_waste(group_list):
     if not group_list:
-        return None
+        return 0
 
     if not hasattr(group_list[0], "size"):
-        return None
+        return float("nan")
 
     return sum(group.size for group in group_list)
 
@@ -411,7 +411,11 @@ def parse_args():
     parser.add_argument(
         "--prefix", "-p", help="Prefix for saving the groups", default=""
     )
-    parser.add_argument("--reverse-members", action="store_true", help="Sort members in reverse (e.g. for -D).")
+    parser.add_argument(
+        "--reverse-members",
+        action="store_true",
+        help="Sort members in reverse (e.g. for -D).",
+    )
     parser.add_argument("--sort", help="Custom sorting attribute")
     parser.add_argument(
         "--unique", "-u", action="store_true", help="Keep track of unique files"
@@ -478,7 +482,7 @@ def delete_unattended(groups, args):
     iterator = iter(groups[::-1])
     for group in iterator:
         print(group.features)
-        ensure_deletable(group)
+        ensure_deletable(group, args)
         if group.size < args.min_size:
             print("Size limit ({}) reached.".format(args.min_size))
             return list(iterator)
@@ -504,16 +508,16 @@ def delete_unattended(groups, args):
     return []
 
 
-def ensure_deletable(group):
-    if not hasattr(group, "size") or not hasattr(group, "md5"):
+def ensure_deletable(group, args):
+    if not hasattr(group, "size") or (not hasattr(group, "md5") and not args.no_md5):
         raise ValueError(
             "Group is not specific enough for members to be safely deleted"
         )
 
 
-def link_groups_hard(groups):
+def link_groups_hard(groups, args):
     for group in groups:
-        ensure_deletable(group)
+        ensure_deletable(group, args)
         single = group[0]  # type: File
         if not os.path.exists(single.file_path):
             raise ValueError(
@@ -730,7 +734,7 @@ def main():
                 save_groups(rest, args.prefix + "left_")
         profiler.finish_phase("deleting duplicates")
     elif args.hardlink:
-        link_groups_hard(groups)
+        link_groups_hard(groups, args)
 
 
 def scan_directories(args):
