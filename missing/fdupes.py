@@ -446,8 +446,9 @@ class Profiler:
 
 
 def delete_interactive(groups):
-    for group in groups[::-1]:
-        print(group.features)
+    n = len(groups)
+    for idx, group in enumerate(groups[::-1], 1):
+        print(idx, "/", n, ":", group.features)
         for i, file_ in enumerate(group.files):
             print(i, file_)
         print(group_summary(group))
