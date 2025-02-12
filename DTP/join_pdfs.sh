@@ -2,7 +2,7 @@
 
 if ! which pdftk ; then
     echo "Missing pdftk, trying to install"
-    sudo snap install pdftk
+    sudo apt install pdftk-java
 fi
 
 pdftk "$@" cat output joined.pdf

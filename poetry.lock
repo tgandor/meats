@@ -194,19 +194,23 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest-cov (>=5)", "pytest-
 type = ["mypy (>=1.11.2)"]
 
 [[package]]
-name = "pypdf2"
-version = "3.0.1"
+name = "pypdf"
+version = "5.3.0"
 description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
+
+[package.dependencies]
+typing_extensions = {version = ">=4.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
-crypto = ["pycryptodome"]
-dev = ["black", "pip-tools", "pre-commit (<2.18.0)", "pytest-cov", "flit", "wheel"]
-docs = ["sphinx", "sphinx-rtd-theme", "myst-parser"]
-full = ["pycryptodome", "pillow"]
-image = ["pillow"]
+crypto = ["cryptography"]
+cryptodome = ["pycryptodome"]
+dev = ["black", "flit", "pip-tools", "pre-commit (<2.18.0)", "pytest-cov", "pytest-socket", "pytest-timeout", "pytest-xdist", "wheel"]
+docs = ["myst-parser", "sphinx", "sphinx-rtd-theme"]
+full = ["cryptography", "Pillow (>=8.0.0)"]
+image = ["Pillow (>=8.0.0)"]
 
 [[package]]
 name = "scikit-image"
@@ -281,14 +285,14 @@ python-versions = ">=3.8"
 name = "typing-extensions"
 version = "4.12.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.8"
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "ce937ec85785ee9d77209e3a25326ddc46dfd7f7d3e371940f1d2c63f55097c0"
+content-hash = "124b9add4db17d36ab2700254da8b027e27e3aacdaca680ab85647b17ddc04d2"
 
 [metadata.files]
 black = []
@@ -305,7 +309,7 @@ packaging = []
 pathspec = []
 pillow = []
 platformdirs = []
-pypdf2 = []
+pypdf = []
 scikit-image = []
 scipy = []
 tifffile = []
