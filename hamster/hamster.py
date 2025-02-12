@@ -1,18 +1,27 @@
 #!/usr/bin/env python
 
-import sys
+import codecs
+import datetime
 import os
+import random
 import re
+import sys
 import time
 import urllib
-import random
 from operator import itemgetter
 
 CHUNK = 512 * 1024
-user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:67.0) Gecko/20100101 Firefox/67.0'
+td = datetime.date.today()
+my_num = (td.year - 2025) * 12 + td.month + 133
+user_agent = codecs.encode(
+    "Zbmvyyn/5.0 (K11; Yvahk k86_64; ei:{}.0) Trpxb/20100101 Sversbk/{}.0".format(
+        my_num, my_num
+    ),
+    "rot_13",
+)
 
 if sys.version_info.major > 2:
-    print('This script supports Python version 2 only. Please use hamster3.py')
+    print("This script supports Python version 2 only. Please use hamster3.py")
     exit(1)
 
 try:
@@ -23,18 +32,16 @@ except ImportError:
 try:
     from natsort import natsorted
 except ImportError:
-    print('WARNING: natsorted is missing')
+    print("WARNING: natsorted is missing")
     natsorted = sorted
 
 
 def urlopen3(url):
     import urllib.request
-    req = urllib.request.Request(
-        url,
-        data=None,
-        headers={'User-Agent': user_agent}
-    )
+
+    req = urllib.request.Request(url, data=None, headers={"User-Agent": user_agent})
     return urllib.request.urlopen(req)
+
 
 try:
     urllib.URLopener.version = user_agent
@@ -43,15 +50,15 @@ except AttributeError:
     urlopen = urlopen3
 
 
-def info(s, eol='\n'):
+def info(s, eol="\n"):
     try:
-        print(s.encode('utf-8')+eol)
+        print(s.encode("utf-8") + eol)
     except TypeError:
         print(s)
 
 
 def human(x):
-    for suffix in ['', 'K', 'M', 'G', 'T']:
+    for suffix in ["", "K", "M", "G", "T"]:
         if x < 1024:
             return "%.1f %s" % (x, suffix)
         x /= 1024.0
@@ -59,33 +66,37 @@ def human(x):
 
 
 def get_content(url, cache=[True]):
-    if url.endswith('/'):
+    if url.endswith("/"):
         # minor unification
         url = url[:-1]
-    if not os.path.exists('.hamster'):
-        info('Missing .hamster directory, creating...')
-        os.mkdir('.hamster')
+    if not os.path.exists(".hamster"):
+        info("Missing .hamster directory, creating...")
+        os.mkdir(".hamster")
     from hashlib import md5
     import gzip
+
     digest = md5(url.encode()).hexdigest()
-    url_file = os.path.join('.hamster/', digest+'.url')
-    content_file = os.path.join('.hamster', digest+'.data')
+    url_file = os.path.join(".hamster/", digest + ".url")
+    content_file = os.path.join(".hamster", digest + ".data")
     if os.path.exists(url_file):
         saved_url = open(url_file).read()
         if saved_url != url:
-            info("You're lucky! Found a md5 collision between:\n%s\nand:\n%s" % (saved_url, url))
+            info(
+                "You're lucky! Found a md5 collision between:\n%s\nand:\n%s"
+                % (saved_url, url)
+            )
         cache[0] = True
         if os.path.exists(content_file):
             return open(content_file).read()
-        if os.path.exists(content_file+'.gz'):
-            return gzip.open(content_file+'.gz', 'rb').read()
-        info('Missing data file for: %s' % url)
-    info('  (retrieving from the Web...)')
+        if os.path.exists(content_file + ".gz"):
+            return gzip.open(content_file + ".gz", "rb").read()
+        info("Missing data file for: %s" % url)
+    info("  (retrieving from the Web...)")
     if not cache[0]:
-        time.sleep(random.random()*1.0)
+        time.sleep(random.random() * 1.0)
     content = urlopen(url).read()
-    open(url_file, 'wb').write(url.encode('utf-8'))
-    f = gzip.open(content_file+'.gz', 'wb', 9)
+    open(url_file, "wb").write(url.encode("utf-8"))
+    f = gzip.open(content_file + ".gz", "wb", 9)
     f.write(content)
     f.close()
     cache[0] = False
@@ -95,47 +106,50 @@ def get_content(url, cache=[True]):
 def clean_name(dirty):
     def parse_uft8(starred):
         starred = starred.group()
-        codes = [starred[i:i+2] for i in range(1, len(starred), 3)]
-        starred = ''.join(chr(int(o, 16)) for o in codes)
-        return starred.decode('utf-8')
+        codes = [starred[i : i + 2] for i in range(1, len(starred), 3)]
+        starred = "".join(chr(int(o, 16)) for o in codes)
+        return starred.decode("utf-8")
 
-    dirty = re.sub('(\\*[0-9a-fA-F]{2})+', parse_uft8, dirty)
-    dirty = dirty.replace('(', '').replace(')', '')
-    return dirty.replace('+', '_')
+    dirty = re.sub("(\\*[0-9a-fA-F]{2})+", parse_uft8, dirty)
+    dirty = dirty.replace("(", "").replace(")", "")
+    return dirty.replace("+", "_")
 
 
 def read_with_progress(resp):
     start = time.time()
     sio = cStringIO.StringIO()
-    for chunk in iter(lambda: resp.read(CHUNK), ''):
+    for chunk in iter(lambda: resp.read(CHUNK), ""):
         sio.write(chunk)
-        sys.stdout.write('.')
+        sys.stdout.write(".")
         sys.stdout.flush()
     elapsed = time.time() - start
-    info(" done: %sB in %.1f s, %sB/s" % (
-        human(sio.tell()),
-        elapsed,
-        human(sio.tell()/elapsed)
-    ))
+    info(
+        " done: %sB in %.1f s, %sB/s"
+        % (human(sio.tell()), elapsed, human(sio.tell() / elapsed))
+    )
     return sio.getvalue()
 
 
 def download_url(url):
     resp = urlopen(url)
     msg = resp.info()
-    length = msg.getheader('Content-Length')
+    length = msg.getheader("Content-Length")
     if length:
-        info("Downloading %sB " % human(int(length)), eol='')
+        info("Downloading %sB " % human(int(length)), eol="")
     return read_with_progress(resp)
 
 
 class MusicHandler(object):
-    pattern = re.compile('/([^/]+),(\d+)\\.mp3', re.IGNORECASE)
-    fileext = '.mp3'
+    pattern = re.compile("/([^/]+),(\d+)\\.mp3", re.IGNORECASE)
+    fileext = ".mp3"
 
     def get_url(self, hostname, file_id):
         ts = int(time.time() * 1000)
-        return "https://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (hostname, file_id, ts)
+        return "https://%s/Audio.ashx?id=%s&type=2&tp=mp3&ts=%d" % (
+            hostname,
+            file_id,
+            ts,
+        )
 
     def get_data(self, hostname, file_id):
         url = self.get_url(hostname, file_id)
@@ -143,8 +157,8 @@ class MusicHandler(object):
 
 
 class VideoHandler(object):
-    pattern = re.compile('/([^/]+),(\d+)\\.(?:avi|mp4)', re.IGNORECASE)
-    fileext = '.flv'
+    pattern = re.compile("/([^/]+),(\d+)\\.(?:avi|mp4)", re.IGNORECASE)
+    fileext = ".flv"
 
     def get_data(self, hostname, file_id):
         url = "https://%s/Video.ashx?id=%s&type=1&file=video" % (hostname, file_id)
@@ -154,7 +168,7 @@ class VideoHandler(object):
 def _extract_tasks(handler, contents):
     return natsorted(
         set(sum((handler.pattern.findall(content) for content in contents), [])),
-        key=itemgetter(0)
+        key=itemgetter(0),
     )
 
 
@@ -167,7 +181,7 @@ def retrieve_all(hostname, handler, contents, targetdir):
         title_c = clean_name(title) + handler.fileext
         filename = os.path.join(targetdir, title_c)
         i += 1
-        info("%d/%d" % (i, total), eol='')
+        info("%d/%d" % (i, total), eol="")
         if os.path.exists(filename) and os.path.getsize(filename) > 0:
             info(">%s< seems to exist, skipping." % filename)
             continue
@@ -176,23 +190,23 @@ def retrieve_all(hostname, handler, contents, targetdir):
         if data.startswith("The page cannot be displayed"):
             info("Reading failed!")
         else:
-            open(filename, 'wb').write(data)
+            open(filename, "wb").write(data)
         if i == total:
             break
         info("Sleeping...")
-        time.sleep(random.random() * 8 + 2)
+        time.sleep(random.random() * 10 + 15)
 
 
 def _get_inner_content(the_url):
     content = get_content(the_url)
-    pos = content.rfind('folderContentContainer')
+    pos = content.rfind("folderContentContainer")
     if pos == -1:  # backward compatibility?
         return content
     return content[pos:]
 
 
 def _gather_contents(the_url):
-    host_path = re.match('https?://[^/]+(/.*)', the_url).group(1)
+    host_path = re.match("https?://[^/]+(/.*)", the_url).group(1)
     contents = [_get_inner_content(the_url)]
     page = 2
     while True:
@@ -212,8 +226,8 @@ def _gather_contents(the_url):
 
 
 def command_dl(the_url):
-    hostname = re.match('https?://([^/]+)/', the_url).group(1)
-    dir_name = clean_name(the_url[the_url.rfind('/')+1:])
+    hostname = re.match("https?://([^/]+)/", the_url).group(1)
+    dir_name = clean_name(the_url[the_url.rfind("/") + 1 :])
     if not os.path.exists(dir_name):
         info("Creating directory: " + dir_name)
         os.mkdir(dir_name)
@@ -241,50 +255,51 @@ def _print_tasks(tasks, ext):
 def command_ls(the_url):
     contents = _gather_contents(the_url)
     msg = "Listing of: %s" % the_url
-    print(msg, '\n'+'-'*len(msg))
-    _print_tasks(_extract_tasks(MusicHandler(), contents), '.mp3')
+    print(msg, "\n" + "-" * len(msg))
+    _print_tasks(_extract_tasks(MusicHandler(), contents), ".mp3")
+
 
 interesting = []
 
 
-def command_rls(the_url, level = 2, verbose=False):
+def command_rls(the_url, level=2, verbose=False):
     contents = _get_inner_content(the_url)
-    base_dir = re.search('/.*$', the_url.replace('http://', '')).group()
-    print(' '*level + "Searching %s" % base_dir)
-    pos = contents.rfind('FilesList')
+    base_dir = re.search("/.*$", the_url.replace("http://", "")).group()
+    print(" " * level + "Searching %s" % base_dir)
+    pos = contents.rfind("FilesList")
     subfolder_content = contents[:pos]
     subdirs = []
     for subf in sorted(set(re.findall('<a href="(/[^"]+)"', subfolder_content))):
-        if subf.startswith(base_dir+'/'):
+        if subf.startswith(base_dir + "/"):
             if verbose:
-                print(' '*level + subf)
+                print(" " * level + subf)
             subdirs.append(subf)
     file_content = contents[pos:]
     if verbose:
-        print('FILES:')
+        print("FILES:")
     somefiles = []
     for subf in sorted(set(re.findall('<a href="(/[^"]+)"', file_content))):
-        if subf.startswith(base_dir+'/'):
+        if subf.startswith(base_dir + "/"):
             if verbose:
-                print(' '*level + subf)
+                print(" " * level + subf)
             somefiles.append(subf)
 
     if len(somefiles) == 0:
-        print(' '*level + '(empty)')
+        print(" " * level + "(empty)")
     else:
-        print(' '*level + somefiles[0] + '...')
-    if any(sf.endswith('.mp3') for sf in somefiles):
+        print(" " * level + somefiles[0] + "...")
+    if any(sf.endswith(".mp3") for sf in somefiles):
         interesting.append(the_url)
-        print(' '*level + 'there are mp3s here.')
+        print(" " * level + "there are mp3s here.")
     for subf in subdirs:
-        command_rls(the_url + subf.replace(base_dir, ''), level+2, verbose)
+        command_rls(the_url + subf.replace(base_dir, ""), level + 2, verbose)
 
 
 def command_play(the_url):
-    hostname = re.match('http://([^/]+)/', the_url).group(1)
+    hostname = re.match("http://([^/]+)/", the_url).group(1)
     contents = _gather_contents(the_url)
     msg = "Playing: %s" % the_url
-    print(msg, '\n'+'-'*len(msg))
+    print(msg, "\n" + "-" * len(msg))
     handler = MusicHandler()
     for track, file_id in _extract_tasks(handler, contents):
         url = handler.get_url(hostname, file_id)
@@ -305,11 +320,11 @@ def command_shell(the_url):
     if len(interesting) == 0:
         print("No playable or downloadable files.")
         return
-    hostname = re.match('http://([^/]+)/', the_url).group(1)
+    hostname = re.match("http://([^/]+)/", the_url).group(1)
     if len(interesting) > 1:
         print("Choose folder:")
         for i, f in zip(range(len(interesting)), interesting):
-            print(i, f.replace(hostname, ''))
+            print(i, f.replace(hostname, ""))
         choice = int(raw_input())
         the_url = interesting[choice]
     contents = _gather_contents(the_url)
@@ -319,7 +334,7 @@ def command_shell(the_url):
         for i in xrange(len(tasks)):
             print(i, tasks[i][0])
         cmd = raw_input()
-        if cmd == 'q':
+        if cmd == "q":
             return
         idx = int(cmd)
         url = handler.get_url(hostname, tasks[idx][1])
@@ -339,17 +354,18 @@ def main():
         # maybe phone clipboard
         try:
             import androidhelper
+
             print("trying to retrieve from clipboard")
         except ImportError:
             return usage()
 
         # go to the right location
         try:
-            os.chdir('/mnt/sdcard/Download')
+            os.chdir("/mnt/sdcard/Download")
         except OSError:
             pass
         the_url = androidhelper.Android().getClipboard().result
-        command = 'dl'
+        command = "dl"
     elif len(sys.argv) == 4:
         command = sys.argv[1]
         the_url = sys.argv[2]
@@ -358,28 +374,28 @@ def main():
         command = sys.argv[1]
         the_url = sys.argv[2]
     else:
-        command = 'dl'
+        command = "dl"
         the_url = sys.argv[1]
 
-    if command == 'dl':
+    if command == "dl":
         command_dl(the_url)
-    elif command == 'ls':
+    elif command == "ls":
         command_ls(the_url)
-    elif command == 'find':
+    elif command == "find":
         command_find(the_url, query)
-    elif command == 'play':
+    elif command == "play":
         command_play(the_url)
-    elif command == 'shell':
+    elif command == "shell":
         command_shell(the_url)
-    elif command == 'rdl':
+    elif command == "rdl":
         command_rdl(the_url)
-    elif command == 'rls':
+    elif command == "rls":
         try:
             command_rls(the_url)
         except KeyboardInterrupt:
             pass
         if len(interesting):
-            print('%d Interesting folders:' % len(interesting))
+            print("%d Interesting folders:" % len(interesting))
         for ifolder in interesting:
             print(ifolder)
     else:
@@ -388,7 +404,8 @@ def main():
 
 
 def usage():
-    print('Usage: %s [dl|ls|rls|rdl|play] URL' % sys.argv[0])
+    print("Usage: %s [dl|ls|rls|rdl|play] URL" % sys.argv[0])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

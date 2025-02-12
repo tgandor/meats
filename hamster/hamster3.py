@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import argparse
+import codecs
 import datetime
 import os
 import random
@@ -26,7 +27,14 @@ except ImportError:
     natsorted = sorted
 
 CHUNK = 512 * 1024
-user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:87.0) Gecko/20100101 Firefox/98.0"
+td = datetime.date.today()
+my_num = (td.year - 2025) * 12 + td.month + 133
+user_agent = codecs.encode(
+    "Zbmvyyn/5.0 (K11; Yvahk k86_64; ei:{}.0) Trpxb/20100101 Sversbk/{}.0".format(
+        my_num, my_num
+    ),
+    "rot_13",
+)
 
 
 def urlopen3(url):
@@ -86,7 +94,7 @@ def get_content(url, cache=[True]):
         info("Missing data file for: %s" % url)
     info("  (retrieving from the Web...)")
     if not cache[0]:
-        time.sleep(random.random() * 1.0)
+        time.sleep(random.random() * 3.0)
     content = urlopen(url).read()
     open(url_file, "wb").write(url.encode("utf-8"))
     f = gzip.open(content_file + ".gz", "wb", 9)
@@ -181,7 +189,7 @@ def _extract_tasks(handler, contents):
     return natsorted(joined, key=itemgetter(0))
 
 
-def retrieve_all(handler, tasks, targetdir, min_sleep=10, rng_sleep=10):
+def retrieve_all(handler, tasks, targetdir, min_sleep=15, rng_sleep=15):
     info("Starting download loop, exit easily with Ctrl-C while sleeping.")
     total = len(tasks)
     i = 0
