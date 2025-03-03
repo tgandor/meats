@@ -9,20 +9,25 @@ import math
 
 parser = argparse.ArgumentParser()
 parser.add_argument("x", type=int)
-parser.add_argument("digits", type=int)
+parser.add_argument("digits", type=int, nargs="?", default=21)
+parser.add_argument(
+    "--order", "-o", type=int, default=2, help="root order, i.e. 3, for cube"
+)
 args = parser.parse_args()
 
 x = args.x
-num = int(math.sqrt(x))
+n = args.order
+num = int(x ** (1 / n))
 den = 1
 
 for d in range(args.digits):
     num *= 10
     den *= 10
-    dig = 9
     for i in range(9):
         num += 1
-        if num**2 > x * den * den:
+        if num**n > x * den**n:
             num -= 1
             break
     print(f"{num} / 10**{d+1}")
+
+print(f"Float result: {x ** (1 / n):.{args.digits}f}")
