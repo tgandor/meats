@@ -6,7 +6,7 @@ authors = ["tgandor <tomasz.gandor@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10"
 opencv-python = "^4.11.0"
 scikit-image = "^0.25.0"
 pypdf = "^5.3.0"
