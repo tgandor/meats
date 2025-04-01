@@ -6,12 +6,14 @@ sudo apt install -y "$@" \
     curl \
     fdupes \
     ffmpeg \
+    git-lfs \
     htop \
     iotop \
     ipython3 \
     kdesdk-scripts \
     lm-sensors \
     mc \
+    mercurial \
     net-tools \
     python3-pip \
     python3-poetry \
