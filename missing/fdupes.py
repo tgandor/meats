@@ -12,7 +12,7 @@ import multiprocessing
 import os
 import sys
 import time
-from operator import attrgetter, itemgetter
+from operator import attrgetter
 from threading import Event, Thread
 
 MIN_ELAPSED_TO_SAVE = 5  # Never save groups if faster than this time
