@@ -41,17 +41,22 @@ def find_writable_path():
         paths = dict(zip(string.ascii_letters, good))
         for c, target in paths.items():
             print(c, "-", target)
-        ans = input("Choice (default: a):")
+        ans = input("Choice (default: a): ")
         target = paths.get(ans, paths["a"])
     else:
         target = good[0]
 
     return target
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--dest", "-d")
 args = parser.parse_args()
 
+if "VIRTUAL_ENV" not in os.environ or "pypoetry" not in os.environ["VIRTUAL_ENV"]:
+    ans = input(f"Not running inside Poetry. Install for this Python {sys.executable}? (N/y) ")
+    if ans.lower() != "y":
+        exit("Cancelled.")
 
 target = args.dest or find_writable_path()
 print("Installing to directory:", target)
