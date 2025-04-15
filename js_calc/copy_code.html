@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copy Code Example</title>
+    <style>
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .copy-button {
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        function copyToClipboard(button) {
+            const preElement = button.previousElementSibling;
+            if (preElement && preElement.tagName === 'PRE') {
+                const text = preElement.innerText;
+                navigator.clipboard.writeText(text).then(() => {
+                    button.innerText = 'Copied!';
+                    setTimeout(() => {
+                        button.innerText = 'Copy';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+            } else {
+                alert('No <pre> element found.');
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+    <pre>
+      console.log('Hello, world!');
+    </pre>
+    <button class="copy-button" onclick="copyToClipboard(this)">Copy</button>
+
+    <pre>
+      console.log('Another example!');
+    </pre>
+    <button class="copy-button" onclick="copyToClipboard(this)">Copy</button>
+
+</body>
+
+</html>
