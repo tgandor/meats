@@ -11,6 +11,7 @@ sudo apt install -y "$@" \
     htop \
     iotop \
     ipython3 \
+    jq \
     kdesdk-scripts \
     lm-sensors \
     mc \
