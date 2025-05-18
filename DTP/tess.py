@@ -4,11 +4,11 @@
 Script for calling tesseract with output == basename+'.txt' for each argument.
 
 Some protection against overwriting existing files.
+Update 2025-05-18: handle PDFs (multipage) with pdftoppm from poppler.
 """
 
-from __future__ import print_function
-
 import argparse
+import glob
 import os
 import subprocess
 
@@ -39,25 +39,36 @@ def main():
         base_command.extend(["--oem", "1"])
     elif args.ocr:
         base_command.extend(["--oem", "0"])
-    
+
     base_command.extend(args.remainder)
 
-    for i, image in enumerate(args.files):
-        basename, _ = os.path.splitext(image)
+    for i, image_ in enumerate(args.files):
+        basename, ext = os.path.splitext(image_)
 
-        if os.path.exists(basename + ".txt"):
-            print("Skipping {} - {}.txt exists.".format(image, basename))
-            continue
+        # PDF unpacking - then inner loop for pages
+        if ext.lower() == ".pdf":
+            subprocess.call(["pdftoppm", "-progress", "-png", image_, basename])
+            images = sorted(glob.glob(basename + "-*.png"))
+        else:
+            images = [image_]
 
-        print("{} -> {}.txt ...".format(image, basename))
-        
-        if args.debug:
-            print(base_command + [image, basename])
+        for image in images:
+            basename, _ = os.path.splitext(image)
 
-        subprocess.call(base_command + [image, basename])
-        
+            if os.path.exists(basename + ".txt"):
+                print("Skipping {} - {}.txt exists.".format(image, basename))
+                continue
+
+            print("{} -> {}.txt ...".format(image, basename))
+
+            if args.debug:
+                print(base_command + [image, basename])
+
+            subprocess.call(base_command + [image, basename])
+
         if i < len(args.files) - 1:
             print("---")
+
 
 if __name__ == "__main__":
     main()
