@@ -13,6 +13,7 @@ import sqlite3
 import sys
 import tempfile
 import time
+from typing import Literal
 
 
 def _install_and_die(package):
@@ -46,6 +47,7 @@ try:
     from reportlab.pdfbase.ttfonts import TTFont, TTFError
 except ImportError:
     _install_and_die("reportlab")
+    raise SystemExit("ReportLab not found, exiting.")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--font-size", type=int, default=32)
@@ -84,7 +86,7 @@ parser.add_argument(
 )
 parser.add_argument("args", type=str, nargs="*", help="Old arguments.")
 
-settings = dict(
+settings: dict = dict(
     font_size=32,
     date_font=14,
     round_label=False,
@@ -104,6 +106,7 @@ last_font = []  # needs to be reloaded after new page
 
 
 def _setup_canvas(outfile=default_output_file):
+    font_to_use = None
     for font_name in fonts_to_try:
         try:
             font = TTFont(font_name, font_name + ".ttf")
@@ -111,7 +114,7 @@ def _setup_canvas(outfile=default_output_file):
             font_to_use = font_name
             break
         except TTFError:
-            font_to_use = None
+            continue
 
     c = canvas.Canvas(outfile)
     if font_to_use:
@@ -677,7 +680,7 @@ def win_main():
             )  # tk.IntVar(value=args.font_size)
             self.last_id = tk.IntVar()
 
-    def ui_label(parent, text, side=tk.TOP, **packkw):
+    def ui_label(parent, text, side: Literal["top", "left"] = tk.TOP, **packkw):
         tk.Label(parent, text=text, font=ui_font).pack(side=side, **packkw)
 
     def set_text(widget, value):
@@ -767,7 +770,7 @@ def win_main():
         text.focus_set()
 
         text.tag_config(
-            "label", justify="center", font=(fonts_to_try[0], settings["font_size"])
+            "label", justify="center", font=(fonts_to_try[0], settings["font_size"])  # type: ignore[call-arg]
         )
         text.bind("<Key>", lambda e: modified(text, e))
         text.bind("<<Modified>>", lambda e: modified(text, e))
@@ -939,6 +942,7 @@ def db_shell_main(multiline=False):
         import six
     except ImportError:
         _install_and_die("six")
+        raise SystemExit("Six not found, exiting.")
 
     conn = cursor = None
 
