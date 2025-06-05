@@ -491,7 +491,7 @@ def get_previous_label(current):
                 "select prev_label_id from older_label where label_id=?",
                 (current,),
             )
-        if not prev_id[0]:
+        if not prev_id or not prev_id[0]:
             return None
 
         return _load_label(cursor, prev_id)
@@ -515,7 +515,7 @@ def get_next_label(current):
                 "select next_label_id from newer_label where label_id=?",
                 (current,),
             )
-        if not next_id[0]:
+        if not next_id or not next_id[0]:
             return None
 
         return _load_label(cursor, next_id)
