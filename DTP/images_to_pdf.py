@@ -76,6 +76,7 @@ def create_image_pdf(images, args):
 
         print("Processed {} - page {}".format(filename, page_num))
     c.save()
+    print("Saved results to: %s" % output)
     if sys.platform.startswith("linux"):
         os.system('xdg-open "%s"' % output)
     else:
