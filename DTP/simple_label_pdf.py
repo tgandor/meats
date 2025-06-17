@@ -268,6 +268,14 @@ def _finish_rendering(canvas):
 
 # region label persistence
 
+# DeprecationWarning: The default datetime adapter is deprecated as of Python 3.12; see the sqlite3 documentation for suggested replacement recipes
+# Adapter: datetime.datetime → str
+sqlite3.register_adapter(datetime.datetime, lambda dt: dt.isoformat())
+# Conwerter: str → datetime.datetime
+sqlite3.register_converter(
+    "timestamp", lambda s: datetime.datetime.fromisoformat(s.decode("utf-8"))
+)
+
 
 def open_database():
     labels_file = os.path.expanduser("~/labels.db")
