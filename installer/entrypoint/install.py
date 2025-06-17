@@ -24,7 +24,7 @@ def is_writable(dirpath):
 
 
 def find_writable_path():
-    path = os.getenv("PATH").split(os.pathsep)
+    path = os.getenv("PATH").split(os.pathsep)  # type: ignore
     good = []
 
     for dirpath in path:
@@ -54,7 +54,9 @@ parser.add_argument("--dest", "-d")
 args = parser.parse_args()
 
 if "VIRTUAL_ENV" not in os.environ or "pypoetry" not in os.environ["VIRTUAL_ENV"]:
-    ans = input(f"Not running inside Poetry. Install for this Python {sys.executable}? (N/y) ")
+    ans = input(
+        f"Not running inside Poetry. Install for this Python {sys.executable}? (N/y) "
+    )
     if ans.lower() != "y":
         exit("Cancelled.")
 

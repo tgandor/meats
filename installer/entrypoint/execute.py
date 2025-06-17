@@ -23,6 +23,7 @@ else:
 alias = sys.argv[1]
 prefix = False
 search = False
+window = False
 
 if alias.startswith("/"):
     alias = alias[1:]
@@ -30,6 +31,9 @@ if alias.startswith("/"):
 if alias.startswith("%"):
     alias = alias[1:]
     search = True
+if alias.startswith("@"):
+    alias = alias[1:]
+    window = True
 
 
 def _match(fn):
@@ -41,6 +45,13 @@ def _match(fn):
 def _open(file_path):
     if not search:
         assert entry.endswith(".py")
+        if window and platform.system() == "Windows":
+            # On Windows, we can use the `pythonw` executable to avoid a console window
+            pythonw_path = sys.executable.replace("python.exe", "pythonw.exe")
+            if exists(pythonw_path):
+                subprocess.Popen([pythonw_path, entry] + sys.argv[2:])
+                return
+
         subprocess.call([sys.executable, entry] + sys.argv[2:])
         return
 
