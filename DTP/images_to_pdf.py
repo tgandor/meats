@@ -20,9 +20,9 @@ footer_y = 2 * cm  # where page numbers go
 def update_settings():
     global margin_x, margin_y, footer_y
     if os.getenv("MX"):
-        margin_x = float(os.getenv("MX")) * cm
+        margin_x = float(os.getenv("MX")) * cm  # type: ignore
     if os.getenv("MY"):
-        margin_y = float(os.getenv("MY")) * cm
+        margin_y = float(os.getenv("MY")) * cm  # type: ignore
         footer_y = margin_y - 1 * cm
 
 
@@ -47,6 +47,12 @@ def create_image_pdf(images, args):
 
     num_pages = len(images)
     for filename in images:
+        if args.bookmark:
+            # Add a bookmark for this page
+            title = os.path.basename(filename)
+            title = os.path.splitext(title)[0]
+            c.bookmarkPage(title)
+            c.addOutlineEntry(title, title, level=0)
         image = ImageReader(filename)
         img_w, img_h = image.getSize()
         avail_w = format[0] - 2 * args.margin_x * cm
@@ -104,6 +110,9 @@ def get_files(image_files):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", "-o", help="Output PDF file")
+    parser.add_argument(
+        "--bookmark", "-b", action="store_true", help="Create bookmarks for each image"
+    )
     parser.add_argument(
         "--margin-x",
         help="Left and right margin in cm",
