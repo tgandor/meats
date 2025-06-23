@@ -9,7 +9,7 @@ import time
 def _parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--amf", action="store_true", help="use h264_amf codec (e.g. Windows on AMD)"
+        "--amf", action="store_true", help="use h264_amf/hevc_amf codec (e.g. Windows on AMD)"
     )
     parser.add_argument(
         "--bitrate-audio", "-ba", help="specify output bitrate for audio"
@@ -86,14 +86,25 @@ def _parse_cli():
     parser.add_argument("--nvenc", "-nve", action="store_true")
     parser.add_argument("--quality", "-q", type=int, default=23)
     parser.add_argument("--scale", "-s", help="scale video filter, eg. 960:-1")
-    parser.add_argument("--rot180", action="store_true", help="rotate video 180 degrees")
-    parser.add_argument("--rotR", action="store_true", help="rotate video 90 degrees CW")
-    parser.add_argument("--rotL", action="store_true", help="rotate video 90 degrees CCW")
+    parser.add_argument(
+        "--rot180", action="store_true", help="rotate video 180 degrees"
+    )
+    parser.add_argument(
+        "--rotR", action="store_true", help="rotate video 90 degrees CW"
+    )
+    parser.add_argument(
+        "--rotL", action="store_true", help="rotate video 90 degrees CCW"
+    )
     parser.add_argument("--stabilize", "-stab", action="store_true")
     parser.add_argument(
         "--start", "-ss", help="Start time for encoding in seconds or [HH:]MM:SS"
     )
-    parser.add_argument("--quick", "-Q", action="store_true", help="Use veryfast preset (worse output size)")
+    parser.add_argument(
+        "--quick",
+        "-Q",
+        action="store_true",
+        help="Use veryfast preset (worse output size)",
+    )
     parser.add_argument("files_or_globs", nargs="+")
     return parser.parse_args()
 
@@ -186,7 +197,7 @@ class CompressionStats:
 
 
 try:
-    from shutil import which
+    from shutil import which  # type: ignore[import]
 except ImportError:
 
     def which(program):
@@ -271,13 +282,13 @@ def _get_filters(args):
         filters += ' -metadata:s:v rotate="270"'
 
     if args.rot180:
-        filters += ' -vf vflip,hflip'
+        filters += " -vf vflip,hflip"
 
     if args.rotL:
-        filters += ' -vf transpose=2'
+        filters += " -vf transpose=2"
 
     if args.rotR:
-        filters += ' -vf transpose=1'
+        filters += " -vf transpose=1"
 
     return filters
 

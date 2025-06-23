@@ -38,7 +38,9 @@ def get_duration(filename, verbose=False):
     )
 
     durations = [
-        x.decode() for x in result.stdout.readlines() if b"duration" in x.lower()
+        x.decode()
+        for x in result.stdout.readlines()  # type: ignore
+        if b"duration" in x.lower()
     ]
     if verbose:
         print(filename, "durations:\n", durations)
@@ -62,7 +64,7 @@ def _iter_files(files_or_globs):
     for pattern in files_or_globs:
         if "*" in pattern:
             for path in glob.glob(pattern):
-                yield pattern
+                yield path
         else:
             yield pattern
 
