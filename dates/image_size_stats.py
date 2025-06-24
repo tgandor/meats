@@ -14,15 +14,17 @@ JPEGS = {JPG, ".jpeg"}
 try:
     import piexif
 except ImportError:
-    print("Missing piexif")
-    os.system("pip install piexif")
+    # poetry should install this, but if not, we can prompt the user
+    if input("Missing piexif. Install? [Y/n] ").strip().lower() in ("", "y", "yes"):
+        os.system("pip install piexif")
     exit()
 
 try:
     import imagesize
 except ImportError:
-    print("Missing imagesize")
-    os.system("pip install imagesize")
+    # poetry should install this, but if not, we can prompt the user
+    if input("Missing imagesize. Install? [Y/n] ").strip().lower() in ("", "y", "yes"):
+        os.system("pip install imagesize")
     exit()
 
 parser = argparse.ArgumentParser()
