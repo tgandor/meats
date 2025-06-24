@@ -9,12 +9,14 @@ import time
 def _parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--amf", action="store_true", help="use h264_amf/hevc_amf codec (e.g. Windows on AMD)"
+        "--amf",
+        action="store_true",
+        help="use h264_amf/hevc_amf codec (e.g. Windows on AMD)",
     )
+    parser.add_argument("--bitrate", "-b", help="specify output bitrate for video")
     parser.add_argument(
         "--bitrate-audio", "-ba", help="specify output bitrate for audio"
     )
-    parser.add_argument("--bitrate", "-b", help="specify output bitrate for video")
     parser.add_argument(
         "--classify",
         "-k",
@@ -24,13 +26,19 @@ def _parse_cli():
     parser.add_argument(
         "--converter", help="Manually specify [full path to] ffmpeg or avconv"
     )
-    parser.add_argument("--copy-audio", "-c", action="store_true")
-    parser.add_argument("--copy-video", "-cv", action="store_true")
     parser.add_argument(
         "--copy",
         "-C",
         action="store_true",
         help="No-op copy, e.g. for cutting or remuxing",
+    )
+    parser.add_argument("--copy-audio", "-c", action="store_true")
+    parser.add_argument("--copy-video", "-cv", action="store_true")
+    parser.add_argument(
+        "--cwd",
+        "-X",
+        action="store_true",
+        help="convert to current working directory",
     )
     parser.add_argument(
         "--deinterlace",
@@ -38,6 +46,7 @@ def _parse_cli():
         action="store_true",
         help="deinterlace with yadif (requires recoding)",
     )
+    parser.add_argument("--delete", "-D", action="store_true", help="DELETE original")
     parser.add_argument(
         "--dry-run", "-n", action="store_true", help="print commands, but do nothing"
     )
@@ -54,20 +63,13 @@ def _parse_cli():
         help="rotate 90 via metadata (use as only option)",
     )
     parser.add_argument("--framerate", "-r", help="specify output FPS for video")
+    parser.add_argument("--hevc", action="store_true", help="use h.265 (HEVC) codec")
     parser.add_argument(
         "--here",
         "-H",
         action="store_true",
         help="convert to the same place (only from other format)",
     )
-    parser.add_argument(
-        "--cwd",
-        "-X",
-        action="store_true",
-        help="convert to current working directory",
-    )
-    parser.add_argument("--delete", "-D", action="store_true", help="DELETE original")
-    parser.add_argument("--hevc", action="store_true", help="use h.265 (HEVC) codec")
     parser.add_argument("--hwaccel", "-hw", help="specify input hardware acceleration")
     parser.add_argument(
         "--move",
@@ -85,25 +87,25 @@ def _parse_cli():
     parser.add_argument("--nvdec", "-nvd", action="store_true")
     parser.add_argument("--nvenc", "-nve", action="store_true")
     parser.add_argument("--quality", "-q", type=int, default=23)
-    parser.add_argument("--scale", "-s", help="scale video filter, eg. 960:-1")
-    parser.add_argument(
-        "--rot180", action="store_true", help="rotate video 180 degrees"
-    )
-    parser.add_argument(
-        "--rotR", action="store_true", help="rotate video 90 degrees CW"
-    )
-    parser.add_argument(
-        "--rotL", action="store_true", help="rotate video 90 degrees CCW"
-    )
-    parser.add_argument("--stabilize", "-stab", action="store_true")
-    parser.add_argument(
-        "--start", "-ss", help="Start time for encoding in seconds or [HH:]MM:SS"
-    )
     parser.add_argument(
         "--quick",
         "-Q",
         action="store_true",
         help="Use veryfast preset (worse output size)",
+    )
+    parser.add_argument(
+        "--rot180", action="store_true", help="rotate video 180 degrees"
+    )
+    parser.add_argument(
+        "--rotL", action="store_true", help="rotate video 90 degrees CCW"
+    )
+    parser.add_argument(
+        "--rotR", action="store_true", help="rotate video 90 degrees CW"
+    )
+    parser.add_argument("--scale", "-s", help="scale video filter, eg. 960:-1")
+    parser.add_argument("--stabilize", "-stab", action="store_true")
+    parser.add_argument(
+        "--start", "-ss", help="Start time for encoding in seconds or [HH:]MM:SS"
     )
     parser.add_argument("files_or_globs", nargs="+")
     return parser.parse_args()
@@ -248,8 +250,11 @@ def _get_encoder_options(args):
             encoder_options = "hevc_amf {}".format(common_options)
         else:
             encoder_options = "h264_amf {}".format(common_options)
+        encoder_options += " -quality {}".format("speed" if args.quick else "quality")
         if not args.bitrate:
-            print("Warning - using --amf codec without --bitrate/-b specified.")
+            encoder_options += " -rc cqp -qp_i {q} -qp_p {q}".format(q=args.quality)
+        else:
+            encoder_options += " -rc vbr_peak -maxrate {}".format(args.bitrate)
     else:
         if args.hevc:
             raise ValueError("Not implemented")
