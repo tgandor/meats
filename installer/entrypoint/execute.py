@@ -68,7 +68,7 @@ def _crawl():
     top = dirname(dirname(dirname(__file__)))
     found = []
     for path, dirs, files in os.walk(top):
-        if GIT in path:
+        if GIT in path or ".venv" in path:
             continue
         for fn in files:
             if _match(fn) and (fn.endswith(".py") or search):
