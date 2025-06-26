@@ -12,7 +12,7 @@ bytes = [(k + "B", v) for k, v in FACTORS.items()]
 bits = [(k + "b", v // 8) for k, v in FACTORS.items()]
 FACTORS.update(bytes + bits)
 FACTORS[None] = 1
-HUMAN = r"(\d+)(\.\d*)?([kmgtp]?b?)$"
+HUMAN = r"(\d+)?([.,]\d*)?([kmgtp]?b?)$"
 
 
 def parse_human(size):
@@ -36,9 +36,12 @@ def parse_human(size):
     # print(m, m.groups())
     whole, frac, unit = m.groups()
 
-    result = int(whole)
+    result = int(whole) if whole else 0
     if frac:
-        result += float(frac)
+        frac = frac.replace(",", ".")
+        result += float(frac) if frac != "." else 0
+    if not frac and not whole:
+        result = 1
     if unit:
         result *= FACTORS[unit]
 
