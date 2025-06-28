@@ -9,6 +9,12 @@
 # so finally I went more or less with this:
 # https://willhaley.com/blog/encrypted-file-container-disk-image-in-linux/
 
+if ! which cryptsetup ; then
+    echo "Missing cryptsetup. Please install, e.g.:"
+    echo "sudo apt install cryptsetup-bin"
+    exit
+fi
+
 if [ -z "$1" ] ; then
     gb=10
 else

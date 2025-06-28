@@ -4,6 +4,7 @@
 
 sudo apt install -y "$@" \
     bind9-dnsutils \
+    cryptsetup-bin \
     curl \
     fdupes \
     ffmpeg \
