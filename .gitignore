@@ -24,3 +24,6 @@ haarcascade_frontalface_default.xml
 
 # virtualenv
 .venv
+
+# bootstrap
+bootstrap.min.css
