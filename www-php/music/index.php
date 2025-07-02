@@ -1,9 +1,35 @@
 <?php
-    $version = "v3.2-mi-2025.01.22";
+    $version = "v3.3-mi-2025.07.02";
     $title = basename(dirname($_SERVER['PHP_SELF']));
+    if (empty($title)) {
+        $title = 'Music Index';
+    }
     $files = glob('*.{mp3,MP3,m4a,M4A,opus}', GLOB_BRACE);
     natsort($files);
     $files = array_values($files);
+    $zipAvailable = class_exists('ZipArchive');
+
+    if ($zipAvailable && isset($_GET['action']) && $_GET['action'] === 'download') {
+        $zip = new ZipArchive();
+        $zipFileName = "$title.zip";
+
+        if ($zip->open($zipFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+            foreach ($files as $file) {
+                $zip->addFile($file, basename($file));
+            }
+            $zip->close();
+
+            header('Content-Type: application/zip');
+            header('Content-Disposition: attachment; filename="' . $zipFileName . '"');
+            header('Content-Length: ' . filesize($zipFileName));
+            readfile($zipFileName);
+
+            unlink($zipFileName);
+            exit;
+        } else {
+            echo "ZIP-ping failed.";
+        }
+    }
 
     $crumbs = array();
     $path = '';
@@ -108,6 +134,11 @@
 <?php foreach($crumbs as $path => $dir): ?>
                     / <a href="<?php echo $path ?>"><?php echo $dir ?: '&#8962;'  ?></a>
 <?php endforeach ?>
+<?php if ($zipAvailable): ?>
+                    <a href="?action=download" class="btn btn-primary">Download as ZIP</a>
+<?php else: ?>
+                    <span class="text-muted">(ZIP download not available)</span>
+<?php endif ?>
                 </p>
             </div>
 <?php endif ?>
