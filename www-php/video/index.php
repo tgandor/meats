@@ -1,6 +1,9 @@
 <?php
-    $version = "v1.0-vi-2025.07.02";
+    $version = "v1.1-vi-2025.07.04";
     $title = basename(dirname($_SERVER['PHP_SELF']));
+    if (empty($title)) {
+        $title = 'Video Index';
+    }
     $files = glob('*.{mp4,webm}', GLOB_BRACE);
     natsort($files);
     $files = array_values($files);
@@ -124,7 +127,13 @@
             if ( document.getElementById('loop_one').checked ) {
                 videos[i].play();
             } else if ( document.getElementById('loop_all').checked ) {
-                videos[(i+1)%n].play()
+                videos[(i+1)%n].play();
+                window.setTimeout(() => {
+                    videos[(i+1)%n].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, timeout = 1000);
             }
         }
     }
