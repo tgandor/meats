@@ -1,5 +1,5 @@
 <?php
-    $version = "v1.1-vi-2025.07.04";
+    $version = "v1.2-vi-2025.07.08";
     $title = basename(dirname($_SERVER['PHP_SELF']));
     if (empty($title)) {
         $title = 'Video Index';
@@ -97,7 +97,7 @@
 <?php if (isset($descriptions[$video_file])): ?>
                 <p class="small"><?php echo $descriptions[$video_file] ?></p>
 <?php endif ?>
-                <video controls="controls" preload="none" id="a_<?php echo $i + 1 ?>">
+                <video controls="controls" preload="none" id="v_<?php echo $i + 1 ?>">
                     <source src="<?php echo $video_file ?>" type="video/mp4">
                     Your browser does not support the video element.
                 </video>
@@ -133,6 +133,7 @@
                         behavior: 'smooth',
                         block: 'start'
                     });
+                    window.location.hash = "v_" + (i + 1);
                 }, timeout = 1000);
             }
         }

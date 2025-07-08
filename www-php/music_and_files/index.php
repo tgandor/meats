@@ -1,5 +1,5 @@
 <?php
-    $version = "v3.2-mf-2025.01.22";
+    $version = "v3.3-mf-2025.07.08";
     $title = basename(dirname($_SERVER['PHP_SELF']));
     $files = glob('*.{mp3,MP3,m4a,M4A,opus}', GLOB_BRACE);
     natsort($files);
@@ -140,7 +140,14 @@
             if ( document.getElementById('loop_one').checked ) {
                 audios[i].play();
             } else if ( document.getElementById('loop_all').checked ) {
-                audios[(i+1)%n].play()
+                audios[(i+1)%n].play();
+                window.setTimeout(() => {
+                    audios[(i+1)%n].parentElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    window.location.hash = "a_" + (i + 1);
+                }, timeout = 200);
             }
         }
     }
