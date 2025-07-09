@@ -1,5 +1,5 @@
 <?php
-    $version = "v1.2-vi-2025.07.08";
+    $version = "v1.4-vi-2025.07.09";
     $title = basename(dirname($_SERVER['PHP_SELF']));
     if (empty($title)) {
         $title = 'Video Index';
@@ -92,7 +92,7 @@
 
         <div class="row">
 <?php foreach($files as $i => $video_file): ?>
-            <div class="col-12 py-3">
+            <div class="col-12 py-3" id="d_<?php echo $i + 1 ?>">
                 <p><?php echo $i + 1 ?>. <a href="<?php echo $video_file ?>"><?php echo $video_file ?></a></p>
 <?php if (isset($descriptions[$video_file])): ?>
                 <p class="small"><?php echo $descriptions[$video_file] ?></p>
@@ -127,20 +127,26 @@
             if ( document.getElementById('loop_one').checked ) {
                 videos[i].play();
             } else if ( document.getElementById('loop_all').checked ) {
-                videos[(i+1)%n].play();
+                var next = (i + 1) % n;
+                videos[next].play();
+                window.location.hash = "d_" + (next + 1);
+                window.history.pushState(null, '', window.location.pathname + window.location.hash);
                 window.setTimeout(() => {
-                    videos[(i+1)%n].scrollIntoView({
+                    document.getElementById('d_' + (next + 1)).scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
                     });
-                    window.location.hash = "v_" + (i + 1);
-                }, timeout = 1000);
+                }, timeout = 500);
             }
         }
     }
     for (let i=0; i<n; ++i)
     {
         videos[i].onended = make_onended(i);
+    }
+    if (window.location.hash)
+    {
+        document.getElementById('loop_all').checked = true;
     }
     </script>
   </body>

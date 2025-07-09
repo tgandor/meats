@@ -1,5 +1,5 @@
 <?php
-    $version = "v3.4-mi-2025.07.08";
+    $version = "v3.5-mi-2025.07.09";
     $title = basename(dirname($_SERVER['PHP_SELF']));
     if (empty($title)) {
         $title = 'Music Index';
@@ -115,7 +115,7 @@
 
         <div class="row">
 <?php foreach($files as $i => $music_file): ?>
-            <div class="col-sm-6 col-md-4 col-lg-3 py-3">
+            <div class="col-sm-6 col-md-4 col-lg-3 py-3" id="d_<?php echo $i + 1 ?>">
                 <p><?php echo $i + 1 ?>. <a href="<?php echo $music_file ?>"><?php echo $music_file ?></a></p>
 <?php if (isset($descriptions[$music_file])): ?>
                 <p class="small"><?php echo $descriptions[$music_file] ?></p>
@@ -155,13 +155,15 @@
             if ( document.getElementById('loop_one').checked ) {
                 audios[i].play();
             } else if ( document.getElementById('loop_all').checked ) {
-                audios[(i+1)%n].play();
+                var next = (i + 1) % n;
+                audios[next].play();
+                window.location.hash = "d_" + (next + 1);
+                window.history.pushState(null, '', window.location.pathname + window.location.hash);
                 window.setTimeout(() => {
-                    audios[(i+1)%n].parentElement.scrollIntoView({
+                    document.getElementById('d_' + (next + 1)).scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
                     });
-                    window.location.hash = "a_" + (i + 1);
                 }, timeout = 200);
             }
         }
@@ -169,6 +171,10 @@
     for (let i=0; i<n; ++i)
     {
         audios[i].onended = make_onended(i);
+    }
+    if (window.location.hash)
+    {
+        document.getElementById('loop_all').checked = true;
     }
     </script>
   </body>
