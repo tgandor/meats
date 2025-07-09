@@ -1,6 +1,9 @@
 <?php
-    $version = "v3.3-mf-2025.07.08";
+    $version = "v3.4-mf-2025.07.09";
     $title = basename(dirname($_SERVER['PHP_SELF']));
+    if (empty($title)) {
+        $title = 'Music and Files Index';
+    }
     $files = glob('*.{mp3,MP3,m4a,M4A,opus}', GLOB_BRACE);
     natsort($files);
     $files = array_values($files);

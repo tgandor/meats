@@ -1,5 +1,9 @@
 <?php
+    $version = "v1.1-ii-2025.07.09";
     $title = basename(dirname($_SERVER['PHP_SELF']));
+    if (empty($title)) {
+        $title = 'Image Index';
+    }
     // jpg and png
     $files = glob('*.[JjPp][PpNn][Gg]');
     natsort($files);
@@ -42,7 +46,7 @@
     <div class="container">
         <div class="jumbotron d-none d-md-block">
             <h1><?php echo $title ?></h1>
-            <p class="lead" title="v1.0-2021-02-17">Pictures in folder.</p>
+            <p class="lead" title="<?php echo $version ?>">Pictures in folder.</p>
         </div>
 
         <div class="page-header d-block d-md-none">
@@ -62,10 +66,10 @@
 
         <div class="row">
 <?php foreach($files as $i => $img): ?>
-            <div class="col-sm-6 col-md-4 col-lg-3 py-3">
+            <div class="col-sm-12 col-md-6 col-lg-4 py-3">
                 <p><?php echo $i + 1 ?>. <a href="<?php echo $img ?>"><?php echo $img ?></a></p>
                 <a href="<?php echo $img ?>">
-                    <img src="<?php echo $img ?>" style="width: 100%;">
+                    <img src="<?php echo $img ?>" style="width: 100%;" alt="<?php echo $img ?>" title="<?php echo $img ?>" loading="lazy">
                 </a>
             </div>
 <?php endforeach ?>
