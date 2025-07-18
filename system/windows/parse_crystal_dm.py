@@ -1,6 +1,7 @@
 import re
 import json
 import pyperclip
+import subprocess
 from datetime import datetime
 
 
@@ -13,9 +14,9 @@ def parse_cdm_output(text):
         r"(?P<mbps>[\d.]+)\s+MB/s\s+\[\s*(?P<iops>[\d.]+)\s+IOPS\]\s+<\s*(?P<latency>[\d.]+)\s+us>"
     )
 
-    unit_letter = "X"
+    drive_letter = None
     label = "Unknown"
-    size_gb = "0"
+    size_gib = "Unknown"
     dt = datetime.now()
 
     for line in text.splitlines():
@@ -48,30 +49,35 @@ def parse_cdm_output(text):
                 dt = datetime.now()
 
         if "Test:" in line and "[" in line:
-            try:
-                unit_letter = "X"
-                letter_match = re.search(r"\[(\w):", line)
-                if letter_match:
-                    unit_letter = letter_match.group(1)
-                size_match = re.search(r"\((\d+)/(\d+)GiB\)", line)
-                if size_match:
-                    size_gb = size_match.group(2)
-            except Exception:
-                pass
+            match_drive = re.search(r"\[(\w):\s+\d+%", line)
+            match_size = re.search(r"\((\d+)/(\d+)GiB\)", line)
+            if match_drive:
+                drive_letter = match_drive.group(1)
+            if match_size:
+                size_gib = str(int(match_size.group(2)))
 
-        if "Profile:" in line:
-            label = line.split("Profile:")[1].strip()
+    if drive_letter:
+        try:
+            ps_command = f"(Get-Volume -DriveLetter '{drive_letter}').FileSystemLabel"
+            label = subprocess.check_output(
+                ["powershell", "-Command", ps_command], text=True
+            ).strip()
+            if not label:
+                label = "NoLabel"
+        except Exception:
+            print(f"Error retrieving label for drive {drive_letter}")
+            label = "Error"
 
-    return results, dt, unit_letter, label, size_gb
+    filename = f"{dt.strftime('%Y%m%d_%H%M')}_{drive_letter}_{label}_{size_gib}G.json"
+
+    return results, filename
 
 
-# Main execution
-text = pyperclip.paste()
-parsed_data, dt, unit, label, size = parse_cdm_output(text)
+if __name__ == "__main__":
+    text = pyperclip.paste()
+    parsed_data, filename = parse_cdm_output(text)
 
-filename = f"{dt.strftime('%Y%m%d_%H%M')}_{unit}_{label.replace(' ', '')}_{size}.json"
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(parsed_data, f, indent=2)
 
-with open(filename, "w", encoding="utf-8") as f:
-    json.dump(parsed_data, f, indent=2)
-
-print(f"✅ Datos guardados en el archivo: {filename}")
+    print(f"✅ Datos guardados en {filename}")
