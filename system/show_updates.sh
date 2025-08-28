@@ -11,5 +11,5 @@ fi
 # Arch / Manjaro (pacman)
 # please note: pacman -Qu shows nothing when Octopi reports new updates.
 if which checkupdates &> /dev/null ; then
-    checkupdates | nl | less
+    checkupdates | nl | less -r
 fi
