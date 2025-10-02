@@ -262,7 +262,7 @@ def print_groups(group_list):
     for group in group_list:
         print(group.features)
         for file in group:
-            print(file)
+            print(file.file_path)
         print("-" * 20, group_summary(group), "-" * 20)
 
     print("Total duplicates: {:,}".format(total_duplicates(group_list)))
@@ -723,6 +723,14 @@ def main():
             )
 
         print("Remember to check for subfolders! (not checked above)")
+
+    if args.unique:
+        if unique_files is not None and len(unique_files):
+            print("{} unique files found.".format(len(unique_files)))
+            for file in sorted(unique_files, key=suitability_max_len_penalize_spaces):
+                print(file.file_path)
+        else:
+            print("No unique files found.")
 
     if args.delete:
         delete_interactive(groups)
