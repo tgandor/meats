@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+"""This is somewhat obsoleted by `jq . file` but has the advantage of
+working without installing anything extra (and possibly in-place)."""
+
 from __future__ import print_function
 
 import argparse
