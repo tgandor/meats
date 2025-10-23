@@ -19,7 +19,7 @@ sudo apt install -y "$@" \
     mercurial \
     net-tools \
     python3-pip \
-    python3-poetry \
+    pipx \
     python3-virtualenv \
     python-is-python3 \
     rar \
@@ -30,3 +30,6 @@ sudo apt install -y "$@" \
 # end.
 
 sudo ln -sf /usr/bin/ipython3 /usr/bin/ipython
+pipx ensurepath
+pipx install poetry
+pipx inject poetry poetry-plugin-export
