@@ -19,6 +19,7 @@ imagesize = "^1.4.1"
 pyperclip = "^1.9.0"
 pycosat = "^0.6.6"
 tqdm = "^4.67.1"
+pywin32 = {markers = "platform_system == \"Windows\"", version = "^311"}
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"
