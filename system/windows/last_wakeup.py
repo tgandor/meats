@@ -40,7 +40,7 @@ def get_last_wakeup(n: int = 1):
         import win32evtlog
     except ImportError:
         print("Missing win32evtlog, please install pywin32 package")
-        powershell_fallback()
+        powershell_fallback(n)
         return
     server = "localhost"
     logtype = "System"
