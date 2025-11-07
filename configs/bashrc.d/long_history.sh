@@ -1,0 +1,10 @@
+HISTSIZE=100000
+HISTFILESIZE=200000
+
+PROMPT_COMMAND='history -a; history -n'
+
+HISTCONTROL=ignoredups:erasedups
+
+HISTTIMEFORMAT="%F %T "
+
+HISTIGNORE=""
