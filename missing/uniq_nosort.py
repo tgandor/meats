@@ -49,7 +49,7 @@ def main():
         unique_lines.sort()
 
     if args.count:
-        unique_lines = [f"{counts[line]} {line}" for line in unique_lines]
+        unique_lines = [f"{counts[line]:7d} {line}" for line in unique_lines]
 
     if args.output_file is not None:
         with open(output_path, "w", encoding="utf-8") as outfile:
