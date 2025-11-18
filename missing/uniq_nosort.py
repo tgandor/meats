@@ -19,6 +19,9 @@ def main():
     parser.add_argument(
         "--count", "-c", action="store_true", help="Count occurrences of each line."
     )
+    parser.add_argument(
+        "--sort", "-s", action="store_true", help="Sort the output lines (after all)."
+    )
     args = parser.parse_args()
 
     input_path = args.input_file if args.input_file else "input.txt"
@@ -41,6 +44,10 @@ def main():
                 seen.add(line)
                 unique_lines.append(line)
             counts[line] += 1
+
+    if args.sort:
+        unique_lines.sort()
+
     if args.count:
         unique_lines = [f"{counts[line]} {line}" for line in unique_lines]
 
