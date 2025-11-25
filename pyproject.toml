@@ -20,6 +20,7 @@ pyperclip = "^1.9.0"
 pycosat = "^0.6.6"
 tqdm = "^4.67.1"
 pywin32 = {markers = "platform_system == \"Windows\"", version = "^311"}
+mutagen = "^1.47.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"
