@@ -14,6 +14,7 @@ parser.add_argument(
     action="store_true",
     help="all splits are floats in seconds. For legacy ffmpeg (OK with --fps/-f).",
 )
+parser.add_argument("--overwrite", "-y", action="store_const", const="-y", default="")
 parser.add_argument(
     "--padding",
     type=float,
@@ -51,21 +52,23 @@ codec = "" if args.reencode else "-c copy"
 
 for split in splits:
     if args.floats:
-        command = 'ffmpeg -hide_banner -ss {} -i "{}" {} -map_metadata 0 -to {} "{}_{}{}"'.format(
+        command = 'ffmpeg -hide_banner -ss {} -i "{}" {} -map_metadata 0 -to {} {} "{}_{}{}"'.format(
             startpos,
             args.video_file,
             codec,
             float(split) - float(startpos),
+            args.overwrite,
             basename,
             chunk,
             ext,
         )
     else:
-        command = 'ffmpeg -hide_banner -ss {} -to {} -i "{}" {} -map_metadata 0 "{}_{}{}"'.format(
+        command = 'ffmpeg -hide_banner -ss {} -to {} -i "{}" {} -map_metadata 0 {} "{}_{}{}"'.format(
             startpos,
             split,
             args.video_file,
             codec,
+            args.overwrite,
             basename,
             chunk,
             ext,
@@ -80,8 +83,10 @@ for split in splits:
     print(("=" * 60 + "\n") * 3)
 
 # final chunk, without `-to`, works for both ffmpeg 'versions'`
-command = 'ffmpeg -hide_banner -ss {} -i "{}" -c copy -map_metadata 0 "{}_{}{}"'.format(
-    startpos, args.video_file, basename, chunk, ext
+command = (
+    'ffmpeg -hide_banner -ss {} -i "{}" -c copy {} -map_metadata 0 "{}_{}{}"'.format(
+        startpos, args.video_file, args.overwrite, basename, chunk, ext
+    )
 )
 print(command)
 os.system(command)
