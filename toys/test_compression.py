@@ -22,7 +22,7 @@ def human(x):
 
 
 try:
-    from shutil import which
+    from shutil import which  # type: ignore
 except ImportError:
 
     def which(program):
