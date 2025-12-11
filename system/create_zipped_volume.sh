@@ -20,16 +20,16 @@ mkfs.btrfs $FILE
 echo "Created sparse btrfs volume $FILE of size $GB GB"
 
 mkdir -p $MOUNTPT
-sudo mount -o loop,compress=zstd:15 $FILE $MOUNTPT
+sudo mount -o loop,compress=zstd:15,nofail $FILE $MOUNTPT
 sudo chown $(id -u):$(id -g) $MOUNTPT
 echo "Mounted $FILE at $MOUNTPT with zstd compression level 15"
 echo "Changed ownership of $MOUNTPT to $(id -un)"
 
 echo "You can mount it with:"
-echo "  sudo mount -o loop,compress=zstd:15 $FILE $MOUNTPT"
+echo "  sudo mount -o loop,compress=zstd:15,nofail $FILE $MOUNTPT"
 echo "Mounted at $MOUNTPT"
 echo "Remember to unmount with:"
 echo "  sudo umount $MOUNTPT"
 
 echo "fstab entry suggestion:"
-echo "$(realpath $FILE)  $MOUNTPT  btrfs  loop,compress=zstd:15  0  0"
+echo "$(realpath $FILE)  $MOUNTPT  btrfs  loop,compress=zstd:15,nofail  0  0"
