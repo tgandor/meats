@@ -1,6 +1,3 @@
-alias g11='g++ -std=c++11'
-alias g99='gcc -std=c99'
-alias g99s='gcc -std=c99 -Wall -Werror'
-alias svni='svn --ignore-externals'
 alias mph264='mplayer -vc ffh264vdpau'
 alias ffprobe='ffprobe -hide_banner'
+alias ppy='poetry run python'
