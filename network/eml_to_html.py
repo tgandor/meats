@@ -18,7 +18,6 @@ Notes:
 
 import argparse
 import base64
-import binascii
 import hashlib
 import html
 import mimetypes
@@ -28,6 +27,7 @@ import sys
 from email import policy
 from email.parser import BytesParser
 from email.message import Message
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Dict, Tuple, Optional
 
@@ -272,6 +272,11 @@ def main():
         action="store_true",
         help="Do not render From/To/Subject/Date header table.",
     )
+    ap.add_argument(
+        "--no-date",
+        action="store_true",
+        help="Do not prefix output with datetime."
+    )
     args = ap.parse_args()
 
     eml_path = Path(args.eml)
@@ -284,6 +289,12 @@ def main():
 
     # Choose output HTML path
     out_html = Path(args.output) if args.output else eml_path.with_suffix(".html")
+    if len(out_html.name.split()) > 1:
+        out_html = out_html.with_stem("_".join(out_html.stem.strip().split()))
+    if not args.no_date:
+        dt = parsedate_to_datetime(msg.get("Date", ""))
+        date_str = dt.strftime("%Y%m%d_%H%M") if dt else "nodate"
+        out_html = out_html.with_name(f"{date_str}_{out_html.name}")
 
     # Prepare assets directory if extracting
     if not args.embed:
