@@ -29,7 +29,7 @@ from email.parser import BytesParser
 from email.message import Message
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional, cast
 
 URL_RE = re.compile(
     r'(?P<url>(?:https?|ftp)://[^\s<>"\']+)|(?:www\.[^\s<>"\']+)', re.IGNORECASE
@@ -85,13 +85,13 @@ def best_body(msg: Message) -> Tuple[Optional[bytes], Optional[str], Optional[st
             if part.get_content_type().startswith("text/"):
                 cs = part.get_content_charset() or part.get_param("charset")
                 payload = part.get_payload(decode=True)
-                return payload, part.get_content_type(), cs
+                return payload, part.get_content_type(), cs  # type: ignore
         return None, None, None
     else:
         ctype = msg.get_content_type()
         cs = msg.get_content_charset() or msg.get_param("charset")
         payload = msg.get_payload(decode=True)
-        return payload, ctype, cs
+        return payload, ctype, cs  # type: ignore
 
 
 def to_html_from_plain(text: str) -> str:
@@ -148,7 +148,7 @@ def collect_inline_parts(msg: Message) -> Dict[str, Tuple[bytes, str, Optional[s
         except Exception:
             data = None
         if data:
-            by_cid[cid] = (data, mime, fname)
+            by_cid[cid] = (cast(bytes, data), mime, fname)
     return by_cid
 
 
@@ -166,6 +166,7 @@ def collect_attachments(msg: Message) -> Dict[str, Tuple[bytes, str, Optional[st
             data = part.get_payload(decode=True)
             if not data:
                 continue
+            data = cast(bytes, data)
             mime = part.get_content_type()
             fname = part.get_filename() or f"attachment{guess_ext(mime, None)}"
             sha1 = hashlib.sha1(data).hexdigest()[:12]
@@ -333,6 +334,7 @@ def main():
             cid_map[cid] = embed_data_uri(data, mime_type)
         else:
             # write to assets dir; choose filename
+            assert assets_dir is not None
             base = sanitize_filename(
                 fname or f"inline_{cid}{guess_ext(mime_type, fname)}"
             )
@@ -368,6 +370,7 @@ def main():
                     f'<li><a href="{uri}" download="{html.escape(disp_name)}">{html.escape(disp_name)}</a> <small>({html.escape(mime_type)})</small></li>'
                 )
             else:
+                assert assets_dir is not None
                 disp_name = sanitize_filename(
                     fname or f"attachment{guess_ext(mime_type, None)}"
                 )
@@ -378,7 +381,7 @@ def main():
                     ext = Path(disp_name).suffix
                     out_path = assets_dir / f"{stem}_{i}{ext}"
                     i += 1
-                with out_path.open("wb") as wf:
+                with out_path.open("wb") as wf:  # type: ignore
                     wf.write(data)
                 rel = os.path.relpath(out_path, out_html.parent)
                 links.append(
