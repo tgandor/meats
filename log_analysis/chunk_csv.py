@@ -3,6 +3,7 @@
 import argparse
 import os
 
+
 def chunk_csv(input_path, output_dir, chunk_size=1_000_000):
     """
     Split a CSV into chunks with header included in each file.
@@ -12,7 +13,7 @@ def chunk_csv(input_path, output_dir, chunk_size=1_000_000):
     """
     os.makedirs(output_dir, exist_ok=True)
 
-    with open(input_path, 'r', encoding='utf-8') as infile:
+    with open(input_path, "r", encoding="utf-8") as infile:
         header = infile.readline()  # read header line
         chunk_num = 1
         lines = []
@@ -21,7 +22,7 @@ def chunk_csv(input_path, output_dir, chunk_size=1_000_000):
             lines.append(line)
             if i % chunk_size == 0:
                 out_path = os.path.join(output_dir, f"chunk_{chunk_num:03}.csv")
-                with open(out_path, 'w', encoding='utf-8') as outfile:
+                with open(out_path, "w", encoding="utf-8") as outfile:
                     outfile.write(header)
                     outfile.writelines(lines)
                 lines.clear()
@@ -30,7 +31,7 @@ def chunk_csv(input_path, output_dir, chunk_size=1_000_000):
         # Write remaining lines
         if lines:
             out_path = os.path.join(output_dir, f"chunk_{chunk_num:03}.csv")
-            with open(out_path, 'w', encoding='utf-8') as outfile:
+            with open(out_path, "w", encoding="utf-8") as outfile:
                 outfile.write(header)
                 outfile.writelines(lines)
 
@@ -39,8 +40,18 @@ def chunk_csv(input_path, output_dir, chunk_size=1_000_000):
 
 parser = argparse.ArgumentParser(description="Chunk a CSV file into smaller CSV files.")
 parser.add_argument("input_csv", help="Path to the input CSV file.")
-parser.add_argument("output_dir", help="Directory to save the output CSV files. Default: <basename>/.")
-parser.add_argument("--chunk", "-c", type=int, default=10_000_000, help="Number of rows per chunk. Default: 10M.")
+parser.add_argument(
+    "output_dir",
+    help="Directory to save the output CSV files. Default: <basename>/.",
+    nargs="?",
+)
+parser.add_argument(
+    "--chunk",
+    "-c",
+    type=int,
+    default=10_000_000,
+    help="Number of rows per chunk. Default: 10M.",
+)
 args = parser.parse_args()
 
 input_csv = args.input_csv
