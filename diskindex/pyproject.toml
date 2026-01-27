@@ -1,0 +1,28 @@
+[project]
+name = "diskindex"
+version = "0.1.0"
+description = "Scan and index files from many disks for easy searching."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+postgresql = [
+    "psycopg2-binary>=2.9.0",
+]
+web = [
+    "flask>=3.0.0",
+]
+lite = [
+    "six>=1.16.0",
+]
+all = [
+    "psycopg2-binary>=2.9.0",
+    "flask>=3.0.0",
+    "six>=1.16.0",
+]
+
+[project.scripts]
+diskindex = "main:main"
