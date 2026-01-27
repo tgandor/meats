@@ -9,12 +9,13 @@ from typing import Optional
 @dataclasses.dataclass
 class Scan:
     """Represents a scan session."""
+
     id: Optional[int] = None
     scan_date: Optional[datetime] = None
     scan_path: str = ""
     duration_seconds: Optional[float] = None
     notes: Optional[str] = None
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
         return {
@@ -24,7 +25,7 @@ class Scan:
             "duration_seconds": self.duration_seconds,
             "notes": self.notes,
         }
-    
+
     @classmethod
     def from_dict(cls, data: dict) -> "Scan":
         """Create from dictionary."""
@@ -36,6 +37,7 @@ class Scan:
 @dataclasses.dataclass
 class Volume:
     """Represents a disk volume or partition."""
+
     id: Optional[int] = None
     scan_id: Optional[int] = None
     label: Optional[str] = None
@@ -43,7 +45,7 @@ class Volume:
     mount_point: Optional[str] = None
     device_path: Optional[str] = None
     total_size: Optional[int] = None
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
         return {
@@ -55,7 +57,7 @@ class Volume:
             "device_path": self.device_path,
             "total_size": self.total_size,
         }
-    
+
     @classmethod
     def from_dict(cls, data: dict) -> "Volume":
         """Create from dictionary."""
@@ -65,12 +67,13 @@ class Volume:
 @dataclasses.dataclass
 class Directory:
     """Represents a directory in the hierarchy."""
+
     id: Optional[int] = None
     scan_id: Optional[int] = None
     parent_id: Optional[int] = None
     path: str = ""
     name: str = ""
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
         return {
@@ -80,7 +83,7 @@ class Directory:
             "path": self.path,
             "name": self.name,
         }
-    
+
     @classmethod
     def from_dict(cls, data: dict) -> "Directory":
         """Create from dictionary."""
@@ -90,6 +93,7 @@ class Directory:
 @dataclasses.dataclass
 class File:
     """Represents a file entry."""
+
     id: Optional[int] = None
     scan_id: Optional[int] = None
     directory_id: Optional[int] = None
@@ -99,7 +103,7 @@ class File:
     mtime: Optional[datetime] = None
     md5_hash: Optional[str] = None
     deleted_at: Optional[datetime] = None
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
         return {
@@ -113,7 +117,7 @@ class File:
             "md5_hash": self.md5_hash,
             "deleted_at": self.deleted_at.isoformat() if self.deleted_at else None,
         }
-    
+
     @classmethod
     def from_dict(cls, data: dict) -> "File":
         """Create from dictionary."""
@@ -127,12 +131,13 @@ class File:
 @dataclasses.dataclass
 class IgnorePattern:
     """Represents an ignore pattern rule."""
+
     id: Optional[int] = None
     pattern: str = ""
     is_exception: bool = False
     applies_to: str = "all"
     notes: Optional[str] = None
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
         return {
@@ -142,7 +147,7 @@ class IgnorePattern:
             "applies_to": self.applies_to,
             "notes": self.notes,
         }
-    
+
     @classmethod
     def from_dict(cls, data: dict) -> "IgnorePattern":
         """Create from dictionary."""
@@ -151,6 +156,6 @@ class IgnorePattern:
 
 def serialize_to_json(obj) -> str:
     """Serialize object to JSON string."""
-    if hasattr(obj, 'to_dict'):
+    if hasattr(obj, "to_dict"):
         return json.dumps(obj.to_dict(), indent=2)
     return json.dumps(obj, indent=2, default=str)
