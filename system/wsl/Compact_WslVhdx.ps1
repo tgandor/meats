@@ -5,7 +5,7 @@
   - Optional: Also compact Docker Desktop’s WSL VHDX files with -IncludeDocker.
 #>
 
-[CmdletBinding(SupportsShouldProcess)]
+[CmdletBinding(SupportsShouldProcess = $true)]
 param(
     [ValidateSet('Full','Quick','Retrim')]
     [string]$Mode = 'Full',
@@ -80,7 +80,13 @@ function Get-SizeString([long]$bytes) {
     }
 }
 
-function Invoke-OptimizeVhdx([string]$Path, [string]$Mode) {
+function Invoke-OptimizeVhdx {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [string]$Path,
+        [string]$Mode
+    )
+
     $before = (Get-Item $Path).Length
     Write-Host "  Size before: $(Get-SizeString $before)"
 
@@ -109,6 +115,9 @@ function Invoke-OptimizeVhdx([string]$Path, [string]$Mode) {
     }
 
     $after = (Get-Item $Path).Length
+    $finish = Get-Date
+    $elapsed = New-TimeSpan -Start $start -End $finish
+    Write-Host "  Optimization finished at: $finish (elapsed: $([math]::Round($elapsed.TotalSeconds, 2)) seconds)"
     Write-Host "  Size after : $(Get-SizeString $after)"
     Write-Host "  Reclaimed  : $(Get-SizeString ($before - $after))"
 }
@@ -121,6 +130,8 @@ if (-not (Test-IsAdmin)) {
 
 $states  = Get-WslDistroStates
 $entries = Get-WslVhdxEntries
+$start = Get-Date
+Write-Host "WSL VHDX Optimization started at: $start"
 
 if (-not $entries) {
     Write-Host "No WSL2 VHDX files found via registry BasePath. (Nothing to optimize.)" -ForegroundColor Yellow
