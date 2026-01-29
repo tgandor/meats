@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - Diskindex{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="stats">
+    <div class="stat-card">
+        <h3>Total Scans</h3>
+        <div class="value">{{ scan_count }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Total Files</h3>
+        <div class="value">{{ "{:,}".format(file_count) }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Total Size</h3>
+        <div class="value">{{ total_size | filesizeformat }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Recent Scans</h2>
+    {% if recent_scans %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Path</th>
+                <th>Files</th>
+                <th>Duration</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for scan in recent_scans %}
+            <tr>
+                <td>#{{ scan.id }}</td>
+                <td>{{ scan.date | datetimeformat }}</td>
+                <td><code>{{ scan.path }}</code></td>
+                <td>{{ "{:,}".format(scan.file_count) }}</td>
+                <td>{{ "%.1f" | format(scan.duration or 0) }}s</td>
+                <td>{{ scan.notes or '-' }}</td>
+                <td><a href="/scan/{{ scan.id }}" class="btn">View</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No scans yet. Run <code>diskindex scan /path/to/directory</code> to create one.</p>
+    {% endif %}
+</div>
+{% endblock %}

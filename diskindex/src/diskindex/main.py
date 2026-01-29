@@ -254,6 +254,21 @@ def cmd_list_scans(args):
         conn.close()
 
 
+def cmd_webui(args):
+    """Start the web UI server."""
+    try:
+        from diskindex.web.app import run_server
+    except ImportError:
+        print("Error: Web UI requires Flask", file=sys.stderr)
+        print("Install with: uv pip install 'diskindex[web]'", file=sys.stderr)
+        print("         or: pip install 'diskindex[web]'", file=sys.stderr)
+        return 1
+
+    print("Starting web UI...")
+    run_server(host=args.host, port=args.port, debug=args.debug)
+    return 0
+
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -267,10 +282,11 @@ def main():
         "init", help="Initialize database and configuration"
     )
     init_parser.add_argument(
-        "-b", "--backend",
+        "-b",
+        "--backend",
         choices=["sqlite", "sqlite3", "postgresql", "postgres", "pgsql", "pg"],
         default="sqlite",
-        help="Database backend: sqlite (default), postgresql (aliases: pg, pgsql, postgres)"
+        help="Database backend: sqlite (default), postgresql (aliases: pg, pgsql, postgres)",
     )
     init_parser.add_argument(
         "-d", "--database", help="Database name (PostgreSQL) or file path (SQLite)"
@@ -309,6 +325,16 @@ def main():
     # List scans command
     list_parser = subparsers.add_parser("list-scans", help="List all scans")
 
+    # Web UI command
+    webui_parser = subparsers.add_parser("webui", help="Start web interface")
+    webui_parser.add_argument(
+        "--host", default="127.0.0.1", help="Host to bind to (default: 127.0.0.1)"
+    )
+    webui_parser.add_argument(
+        "--port", type=int, default=5000, help="Port to bind to (default: 5000)"
+    )
+    webui_parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -326,6 +352,8 @@ def main():
         elif args.command == "list-scans":
             cmd_list_scans(args)
             return 0
+        elif args.command == "webui":
+            return cmd_webui(args)
         else:
             parser.print_help()
             return 1

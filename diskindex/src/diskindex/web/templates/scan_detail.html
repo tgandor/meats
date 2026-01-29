@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}Scan #{{ scan.id }} - Diskindex{% endblock %}
+
+{% block content %}
+<h1>Scan #{{ scan.id }}</h1>
+
+<div class="card">
+    <h2>Scan Information</h2>
+    <table>
+        <tr>
+            <th style="width: 200px;">Scan Date</th>
+            <td>{{ scan.date | datetimeformat }}</td>
+        </tr>
+        <tr>
+            <th>Path</th>
+            <td><code>{{ scan.path }}</code></td>
+        </tr>
+        <tr>
+            <th>Duration</th>
+            <td>{{ "%.1f" | format(scan.duration or 0) }} seconds</td>
+        </tr>
+        <tr>
+            <th>Files</th>
+            <td>{{ "{:,}".format(scan.file_count) }}</td>
+        </tr>
+        <tr>
+            <th>Total Size</th>
+            <td>{{ scan.total_size | filesizeformat }}</td>
+        </tr>
+        <tr>
+            <th>Notes</th>
+            <td>{{ scan.notes or '-' }}</td>
+        </tr>
+    </table>
+</div>
+
+<div class="card">
+    <h2>Top File Types</h2>
+    {% if extensions %}
+    <table>
+        <thead>
+            <tr>
+                <th>Extension</th>
+                <th>Count</th>
+                <th>Total Size</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ext in extensions %}
+            <tr>
+                <td><code>{{ ext.ext }}</code></td>
+                <td>{{ "{:,}".format(ext.count) }}</td>
+                <td>{{ ext.size | filesizeformat }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No files found in this scan.</p>
+    {% endif %}
+</div>
+
+<a href="/scans" class="btn btn-secondary">← Back to Scans</a>
+{% endblock %}

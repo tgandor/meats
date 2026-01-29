@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}Duplicates - Diskindex{% endblock %}
+
+{% block content %}
+<h1>Duplicate Files</h1>
+
+<div class="card">
+    <form class="search-form" method="get" action="/duplicates">
+        <input type="number" name="min_size" placeholder="Min file size (bytes)" value="{{ min_size }}">
+        <button type="submit" class="btn">Filter</button>
+    </form>
+    
+    {% if duplicate_groups %}
+    <div style="margin-top: 1rem;">
+        <p><strong>Total wasted space:</strong> <span class="badge badge-danger">{{ total_wasted | filesizeformat }}</span></p>
+        <p><strong>Duplicate groups found:</strong> {{ duplicate_groups|length }}</p>
+    </div>
+    {% endif %}
+</div>
+
+{% if duplicate_groups %}
+    {% for group in duplicate_groups %}
+    <div class="duplicate-group">
+        <div class="duplicate-group-header">
+            <div>
+                <span class="badge badge-warning">{{ group.count }} copies</span>
+                Size: {{ group.size | filesizeformat }} each
+                · Wasted: <strong>{{ group.wasted_space | filesizeformat }}</strong>
+            </div>
+            <div>
+                MD5: <code style="font-size: 0.85em;">{{ group.md5 }}</code>
+            </div>
+        </div>
+        
+        <ul class="file-list">
+            {% for file in group.files %}
+            <li>📄 {{ file.path }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="card">
+    <p>No duplicates found{% if min_size > 1024 %} (minimum size: {{ min_size | filesizeformat }}){% endif %}.</p>
+    <p>Try scanning more directories or reducing the minimum file size filter.</p>
+</div>
+{% endif %}
+{% endblock %}

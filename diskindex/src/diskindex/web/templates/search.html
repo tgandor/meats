@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block title %}Search Files - Diskindex{% endblock %}
+
+{% block content %}
+<h1>Search Files</h1>
+
+<div class="card">
+    <form class="search-form" method="get" action="/search">
+        <input type="text" name="q" placeholder="Filename..." value="{{ query }}">
+        <input type="text" name="ext" placeholder="Extension (e.g., .jpg)" value="{{ extension }}">
+        <input type="number" name="min_size" placeholder="Min size (bytes)" value="{{ request.args.get('min_size', '') }}">
+        <input type="number" name="max_size" placeholder="Max size (bytes)" value="{{ request.args.get('max_size', '') }}">
+        <button type="submit" class="btn">Search</button>
+    </form>
+</div>
+
+{% if results is defined %}
+<div class="card">
+    <h2>Results ({{ results|length }})</h2>
+    {% if results %}
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Extension</th>
+                <th>Size</th>
+                <th>Modified</th>
+                <th>MD5</th>
+                <th>Path</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for file in results %}
+            <tr>
+                <td><strong>{{ file.filename }}</strong></td>
+                <td><code>{{ file.extension or '-' }}</code></td>
+                <td>{{ file.size | filesizeformat }}</td>
+                <td>{{ file.mtime | datetimeformat }}</td>
+                <td>
+                    {% if file.md5 %}
+                    <code style="font-size: 0.75em;">{{ file.md5[:16] }}...</code>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td><code style="font-size: 0.85em;">{{ file.path }}</code></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No files found matching your criteria.</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
