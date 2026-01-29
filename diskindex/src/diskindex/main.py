@@ -15,10 +15,24 @@ from diskindex.database import initialize_database, install_default_ignore_patte
 from diskindex.scanner import Scanner
 
 
+def normalize_backend(backend: str) -> str:
+    """Normalize backend aliases to canonical names."""
+    aliases = {
+        "pg": "postgresql",
+        "pgsql": "postgresql",
+        "postgres": "postgresql",
+        "sqlite3": "sqlite",
+    }
+    return aliases.get(backend.lower(), backend.lower())
+
+
 def cmd_init(args):
     """Initialize database and configuration."""
     config_path = get_config_path()
     db_path = get_default_db_path()
+
+    # Normalize backend aliases
+    args.backend = normalize_backend(args.backend)
 
     # Validate SQLite-specific constraints
     if args.backend == "sqlite":
@@ -253,16 +267,16 @@ def main():
         "init", help="Initialize database and configuration"
     )
     init_parser.add_argument(
-        "--backend",
-        choices=["sqlite", "postgresql"],
+        "-b", "--backend",
+        choices=["sqlite", "sqlite3", "postgresql", "postgres", "pgsql", "pg"],
         default="sqlite",
-        help="Database backend (default: sqlite)",
+        help="Database backend: sqlite (default), postgresql (aliases: pg, pgsql, postgres)"
     )
     init_parser.add_argument(
         "-d", "--database", help="Database name (PostgreSQL) or file path (SQLite)"
     )
     init_parser.add_argument(
-        "--host", default="localhost", help="PostgreSQL host (default: localhost)"
+        "-H", "--host", default="localhost", help="PostgreSQL host (default: localhost)"
     )
     init_parser.add_argument(
         "-p", "--port", type=int, default=5432, help="PostgreSQL port (default: 5432)"
