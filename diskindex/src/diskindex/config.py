@@ -14,7 +14,17 @@ from typing import Optional
 from diskindex.database import DatabaseConfig
 
 
-DEFAULT_CONFIG_PATH = pathlib.Path.home() / ".config" / "diskindex" / "config.json"
+def get_config_path() -> pathlib.Path:
+    """Get the configuration file path."""
+    return pathlib.Path.home() / ".config" / "diskindex" / "config.json"
+
+
+def get_default_db_path() -> pathlib.Path:
+    """Get the default SQLite database path."""
+    return pathlib.Path.home() / ".local" / "share" / "diskindex" / "diskindex.db"
+
+
+DEFAULT_CONFIG_PATH = get_config_path()
 
 
 def load_config(config_path: Optional[pathlib.Path] = None) -> DatabaseConfig:
