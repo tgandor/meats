@@ -11,7 +11,7 @@ import os
 import pathlib
 from typing import Optional
 
-from database import DatabaseConfig
+from diskindex.database import DatabaseConfig
 
 
 DEFAULT_CONFIG_PATH = pathlib.Path.home() / ".config" / "diskindex" / "config.json"

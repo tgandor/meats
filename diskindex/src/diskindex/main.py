@@ -3,9 +3,9 @@
 import argparse
 import sys
 
-from config import load_config, save_config, ensure_data_directory
-from database import initialize_database, install_default_ignore_patterns
-from scanner import Scanner
+from diskindex.config import load_config, save_config, ensure_data_directory
+from diskindex.database import initialize_database, install_default_ignore_patterns
+from diskindex.scanner import Scanner
 
 
 def cmd_init(args):

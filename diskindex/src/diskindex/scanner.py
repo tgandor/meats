@@ -21,8 +21,8 @@ except ImportError:
     tqdm = lambda x, **kwargs: x  # identity function
     show = print
 
-from database import DatabaseConfig
-from models import Scan, Volume
+from diskindex.database import DatabaseConfig
+from diskindex.models import Scan, Volume, Directory, File
 
 
 def compute_md5(file_path: pathlib.Path) -> str:

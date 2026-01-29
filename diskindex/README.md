@@ -18,72 +18,119 @@ Scan and index files from many disks for easy searching, duplicate detection, an
 
 ## Installation
 
+### Using uv (recommended)
+
 ```bash
 cd diskindex
+
+# Create virtual environment
+uv venv
+
+# Install in editable mode
+uv pip install -e .
+
+# Or install with all features
+uv pip install -e ".[all]"
+```
+
+### Using pipx (for CLI tool)
+
+```bash
+# Install as isolated CLI tool
+pipx install /path/to/diskindex
+
+# Or with extras
+pipx install "/path/to/diskindex[postgresql]"
+```
+
+### Using uv tool (for CLI tool)
+
+```bash
+# Install as CLI tool with uv
+uv tool install .
+
+# Or from directory
+uv tool install /path/to/diskindex
+
+# With extras
+uv tool install ".[postgresql]"
+```
+
+### Traditional pip
+
+```bash
+cd diskindex
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e .
 ```
 
-For PostgreSQL support:
-```bash
-pip install -e ".[postgresql]"
-```
+### Optional dependencies
 
-For web GUI:
-```bash
-pip install -e ".[web]"
-```
-
-All features:
-```bash
-pip install -e ".[all]"
-```
+- `postgresql` - PostgreSQL database support
+- `web` - Flask web GUI (coming soon)
+- `lite` - Python 2.7 scanner support (coming soon)
+- `all` - All optional dependencies
 
 ## Quick Start
 
 Initialize the database:
 ```bash
-python main.py init --save-config
+# Using uv run (no activation needed)
+uv run diskindex init --save-config
+
+# Or if installed with pipx/uv tool
+diskindex init --save-config
+
+# Or in activated venv
+diskindex init --save-config
 ```
 
 Scan a directory:
 ```bash
-python main.py scan /path/to/directory --notes "My first scan"
+uv run diskindex scan /path/to/directory --notes "My first scan"
+# Or: diskindex scan /path/to/directory --notes "My first scan"
 ```
 
 List all scans:
 ```bash
-python main.py list-scans
+uv run diskindex list-scans
+# Or: diskindex list-scans
 ```
 
 ## Usage
 
-### Initialize Database
+### Using uv run (recommended - no venv activation needed)
 
 ```bash
-# SQLite (default)
-python main.py init --save-config
+# Initialize
+uv run diskindex init --save-config
+
+# Scan with all options shown
+uv run diskindex scan /media/backup --notes "Backup drive scan"
+uv run diskindex scan /large/archive --no-hash
+uv run diskindex scan /path --batch-size 5000
+
+# List scans
+uv run diskindex list-scans
+```
+
+### Using installed command (pipx/uv tool/activated venv)
+
+```bash
+# Initialize Database
+diskindex init --save-config
 
 # PostgreSQL
-python main.py init --backend postgresql --database mydb --host localhost --user myuser --save-config
-```
+diskindex init --backend postgresql --database mydb --host localhost --user myuser --save-config
 
-### Scan Directories
+# Scan Directories
+diskindex scan /media/backup --notes "Backup drive scan"
+diskindex scan /large/archive --no-hash
+diskindex scan /path --batch-size 5000
 
-```bash
-# Full scan with MD5 hashing
-python main.py scan /media/backup --notes "Backup drive scan"
-
-# Scan without hashing (faster)
-python main.py scan /large/archive --no-hash
-
-# Custom batch size
-python main.py scan /path --batch-size 5000
-```
-
-### List Scans
-
-```bash
-python main.py list-scans
+# List Scans
+diskindex list-scans
 ```
 
 ## Configuration
@@ -153,14 +200,53 @@ Default patterns (22 total, 3 exceptions):
 
 ```
 diskindex/
-├── main.py          # CLI entry point with argparse subcommands
-├── config.py        # Configuration loading (file, env, CLI)
-├── database.py      # Schema, connection management, migrations
-├── models.py        # Data classes (Scan, Volume, Directory, File)
-├── scanner.py       # File walker with MD5, progress, batch commits
-├── duplicates.py    # Multi-stage grouping (coming soon)
-├── queries.py       # Search functions (coming soon)
-└── web/             # Flask GUI (coming soon)
+├── pyproject.toml       # Project configuration
+├── README.md
+├── .gitignore
+└── src/
+    └── diskindex/
+        ├── __init__.py      # Package initialization
+        ├── main.py          # CLI entry point with argparse subcommands
+        ├── config.py        # Configuration loading (file, env, CLI)
+        ├── database.py      # Schema, connection management, migrations
+        ├── models.py        # Data classes (Scan, Volume, Directory, File)
+        ├── scanner.py       # File walker with MD5, progress, batch commits
+        ├── duplicates.py    # Multi-stage grouping (coming soon)
+        ├── queries.py       # Search functions (coming soon)
+        └── web/             # Flask GUI (coming soon)
+```
+
+## Development
+
+### uv Best Practices
+
+This project follows uv conventions:
+
+- **`.python-version`** is committed - specifies Python 3.12
+- **`uv.lock`** is committed - ensures reproducible installations
+- Use `uv sync` to install exact locked versions
+- Use `uv lock --upgrade` to update dependencies
+
+### Common Development Commands
+
+```bash
+# Install in development mode with all extras
+uv sync --all-extras
+
+# Run without installing
+uv run diskindex scan /path/to/scan
+
+# Run tests (when added)
+uv run pytest
+
+# Update dependencies
+uv lock --upgrade
+
+# Install as global tool (for testing)
+uv tool install --editable .
+
+# Uninstall global tool
+uv tool uninstall diskindex
 ```
 
 ## License
