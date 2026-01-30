@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "_pagination.html" import render_pagination %}
 
 {% block title %}Scans - Diskindex{% endblock %}
 
@@ -35,6 +36,8 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {{ render_pagination(pagination, 'scans') }}
     {% else %}
     <p>No scans found. Run <code>diskindex scan /path/to/directory</code> to create one.</p>
     {% endif %}

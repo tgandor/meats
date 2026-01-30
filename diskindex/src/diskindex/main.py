@@ -6,12 +6,15 @@ import sys
 
 from diskindex.config import (
     load_config,
-    save_config,
     ensure_data_directory,
     get_config_path,
     get_default_db_path,
 )
-from diskindex.database import initialize_database, install_default_ignore_patterns
+from diskindex.database import (
+    initialize_database,
+    install_default_ignore_patterns,
+    run_migrations,
+)
 from diskindex.scanner import Scanner
 
 
@@ -135,6 +138,10 @@ def cmd_init(args):
     initialize_database(config)
     print("✓ Database schema created")
 
+    # Run migrations
+    run_migrations(config)
+    print("✓ Migrations applied")
+
     # Install default ignore patterns
     install_default_ignore_patterns(config)
     print("✓ Default ignore patterns installed")
@@ -180,7 +187,7 @@ def cmd_init(args):
     if args.save_config:
         print(f"\nConfig:   {config_path}")
     else:
-        print(f"\nConfig:   Not saved (use --save-config to persist)")
+        print("\nConfig:   Not saved (use --save-config to persist)")
 
     print("\nNext steps:")
     print("  diskindex scan /path/to/directory")
@@ -196,9 +203,15 @@ def cmd_scan(args):
     # Ensure database is initialized
     ensure_data_directory(config)
     initialize_database(config)
+    run_migrations(config)
 
     # Create scanner
-    scanner = Scanner(config, compute_hash=not args.no_hash, batch_size=args.batch_size)
+    scanner = Scanner(
+        config,
+        compute_hash=not args.no_hash,
+        batch_size=args.batch_size,
+        one_filesystem=args.one_filesystem,
+    )
 
     # Perform scan
     scan_id = scanner.scan(args.path, notes=args.notes)
@@ -208,6 +221,7 @@ def cmd_scan(args):
 def cmd_list_scans(args):
     """List all scans."""
     config = load_config()
+    run_migrations(config)
     conn = config.get_connection()
     cursor = conn.cursor()
 
@@ -320,6 +334,12 @@ def main():
     )
     scan_parser.add_argument(
         "--batch-size", type=int, default=1000, help="Batch size for database commits"
+    )
+    scan_parser.add_argument(
+        "--one-filesystem",
+        "-x",
+        action="store_true",
+        help="Do not cross filesystem boundaries during scan",
     )
 
     # List scans command

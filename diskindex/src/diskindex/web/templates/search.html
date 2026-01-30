@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "_pagination.html" import render_pagination %}
 
 {% block title %}Search Files - Diskindex{% endblock %}
 
@@ -9,15 +10,15 @@
     <form class="search-form" method="get" action="/search">
         <input type="text" name="q" placeholder="Filename..." value="{{ query }}">
         <input type="text" name="ext" placeholder="Extension (e.g., .jpg)" value="{{ extension }}">
-        <input type="number" name="min_size" placeholder="Min size (bytes)" value="{{ request.args.get('min_size', '') }}">
-        <input type="number" name="max_size" placeholder="Max size (bytes)" value="{{ request.args.get('max_size', '') }}">
+        <input type="number" name="min_size" placeholder="Min size (bytes)" value="{{ min_size or '' }}">
+        <input type="number" name="max_size" placeholder="Max size (bytes)" value="{{ max_size or '' }}">
         <button type="submit" class="btn">Search</button>
     </form>
 </div>
 
 {% if results is defined %}
 <div class="card">
-    <h2>Results ({{ results|length }})</h2>
+    <h2>Results {% if pagination %}({{ pagination.total_count }} total){% else %}({{ results|length }}){% endif %}</h2>
     {% if results %}
     <table>
         <thead>
@@ -49,6 +50,11 @@
             {% endfor %}
         </tbody>
     </table>
+    
+    {% if pagination %}
+    {% set kwargs = {'q': query, 'ext': extension, 'min_size': min_size, 'max_size': max_size} %}
+    {{ render_pagination(pagination, 'search', **kwargs) }}
+    {% endif %}
     {% else %}
     <p>No files found matching your criteria.</p>
     {% endif %}

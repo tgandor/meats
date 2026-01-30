@@ -55,7 +55,7 @@ class DatabaseConfig:
 
 
 # Schema version for migrations
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 2
 
 
 SQLITE_SCHEMA = """
@@ -83,6 +83,10 @@ CREATE TABLE IF NOT EXISTS volumes (
     mount_point TEXT,
     device_path TEXT,
     total_size INTEGER,
+    free_space INTEGER,
+    mount_options TEXT,
+    uuid TEXT,
+    drive_type TEXT,
     UNIQUE(scan_id, mount_point)
 );
 
@@ -157,6 +161,10 @@ CREATE TABLE IF NOT EXISTS volumes (
     mount_point TEXT,
     device_path TEXT,
     total_size BIGINT,
+    free_space BIGINT,
+    mount_options TEXT,
+    uuid TEXT,
+    drive_type TEXT,
     UNIQUE(scan_id, mount_point)
 );
 
@@ -251,17 +259,45 @@ def run_migrations(config: DatabaseConfig) -> None:
         result = cursor.fetchone()
         current_version = result[0] if result and result[0] else 0
 
-        # Run migrations for each version
-        if current_version < CURRENT_SCHEMA_VERSION:
-            # Future migrations will go here
-            # Example:
-            # if current_version < 2:
-            #     cursor.execute("ALTER TABLE files ADD COLUMN sha256_hash TEXT")
-            #     cursor.execute(
-            #         "INSERT INTO schema_version (version, updated) VALUES (?, ?)",
-            #         (2, datetime.now())
-            #     )
-            pass
+        # Migration to version 2: Add extended volume metadata
+        if current_version < 2:
+            # Check if columns already exist (for new installations)
+            if config.backend == "sqlite":
+                cursor.execute("PRAGMA table_info(volumes)")
+                columns = {row[1] for row in cursor.fetchall()}
+            else:  # postgresql
+                cursor.execute(
+                    "SELECT column_name FROM information_schema.columns "
+                    "WHERE table_name = 'volumes'"
+                )
+                columns = {row[0] for row in cursor.fetchall()}
+
+            # Add missing columns
+            for col in ["free_space", "mount_options", "uuid", "drive_type"]:
+                if col not in columns:
+                    if config.backend == "sqlite":
+                        col_type = "INTEGER" if col == "free_space" else "TEXT"
+                        cursor.execute(
+                            f"ALTER TABLE volumes ADD COLUMN {col} {col_type}"
+                        )
+                    else:  # postgresql
+                        col_type = "BIGINT" if col == "free_space" else "TEXT"
+                        cursor.execute(
+                            f"ALTER TABLE volumes ADD COLUMN {col} {col_type}"
+                        )
+
+            # Update schema version
+            if config.backend == "sqlite":
+                cursor.execute(
+                    "INSERT OR REPLACE INTO schema_version (version, updated) VALUES (?, ?)",
+                    (2, datetime.now()),
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO schema_version (version, updated) VALUES (%s, %s) "
+                    "ON CONFLICT (version) DO UPDATE SET updated = EXCLUDED.updated",
+                    (2, datetime.now()),
+                )
 
         conn.commit()
     finally:

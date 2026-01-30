@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "_pagination.html" import render_pagination %}
 
 {% block title %}Duplicates - Diskindex{% endblock %}
 
@@ -7,15 +8,15 @@
 
 <div class="card">
     <form class="search-form" method="get" action="/duplicates">
-        <label for="min_size">Minimum File Size (KB):</label>
-        <input type="number" name="min_size" placeholder="Min file size (KB)" value="{{ min_size // 1024 }}">
+        <label for="min_size">Minimum Size (KB):</label>
+        <input type="number" name="min_size" id="min_size" placeholder="Min file size (KB)" value="{{ min_size // 1024 }}">
         <button type="submit" class="btn">Filter</button>
     </form>
 
-    {% if duplicate_groups %}
+    {% if pagination and pagination.total_count > 0 %}
     <div style="margin-top: 1rem;">
         <p><strong>Total wasted space:</strong> <span class="badge badge-danger">{{ total_wasted | filesizeformat }}</span></p>
-        <p><strong>Duplicate groups found:</strong> {{ duplicate_groups|length }}</p>
+        <p><strong>Duplicate groups found:</strong> {{ pagination.total_count }}</p>
     </div>
     {% endif %}
 </div>
@@ -41,6 +42,11 @@
         </ul>
     </div>
     {% endfor %}
+    
+    {% if pagination %}
+    {% set kwargs = {'min_size': min_size // 1024} %}
+    {{ render_pagination(pagination, 'duplicates', **kwargs) }}
+    {% endif %}
 {% else %}
 <div class="card">
     <p>No duplicates found{% if min_size > 1024 %} (minimum size: {{ min_size | filesizeformat }}){% endif %}.</p>

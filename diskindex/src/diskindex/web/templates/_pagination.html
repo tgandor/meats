@@ -1,0 +1,26 @@
+{% macro render_pagination(pagination, endpoint) %}
+{% if pagination.total_pages > 1 %}
+<div class="pagination">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for(endpoint, page=pagination.prev_page, per_page=pagination.per_page, **kwargs) }}" class="btn btn-secondary">
+        ← Previous
+    </a>
+    {% else %}
+    <span class="btn btn-secondary" style="opacity: 0.5; cursor: not-allowed;">← Previous</span>
+    {% endif %}
+
+    <span class="pagination-info">
+        Page {{ pagination.page }} of {{ pagination.total_pages }}
+        ({{ pagination.total_count }} total)
+    </span>
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for(endpoint, page=pagination.next_page, per_page=pagination.per_page, **kwargs) }}" class="btn btn-secondary">
+        Next →
+    </a>
+    {% else %}
+    <span class="btn btn-secondary" style="opacity: 0.5; cursor: not-allowed;">Next →</span>
+    {% endif %}
+</div>
+{% endif %}
+{% endmacro %}

@@ -1,11 +1,63 @@
 """Flask web application for diskindex."""
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, session
 from datetime import datetime
 import os
 
 from diskindex.config import load_config
 from diskindex.database import DatabaseConfig
+
+
+def get_page_args():
+    """Get pagination parameters from request."""
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
+
+    try:
+        per_page = int(request.args.get("per_page", 50))
+    except ValueError:
+        per_page = 50
+
+    # Clamp values
+    page = max(1, page)
+    per_page = min(max(10, per_page), 500)  # Between 10 and 500
+
+    offset = (page - 1) * per_page
+    return page, per_page, offset
+
+
+def get_cached_count(cache_key: str):
+    """Get cached count from session or return None."""
+    if "counts" not in session:
+        session["counts"] = {}
+    return session["counts"].get(cache_key)
+
+
+def set_cached_count(cache_key: str, count: int):
+    """Cache count in session."""
+    if "counts" not in session:
+        session["counts"] = {}
+    session["counts"][cache_key] = count
+
+
+def get_pagination_info(total_count: int, page: int, per_page: int):
+    """Calculate pagination information."""
+    total_pages = (total_count + per_page - 1) // per_page
+    has_prev = page > 1
+    has_next = page < total_pages
+
+    return {
+        "total_count": total_count,
+        "total_pages": total_pages,
+        "page": page,
+        "per_page": per_page,
+        "has_prev": has_prev,
+        "has_next": has_next,
+        "prev_page": page - 1 if has_prev else None,
+        "next_page": page + 1 if has_next else None,
+    }
 
 
 def create_app(config: DatabaseConfig | None = None):
@@ -82,13 +134,25 @@ def create_app(config: DatabaseConfig | None = None):
     @app.route("/scans")
     def scans():
         """List all scans."""
+        page, per_page, offset = get_page_args()
+
         conn = config.get_connection()
         cursor = conn.cursor()
 
         try:
+            # Get total count (cached in session)
+            cache_key = "scans_count"
+            total_count = get_cached_count(cache_key)
+
+            if total_count is None:
+                cursor.execute("SELECT COUNT(*) FROM scans")
+                total_count = cursor.fetchone()[0]
+                set_cached_count(cache_key, total_count)
+
+            # Get paginated scans
             cursor.execute(
-                "SELECT id, scan_date, scan_path, duration_seconds, notes "
-                "FROM scans ORDER BY scan_date DESC"
+                f"SELECT id, scan_date, scan_path, duration_seconds, notes "
+                f"FROM scans ORDER BY scan_date DESC LIMIT {per_page} OFFSET {offset}"
             )
 
             scan_list = []
@@ -123,7 +187,8 @@ def create_app(config: DatabaseConfig | None = None):
                     }
                 )
 
-            return render_template("scans.html", scans=scan_list)
+            pagination = get_pagination_info(total_count, page, per_page)
+            return render_template("scans.html", scans=scan_list, pagination=pagination)
         finally:
             cursor.close()
             conn.close()
@@ -201,6 +266,7 @@ def create_app(config: DatabaseConfig | None = None):
         extension = request.args.get("ext", "")
         min_size = request.args.get("min_size", type=int)
         max_size = request.args.get("max_size", type=int)
+        page, per_page, offset = get_page_args()
 
         conn = config.get_connection()
         cursor = conn.cursor()
@@ -230,7 +296,21 @@ def create_app(config: DatabaseConfig | None = None):
 
             where_clause = " AND ".join(conditions)
 
-            # Get results
+            # Get total count (cached with search params)
+            cache_key = f"search_count_{hash((query, extension, min_size, max_size))}"
+            total_count = get_cached_count(cache_key)
+
+            if total_count is None:
+                count_sql = f"""
+                    SELECT COUNT(*)
+                    FROM files
+                    WHERE {where_clause}
+                """
+                cursor.execute(count_sql, params)
+                total_count = cursor.fetchone()[0]
+                set_cached_count(cache_key, total_count)
+
+            # Get paginated results
             sql = f"""
                 SELECT files.id, files.filename, files.extension, files.size,
                        files.mtime, files.md5_hash, directories.path, scans.scan_path
@@ -239,7 +319,7 @@ def create_app(config: DatabaseConfig | None = None):
                 JOIN scans ON files.scan_id = scans.id
                 WHERE {where_clause}
                 ORDER BY files.size DESC
-                LIMIT 100
+                LIMIT {per_page} OFFSET {offset}
             """
 
             cursor.execute(sql, params)
@@ -273,8 +353,15 @@ def create_app(config: DatabaseConfig | None = None):
                     }
                 )
 
+            pagination = get_pagination_info(total_count, page, per_page)
             return render_template(
-                "search.html", query=query, extension=extension, results=results
+                "search.html",
+                query=query,
+                extension=extension,
+                min_size=min_size,
+                max_size=max_size,
+                results=results,
+                pagination=pagination,
             )
         finally:
             cursor.close()
@@ -283,14 +370,38 @@ def create_app(config: DatabaseConfig | None = None):
     @app.route("/duplicates")
     def duplicates():
         """Find and display duplicate files."""
-        min_size = request.args.get("min_size", 1, type=int) * 1024  # Default 1KB minimum
+        min_size = (
+            request.args.get("min_size", 1, type=int) * 1024
+        )  # Default 1KB minimum
+        page, per_page, offset = get_page_args()
 
         conn = config.get_connection()
         cursor = conn.cursor()
 
         try:
-            # Find files with same size and hash (duplicates)
-            sql = """
+            # Get total count of duplicate groups (cached with min_size)
+            cache_key = f"duplicates_count_{min_size}"
+            total_count = get_cached_count(cache_key)
+
+            if total_count is None:
+                count_sql = """
+                    SELECT COUNT(*) FROM (
+                        SELECT md5_hash
+                        FROM files
+                        WHERE deleted_at IS NULL
+                          AND md5_hash IS NOT NULL
+                          AND md5_hash != ''
+                          AND size >= ?
+                        GROUP BY md5_hash, size
+                        HAVING COUNT(*) > 1
+                    )
+                """
+                cursor.execute(count_sql, (min_size,))
+                total_count = cursor.fetchone()[0]
+                set_cached_count(cache_key, total_count)
+
+            # Find files with same size and hash (duplicates) with pagination
+            sql = f"""
                 SELECT md5_hash, size, COUNT(*) as dup_count
                 FROM files
                 WHERE deleted_at IS NULL
@@ -300,7 +411,7 @@ def create_app(config: DatabaseConfig | None = None):
                 GROUP BY md5_hash, size
                 HAVING COUNT(*) > 1
                 ORDER BY size DESC, dup_count DESC
-                LIMIT 100
+                LIMIT {per_page} OFFSET {offset}
             """
 
             cursor.execute(sql, (min_size,))
@@ -359,14 +470,34 @@ def create_app(config: DatabaseConfig | None = None):
                     }
                 )
 
-            # Calculate total wasted space
-            total_wasted = sum(g["wasted_space"] for g in duplicate_groups)
+            # Calculate total wasted space across ALL duplicates (not just this page)
+            if total_count > 0:
+                cursor.execute(
+                    """
+                    SELECT SUM(size * (dup_count - 1)) FROM (
+                        SELECT size, COUNT(*) as dup_count
+                        FROM files
+                        WHERE deleted_at IS NULL
+                          AND md5_hash IS NOT NULL
+                          AND md5_hash != ''
+                          AND size >= ?
+                        GROUP BY md5_hash, size
+                        HAVING COUNT(*) > 1
+                    )
+                """,
+                    (min_size,),
+                )
+                total_wasted = cursor.fetchone()[0] or 0
+            else:
+                total_wasted = 0
 
+            pagination = get_pagination_info(total_count, page, per_page)
             return render_template(
                 "duplicates.html",
                 duplicate_groups=duplicate_groups,
                 total_wasted=total_wasted,
                 min_size=min_size,
+                pagination=pagination,
             )
         finally:
             cursor.close()
@@ -403,7 +534,7 @@ def create_app(config: DatabaseConfig | None = None):
 def run_server(host="127.0.0.1", port=5000, debug=True):
     """Run the Flask development server."""
     app = create_app()
-    print(f"\n🌐 Starting diskindex web UI...")
+    print("\n🌐 Starting diskindex web UI...")
     print(f"📍 Open your browser to: http://{host}:{port}")
-    print(f"⏹️  Press Ctrl+C to stop\n")
+    print("⏹️  Press Ctrl+C to stop\n")
     app.run(host=host, port=port, debug=debug)

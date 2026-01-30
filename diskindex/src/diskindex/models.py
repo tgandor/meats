@@ -45,6 +45,10 @@ class Volume:
     mount_point: Optional[str] = None
     device_path: Optional[str] = None
     total_size: Optional[int] = None
+    free_space: Optional[int] = None
+    mount_options: Optional[str] = None
+    uuid: Optional[str] = None
+    drive_type: Optional[str] = None
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
@@ -56,6 +60,10 @@ class Volume:
             "mount_point": self.mount_point,
             "device_path": self.device_path,
             "total_size": self.total_size,
+            "free_space": self.free_space,
+            "mount_options": self.mount_options,
+            "uuid": self.uuid,
+            "drive_type": self.drive_type,
         }
 
     @classmethod

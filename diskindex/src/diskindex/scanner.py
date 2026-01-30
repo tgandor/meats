@@ -22,7 +22,7 @@ except ImportError:
     show = print
 
 from diskindex.database import DatabaseConfig
-from diskindex.models import Scan, Volume, Directory, File
+from diskindex.models import Scan, Volume
 
 
 def compute_md5(file_path: pathlib.Path) -> str:
@@ -51,28 +51,54 @@ def get_volume_info(path: pathlib.Path) -> Optional[Volume]:
                 volume.mount_point = drive_letter + "\\"
                 volume.device_path = drive_letter
 
-                # Try to get volume label using PowerShell
+                # Try to get volume label and drive type using PowerShell
                 try:
                     import subprocess
 
                     letter = drive_letter.rstrip(":")
-                    ps_command = f"(Get-Volume -DriveLetter '{letter}').FileSystemLabel"
-                    label = subprocess.check_output(
-                        ["powershell", "-Command", ps_command],
-                        text=True,
-                        stderr=subprocess.DEVNULL,
-                    ).strip()
-                    if label:
-                        volume.label = label
+                    ps_command = f"""
+                    $vol = Get-Volume -DriveLetter '{letter}'
+                    $vol.FileSystemLabel
+                    $vol.DriveType
+                    """
+                    output = (
+                        subprocess.check_output(
+                            ["powershell", "-Command", ps_command],
+                            text=True,
+                            stderr=subprocess.DEVNULL,
+                        )
+                        .strip()
+                        .split("\n")
+                    )
+                    if len(output) >= 1 and output[0]:
+                        volume.label = output[0].strip()
+                    if len(output) >= 2 and output[1]:
+                        volume.drive_type = output[1].strip()
                 except Exception:
                     pass
 
-                # Get filesystem info
+                # Get filesystem info and free space
                 try:
                     import shutil
 
                     usage = shutil.disk_usage(volume.mount_point)
                     volume.total_size = usage.total
+                    volume.free_space = usage.free
+                except Exception:
+                    pass
+
+                # Try to get volume serial number as UUID
+                try:
+                    import subprocess
+
+                    ps_command = f"(Get-Volume -DriveLetter '{letter}').UniqueId"
+                    uuid = subprocess.check_output(
+                        ["powershell", "-Command", ps_command],
+                        text=True,
+                        stderr=subprocess.DEVNULL,
+                    ).strip()
+                    if uuid:
+                        volume.uuid = uuid
                 except Exception:
                     pass
         else:
@@ -86,26 +112,44 @@ def get_volume_info(path: pathlib.Path) -> Optional[Volume]:
             else:
                 volume.mount_point = "/"
 
-            # Try to get filesystem type from /proc/mounts or mount command
+            # Try to get filesystem type and mount options from /proc/mounts
             try:
                 with open("/proc/mounts", "r") as f:
                     for line in f:
                         parts = line.split()
-                        if len(parts) >= 3 and parts[1] == volume.mount_point:
+                        if len(parts) >= 4 and parts[1] == volume.mount_point:
                             volume.device_path = parts[0]
                             volume.filesystem_type = parts[2]
+                            volume.mount_options = parts[3]
                             break
             except Exception:
                 pass
 
-            # Get total size
+            # Get total size and free space
             try:
                 import shutil
 
                 usage = shutil.disk_usage(volume.mount_point)
                 volume.total_size = usage.total
+                volume.free_space = usage.free
             except Exception:
                 pass
+
+            # Try to get UUID using blkid
+            if volume.device_path:
+                try:
+                    import subprocess
+
+                    output = subprocess.check_output(
+                        ["blkid", "-s", "UUID", "-o", "value", volume.device_path],
+                        text=True,
+                        stderr=subprocess.DEVNULL,
+                    ).strip()
+                    if output:
+                        volume.uuid = output
+                except Exception:
+                    # blkid may not be available or require sudo
+                    pass
 
         return volume
     except Exception as e:
@@ -196,7 +240,11 @@ class Scanner:
     """File scanner that walks directory trees and stores metadata in database."""
 
     def __init__(
-        self, config: DatabaseConfig, compute_hash: bool = True, batch_size: int = 1000
+        self,
+        config: DatabaseConfig,
+        compute_hash: bool = True,
+        batch_size: int = 1000,
+        one_filesystem: bool = False,
     ):
         """Initialize scanner.
 
@@ -204,10 +252,13 @@ class Scanner:
             config: Database configuration
             compute_hash: Whether to compute MD5 hashes
             batch_size: Number of files to process before committing to database
+            one_filesystem: If True, don't cross filesystem boundaries
         """
         self.config = config
         self.compute_hash = compute_hash
         self.batch_size = batch_size
+        self.one_filesystem = one_filesystem
+        self.root_device = None  # Will be set during scan
         self.stats = {
             "files": 0,
             "dirs": 0,
@@ -239,6 +290,11 @@ class Scanner:
 
         show(f"Starting scan of: {scan_path}")
         start_time = time.time()
+
+        # Store root device for filesystem boundary check
+        if self.one_filesystem:
+            self.root_device = scan_path.stat().st_dev
+            show("One-filesystem mode: will not cross filesystem boundaries")
 
         conn = self.config.get_connection()
         cursor = conn.cursor()
@@ -273,8 +329,9 @@ class Scanner:
                 volume.scan_id = scan_id
                 cursor.execute(
                     f"INSERT INTO volumes (scan_id, label, filesystem_type, mount_point, "
-                    f"device_path, total_size) VALUES ({placeholder}, {placeholder}, "
-                    f"{placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                    f"device_path, total_size, free_space, mount_options, uuid, drive_type) "
+                    f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, "
+                    f"{placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
                     (
                         volume.scan_id,
                         volume.label,
@@ -282,6 +339,10 @@ class Scanner:
                         volume.mount_point,
                         volume.device_path,
                         volume.total_size,
+                        volume.free_space,
+                        volume.mount_options,
+                        volume.uuid,
+                        volume.drive_type,
                     ),
                 )
                 conn.commit()
@@ -445,6 +506,17 @@ class Scanner:
                     continue
 
                 if entry.is_dir():
+                    # Check filesystem boundary if one_filesystem is enabled
+                    if self.one_filesystem and self.root_device is not None:
+                        try:
+                            entry_device = entry.stat().st_dev
+                            if entry_device != self.root_device:
+                                show(f"Skipping {entry}: different filesystem")
+                                self.stats["ignored"] += 1
+                                continue
+                        except (OSError, PermissionError):
+                            pass  # If we can't stat it, let the recursive call handle the error
+
                     # Recursively scan subdirectory
                     self._scan_directory(
                         conn,
