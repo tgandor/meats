@@ -312,11 +312,15 @@ def run_migrations(config: DatabaseConfig) -> None:
                 )
                 columns = {row[0] for row in cursor.fetchall()}
 
-            if 'ignored' not in columns:
+            if "ignored" not in columns:
                 if config.backend == "sqlite":
-                    cursor.execute("ALTER TABLE files ADD COLUMN ignored BOOLEAN DEFAULT 0")
+                    cursor.execute(
+                        "ALTER TABLE files ADD COLUMN ignored BOOLEAN DEFAULT 0"
+                    )
                 else:  # postgresql
-                    cursor.execute("ALTER TABLE files ADD COLUMN ignored BOOLEAN DEFAULT FALSE")
+                    cursor.execute(
+                        "ALTER TABLE files ADD COLUMN ignored BOOLEAN DEFAULT FALSE"
+                    )
 
             # Update schema version
             if config.backend == "sqlite":

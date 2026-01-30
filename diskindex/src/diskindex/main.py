@@ -268,6 +268,72 @@ def cmd_list_scans(args):
         conn.close()
 
 
+def cmd_delete_scan(args):
+    """Delete a scan and all associated data."""
+    config = load_config()
+    run_migrations(config)
+    conn = config.get_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Get scan info first
+        cursor.execute(
+            f"SELECT scan_date, scan_path, notes FROM scans WHERE id = {args.scan_id}"
+        )
+        row = cursor.fetchone()
+
+        if not row:
+            print(f"Error: Scan #{args.scan_id} not found", file=sys.stderr)
+            return 1
+
+        if isinstance(row, tuple):
+            scan_date, scan_path, notes = row
+        else:
+            scan_date = row["scan_date"]
+            scan_path = row["scan_path"]
+            notes = row["notes"]
+
+        # Get file count for confirmation
+        cursor.execute(
+            f"SELECT COUNT(*), SUM(size) FROM files WHERE scan_id = {args.scan_id}"
+        )
+        count_row = cursor.fetchone()
+        file_count = count_row[0] if isinstance(count_row, tuple) else count_row[0]
+        total_size = count_row[1] if isinstance(count_row, tuple) else count_row[1]
+
+        # Show what will be deleted
+        print(f"\nScan #{args.scan_id}:")
+        print(f"  Date: {scan_date}")
+        print(f"  Path: {scan_path}")
+        if notes:
+            print(f"  Notes: {notes}")
+        if file_count:
+            size_gb = (total_size or 0) / (1024**3)
+            print(f"  Files: {file_count:,} ({size_gb:.2f} GB)")
+
+        # Confirmation prompt (unless --yes flag)
+        if not args.yes:
+            response = input("\nDelete this scan? [y/N]: ")
+            if response.lower() not in ("y", "yes"):
+                print("Cancelled.")
+                return 0
+
+        # Delete the scan (CASCADE will delete all related records)
+        cursor.execute(f"DELETE FROM scans WHERE id = {args.scan_id}")
+        conn.commit()
+
+        print(f"✓ Deleted scan #{args.scan_id}")
+        return 0
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error deleting scan: {e}", file=sys.stderr)
+        return 1
+    finally:
+        cursor.close()
+        conn.close()
+
+
 def cmd_webui(args):
     """Start the web UI server."""
     try:
@@ -332,7 +398,9 @@ def cmd_patterns_add(args):
             (args.pattern, args.exception, args.applies_to, args.notes),
         )
         conn.commit()
-        pattern_id = cursor.lastrowid if config.backend == "sqlite" else cursor.fetchone()[0]
+        pattern_id = (
+            cursor.lastrowid if config.backend == "sqlite" else cursor.fetchone()[0]
+        )
 
         exception_flag = " (exception)" if args.exception else ""
         print(f"✓ Added pattern #{pattern_id}: {args.pattern}{exception_flag}")
@@ -340,6 +408,7 @@ def cmd_patterns_add(args):
         if args.apply:
             print("\nRe-applying patterns to existing scans...")
             from diskindex.patterns import reapply_patterns
+
             reapply_patterns(config, verbose=True)
 
     finally:
@@ -357,8 +426,7 @@ def cmd_patterns_remove(args):
         # Check if pattern exists
         placeholder = "?" if config.backend == "sqlite" else "%s"
         cursor.execute(
-            f"SELECT pattern FROM ignore_patterns WHERE id = {placeholder}",
-            (args.id,)
+            f"SELECT pattern FROM ignore_patterns WHERE id = {placeholder}", (args.id,)
         )
         row = cursor.fetchone()
 
@@ -370,8 +438,7 @@ def cmd_patterns_remove(args):
 
         # Delete pattern
         cursor.execute(
-            f"DELETE FROM ignore_patterns WHERE id = {placeholder}",
-            (args.id,)
+            f"DELETE FROM ignore_patterns WHERE id = {placeholder}", (args.id,)
         )
         conn.commit()
 
@@ -380,6 +447,7 @@ def cmd_patterns_remove(args):
         if args.apply:
             print("\nRe-applying patterns to existing scans...")
             from diskindex.patterns import reapply_patterns
+
             reapply_patterns(config, verbose=True)
 
     finally:
@@ -461,35 +529,63 @@ def main():
     # List scans command
     list_parser = subparsers.add_parser("list-scans", help="List all scans")
 
+    # Delete scan command
+    delete_scan_parser = subparsers.add_parser(
+        "delete-scan", help="Delete a scan and all associated data"
+    )
+    delete_scan_parser.add_argument(
+        "scan_id", type=int, help="ID of the scan to delete"
+    )
+    delete_scan_parser.add_argument(
+        "--yes", "-y", action="store_true", help="Skip confirmation prompt"
+    )
+
     # Patterns command with subcommands
     patterns_parser = subparsers.add_parser("patterns", help="Manage ignore patterns")
-    patterns_subparsers = patterns_parser.add_subparsers(dest="patterns_command", help="Pattern operations")
+    patterns_subparsers = patterns_parser.add_subparsers(
+        dest="patterns_command", help="Pattern operations"
+    )
 
     # patterns list
-    patterns_list_parser = patterns_subparsers.add_parser("list", help="List all ignore patterns")
+    patterns_list_parser = patterns_subparsers.add_parser(
+        "list", help="List all ignore patterns"
+    )
 
     # patterns add
-    patterns_add_parser = patterns_subparsers.add_parser("add", help="Add a new ignore pattern")
-    patterns_add_parser.add_argument("pattern", help="Pattern to add (e.g., '*.tmp' or '.git/')")
-    patterns_add_parser.add_argument(
-        "--exception", "-e", action="store_true",
-        help="Pattern is an exception (won't be ignored even if matches other patterns)"
+    patterns_add_parser = patterns_subparsers.add_parser(
+        "add", help="Add a new ignore pattern"
     )
     patterns_add_parser.add_argument(
-        "--applies-to", dest="applies_to", default="all", help="Pattern scope (default: all)"
+        "pattern", help="Pattern to add (e.g., '*.tmp' or '.git/')"
+    )
+    patterns_add_parser.add_argument(
+        "--exception",
+        "-e",
+        action="store_true",
+        help="Pattern is an exception (won't be ignored even if matches other patterns)",
+    )
+    patterns_add_parser.add_argument(
+        "--applies-to",
+        dest="applies_to",
+        default="all",
+        help="Pattern scope (default: all)",
     )
     patterns_add_parser.add_argument("--notes", help="Notes about this pattern")
     patterns_add_parser.add_argument(
-        "--apply", action="store_true",
-        help="Re-apply patterns to existing scans after adding"
+        "--apply",
+        action="store_true",
+        help="Re-apply patterns to existing scans after adding",
     )
 
     # patterns remove
-    patterns_remove_parser = patterns_subparsers.add_parser("remove", help="Remove an ignore pattern")
+    patterns_remove_parser = patterns_subparsers.add_parser(
+        "remove", help="Remove an ignore pattern"
+    )
     patterns_remove_parser.add_argument("id", type=int, help="Pattern ID to remove")
     patterns_remove_parser.add_argument(
-        "--apply", action="store_true",
-        help="Re-apply patterns to existing scans after removing"
+        "--apply",
+        action="store_true",
+        help="Re-apply patterns to existing scans after removing",
     )
 
     # patterns apply
@@ -527,6 +623,8 @@ def main():
         elif args.command == "list-scans":
             cmd_list_scans(args)
             return 0
+        elif args.command == "delete-scan":
+            return cmd_delete_scan(args)
         elif args.command == "patterns":
             if args.patterns_command == "list":
                 cmd_patterns_list(args)

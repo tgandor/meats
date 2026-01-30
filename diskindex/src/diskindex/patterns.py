@@ -11,7 +11,9 @@ from diskindex.database import DatabaseConfig
 from diskindex.scanner import should_ignore
 
 
-def reapply_patterns(config: DatabaseConfig, scan_id: Optional[int] = None, verbose: bool = True) -> dict:
+def reapply_patterns(
+    config: DatabaseConfig, scan_id: Optional[int] = None, verbose: bool = True
+) -> dict:
     """Re-apply ignore patterns to files in database.
 
     Args:
@@ -26,9 +28,9 @@ def reapply_patterns(config: DatabaseConfig, scan_id: Optional[int] = None, verb
     cursor = conn.cursor()
 
     stats = {
-        'marked_ignored': 0,
-        'marked_visible': 0,
-        'total_checked': 0,
+        "marked_ignored": 0,
+        "marked_visible": 0,
+        "total_checked": 0,
     }
 
     try:
@@ -50,7 +52,9 @@ def reapply_patterns(config: DatabaseConfig, scan_id: Optional[int] = None, verb
                 regular_patterns.append(pattern)
 
         if verbose:
-            print(f"Loaded {len(regular_patterns)} ignore patterns, {len(exception_patterns)} exceptions")
+            print(
+                f"Loaded {len(regular_patterns)} ignore patterns, {len(exception_patterns)} exceptions"
+            )
 
         # Build query to get all files (or files from specific scan)
         where_clause = ""
@@ -98,29 +102,31 @@ def reapply_patterns(config: DatabaseConfig, scan_id: Optional[int] = None, verb
                 rel_path = full_path
 
             # Check if file should be ignored
-            should_be_ignored = should_ignore(str(rel_path), regular_patterns, exception_patterns)
+            should_be_ignored = should_ignore(
+                str(rel_path), regular_patterns, exception_patterns
+            )
 
             # Update if status changed
             if should_be_ignored and not currently_ignored:
                 updates_ignored.append((file_id,))
-                stats['marked_ignored'] += 1
+                stats["marked_ignored"] += 1
             elif not should_be_ignored and currently_ignored:
                 updates_visible.append((file_id,))
-                stats['marked_visible'] += 1
+                stats["marked_visible"] += 1
 
-            stats['total_checked'] += 1
+            stats["total_checked"] += 1
 
         # Batch update files
         if updates_ignored:
             cursor.executemany(
                 f"UPDATE files SET ignored = 1 WHERE id = {placeholder}",
-                updates_ignored
+                updates_ignored,
             )
 
         if updates_visible:
             cursor.executemany(
                 f"UPDATE files SET ignored = 0 WHERE id = {placeholder}",
-                updates_visible
+                updates_visible,
             )
 
         conn.commit()

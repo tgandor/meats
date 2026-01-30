@@ -1,6 +1,6 @@
 """Flask web application for diskindex."""
 
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, redirect, url_for, flash
 from datetime import datetime
 import os
 
@@ -81,10 +81,14 @@ def create_app(config: DatabaseConfig | None = None):
             cursor.execute("SELECT COUNT(*) FROM scans")
             scan_count = cursor.fetchone()[0]
 
-            cursor.execute("SELECT COUNT(*) FROM files WHERE deleted_at IS NULL AND NOT COALESCE(ignored, 0)")
+            cursor.execute(
+                "SELECT COUNT(*) FROM files WHERE deleted_at IS NULL AND NOT COALESCE(ignored, 0)"
+            )
             file_count = cursor.fetchone()[0]
 
-            cursor.execute("SELECT SUM(size) FROM files WHERE deleted_at IS NULL AND NOT COALESCE(ignored, 0)")
+            cursor.execute(
+                "SELECT SUM(size) FROM files WHERE deleted_at IS NULL AND NOT COALESCE(ignored, 0)"
+            )
             total_size = cursor.fetchone()[0] or 0
 
             # Get recent scans
@@ -255,6 +259,40 @@ def create_app(config: DatabaseConfig | None = None):
             return render_template(
                 "scan_detail.html", scan=scan_data, extensions=extensions
             )
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/scan/<int:scan_id>/delete", methods=["POST"])
+    def delete_scan(scan_id):
+        """Delete a scan and all associated data."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Verify scan exists first
+            cursor.execute(f"SELECT scan_path FROM scans WHERE id = {scan_id}")
+            row = cursor.fetchone()
+
+            if not row:
+                flash(f"Scan #{scan_id} not found", "error")
+                return redirect(url_for("scans"))
+
+            # Delete the scan (CASCADE will delete all related records)
+            cursor.execute(f"DELETE FROM scans WHERE id = {scan_id}")
+            conn.commit()
+
+            # Clear cached counts since data changed
+            if "counts" in session:
+                session.pop("counts")
+
+            flash(f"Scan #{scan_id} deleted successfully", "success")
+            return redirect(url_for("scans"))
+
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error deleting scan: {e}", "error")
+            return redirect(url_for("scans"))
         finally:
             cursor.close()
             conn.close()
@@ -593,9 +631,10 @@ def create_app(config: DatabaseConfig | None = None):
             conn.commit()
 
             # Clear cached counts (pattern changes may affect search results)
-            session.pop('counts', None)
+            session.pop("counts", None)
 
-            from flask import redirect, url_for, flash
+            from flask import redirect, url_for
+
             return redirect(url_for("patterns"))
         finally:
             cursor.close()
@@ -616,9 +655,10 @@ def create_app(config: DatabaseConfig | None = None):
             conn.commit()
 
             # Clear cached counts
-            session.pop('counts', None)
+            session.pop("counts", None)
 
             from flask import redirect, url_for
+
             return redirect(url_for("patterns"))
         finally:
             cursor.close()
@@ -633,9 +673,10 @@ def create_app(config: DatabaseConfig | None = None):
         stats = reapply_patterns(config, verbose=False)
 
         # Clear cached counts since file visibility changed
-        session.pop('counts', None)
+        session.pop("counts", None)
 
-        from flask import redirect, url_for, flash
+        from flask import redirect, url_for
+
         # Note: Flask flash requires session support which is already configured
         return redirect(url_for("patterns"))
 

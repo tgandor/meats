@@ -31,7 +31,10 @@
                 <td>{{ scan.total_size | filesizeformat }}</td>
                 <td>{{ "%.1f" | format(scan.duration or 0) }}s</td>
                 <td>{{ scan.notes or '-' }}</td>
-                <td><a href="/scan/{{ scan.id }}" class="btn">View</a></td>
+                <td>
+                    <a href="/scan/{{ scan.id }}" class="btn">View</a>
+                    <button class="btn btn-danger" onclick="confirmDelete({{ scan.id }}, '{{ scan.path }}')">Delete</button>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -42,4 +45,39 @@
     <p>No scans found. Run <code>diskindex scan /path/to/directory</code> to create one.</p>
     {% endif %}
 </div>
+
+<!-- Delete confirmation modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h2>⚠️ Delete Scan</h2>
+        <p>Are you sure you want to delete this scan?</p>
+        <p><strong>Path:</strong> <code id="deleteScanPath"></code></p>
+        <p>This will permanently delete the scan and all associated file records.</p>
+        <form id="deleteForm" method="POST">
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function confirmDelete(scanId, scanPath) {
+    document.getElementById('deleteScanPath').textContent = scanPath;
+    document.getElementById('deleteForm').action = '/scan/' + scanId + '/delete';
+    document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+}
+
+// Close modal on background click
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+</script>
 {% endblock %}
