@@ -7,10 +7,11 @@
 
 <div class="card">
     <form class="search-form" method="get" action="/duplicates">
-        <input type="number" name="min_size" placeholder="Min file size (bytes)" value="{{ min_size }}">
+        <label for="min_size">Minimum File Size (KB):</label>
+        <input type="number" name="min_size" placeholder="Min file size (KB)" value="{{ min_size // 1024 }}">
         <button type="submit" class="btn">Filter</button>
     </form>
-    
+
     {% if duplicate_groups %}
     <div style="margin-top: 1rem;">
         <p><strong>Total wasted space:</strong> <span class="badge badge-danger">{{ total_wasted | filesizeformat }}</span></p>
@@ -32,7 +33,7 @@
                 MD5: <code style="font-size: 0.85em;">{{ group.md5 }}</code>
             </div>
         </div>
-        
+
         <ul class="file-list">
             {% for file in group.files %}
             <li>📄 {{ file.path }}</li>

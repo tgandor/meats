@@ -8,7 +8,7 @@ from diskindex.config import load_config
 from diskindex.database import DatabaseConfig
 
 
-def create_app(config: DatabaseConfig = None):
+def create_app(config: DatabaseConfig | None = None):
     """Create and configure the Flask application."""
     app = Flask(__name__)
     app.secret_key = os.urandom(24)
@@ -283,7 +283,7 @@ def create_app(config: DatabaseConfig = None):
     @app.route("/duplicates")
     def duplicates():
         """Find and display duplicate files."""
-        min_size = request.args.get("min_size", 1024, type=int)  # Default 1KB minimum
+        min_size = request.args.get("min_size", 1, type=int) * 1024  # Default 1KB minimum
 
         conn = config.get_connection()
         cursor = conn.cursor()
