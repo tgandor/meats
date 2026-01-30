@@ -81,10 +81,10 @@ def create_app(config: DatabaseConfig | None = None):
             cursor.execute("SELECT COUNT(*) FROM scans")
             scan_count = cursor.fetchone()[0]
 
-            cursor.execute("SELECT COUNT(*) FROM files WHERE deleted_at IS NULL")
+            cursor.execute("SELECT COUNT(*) FROM files WHERE deleted_at IS NULL AND NOT COALESCE(ignored, 0)")
             file_count = cursor.fetchone()[0]
 
-            cursor.execute("SELECT SUM(size) FROM files WHERE deleted_at IS NULL")
+            cursor.execute("SELECT SUM(size) FROM files WHERE deleted_at IS NULL AND NOT COALESCE(ignored, 0)")
             total_size = cursor.fetchone()[0] or 0
 
             # Get recent scans
@@ -105,7 +105,7 @@ def create_app(config: DatabaseConfig | None = None):
 
                 # Get file count for this scan
                 cursor.execute(
-                    f"SELECT COUNT(*) FROM files WHERE scan_id = {scan_id} AND deleted_at IS NULL"
+                    f"SELECT COUNT(*) FROM files WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, 0)"
                 )
                 files_in_scan = cursor.fetchone()[0]
 
@@ -169,7 +169,7 @@ def create_app(config: DatabaseConfig | None = None):
                 # Get file count and total size
                 cursor.execute(
                     f"SELECT COUNT(*), SUM(size) FROM files "
-                    f"WHERE scan_id = {scan_id} AND deleted_at IS NULL"
+                    f"WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, 0)"
                 )
                 count_row = cursor.fetchone()
                 file_count = count_row[0]
@@ -230,7 +230,7 @@ def create_app(config: DatabaseConfig | None = None):
             # Get file statistics
             cursor.execute(
                 f"SELECT COUNT(*), SUM(size) FROM files "
-                f"WHERE scan_id = {scan_id} AND deleted_at IS NULL"
+                f"WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, 0)"
             )
             count_row = cursor.fetchone()
             scan_data["file_count"] = count_row[0]
@@ -239,7 +239,7 @@ def create_app(config: DatabaseConfig | None = None):
             # Get file type breakdown
             cursor.execute(
                 f"SELECT extension, COUNT(*), SUM(size) FROM files "
-                f"WHERE scan_id = {scan_id} AND deleted_at IS NULL "
+                f"WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, 0) "
                 f"GROUP BY extension ORDER BY COUNT(*) DESC LIMIT 10"
             )
             extensions = []
@@ -273,7 +273,7 @@ def create_app(config: DatabaseConfig | None = None):
 
         try:
             # Build search query
-            conditions = ["files.deleted_at IS NULL"]
+            conditions = ["files.deleted_at IS NULL", "NOT COALESCE(files.ignored, 0)"]
             params = []
 
             if query:
@@ -389,6 +389,7 @@ def create_app(config: DatabaseConfig | None = None):
                         SELECT md5_hash
                         FROM files
                         WHERE deleted_at IS NULL
+                          AND NOT COALESCE(ignored, 0)
                           AND md5_hash IS NOT NULL
                           AND md5_hash != ''
                           AND size >= ?
@@ -405,6 +406,7 @@ def create_app(config: DatabaseConfig | None = None):
                 SELECT md5_hash, size, COUNT(*) as dup_count
                 FROM files
                 WHERE deleted_at IS NULL
+                  AND NOT COALESCE(ignored, 0)
                   AND md5_hash IS NOT NULL
                   AND md5_hash != ''
                   AND size >= ?
@@ -432,7 +434,7 @@ def create_app(config: DatabaseConfig | None = None):
                     FROM files
                     JOIN directories ON files.directory_id = directories.id
                     JOIN scans ON files.scan_id = scans.id
-                    WHERE files.md5_hash = ? AND files.deleted_at IS NULL
+                    WHERE files.md5_hash = ? AND files.deleted_at IS NULL AND NOT COALESCE(files.ignored, 0)
                     ORDER BY files.filename
                     """,
                     (md5,),
@@ -478,6 +480,7 @@ def create_app(config: DatabaseConfig | None = None):
                         SELECT size, COUNT(*) as dup_count
                         FROM files
                         WHERE deleted_at IS NULL
+                          AND NOT COALESCE(ignored, 0)
                           AND md5_hash IS NOT NULL
                           AND md5_hash != ''
                           AND size >= ?
@@ -527,6 +530,114 @@ def create_app(config: DatabaseConfig | None = None):
         if value:
             return value.strftime("%Y-%m-%d %H:%M:%S")
         return ""
+
+    @app.route("/patterns")
+    def patterns():
+        """List and manage ignore patterns."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                "SELECT id, pattern, is_exception, applies_to, notes "
+                "FROM ignore_patterns ORDER BY is_exception DESC, pattern"
+            )
+
+            pattern_list = []
+            for row in cursor.fetchall():
+                if isinstance(row, tuple):
+                    pattern_id, pattern, is_exception, applies_to, notes = row
+                else:
+                    pattern_id = row["id"]
+                    pattern = row["pattern"]
+                    is_exception = row["is_exception"]
+                    applies_to = row["applies_to"]
+                    notes = row["notes"]
+
+                pattern_list.append(
+                    {
+                        "id": pattern_id,
+                        "pattern": pattern,
+                        "is_exception": is_exception,
+                        "applies_to": applies_to,
+                        "notes": notes,
+                    }
+                )
+
+            return render_template("patterns.html", patterns=pattern_list)
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/patterns/add", methods=["POST"])
+    def patterns_add():
+        """Add a new ignore pattern."""
+        pattern = request.form.get("pattern", "").strip()
+        is_exception = request.form.get("is_exception") == "on"
+        applies_to = request.form.get("applies_to", "all")
+        notes = request.form.get("notes", "").strip()
+
+        if not pattern:
+            return "Pattern is required", 400
+
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            placeholder = "?" if config.backend == "sqlite" else "%s"
+            cursor.execute(
+                f"INSERT INTO ignore_patterns (pattern, is_exception, applies_to, notes) "
+                f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                (pattern, is_exception, applies_to, notes),
+            )
+            conn.commit()
+
+            # Clear cached counts (pattern changes may affect search results)
+            session.pop('counts', None)
+
+            from flask import redirect, url_for, flash
+            return redirect(url_for("patterns"))
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/patterns/<int:pattern_id>/delete", methods=["POST"])
+    def patterns_delete(pattern_id):
+        """Delete an ignore pattern."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            placeholder = "?" if config.backend == "sqlite" else "%s"
+            cursor.execute(
+                f"DELETE FROM ignore_patterns WHERE id = {placeholder}",
+                (pattern_id,),
+            )
+            conn.commit()
+
+            # Clear cached counts
+            session.pop('counts', None)
+
+            from flask import redirect, url_for
+            return redirect(url_for("patterns"))
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/patterns/apply", methods=["POST"])
+    def patterns_apply():
+        """Re-apply ignore patterns to all files."""
+        from diskindex.patterns import reapply_patterns
+
+        # Run re-apply in background (this could take a while)
+        stats = reapply_patterns(config, verbose=False)
+
+        # Clear cached counts since file visibility changed
+        session.pop('counts', None)
+
+        from flask import redirect, url_for, flash
+        # Note: Flask flash requires session support which is already configured
+        return redirect(url_for("patterns"))
 
     return app
 

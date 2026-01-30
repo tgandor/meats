@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block title %}Ignore Patterns - Diskindex{% endblock %}
+
+{% block content %}
+<h1>Ignore Patterns</h1>
+
+<div class="card">
+    <h2>Add New Pattern</h2>
+    <form method="post" action="/patterns/add" class="search-form">
+        <input type="text" name="pattern" placeholder="Pattern (e.g., *.log or .cache/)" required>
+        <input type="text" name="notes" placeholder="Notes (optional)">
+        <label style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" name="is_exception">
+            Exception (don't ignore)
+        </label>
+        <button type="submit" class="btn">Add Pattern</button>
+    </form>
+
+    <form method="post" action="/patterns/apply" style="margin-top: 1rem;">
+        <button type="submit" class="btn btn-secondary">
+            🔄 Re-apply All Patterns to Existing Files
+        </button>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+            Updates the ignored status of all files based on current patterns
+        </p>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Current Patterns ({{ patterns|length }})</h2>
+    {% if patterns %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Pattern</th>
+                <th>Type</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pattern in patterns %}
+            <tr>
+                <td>#{{ pattern.id }}</td>
+                <td><code>{{ pattern.pattern }}</code></td>
+                <td>
+                    {% if pattern.is_exception %}
+                    <span class="badge badge-info">Exception</span>
+                    {% else %}
+                    <span class="badge badge-warning">Ignore</span>
+                    {% endif %}
+                </td>
+                <td>{{ pattern.notes or '-' }}</td>
+                <td>
+                    <form method="post" action="/patterns/{{ pattern.id }}/delete" style="display: inline;">
+                        <button type="submit" class="btn btn-secondary" onclick="return confirm('Delete pattern: {{ pattern.pattern }}?')">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No patterns defined.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Pattern Syntax</h2>
+    <ul style="line-height: 1.8;">
+        <li><strong>Directory patterns:</strong> End with <code>/</code> (e.g., <code>.git/</code>, <code>node_modules/</code>)</li>
+        <li><strong>File patterns:</strong> Use glob syntax (e.g., <code>*.pyc</code>, <code>*.tmp</code>)</li>
+        <li><strong>Exceptions:</strong> Files/dirs that won't be ignored even if they match other patterns</li>
+    </ul>
+</div>
+{% endblock %}

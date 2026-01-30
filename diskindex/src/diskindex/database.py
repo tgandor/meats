@@ -55,7 +55,7 @@ class DatabaseConfig:
 
 
 # Schema version for migrations
-CURRENT_SCHEMA_VERSION = 2
+CURRENT_SCHEMA_VERSION = 3
 
 
 SQLITE_SCHEMA = """
@@ -297,6 +297,38 @@ def run_migrations(config: DatabaseConfig) -> None:
                     "INSERT INTO schema_version (version, updated) VALUES (%s, %s) "
                     "ON CONFLICT (version) DO UPDATE SET updated = EXCLUDED.updated",
                     (2, datetime.now()),
+                )
+
+        # Migration to version 3: Add ignored column to files table
+        if current_version < 3:
+            # Check if column already exists
+            if config.backend == "sqlite":
+                cursor.execute("PRAGMA table_info(files)")
+                columns = {row[1] for row in cursor.fetchall()}
+            else:  # postgresql
+                cursor.execute(
+                    "SELECT column_name FROM information_schema.columns "
+                    "WHERE table_name = 'files'"
+                )
+                columns = {row[0] for row in cursor.fetchall()}
+
+            if 'ignored' not in columns:
+                if config.backend == "sqlite":
+                    cursor.execute("ALTER TABLE files ADD COLUMN ignored BOOLEAN DEFAULT 0")
+                else:  # postgresql
+                    cursor.execute("ALTER TABLE files ADD COLUMN ignored BOOLEAN DEFAULT FALSE")
+
+            # Update schema version
+            if config.backend == "sqlite":
+                cursor.execute(
+                    "INSERT OR REPLACE INTO schema_version (version, updated) VALUES (?, ?)",
+                    (3, datetime.now()),
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO schema_version (version, updated) VALUES (%s, %s) "
+                    "ON CONFLICT (version) DO UPDATE SET updated = EXCLUDED.updated",
+                    (3, datetime.now()),
                 )
 
         conn.commit()

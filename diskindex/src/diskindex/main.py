@@ -283,6 +283,122 @@ def cmd_webui(args):
     return 0
 
 
+def cmd_patterns_list(args):
+    """List all ignore patterns."""
+    config = load_config()
+    run_migrations(config)
+    conn = config.get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT id, pattern, is_exception, applies_to, notes "
+            "FROM ignore_patterns ORDER BY is_exception DESC, pattern"
+        )
+
+        print("\nIgnore Patterns:")
+        print("-" * 80)
+
+        for row in cursor.fetchall():
+            if isinstance(row, tuple):
+                pattern_id, pattern, is_exception, applies_to, notes = row
+            else:
+                pattern_id = row["id"]
+                pattern = row["pattern"]
+                is_exception = row["is_exception"]
+                applies_to = row["applies_to"]
+                notes = row["notes"]
+
+            exception_flag = " [EXCEPTION]" if is_exception else ""
+            notes_str = f" - {notes}" if notes else ""
+            print(f"#{pattern_id:3d} {pattern}{exception_flag}{notes_str}")
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def cmd_patterns_add(args):
+    """Add a new ignore pattern."""
+    config = load_config()
+    conn = config.get_connection()
+    cursor = conn.cursor()
+
+    try:
+        placeholder = "?" if config.backend == "sqlite" else "%s"
+        cursor.execute(
+            f"INSERT INTO ignore_patterns (pattern, is_exception, applies_to, notes) "
+            f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
+            (args.pattern, args.exception, args.applies_to, args.notes),
+        )
+        conn.commit()
+        pattern_id = cursor.lastrowid if config.backend == "sqlite" else cursor.fetchone()[0]
+
+        exception_flag = " (exception)" if args.exception else ""
+        print(f"✓ Added pattern #{pattern_id}: {args.pattern}{exception_flag}")
+
+        if args.apply:
+            print("\nRe-applying patterns to existing scans...")
+            from diskindex.patterns import reapply_patterns
+            reapply_patterns(config, verbose=True)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def cmd_patterns_remove(args):
+    """Remove an ignore pattern."""
+    config = load_config()
+    conn = config.get_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Check if pattern exists
+        placeholder = "?" if config.backend == "sqlite" else "%s"
+        cursor.execute(
+            f"SELECT pattern FROM ignore_patterns WHERE id = {placeholder}",
+            (args.id,)
+        )
+        row = cursor.fetchone()
+
+        if not row:
+            print(f"Error: Pattern #{args.id} not found", file=sys.stderr)
+            return 1
+
+        pattern = row[0] if isinstance(row, tuple) else row["pattern"]
+
+        # Delete pattern
+        cursor.execute(
+            f"DELETE FROM ignore_patterns WHERE id = {placeholder}",
+            (args.id,)
+        )
+        conn.commit()
+
+        print(f"✓ Removed pattern #{args.id}: {pattern}")
+
+        if args.apply:
+            print("\nRe-applying patterns to existing scans...")
+            from diskindex.patterns import reapply_patterns
+            reapply_patterns(config, verbose=True)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def cmd_patterns_apply(args):
+    """Re-apply ignore patterns to existing scans."""
+    config = load_config()
+
+    from diskindex.patterns import reapply_patterns
+
+    print("Re-applying ignore patterns to existing files...")
+    stats = reapply_patterns(config, scan_id=args.scan_id, verbose=True)
+
+    return 0
+
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -345,6 +461,45 @@ def main():
     # List scans command
     list_parser = subparsers.add_parser("list-scans", help="List all scans")
 
+    # Patterns command with subcommands
+    patterns_parser = subparsers.add_parser("patterns", help="Manage ignore patterns")
+    patterns_subparsers = patterns_parser.add_subparsers(dest="patterns_command", help="Pattern operations")
+
+    # patterns list
+    patterns_list_parser = patterns_subparsers.add_parser("list", help="List all ignore patterns")
+
+    # patterns add
+    patterns_add_parser = patterns_subparsers.add_parser("add", help="Add a new ignore pattern")
+    patterns_add_parser.add_argument("pattern", help="Pattern to add (e.g., '*.tmp' or '.git/')")
+    patterns_add_parser.add_argument(
+        "--exception", "-e", action="store_true",
+        help="Pattern is an exception (won't be ignored even if matches other patterns)"
+    )
+    patterns_add_parser.add_argument(
+        "--applies-to", dest="applies_to", default="all", help="Pattern scope (default: all)"
+    )
+    patterns_add_parser.add_argument("--notes", help="Notes about this pattern")
+    patterns_add_parser.add_argument(
+        "--apply", action="store_true",
+        help="Re-apply patterns to existing scans after adding"
+    )
+
+    # patterns remove
+    patterns_remove_parser = patterns_subparsers.add_parser("remove", help="Remove an ignore pattern")
+    patterns_remove_parser.add_argument("id", type=int, help="Pattern ID to remove")
+    patterns_remove_parser.add_argument(
+        "--apply", action="store_true",
+        help="Re-apply patterns to existing scans after removing"
+    )
+
+    # patterns apply
+    patterns_apply_parser = patterns_subparsers.add_parser(
+        "apply", help="Re-apply ignore patterns to existing scans"
+    )
+    patterns_apply_parser.add_argument(
+        "--scan-id", type=int, help="Apply to specific scan only (default: all scans)"
+    )
+
     # Web UI command
     webui_parser = subparsers.add_parser("webui", help="Start web interface")
     webui_parser.add_argument(
@@ -372,6 +527,20 @@ def main():
         elif args.command == "list-scans":
             cmd_list_scans(args)
             return 0
+        elif args.command == "patterns":
+            if args.patterns_command == "list":
+                cmd_patterns_list(args)
+                return 0
+            elif args.patterns_command == "add":
+                cmd_patterns_add(args)
+                return 0
+            elif args.patterns_command == "remove":
+                return cmd_patterns_remove(args)
+            elif args.patterns_command == "apply":
+                return cmd_patterns_apply(args)
+            else:
+                patterns_parser.print_help()
+                return 1
         elif args.command == "webui":
             return cmd_webui(args)
         else:

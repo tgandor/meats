@@ -42,7 +42,7 @@
         </ul>
     </div>
     {% endfor %}
-    
+
     {% if pagination %}
     {% set kwargs = {'min_size': min_size // 1024} %}
     {{ render_pagination(pagination, 'duplicates', **kwargs) }}
