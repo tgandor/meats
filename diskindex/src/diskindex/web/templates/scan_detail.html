@@ -40,6 +40,56 @@
     </table>
 </div>
 
+{% if volumes %}
+<div class="card">
+    <h2>Volume Information</h2>
+    {% for volume in volumes %}
+    <table style="margin-bottom: 1rem;">
+        <tr>
+            <th style="width: 200px;">Label</th>
+            <td>{{ volume.label }}</td>
+        </tr>
+        <tr>
+            <th>Filesystem</th>
+            <td>{{ volume.filesystem or '-' }}</td>
+        </tr>
+        <tr>
+            <th>Total Size</th>
+            <td>{{ volume.total_size | filesizeformat if volume.total_size else '-' }}</td>
+        </tr>
+        <tr>
+            <th>Free Space</th>
+            <td>
+                {% if volume.free_space and volume.total_size %}
+                {{ volume.free_space | filesizeformat }} ({{ "%.1f" | format((volume.free_space / volume.total_size) * 100) }}% free)
+                {% else %}
+                -
+                {% endif %}
+            </td>
+        </tr>
+        {% if volume.uuid %}
+        <tr>
+            <th>UUID</th>
+            <td><code style="font-size: 0.85em;">{{ volume.uuid }}</code></td>
+        </tr>
+        {% endif %}
+        {% if volume.drive_type %}
+        <tr>
+            <th>Drive Type</th>
+            <td>{{ volume.drive_type }}</td>
+        </tr>
+        {% endif %}
+        {% if volume.mount_options %}
+        <tr>
+            <th>Mount Options</th>
+            <td><code style="font-size: 0.85em;">{{ volume.mount_options }}</code></td>
+        </tr>
+        {% endif %}
+    </table>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="card">
     <h2>Top File Types</h2>
     {% if extensions %}

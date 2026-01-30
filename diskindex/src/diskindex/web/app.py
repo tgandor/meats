@@ -256,8 +256,37 @@ def create_app(config: DatabaseConfig | None = None):
                     }
                 )
 
+            # Get volume information
+            cursor.execute(
+                f"SELECT label, filesystem_type, total_size, free_space, "
+                f"mount_options, uuid, drive_type "
+                f"FROM volumes WHERE scan_id = {scan_id}"
+            )
+            volumes = []
+            for vol_row in cursor.fetchall():
+                if isinstance(vol_row, tuple):
+                    volumes.append({
+                        "label": vol_row[0] or "(no label)",
+                        "filesystem": vol_row[1],
+                        "total_size": vol_row[2],
+                        "free_space": vol_row[3],
+                        "mount_options": vol_row[4],
+                        "uuid": vol_row[5],
+                        "drive_type": vol_row[6],
+                    })
+                else:
+                    volumes.append({
+                        "label": vol_row["label"] or "(no label)",
+                        "filesystem": vol_row["filesystem_type"],
+                        "total_size": vol_row["total_size"],
+                        "free_space": vol_row["free_space"],
+                        "mount_options": vol_row["mount_options"],
+                        "uuid": vol_row["uuid"],
+                        "drive_type": vol_row["drive_type"],
+                    })
+
             return render_template(
-                "scan_detail.html", scan=scan_data, extensions=extensions
+                "scan_detail.html", scan=scan_data, extensions=extensions, volumes=volumes
             )
         finally:
             cursor.close()
@@ -304,12 +333,43 @@ def create_app(config: DatabaseConfig | None = None):
         extension = request.args.get("ext", "")
         min_size = request.args.get("min_size", type=int)
         max_size = request.args.get("max_size", type=int)
+        unique_only = request.args.get("unique_only") == "1"
+        scan_id = request.args.get("scan_id", type=int)
         page, per_page, offset = get_page_args()
 
         conn = config.get_connection()
         cursor = conn.cursor()
 
         try:
+            # Get all scans for dropdown
+            cursor.execute("""
+                SELECT scans.id, scans.scan_path, scans.scan_date,
+                       COUNT(files.id) as file_count
+                FROM scans
+                LEFT JOIN files ON scans.id = files.scan_id
+                    AND files.deleted_at IS NULL
+                    AND NOT COALESCE(files.ignored, 0)
+                GROUP BY scans.id, scans.scan_path, scans.scan_date
+                ORDER BY scans.scan_date DESC
+            """)
+
+            scans_list = []
+            for row in cursor.fetchall():
+                if isinstance(row, tuple):
+                    sid, spath, sdate, fcount = row
+                else:
+                    sid = row["id"]
+                    spath = row["scan_path"]
+                    sdate = row["scan_date"]
+                    fcount = row["file_count"]
+
+                scans_list.append({
+                    "id": sid,
+                    "path": spath,
+                    "date": sdate,
+                    "file_count": fcount
+                })
+
             # Build search query
             conditions = ["files.deleted_at IS NULL", "NOT COALESCE(files.ignored, 0)"]
             params = []
@@ -332,10 +392,45 @@ def create_app(config: DatabaseConfig | None = None):
                 conditions.append("files.size <= ?")
                 params.append(max_size)
 
+            if scan_id:
+                conditions.append("files.scan_id = ?")
+                params.append(scan_id)
+
+            # Add unique files filter (exclude files with duplicate hashes)
+            if unique_only:
+                # If a specific scan is selected, only filter duplicates within that scan
+                # Otherwise, filter duplicates across all scans
+                if scan_id:
+                    conditions.append("""
+                        files.md5_hash NOT IN (
+                            SELECT md5_hash FROM files
+                            WHERE scan_id = ?
+                              AND deleted_at IS NULL
+                              AND NOT COALESCE(ignored, 0)
+                              AND md5_hash IS NOT NULL
+                              AND md5_hash != ''
+                            GROUP BY md5_hash
+                            HAVING COUNT(*) > 1
+                        )
+                    """)
+                    params.append(scan_id)
+                else:
+                    conditions.append("""
+                        files.md5_hash NOT IN (
+                            SELECT md5_hash FROM files
+                            WHERE deleted_at IS NULL
+                              AND NOT COALESCE(ignored, 0)
+                              AND md5_hash IS NOT NULL
+                              AND md5_hash != ''
+                            GROUP BY md5_hash
+                            HAVING COUNT(*) > 1
+                        )
+                    """)
+
             where_clause = " AND ".join(conditions)
 
             # Get total count (cached with search params)
-            cache_key = f"search_count_{hash((query, extension, min_size, max_size))}"
+            cache_key = f"search_count_{hash((query, extension, min_size, max_size, unique_only, scan_id))}"
             total_count = get_cached_count(cache_key)
 
             if total_count is None:
@@ -398,6 +493,9 @@ def create_app(config: DatabaseConfig | None = None):
                 extension=extension,
                 min_size=min_size,
                 max_size=max_size,
+                unique_only=unique_only,
+                scan_id=scan_id,
+                scans=scans_list,
                 results=results,
                 pagination=pagination,
             )
