@@ -9,6 +9,7 @@ import os
 import pathlib
 import platform
 import time
+import uuid
 from datetime import datetime
 from fnmatch import fnmatch
 from typing import Optional, Union
@@ -300,14 +301,15 @@ class Scanner:
         cursor = conn.cursor()
 
         try:
-            # Create scan record
+            # Create scan record with unique GUID
+            scan_guid = uuid.uuid4().hex
             scan = Scan(scan_date=datetime.now(), scan_path=str(scan_path), notes=notes)
 
             placeholder = "?" if self.config.backend == "sqlite" else "%s"
             cursor.execute(
-                f"INSERT INTO scans (scan_date, scan_path, notes) "
-                f"VALUES ({placeholder}, {placeholder}, {placeholder})",
-                (scan.scan_date, scan.scan_path, scan.notes),
+                f"INSERT INTO scans (guid, scan_date, scan_path, notes) "
+                f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                (scan_guid, scan.scan_date, scan.scan_path, scan.notes),
             )
 
             if self.config.backend == "sqlite":

@@ -55,7 +55,7 @@ class DatabaseConfig:
 
 
 # Schema version for migrations
-CURRENT_SCHEMA_VERSION = 3
+CURRENT_SCHEMA_VERSION = 4
 
 
 SQLITE_SCHEMA = """
@@ -71,7 +71,8 @@ CREATE TABLE IF NOT EXISTS scans (
     scan_date DATETIME NOT NULL,
     scan_path TEXT NOT NULL,
     duration_seconds REAL,
-    notes TEXT
+    notes TEXT,
+    guid TEXT UNIQUE
 );
 
 -- Volumes/partitions
@@ -150,7 +151,8 @@ CREATE TABLE IF NOT EXISTS scans (
     scan_date TIMESTAMP NOT NULL,
     scan_path TEXT NOT NULL,
     duration_seconds REAL,
-    notes TEXT
+    notes TEXT,
+    guid TEXT UNIQUE
 );
 
 -- Volumes/partitions
@@ -335,6 +337,67 @@ def run_migrations(config: DatabaseConfig) -> None:
                     "INSERT INTO schema_version (version, updated) VALUES (%s, %s) "
                     "ON CONFLICT (version) DO UPDATE SET updated = EXCLUDED.updated",
                     (3, datetime.now()),
+                )
+
+        # Migration to version 4: Add guid column to scans table
+        if current_version < 4:
+            import uuid
+
+            # Check if column already exists
+            if config.backend == "sqlite":
+                cursor.execute("PRAGMA table_info(scans)")
+                columns = {row[1] for row in cursor.fetchall()}
+            else:  # postgresql
+                cursor.execute(
+                    "SELECT column_name FROM information_schema.columns "
+                    "WHERE table_name = 'scans'"
+                )
+                columns = {row[0] for row in cursor.fetchall()}
+
+            if "guid" not in columns:
+                # Add column without UNIQUE constraint (can't add UNIQUE to existing table with data)
+                if config.backend == "sqlite":
+                    cursor.execute(
+                        "ALTER TABLE scans ADD COLUMN guid TEXT"
+                    )
+                    # Create unique index separately
+                    cursor.execute(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_scans_guid ON scans(guid) WHERE guid IS NOT NULL"
+                    )
+                else:  # postgresql
+                    cursor.execute(
+                        "ALTER TABLE scans ADD COLUMN guid TEXT"
+                    )
+                    # Create unique index separately
+                    cursor.execute(
+                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_scans_guid ON scans(guid) WHERE guid IS NOT NULL"
+                    )
+
+            # Generate GUIDs for existing scans (regardless of whether we just added the column)
+            cursor.execute("SELECT id FROM scans WHERE guid IS NULL")
+            scans_without_guid = cursor.fetchall()
+
+            if scans_without_guid:
+                placeholder = "?" if config.backend == "sqlite" else "%s"
+                for (scan_id,) in scans_without_guid:
+                    new_guid = uuid.uuid4().hex
+                    cursor.execute(
+                        f"UPDATE scans SET guid = {placeholder} WHERE id = {placeholder}",
+                        (new_guid, scan_id)
+                    )
+                print(f"Generated GUIDs for {len(scans_without_guid)} existing scans")
+
+            # Update schema version
+            if config.backend == "sqlite":
+                cursor.execute(
+                    "INSERT OR REPLACE INTO schema_version (version, updated) VALUES (?, ?)",
+                    (4, datetime.now()),
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO schema_version (version, updated) VALUES (%s, %s) "
+                    "ON CONFLICT (version) DO UPDATE SET updated = EXCLUDED.updated",
+                    (4, datetime.now()),
                 )
 
         conn.commit()
