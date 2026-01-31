@@ -467,6 +467,77 @@ def cmd_patterns_apply(args):
     return 0
 
 
+def cmd_migrate(args):
+    """Run database migrations or set schema version."""
+    config = load_config()
+    conn = config.get_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Get current schema version
+        cursor.execute("SELECT MAX(version) FROM schema_version")
+        result = cursor.fetchone()
+        current_version = result[0] if result and result[0] else 0
+
+        print(f"Current schema version: {current_version}")
+
+        if args.set_version is not None:
+            # Set schema version manually (for workarounds)
+            new_version = args.set_version
+            print(f"\n⚠️  Manually setting schema version to {new_version}")
+            print(
+                "This is a workaround and should only be used if you know what you're doing!"
+            )
+
+            if not args.yes:
+                response = input(f"\nSet schema version to {new_version}? [y/N]: ")
+                if response.lower() not in ("y", "yes"):
+                    print("Cancelled.")
+                    return 0
+
+            # Delete all existing schema versions and insert new one
+            cursor.execute("DELETE FROM schema_version")
+
+            if config.backend == "sqlite":
+                cursor.execute(
+                    "INSERT INTO schema_version (version, updated) VALUES (?, datetime('now'))",
+                    (new_version,),
+                )
+            else:  # postgresql
+                cursor.execute(
+                    "INSERT INTO schema_version (version, updated) VALUES (%s, NOW())",
+                    (new_version,),
+                )
+            conn.commit()
+            print(f"✓ Schema version set to {new_version}")
+
+        # Run migrations
+        print("\nRunning migrations...")
+        cursor.close()
+        conn.close()
+
+        run_migrations(config)
+        print("✓ Migrations complete")
+
+        # Show final version
+        conn = config.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT MAX(version) FROM schema_version")
+        result = cursor.fetchone()
+        final_version = result[0] if result and result[0] else 0
+        print(f"\nFinal schema version: {final_version}")
+
+        return 0
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+    finally:
+        cursor.close()
+        conn.close()
+
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -596,6 +667,23 @@ def main():
         "--scan-id", type=int, help="Apply to specific scan only (default: all scans)"
     )
 
+    # Migrate command
+    migrate_parser = subparsers.add_parser(
+        "migrate", help="Run database migrations or set schema version"
+    )
+    migrate_parser.add_argument(
+        "--set-version",
+        type=int,
+        metavar="VERSION",
+        help="Manually set schema version (for workarounds only!)",
+    )
+    migrate_parser.add_argument(
+        "--yes",
+        "-y",
+        action="store_true",
+        help="Skip confirmation prompt when setting version",
+    )
+
     # Web UI command
     webui_parser = subparsers.add_parser("webui", help="Start web interface")
     webui_parser.add_argument(
@@ -639,6 +727,8 @@ def main():
             else:
                 patterns_parser.print_help()
                 return 1
+        elif args.command == "migrate":
+            return cmd_migrate(args)
         elif args.command == "webui":
             return cmd_webui(args)
         else:

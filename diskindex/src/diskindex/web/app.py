@@ -265,28 +265,35 @@ def create_app(config: DatabaseConfig | None = None):
             volumes = []
             for vol_row in cursor.fetchall():
                 if isinstance(vol_row, tuple):
-                    volumes.append({
-                        "label": vol_row[0] or "(no label)",
-                        "filesystem": vol_row[1],
-                        "total_size": vol_row[2],
-                        "free_space": vol_row[3],
-                        "mount_options": vol_row[4],
-                        "uuid": vol_row[5],
-                        "drive_type": vol_row[6],
-                    })
+                    volumes.append(
+                        {
+                            "label": vol_row[0] or "(no label)",
+                            "filesystem": vol_row[1],
+                            "total_size": vol_row[2],
+                            "free_space": vol_row[3],
+                            "mount_options": vol_row[4],
+                            "uuid": vol_row[5],
+                            "drive_type": vol_row[6],
+                        }
+                    )
                 else:
-                    volumes.append({
-                        "label": vol_row["label"] or "(no label)",
-                        "filesystem": vol_row["filesystem_type"],
-                        "total_size": vol_row["total_size"],
-                        "free_space": vol_row["free_space"],
-                        "mount_options": vol_row["mount_options"],
-                        "uuid": vol_row["uuid"],
-                        "drive_type": vol_row["drive_type"],
-                    })
+                    volumes.append(
+                        {
+                            "label": vol_row["label"] or "(no label)",
+                            "filesystem": vol_row["filesystem_type"],
+                            "total_size": vol_row["total_size"],
+                            "free_space": vol_row["free_space"],
+                            "mount_options": vol_row["mount_options"],
+                            "uuid": vol_row["uuid"],
+                            "drive_type": vol_row["drive_type"],
+                        }
+                    )
 
             return render_template(
-                "scan_detail.html", scan=scan_data, extensions=extensions, volumes=volumes
+                "scan_detail.html",
+                scan=scan_data,
+                extensions=extensions,
+                volumes=volumes,
             )
         finally:
             cursor.close()
@@ -342,7 +349,8 @@ def create_app(config: DatabaseConfig | None = None):
 
         try:
             # Get all scans for dropdown
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT scans.id, scans.scan_path, scans.scan_date,
                        COUNT(files.id) as file_count
                 FROM scans
@@ -351,7 +359,8 @@ def create_app(config: DatabaseConfig | None = None):
                     AND NOT COALESCE(files.ignored, 0)
                 GROUP BY scans.id, scans.scan_path, scans.scan_date
                 ORDER BY scans.scan_date DESC
-            """)
+            """
+            )
 
             scans_list = []
             for row in cursor.fetchall():
@@ -363,12 +372,9 @@ def create_app(config: DatabaseConfig | None = None):
                     sdate = row["scan_date"]
                     fcount = row["file_count"]
 
-                scans_list.append({
-                    "id": sid,
-                    "path": spath,
-                    "date": sdate,
-                    "file_count": fcount
-                })
+                scans_list.append(
+                    {"id": sid, "path": spath, "date": sdate, "file_count": fcount}
+                )
 
             # Build search query
             conditions = ["files.deleted_at IS NULL", "NOT COALESCE(files.ignored, 0)"]
@@ -401,7 +407,8 @@ def create_app(config: DatabaseConfig | None = None):
                 # If a specific scan is selected, only filter duplicates within that scan
                 # Otherwise, filter duplicates across all scans
                 if scan_id:
-                    conditions.append("""
+                    conditions.append(
+                        """
                         files.md5_hash NOT IN (
                             SELECT md5_hash FROM files
                             WHERE scan_id = ?
@@ -412,10 +419,12 @@ def create_app(config: DatabaseConfig | None = None):
                             GROUP BY md5_hash
                             HAVING COUNT(*) > 1
                         )
-                    """)
+                    """
+                    )
                     params.append(scan_id)
                 else:
-                    conditions.append("""
+                    conditions.append(
+                        """
                         files.md5_hash NOT IN (
                             SELECT md5_hash FROM files
                             WHERE deleted_at IS NULL
@@ -425,7 +434,8 @@ def create_app(config: DatabaseConfig | None = None):
                             GROUP BY md5_hash
                             HAVING COUNT(*) > 1
                         )
-                    """)
+                    """
+                    )
 
             where_clause = " AND ".join(conditions)
 

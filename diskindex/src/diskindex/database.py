@@ -110,7 +110,8 @@ CREATE TABLE IF NOT EXISTS files (
     size INTEGER NOT NULL,
     mtime DATETIME,
     md5_hash TEXT,
-    deleted_at DATETIME
+    deleted_at DATETIME,
+    ignored BOOLEAN DEFAULT 0
 );
 
 -- Ignore patterns
@@ -188,7 +189,8 @@ CREATE TABLE IF NOT EXISTS files (
     size BIGINT NOT NULL,
     mtime TIMESTAMP,
     md5_hash TEXT,
-    deleted_at TIMESTAMP
+    deleted_at TIMESTAMP,
+    ignored BOOLEAN DEFAULT FALSE
 );
 
 -- Ignore patterns
