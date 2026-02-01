@@ -314,7 +314,10 @@ def create_app(config: DatabaseConfig | None = None):
                 flash(f"Scan #{scan_id} not found", "error")
                 return redirect(url_for("scans"))
 
-            # Delete the scan (CASCADE will delete all related records)
+            # Manually delete related rows instead of relying on DB CASCADE
+            cursor.execute(f"DELETE FROM files WHERE scan_id = {scan_id}")
+            cursor.execute(f"DELETE FROM directories WHERE scan_id = {scan_id}")
+            cursor.execute(f"DELETE FROM volumes WHERE scan_id = {scan_id}")
             cursor.execute(f"DELETE FROM scans WHERE id = {scan_id}")
             conn.commit()
 
@@ -519,123 +522,258 @@ def create_app(config: DatabaseConfig | None = None):
         min_size = (
             request.args.get("min_size", 1, type=int) * 1024
         )  # Default 1KB minimum
+        scan_id = request.args.get("scan_id", type=int)
+        mode = request.args.get("mode", "across_scans")  # "within_scan" or "across_scans"
         page, per_page, offset = get_page_args()
 
         conn = config.get_connection()
         cursor = conn.cursor()
 
         try:
-            # Get total count of duplicate groups (cached with min_size)
-            cache_key = f"duplicates_count_{min_size}"
+            # Get list of scans for filter dropdown
+            cursor.execute(
+                "SELECT id, scan_path, scan_date FROM scans ORDER BY scan_date DESC"
+            )
+            scans = cursor.fetchall()
+
+            # Build WHERE clauses based on filters
+            where_clauses = [
+                "deleted_at IS NULL",
+                "NOT COALESCE(ignored, 0)",
+                "md5_hash IS NOT NULL",
+                "md5_hash != ''",
+            ]
+
+            hash_col = "md5_hash" if config.backend == "sqlite" else "md5_hash"
+
+            # Get total count of duplicate groups
+            cache_key = f"duplicates_count_{min_size}_{scan_id}_{mode}"
             total_count = get_cached_count(cache_key)
 
             if total_count is None:
-                count_sql = """
-                    SELECT COUNT(*) FROM (
-                        SELECT md5_hash
-                        FROM files
-                        WHERE deleted_at IS NULL
-                          AND NOT COALESCE(ignored, 0)
-                          AND md5_hash IS NOT NULL
-                          AND md5_hash != ''
-                          AND size >= ?
-                        GROUP BY md5_hash, size
-                        HAVING COUNT(*) > 1
-                    )
-                """
-                cursor.execute(count_sql, (min_size,))
+                if scan_id and mode == "across_scans":
+                    # Count files in selected scan that have duplicates in other scans (different paths)
+                    count_sql = f"""
+                        SELECT COUNT(DISTINCT f1.{hash_col}) FROM files f1
+                        WHERE f1.scan_id = ? AND f1.size >= ?
+                          AND f1.deleted_at IS NULL
+                          AND NOT COALESCE(f1.ignored, 0)
+                          AND f1.{hash_col} IS NOT NULL
+                          AND f1.{hash_col} != ''
+                          AND EXISTS (
+                              SELECT 1 FROM files f2
+                              WHERE f2.{hash_col} = f1.{hash_col}
+                                AND f2.size = f1.size
+                                AND f2.scan_id != ?
+                                AND f2.deleted_at IS NULL
+                                AND NOT COALESCE(f2.ignored, 0)
+                          )
+                    """
+                    cursor.execute(count_sql, (scan_id, min_size, scan_id))
+                elif scan_id and mode == "within_scan":
+                    # Count duplicate groups within selected scan (different paths in same scan)
+                    count_sql = f"""
+                        SELECT COUNT(*) FROM (
+                            SELECT {hash_col}, size
+                            FROM files
+                            WHERE scan_id = ? AND size >= ?
+                              AND deleted_at IS NULL
+                              AND NOT COALESCE(ignored, 0)
+                              AND {hash_col} IS NOT NULL
+                              AND {hash_col} != ''
+                            GROUP BY {hash_col}, size
+                            HAVING COUNT(DISTINCT directory_id || '/' || filename) > 1
+                        )
+                    """
+                    cursor.execute(count_sql, (scan_id, min_size))
+                else:
+                    # All duplicates across all scans (different paths only)
+                    count_sql = f"""
+                        SELECT COUNT(*) FROM (
+                            SELECT {hash_col}, size
+                            FROM files
+                            WHERE size >= ?
+                              AND deleted_at IS NULL
+                              AND NOT COALESCE(ignored, 0)
+                              AND {hash_col} IS NOT NULL
+                              AND {hash_col} != ''
+                            GROUP BY {hash_col}, size
+                            HAVING COUNT(DISTINCT directory_id || '/' || filename) > 1
+                        )
+                    """
+                    cursor.execute(count_sql, (min_size,))
                 total_count = cursor.fetchone()[0]
                 set_cached_count(cache_key, total_count)
 
-            # Find files with same size and hash (duplicates) with pagination
-            sql = f"""
-                SELECT md5_hash, size, COUNT(*) as dup_count
-                FROM files
-                WHERE deleted_at IS NULL
-                  AND NOT COALESCE(ignored, 0)
-                  AND md5_hash IS NOT NULL
-                  AND md5_hash != ''
-                  AND size >= ?
-                GROUP BY md5_hash, size
-                HAVING COUNT(*) > 1
-                ORDER BY size DESC, dup_count DESC
-                LIMIT {per_page} OFFSET {offset}
-            """
-
-            cursor.execute(sql, (min_size,))
+            # Find duplicate files with pagination
+            if scan_id and mode == "across_scans":
+                # Files from selected scan with duplicates in other scans
+                sql = f"""
+                    SELECT f1.{hash_col}, f1.size, COUNT(DISTINCT f2.id) + 1 as dup_count
+                    FROM files f1
+                    JOIN files f2 ON f2.{hash_col} = f1.{hash_col}
+                        AND f2.size = f1.size
+                        AND f2.scan_id != f1.scan_id
+                        AND f2.deleted_at IS NULL
+                        AND NOT COALESCE(f2.ignored, 0)
+                    WHERE f1.scan_id = ? AND f1.size >= ?
+                      AND f1.deleted_at IS NULL
+                      AND NOT COALESCE(f1.ignored, 0)
+                      AND f1.{hash_col} IS NOT NULL
+                      AND f1.{hash_col} != ''
+                    GROUP BY f1.{hash_col}, f1.size
+                    ORDER BY f1.size DESC, dup_count DESC
+                    LIMIT {per_page} OFFSET {offset}
+                """
+                cursor.execute(sql, (scan_id, min_size))
+            elif scan_id and mode == "within_scan":
+                # Duplicates within selected scan only
+                sql = f"""
+                    SELECT {hash_col}, size, COUNT(*) as dup_count
+                    FROM files
+                    WHERE scan_id = ? AND size >= ?
+                      AND deleted_at IS NULL
+                      AND NOT COALESCE(ignored, 0)
+                      AND {hash_col} IS NOT NULL
+                      AND {hash_col} != ''
+                    GROUP BY {hash_col}, size
+                    HAVING COUNT(DISTINCT directory_id || '/' || filename) > 1
+                    ORDER BY size DESC, dup_count DESC
+                    LIMIT {per_page} OFFSET {offset}
+                """
+                cursor.execute(sql, (scan_id, min_size))
+            else:
+                # All duplicates (different paths only)
+                sql = f"""
+                    SELECT {hash_col}, size, COUNT(*) as dup_count
+                    FROM files
+                    WHERE size >= ?
+                      AND deleted_at IS NULL
+                      AND NOT COALESCE(ignored, 0)
+                      AND {hash_col} IS NOT NULL
+                      AND {hash_col} != ''
+                    GROUP BY {hash_col}, size
+                    HAVING COUNT(DISTINCT directory_id || '/' || filename) > 1
+                    ORDER BY size DESC, dup_count DESC
+                    LIMIT {per_page} OFFSET {offset}
+                """
+                cursor.execute(sql, (min_size,))
 
             duplicate_groups = []
             for row in cursor.fetchall():
                 if isinstance(row, tuple):
                     md5, size, count = row
                 else:
-                    md5 = row["md5_hash"]
+                    md5 = row[hash_col]
                     size = row["size"]
                     count = row["dup_count"]
 
-                # Get all files in this duplicate group
+                # Get all files in this duplicate group (across all scans for context)
                 cursor.execute(
-                    """
-                    SELECT files.filename, directories.path, scans.scan_path, files.id
+                    f"""
+                    SELECT files.id, files.filename, files.scan_id,
+                           directories.path, scans.scan_path, scans.scan_date
                     FROM files
                     JOIN directories ON files.directory_id = directories.id
                     JOIN scans ON files.scan_id = scans.id
-                    WHERE files.md5_hash = ? AND files.deleted_at IS NULL AND NOT COALESCE(files.ignored, 0)
-                    ORDER BY files.filename
+                    WHERE files.{hash_col} = ?
+                      AND files.deleted_at IS NULL
+                      AND NOT COALESCE(files.ignored, 0)
+                    ORDER BY scans.scan_date DESC, directories.path, files.filename
                     """,
                     (md5,),
                 )
 
                 files = []
+                seen_paths = set()  # Track unique file paths
                 for file_row in cursor.fetchall():
                     if isinstance(file_row, tuple):
-                        filename, dir_path, scan_path, file_id = file_row
+                        file_id, filename, file_scan_id, dir_path, scan_path, scan_date = file_row
                     else:
+                        file_id = file_row["id"]
                         filename = file_row["filename"]
+                        file_scan_id = file_row["scan_id"]
                         dir_path = file_row["path"]
                         scan_path = file_row["scan_path"]
-                        file_id = file_row["id"]
+                        scan_date = file_row["scan_date"]
 
                     full_path = os.path.join(dir_path, filename)
+                    path_key = f"{dir_path}/{filename}"
+
+                    # Mark if this is from the selected scan
+                    is_selected_scan = scan_id and file_scan_id == scan_id
+                    is_duplicate_path = path_key in seen_paths
+
                     files.append(
                         {
                             "id": file_id,
                             "filename": filename,
                             "path": full_path,
+                            "scan_id": file_scan_id,
                             "scan_path": scan_path,
+                            "scan_date": scan_date,
+                            "is_selected_scan": is_selected_scan,
+                            "is_duplicate_path": is_duplicate_path,
                         }
                     )
+                    seen_paths.add(path_key)
 
-                wasted_space = size * (count - 1)  # Space used by duplicates
+                # Calculate actual duplicates (different paths only)
+                unique_paths_count = len(seen_paths)
+                wasted_space = size * (unique_paths_count - 1) if unique_paths_count > 1 else 0
 
                 duplicate_groups.append(
                     {
                         "md5": md5,
                         "size": size,
                         "count": count,
+                        "unique_paths_count": unique_paths_count,
                         "wasted_space": wasted_space,
                         "files": files,
                     }
                 )
 
-            # Calculate total wasted space across ALL duplicates (not just this page)
+            # Calculate total wasted space (only counting different paths)
             if total_count > 0:
-                cursor.execute(
-                    """
-                    SELECT SUM(size * (dup_count - 1)) FROM (
-                        SELECT size, COUNT(*) as dup_count
-                        FROM files
-                        WHERE deleted_at IS NULL
-                          AND NOT COALESCE(ignored, 0)
-                          AND md5_hash IS NOT NULL
-                          AND md5_hash != ''
-                          AND size >= ?
-                        GROUP BY md5_hash, size
-                        HAVING COUNT(*) > 1
+                if scan_id and mode == "across_scans":
+                    # Wasted space for files in selected scan that have external duplicates
+                    cursor.execute(
+                        f"""
+                        SELECT SUM(f1.size) FROM files f1
+                        WHERE f1.scan_id = ? AND f1.size >= ?
+                          AND f1.deleted_at IS NULL
+                          AND NOT COALESCE(f1.ignored, 0)
+                          AND f1.{hash_col} IS NOT NULL
+                          AND f1.{hash_col} != ''
+                          AND EXISTS (
+                              SELECT 1 FROM files f2
+                              WHERE f2.{hash_col} = f1.{hash_col}
+                                AND f2.size = f1.size
+                                AND f2.scan_id != ?
+                                AND f2.deleted_at IS NULL
+                                AND NOT COALESCE(f2.ignored, 0)
+                          )
+                        """,
+                        (scan_id, min_size, scan_id)
                     )
-                """,
-                    (min_size,),
-                )
+                else:
+                    # Total wasted space from unique path duplicates
+                    cursor.execute(
+                        f"""
+                        SELECT SUM(size * (path_count - 1)) FROM (
+                            SELECT size, COUNT(DISTINCT directory_id || '/' || filename) as path_count
+                            FROM files
+                            WHERE size >= ?
+                              AND deleted_at IS NULL
+                              AND NOT COALESCE(ignored, 0)
+                              AND {hash_col} IS NOT NULL
+                              AND {hash_col} != ''
+                            GROUP BY {hash_col}, size
+                            HAVING COUNT(DISTINCT directory_id || '/' || filename) > 1
+                        )
+                        """,
+                        (min_size,)
+                    )
                 total_wasted = cursor.fetchone()[0] or 0
             else:
                 total_wasted = 0
@@ -646,6 +784,9 @@ def create_app(config: DatabaseConfig | None = None):
                 duplicate_groups=duplicate_groups,
                 total_wasted=total_wasted,
                 min_size=min_size,
+                scans=scans,
+                selected_scan_id=scan_id,
+                mode=mode,
                 pagination=pagination,
             )
         finally:

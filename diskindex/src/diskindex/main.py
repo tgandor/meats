@@ -318,7 +318,10 @@ def cmd_delete_scan(args):
                 print("Cancelled.")
                 return 0
 
-        # Delete the scan (CASCADE will delete all related records)
+        # Manually delete related rows to avoid relying on DB-level foreign keys
+        cursor.execute(f"DELETE FROM files WHERE scan_id = {args.scan_id}")
+        cursor.execute(f"DELETE FROM directories WHERE scan_id = {args.scan_id}")
+        cursor.execute(f"DELETE FROM volumes WHERE scan_id = {args.scan_id}")
         cursor.execute(f"DELETE FROM scans WHERE id = {args.scan_id}")
         conn.commit()
 

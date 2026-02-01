@@ -8,15 +8,57 @@
 
 <div class="card">
     <form class="search-form" method="get" action="/duplicates">
-        <label for="min_size">Minimum Size (KB):</label>
-        <input type="number" name="min_size" id="min_size" placeholder="Min file size (KB)" value="{{ min_size // 1024 }}">
-        <button type="submit" class="btn">Filter</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+                <label for="min_size">Minimum Size (KB):</label>
+                <input type="number" name="min_size" id="min_size" placeholder="Min file size (KB)" value="{{ min_size // 1024 }}">
+            </div>
+
+            <div>
+                <label for="scan_id">Filter by Scan:</label>
+                <select name="scan_id" id="scan_id">
+                    <option value="">All Scans</option>
+                    {% for scan in scans %}
+                    <option value="{{ scan[0] if scan is sequence else scan.id }}"
+                            {% if selected_scan_id == (scan[0] if scan is sequence else scan.id) %}selected{% endif %}>
+                        {{ (scan[1] if scan is sequence else scan.scan_path) }}
+                        ({{ (scan[2] if scan is sequence else scan.scan_date) | datetimeformat }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem;">Duplicate Mode:</label>
+            <label style="margin-right: 1.5rem;">
+                <input type="radio" name="mode" value="across_scans" {% if mode == "across_scans" %}checked{% endif %}>
+                Show files with copies in other scans/paths
+            </label>
+            <label>
+                <input type="radio" name="mode" value="within_scan" {% if mode == "within_scan" %}checked{% endif %}>
+                Show duplicates within selected scan only
+            </label>
+        </div>
+
+        <button type="submit" class="btn">Apply Filters</button>
     </form>
 
     {% if pagination and pagination.total_count > 0 %}
     <div style="margin-top: 1rem;">
         <p><strong>Total wasted space:</strong> <span class="badge badge-danger">{{ total_wasted | filesizeformat }}</span></p>
         <p><strong>Duplicate groups found:</strong> {{ pagination.total_count }}</p>
+        {% if selected_scan_id %}
+        <p><em>
+            {% if mode == "across_scans" %}
+            Showing files from selected scan that have copies in other scans/locations
+            {% else %}
+            Showing only duplicates within the selected scan
+            {% endif %}
+        </em></p>
+        {% else %}
+        <p><em>Showing duplicates across all scans (same file scanned multiple times is excluded)</em></p>
+        {% endif %}
     </div>
     {% endif %}
 </div>
@@ -26,7 +68,10 @@
     <div class="duplicate-group">
         <div class="duplicate-group-header">
             <div>
-                <span class="badge badge-warning">{{ group.count }} copies</span>
+                <span class="badge badge-warning">{{ group.unique_paths_count }} unique paths</span>
+                {% if group.count != group.unique_paths_count %}
+                <span class="badge" style="background: #888;">{{ group.count }} total scans</span>
+                {% endif %}
                 Size: {{ group.size | filesizeformat }} each
                 · Wasted: <strong>{{ group.wasted_space | filesizeformat }}</strong>
             </div>
@@ -37,14 +82,25 @@
 
         <ul class="file-list">
             {% for file in group.files %}
-            <li>📄 {{ file.path }}</li>
+            <li class="{% if file.is_selected_scan %}selected-scan{% endif %} {% if file.is_duplicate_path %}duplicate-path{% endif %}">
+                📄 {{ file.path }}
+                <span class="scan-info">
+                    <span class="badge" style="background: #{% if file.is_selected_scan %}4CAF50{% else %}2196F3{% endif %}; font-size: 0.75em;">
+                        Scan #{{ file.scan_id }}: {{ file.scan_path }}
+                    </span>
+                    <span style="color: #888; font-size: 0.85em;">{{ file.scan_date | datetimeformat }}</span>
+                    {% if file.is_duplicate_path %}
+                    <span class="badge" style="background: #FF9800; font-size: 0.7em;">RESCAN</span>
+                    {% endif %}
+                </span>
+            </li>
             {% endfor %}
         </ul>
     </div>
     {% endfor %}
 
     {% if pagination %}
-    {% set kwargs = {'min_size': min_size // 1024} %}
+    {% set kwargs = {'min_size': min_size // 1024, 'scan_id': selected_scan_id, 'mode': mode} %}
     {{ render_pagination(pagination, 'duplicates', **kwargs) }}
     {% endif %}
 {% else %}
@@ -53,4 +109,28 @@
     <p>Try scanning more directories or reducing the minimum file size filter.</p>
 </div>
 {% endif %}
+
+<style>
+.selected-scan {
+    background-color: #e8f5e9;
+    border-left: 3px solid #4CAF50;
+    padding-left: 0.5rem !important;
+}
+
+.duplicate-path {
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.scan-info {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.9em;
+}
+
+.file-list li {
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+</style>
 {% endblock %}
