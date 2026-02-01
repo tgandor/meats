@@ -18,7 +18,6 @@ sudo apt-get install -y \
     sqlite3 \
     tmux \
     vim \
-    vlc-nox \
 
 pipx ensurepath
 pipx install poetry uv
