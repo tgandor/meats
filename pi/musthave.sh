@@ -1,19 +1,19 @@
 #!/bin/bash
 
+set -e
+
 if [ -z  "`find /var/cache/apt/pkgcache.bin -mmin -30`" ] ; then
     sudo apt update
     sudo apt -y upgrade
 fi
 
 sudo apt-get install -y \
-    htop \
     iftop \
     iotop \
     jq \
     kdesdk-scripts \
     mc \
     mercurial \
-    net-tools \
     pipx \
     sqlite3 \
     tmux \
