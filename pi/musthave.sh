@@ -6,18 +6,22 @@ if [ -z  "`find /var/cache/apt/pkgcache.bin -mmin -30`" ] ; then
 fi
 
 sudo apt-get install -y \
-    aptitude \
     htop \
+    iftop \
+    iotop \
+    jq \
     kdesdk-scripts \
     mc \
-    python3 \
-    python3-pip \
-    python-pip \
-    screen \
+    mercurial \
+    net-tools \
+    pipx \
+    sqlite3 \
     tmux \
     vim \
     vlc-nox \
-    zip \
+
+pipx ensurepath
+pipx install poetry uv
 
 if [ ! -e $HOME/.bash_aliases ] ; then
     echo Creating $HOME/.bash_aliases
