@@ -14,9 +14,20 @@ parser.add_argument("--quiet", "-q", action="store_true")
 args = parser.parse_args()
 
 search = args.search
+skip_patterns = [
+    "__pycache__",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "node_modules",
+]
 
 for directory, _, files in os.walk("."):
-    if directory[2:].startswith("."):  # skip .\
+    if any(pattern in directory for pattern in skip_patterns):
         continue
     for f in files:
         if f.startswith(".") and not args.all:
