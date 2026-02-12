@@ -799,6 +799,9 @@ def create_app(config: DatabaseConfig | None = None):
         if bytes_value is None:
             return "0 B"
 
+        # for decimals:
+        bytes_value = float(bytes_value)
+
         for unit in ["B", "KB", "MB", "GB", "TB"]:
             if bytes_value < 1024.0:
                 return f"{bytes_value:.1f} {unit}"
