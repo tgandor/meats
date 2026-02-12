@@ -82,12 +82,12 @@ def create_app(config: DatabaseConfig | None = None):
             scan_count = cursor.fetchone()[0]
 
             cursor.execute(
-                "SELECT COUNT(*) FROM files WHERE deleted_at IS NULL AND NOT COALESCE(ignored, 0)"
+                "SELECT COUNT(*) FROM files WHERE deleted_at IS NULL AND NOT COALESCE(ignored, false)"
             )
             file_count = cursor.fetchone()[0]
 
             cursor.execute(
-                "SELECT SUM(size) FROM files WHERE deleted_at IS NULL AND NOT COALESCE(ignored, 0)"
+                "SELECT SUM(size) FROM files WHERE deleted_at IS NULL AND NOT COALESCE(ignored, false)"
             )
             total_size = cursor.fetchone()[0] or 0
 
@@ -109,7 +109,7 @@ def create_app(config: DatabaseConfig | None = None):
 
                 # Get file count for this scan
                 cursor.execute(
-                    f"SELECT COUNT(*) FROM files WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, 0)"
+                    f"SELECT COUNT(*) FROM files WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, false)"
                 )
                 files_in_scan = cursor.fetchone()[0]
 
@@ -173,7 +173,7 @@ def create_app(config: DatabaseConfig | None = None):
                 # Get file count and total size
                 cursor.execute(
                     f"SELECT COUNT(*), SUM(size) FROM files "
-                    f"WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, 0)"
+                    f"WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, false)"
                 )
                 count_row = cursor.fetchone()
                 file_count = count_row[0]
@@ -234,7 +234,7 @@ def create_app(config: DatabaseConfig | None = None):
             # Get file statistics
             cursor.execute(
                 f"SELECT COUNT(*), SUM(size) FROM files "
-                f"WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, 0)"
+                f"WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, false)"
             )
             count_row = cursor.fetchone()
             scan_data["file_count"] = count_row[0]
@@ -243,7 +243,7 @@ def create_app(config: DatabaseConfig | None = None):
             # Get file type breakdown
             cursor.execute(
                 f"SELECT extension, COUNT(*), SUM(size) FROM files "
-                f"WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, 0) "
+                f"WHERE scan_id = {scan_id} AND deleted_at IS NULL AND NOT COALESCE(ignored, false) "
                 f"GROUP BY extension ORDER BY COUNT(*) DESC LIMIT 10"
             )
             extensions = []
@@ -359,7 +359,7 @@ def create_app(config: DatabaseConfig | None = None):
                 FROM scans
                 LEFT JOIN files ON scans.id = files.scan_id
                     AND files.deleted_at IS NULL
-                    AND NOT COALESCE(files.ignored, 0)
+                    AND NOT COALESCE(files.ignored, false)
                 GROUP BY scans.id, scans.scan_path, scans.scan_date
                 ORDER BY scans.scan_date DESC
             """
@@ -380,7 +380,7 @@ def create_app(config: DatabaseConfig | None = None):
                 )
 
             # Build search query
-            conditions = ["files.deleted_at IS NULL", "NOT COALESCE(files.ignored, 0)"]
+            conditions = ["files.deleted_at IS NULL", "NOT COALESCE(files.ignored, false)"]
             params = []
 
             if query:
@@ -416,7 +416,7 @@ def create_app(config: DatabaseConfig | None = None):
                             SELECT md5_hash FROM files
                             WHERE scan_id = ?
                               AND deleted_at IS NULL
-                              AND NOT COALESCE(ignored, 0)
+                              AND NOT COALESCE(ignored, false)
                               AND md5_hash IS NOT NULL
                               AND md5_hash != ''
                             GROUP BY md5_hash
@@ -431,7 +431,7 @@ def create_app(config: DatabaseConfig | None = None):
                         files.md5_hash NOT IN (
                             SELECT md5_hash FROM files
                             WHERE deleted_at IS NULL
-                              AND NOT COALESCE(ignored, 0)
+                              AND NOT COALESCE(ignored, false)
                               AND md5_hash IS NOT NULL
                               AND md5_hash != ''
                             GROUP BY md5_hash
@@ -539,7 +539,7 @@ def create_app(config: DatabaseConfig | None = None):
             # Build WHERE clauses based on filters
             where_clauses = [
                 "deleted_at IS NULL",
-                "NOT COALESCE(ignored, 0)",
+                "NOT COALESCE(ignored, false)",
                 "md5_hash IS NOT NULL",
                 "md5_hash != ''",
             ]
@@ -557,7 +557,7 @@ def create_app(config: DatabaseConfig | None = None):
                         SELECT COUNT(DISTINCT f1.{hash_col}) FROM files f1
                         WHERE f1.scan_id = ? AND f1.size >= ?
                           AND f1.deleted_at IS NULL
-                          AND NOT COALESCE(f1.ignored, 0)
+                          AND NOT COALESCE(f1.ignored, false)
                           AND f1.{hash_col} IS NOT NULL
                           AND f1.{hash_col} != ''
                           AND EXISTS (
@@ -566,7 +566,7 @@ def create_app(config: DatabaseConfig | None = None):
                                 AND f2.size = f1.size
                                 AND f2.scan_id != ?
                                 AND f2.deleted_at IS NULL
-                                AND NOT COALESCE(f2.ignored, 0)
+                                AND NOT COALESCE(f2.ignored, false)
                           )
                     """
                     cursor.execute(count_sql, (scan_id, min_size, scan_id))
@@ -578,7 +578,7 @@ def create_app(config: DatabaseConfig | None = None):
                             FROM files
                             WHERE scan_id = ? AND size >= ?
                               AND deleted_at IS NULL
-                              AND NOT COALESCE(ignored, 0)
+                              AND NOT COALESCE(ignored, false)
                               AND {hash_col} IS NOT NULL
                               AND {hash_col} != ''
                             GROUP BY {hash_col}, size
@@ -594,7 +594,7 @@ def create_app(config: DatabaseConfig | None = None):
                             FROM files
                             WHERE size >= ?
                               AND deleted_at IS NULL
-                              AND NOT COALESCE(ignored, 0)
+                              AND NOT COALESCE(ignored, false)
                               AND {hash_col} IS NOT NULL
                               AND {hash_col} != ''
                             GROUP BY {hash_col}, size
@@ -615,10 +615,10 @@ def create_app(config: DatabaseConfig | None = None):
                         AND f2.size = f1.size
                         AND f2.scan_id != f1.scan_id
                         AND f2.deleted_at IS NULL
-                        AND NOT COALESCE(f2.ignored, 0)
+                        AND NOT COALESCE(f2.ignored, false)
                     WHERE f1.scan_id = ? AND f1.size >= ?
                       AND f1.deleted_at IS NULL
-                      AND NOT COALESCE(f1.ignored, 0)
+                      AND NOT COALESCE(f1.ignored, false)
                       AND f1.{hash_col} IS NOT NULL
                       AND f1.{hash_col} != ''
                     GROUP BY f1.{hash_col}, f1.size
@@ -633,7 +633,7 @@ def create_app(config: DatabaseConfig | None = None):
                     FROM files
                     WHERE scan_id = ? AND size >= ?
                       AND deleted_at IS NULL
-                      AND NOT COALESCE(ignored, 0)
+                      AND NOT COALESCE(ignored, false)
                       AND {hash_col} IS NOT NULL
                       AND {hash_col} != ''
                     GROUP BY {hash_col}, size
@@ -649,7 +649,7 @@ def create_app(config: DatabaseConfig | None = None):
                     FROM files
                     WHERE size >= ?
                       AND deleted_at IS NULL
-                      AND NOT COALESCE(ignored, 0)
+                      AND NOT COALESCE(ignored, false)
                       AND {hash_col} IS NOT NULL
                       AND {hash_col} != ''
                     GROUP BY {hash_col}, size
@@ -678,7 +678,7 @@ def create_app(config: DatabaseConfig | None = None):
                     JOIN scans ON files.scan_id = scans.id
                     WHERE files.{hash_col} = ?
                       AND files.deleted_at IS NULL
-                      AND NOT COALESCE(files.ignored, 0)
+                      AND NOT COALESCE(files.ignored, false)
                     ORDER BY scans.scan_date DESC, directories.path, files.filename
                     """,
                     (md5,),
@@ -742,7 +742,7 @@ def create_app(config: DatabaseConfig | None = None):
                         SELECT SUM(f1.size) FROM files f1
                         WHERE f1.scan_id = ? AND f1.size >= ?
                           AND f1.deleted_at IS NULL
-                          AND NOT COALESCE(f1.ignored, 0)
+                          AND NOT COALESCE(f1.ignored, false)
                           AND f1.{hash_col} IS NOT NULL
                           AND f1.{hash_col} != ''
                           AND EXISTS (
@@ -751,7 +751,7 @@ def create_app(config: DatabaseConfig | None = None):
                                 AND f2.size = f1.size
                                 AND f2.scan_id != ?
                                 AND f2.deleted_at IS NULL
-                                AND NOT COALESCE(f2.ignored, 0)
+                                AND NOT COALESCE(f2.ignored, false)
                           )
                         """,
                         (scan_id, min_size, scan_id)
@@ -765,7 +765,7 @@ def create_app(config: DatabaseConfig | None = None):
                             FROM files
                             WHERE size >= ?
                               AND deleted_at IS NULL
-                              AND NOT COALESCE(ignored, 0)
+                              AND NOT COALESCE(ignored, false)
                               AND {hash_col} IS NOT NULL
                               AND {hash_col} != ''
                             GROUP BY {hash_col}, size
