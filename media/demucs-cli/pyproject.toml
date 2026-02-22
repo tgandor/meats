@@ -1,0 +1,16 @@
+[project]
+name = "demucs-cli"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "rich>=14.3.3",
+    "soundfile>=0.13.1",
+    "torch>=2.10.0",
+    "torchaudio>=2.10.0",
+    "typer>=0.24.1",
+]
+
+[project.scripts]
+demucs = "demucs_cli.main:app"
