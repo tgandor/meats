@@ -503,11 +503,22 @@ class Scanner:
                     self.stats["ignored"] += 1
                     continue
 
-                if entry.is_symlink():
+                # Check file type with error handling for Windows issues
+                try:
+                    is_symlink = entry.is_symlink()
+                    is_dir = entry.is_dir()
+                    is_file = entry.is_file()
+                except OSError as e:
+                    # Handle Windows errors like winerror 1920 (can't access file)
+                    show(f"Warning: Cannot access {entry}: {e}")
+                    self.stats["errors"] += 1
+                    continue
+
+                if is_symlink:
                     # Skip symlinks to avoid loops
                     continue
 
-                if entry.is_dir():
+                if is_dir:
                     # Check filesystem boundary if one_filesystem is enabled
                     if self.one_filesystem and self.root_device is not None:
                         try:
@@ -529,7 +540,7 @@ class Scanner:
                         regular_patterns,
                         exception_patterns,
                     )
-                elif entry.is_file():
+                elif is_file:
                     # Process file
                     try:
                         stat = entry.stat()
