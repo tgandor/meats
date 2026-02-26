@@ -19,7 +19,12 @@
         </tr>
         <tr>
             <th>Path</th>
-            <td><code>{{ scan.path }}</code></td>
+            <td>
+                <code>{{ scan.path }}</code>
+                {% if scan.root_directory_id %}
+                <a href="/directory/{{ scan.root_directory_id }}" class="btn-small" style="margin-left: 1rem;">📁 Browse</a>
+                {% endif %}
+            </td>
         </tr>
         <tr>
             <th>Duration</th>

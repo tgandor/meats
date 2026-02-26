@@ -357,17 +357,13 @@ def run_migrations(config: DatabaseConfig) -> None:
             if "guid" not in columns:
                 # Add column without UNIQUE constraint (can't add UNIQUE to existing table with data)
                 if config.backend == "sqlite":
-                    cursor.execute(
-                        "ALTER TABLE scans ADD COLUMN guid TEXT"
-                    )
+                    cursor.execute("ALTER TABLE scans ADD COLUMN guid TEXT")
                     # Create unique index separately
                     cursor.execute(
                         "CREATE UNIQUE INDEX IF NOT EXISTS idx_scans_guid ON scans(guid) WHERE guid IS NOT NULL"
                     )
                 else:  # postgresql
-                    cursor.execute(
-                        "ALTER TABLE scans ADD COLUMN guid TEXT"
-                    )
+                    cursor.execute("ALTER TABLE scans ADD COLUMN guid TEXT")
                     # Create unique index separately
                     cursor.execute(
                         "CREATE UNIQUE INDEX IF NOT EXISTS idx_scans_guid ON scans(guid) WHERE guid IS NOT NULL"
@@ -383,7 +379,7 @@ def run_migrations(config: DatabaseConfig) -> None:
                     new_guid = uuid.uuid4().hex
                     cursor.execute(
                         f"UPDATE scans SET guid = {placeholder} WHERE id = {placeholder}",
-                        (new_guid, scan_id)
+                        (new_guid, scan_id),
                     )
                 print(f"Generated GUIDs for {len(scans_without_guid)} existing scans")
 

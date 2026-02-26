@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+
+{% block title %}Directory: {{ directory.path }} - Diskindex{% endblock %}
+
+{% block content %}
+<h1>📁 Directory Browser</h1>
+
+<div class="card">
+    <h2>{{ directory.path }}</h2>
+    <p><strong>Scan:</strong> <a href="/scan/{{ directory.scan_id }}">{{ directory.scan_path }}</a></p>
+
+    {% if directory.parent_id %}
+    <div style="margin: 1rem 0;">
+        <a href="/directory/{{ directory.parent_id }}" class="btn">⬆️ Parent Directory</a>
+    </div>
+    {% endif %}
+
+    <div style="margin: 1rem 0;">
+        <form method="post" action="/directory/{{ directory.id }}/check_duplicates">
+            <button type="submit" class="btn">🔍 Check Duplicates</button>
+        </form>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+        <div class="stat-card">
+            <h3>Files</h3>
+            <div class="value">{{ "{:,}".format(total_files) }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Size</h3>
+            <div class="value">{{ total_size | filesizeformat }}</div>
+        </div>
+    </div>
+</div>
+
+{% if subdirs %}
+<div class="card">
+    <h2>📂 Subdirectories ({{ subdirs|length }})</h2>
+    <div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>Path</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subdir in subdirs %}
+            <tr>
+                <td class="path-cell" title="{{ subdir.path }}">
+                    <a href="/directory/{{ subdir.id }}">📁 <code>{{ subdir.path }}</code></a>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <form method="post" action="/directory/{{ subdir.id }}/delete/soft" style="display: inline;">
+                            <button type="submit" class="btn-small btn-warning" title="Mark all files as deleted">
+                                Soft Delete
+                            </button>
+                        </form>
+                        <form method="post" action="/directory/{{ subdir.id }}/delete/hard"
+                              style="display: inline;"
+                              onsubmit="return confirm('⚠️ Delete ALL files in this directory from disk?\n\nPath: {{ subdir.path }}\n\nThis action cannot be undone!');">
+                            <button type="submit" class="btn-small btn-danger" title="Delete all files from filesystem">
+                                Hard Delete
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+
+{% if files %}
+<div class="card">
+    <h2>📄 Files ({{ files|length }})</h2>
+    <div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Extension</th>
+                <th>Size</th>
+                <th>Modified</th>
+                <th>MD5</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for file in files %}
+            <tr>
+                <td><strong>{{ file.filename }}</strong></td>
+                <td><code>{{ file.extension or '-' }}</code></td>
+                <td>{{ file.size | filesizeformat }}</td>
+                <td>{{ file.mtime | datetimeformat }}</td>
+                <td>
+                    {% if file.md5 %}
+                    <code style="font-size: 0.75em;">{{ file.md5[:16] }}...</code>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <form method="post" action="/file/{{ file.id }}/delete/soft" style="display: inline;">
+                            <button type="submit" class="btn-small btn-warning" title="Mark as deleted in database">
+                                Soft
+                            </button>
+                        </form>
+                        <form method="post" action="/file/{{ file.id }}/delete/hard"
+                              style="display: inline;"
+                              onsubmit="return confirm('⚠️ Delete file from disk?\n\nFile: {{ file.filename }}\n\nThis action cannot be undone!');">
+                            <button type="submit" class="btn-small btn-danger" title="Delete from filesystem">
+                                Hard
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <p>No files in this directory.</p>
+</div>
+{% endif %}
+
+<div class="card" style="margin-top: 1rem; background: #fff3cd; border-left: 4px solid #ffc107;">
+    <h3>⚠️ Directory Actions</h3>
+    <p>Delete all files in this directory (does not include subdirectories):</p>
+    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        <form method="post" action="/directory/{{ directory.id }}/delete/soft" style="display: inline;">
+            <button type="submit" class="btn btn-warning"
+                    onclick="return confirm('Mark all {{ total_files }} file(s) in this directory as deleted?');">
+                Soft Delete All Files
+            </button>
+        </form>
+        <form method="post" action="/directory/{{ directory.id }}/delete/hard"
+              style="display: inline;"
+              onsubmit="return confirm('⚠️ DELETE ALL FILES IN THIS DIRECTORY FROM DISK?\n\nThis will delete {{ total_files }} file(s).\n\nThis action CANNOT be undone!');">
+            <button type="submit" class="btn btn-danger">
+                Hard Delete All Files
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

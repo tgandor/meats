@@ -64,19 +64,25 @@
                     -
                     {% endif %}
                 </td>
-                <td class="path-cell" title="{{ file.path }}"><code style="font-size: 0.85em;">{{ file.path }}</code></td>
+                <td class="path-cell" title="{{ file.path }}">
+                    <code style="font-size: 0.85em;">{{ file.path }}</code>
+                    <a href="/directory/{{ file.directory_id }}" title="Browse directory" style="margin-left: 0.5rem;">📁</a>
+                </td>
                 <td>
-                        <form method="post" action="/file/{{ file.id }}/delete/soft">
+                    <div style="display: flex; gap: 0.25rem;">
+                        <form method="post" action="/file/{{ file.id }}/delete/soft" style="display: inline;">
                             <button type="submit" class="btn-small btn-warning" title="Mark as deleted in database">
-                                🗑️ Soft
+                                Soft
                             </button>
                         </form>
                         <form method="post" action="/file/{{ file.id }}/delete/hard"
+                              style="display: inline;"
                               onsubmit="return confirm('⚠️ Delete file from disk?\n\nPath: {{ file.path }}\n\nThis action cannot be undone!');">
                             <button type="submit" class="btn-small btn-danger" title="Delete from filesystem">
-                                🗑️ Hard
+                                Hard
                             </button>
                         </form>
+                    </div>
                 </td>
             </tr>
             {% endfor %}

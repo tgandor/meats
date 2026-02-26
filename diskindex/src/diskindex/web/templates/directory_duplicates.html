@@ -1,0 +1,193 @@
+{% extends "layout.html" %}
+
+{% block title %}Duplicate Check: {{ directory_path }} - Diskindex{% endblock %}
+
+{% block content %}
+<h1>🔍 Duplicate Check Results</h1>
+
+<div style="margin-bottom: 1rem;">
+    <a href="/directory/{{ directory_id }}" class="btn">⬅️ Back to Directory</a>
+</div>
+
+<div class="card">
+    <h2>{{ directory_path }}</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h3>Total Files</h3>
+            <div class="value">{{ "{:,}".format(total_files) }}</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <h3>Files with Duplicates</h3>
+            <div class="value">{{ "{:,}".format(duplicate_count) }}</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <h3>Unique Files</h3>
+            <div class="value">{{ "{:,}".format(unique_count) }}</div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+        <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+            <h3>Wasted Space</h3>
+            <div class="value">{{ duplicate_size | filesizeformat }}</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+            <h3>Total Size</h3>
+            <div class="value">{{ total_size | filesizeformat }}</div>
+        </div>
+    </div>
+
+    {% if duplicate_count > 0 %}
+    <div style="margin-top: 1rem; padding: 1rem; background: #fff3cd; border-radius: 4px;">
+        <p><strong>Duplicate Ratio:</strong>
+            {{ "%.1f" | format((duplicate_count / total_files * 100) if total_files > 0 else 0) }}% of files have duplicates
+        </p>
+        <p><strong>Space Waste:</strong>
+            {{ "%.1f" | format((duplicate_size / total_size * 100) if total_size > 0 else 0) }}% of total size is wasted
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+{% if duplicate_examples %}
+<div class="card">
+    <h2>🔄 Duplicate Files (showing up to 10 groups)</h2>
+    {% for group in duplicate_examples %}
+    <div class="duplicate-group" style="margin-bottom: 1rem;">
+        <div class="duplicate-group-header">
+            <div>
+                <span class="badge badge-warning">{{ group.count }} copies</span>
+                Size: {{ group.size | filesizeformat }} each
+                · Wasted: <strong>{{ (group.size * (group.count - 1)) | filesizeformat }}</strong>
+            </div>
+            <div>
+                MD5: <code style="font-size: 0.85em;">{{ group.md5 }}</code>
+            </div>
+        </div>
+        <ul class="file-list">
+            {% for file in group.files %}
+            <li>
+                <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+                    <div style="flex: 1; min-width: 0;">
+                        📄 {{ file.path }}
+                    </div>
+                    <div style="display: flex; gap: 0.25rem; flex-shrink: 0;">
+                        <form method="post" action="/file/{{ file.id }}/delete/soft" style="display: inline;">
+                            <button type="submit" class="btn-small btn-warning" title="Mark as deleted">Soft</button>
+                        </form>
+                        <form method="post" action="/file/{{ file.id }}/delete/hard"
+                              style="display: inline;"
+                              onsubmit="return confirm('⚠️ Delete file from disk?\n\nPath: {{ file.path }}\n\nThis action cannot be undone!');">
+                            <button type="submit" class="btn-small btn-danger" title="Delete from filesystem">Hard</button>
+                        </form>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+
+    {% if duplicate_count > (duplicate_examples | length) %}
+    <p style="margin-top: 1rem; color: #666;">
+        <em>... and {{ duplicate_count - (duplicate_examples | map(attribute='count') | sum) }} more duplicate files not shown</em>
+    </p>
+    {% endif %}
+</div>
+{% else %}
+<div class="card">
+    <p style="color: #28a745;">✅ No duplicate files found in this directory tree!</p>
+</div>
+{% endif %}
+
+{% if unique_examples %}
+<div class="card">
+    <h2>✨ Unique Files (showing up to 10)</h2>
+    <div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Size</th>
+                <th>Path</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for file in unique_examples %}
+            <tr>
+                <td><strong>{{ file.filename }}</strong></td>
+                <td>{{ file.size | filesizeformat }}</td>
+                <td class="path-cell" title="{{ file.path }}"><code style="font-size: 0.85em;">{{ file.path }}</code></td>
+                <td>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <form method="post" action="/file/{{ file.id }}/delete/soft" style="display: inline;">
+                            <button type="submit" class="btn-small btn-warning" title="Mark as deleted">Soft</button>
+                        </form>
+                        <form method="post" action="/file/{{ file.id }}/delete/hard"
+                              style="display: inline;"
+                              onsubmit="return confirm('⚠️ Delete file from disk?\n\nPath: {{ file.path }}\n\nThis action cannot be undone!');">
+                            <button type="submit" class="btn-small btn-danger" title="Delete from filesystem">Hard</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    {% if unique_count > 10 %}
+    <p style="margin-top: 1rem; color: #666;">
+        <em>... and {{ unique_count - 10 }} more unique files not shown</em>
+    </p>
+    {% endif %}
+</div>
+{% endif %}
+
+<style>
+.duplicate-group {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 1rem;
+    border-radius: 4px;
+}
+
+.duplicate-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #ffc107;
+}
+
+.file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.file-list li {
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    background: white;
+    border-radius: 3px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.badge-warning {
+    background: #ffc107;
+    color: #000;
+}
+</style>
+
+{% endblock %}

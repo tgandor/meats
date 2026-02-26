@@ -170,6 +170,14 @@ def create_app(config: DatabaseConfig | None = None):
                     duration = row["duration_seconds"]
                     notes = row["notes"]
 
+                # Get root directory ID
+                cursor.execute(
+                    f"SELECT id FROM directories "
+                    f"WHERE scan_id = {scan_id} AND parent_id IS NULL LIMIT 1"
+                )
+                root_dir_row = cursor.fetchone()
+                root_dir_id = root_dir_row[0] if root_dir_row else None
+
                 # Get file count and total size
                 cursor.execute(
                     f"SELECT COUNT(*), SUM(size) FROM files "
@@ -188,6 +196,7 @@ def create_app(config: DatabaseConfig | None = None):
                         "notes": notes,
                         "file_count": file_count,
                         "total_size": total_size,
+                        "root_directory_id": root_dir_id,
                     }
                 )
 
@@ -230,6 +239,14 @@ def create_app(config: DatabaseConfig | None = None):
                     "duration": row["duration_seconds"],
                     "notes": row["notes"],
                 }
+
+            # Get root directory ID for this scan
+            cursor.execute(
+                f"SELECT id FROM directories "
+                f"WHERE scan_id = {scan_id} AND parent_id IS NULL LIMIT 1"
+            )
+            root_dir_row = cursor.fetchone()
+            scan_data["root_directory_id"] = root_dir_row[0] if root_dir_row else None
 
             # Get file statistics
             cursor.execute(
@@ -380,7 +397,10 @@ def create_app(config: DatabaseConfig | None = None):
                 )
 
             # Build search query
-            conditions = ["files.deleted_at IS NULL", "NOT COALESCE(files.ignored, false)"]
+            conditions = [
+                "files.deleted_at IS NULL",
+                "NOT COALESCE(files.ignored, false)",
+            ]
             params = []
 
             if query:
@@ -474,7 +494,17 @@ def create_app(config: DatabaseConfig | None = None):
             results = []
             for row in cursor.fetchall():
                 if isinstance(row, tuple):
-                    file_id, filename, ext, size, mtime, md5, dir_id, dir_path, scan_path = row
+                    (
+                        file_id,
+                        filename,
+                        ext,
+                        size,
+                        mtime,
+                        md5,
+                        dir_id,
+                        dir_path,
+                        scan_path,
+                    ) = row
                 else:
                     file_id = row["id"]
                     filename = row["filename"]
@@ -526,7 +556,9 @@ def create_app(config: DatabaseConfig | None = None):
             request.args.get("min_size", 1, type=int) * 1024
         )  # Default 1KB minimum
         scan_id = request.args.get("scan_id", type=int)
-        mode = request.args.get("mode", "across_scans")  # "within_scan" or "across_scans"
+        mode = request.args.get(
+            "mode", "across_scans"
+        )  # "within_scan" or "across_scans"
         page, per_page, offset = get_page_args()
 
         conn = config.get_connection()
@@ -674,7 +706,7 @@ def create_app(config: DatabaseConfig | None = None):
                 # Get all files in this duplicate group (across all scans for context)
                 cursor.execute(
                     f"""
-                    SELECT files.id, files.filename, files.scan_id,
+                    SELECT files.id, files.filename, files.scan_id, files.directory_id,
                            directories.path, scans.scan_path, scans.scan_date
                     FROM files
                     JOIN directories ON files.directory_id = directories.id
@@ -691,11 +723,20 @@ def create_app(config: DatabaseConfig | None = None):
                 seen_paths = set()  # Track unique file paths
                 for file_row in cursor.fetchall():
                     if isinstance(file_row, tuple):
-                        file_id, filename, file_scan_id, dir_path, scan_path, scan_date = file_row
+                        (
+                            file_id,
+                            filename,
+                            file_scan_id,
+                            dir_id,
+                            dir_path,
+                            scan_path,
+                            scan_date,
+                        ) = file_row
                     else:
                         file_id = file_row["id"]
                         filename = file_row["filename"]
                         file_scan_id = file_row["scan_id"]
+                        dir_id = file_row["directory_id"]
                         dir_path = file_row["path"]
                         scan_path = file_row["scan_path"]
                         scan_date = file_row["scan_date"]
@@ -712,6 +753,7 @@ def create_app(config: DatabaseConfig | None = None):
                             "id": file_id,
                             "filename": filename,
                             "path": full_path,
+                            "directory_id": dir_id,
                             "scan_id": file_scan_id,
                             "scan_path": scan_path,
                             "scan_date": scan_date,
@@ -723,7 +765,9 @@ def create_app(config: DatabaseConfig | None = None):
 
                 # Calculate actual duplicates (different paths only)
                 unique_paths_count = len(seen_paths)
-                wasted_space = size * (unique_paths_count - 1) if unique_paths_count > 1 else 0
+                wasted_space = (
+                    size * (unique_paths_count - 1) if unique_paths_count > 1 else 0
+                )
 
                 duplicate_groups.append(
                     {
@@ -757,7 +801,7 @@ def create_app(config: DatabaseConfig | None = None):
                                 AND NOT COALESCE(f2.ignored, false)
                           )
                         """,
-                        (scan_id, min_size, scan_id)
+                        (scan_id, min_size, scan_id),
                     )
                 else:
                     # Total wasted space from unique path duplicates
@@ -775,7 +819,7 @@ def create_app(config: DatabaseConfig | None = None):
                             HAVING COUNT(DISTINCT directory_id || '/' || filename) > 1
                         )
                         """,
-                        (min_size,)
+                        (min_size,),
                     )
                 total_wasted = cursor.fetchone()[0] or 0
             else:
@@ -1033,7 +1077,10 @@ def create_app(config: DatabaseConfig | None = None):
                 )
                 conn.commit()
 
-                flash(f"File {filename} deleted from disk and marked as deleted", "success")
+                flash(
+                    f"File {filename} deleted from disk and marked as deleted",
+                    "success",
+                )
 
                 # Clear cached counts
                 session.pop("counts", None)
@@ -1227,6 +1274,267 @@ def create_app(config: DatabaseConfig | None = None):
             exists = os.path.exists(full_path)
 
             return {"exists": exists, "path": full_path}
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/directory/<int:dir_id>")
+    def directory_view(dir_id):
+        """View directory contents and manage files."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Get directory info
+            cursor.execute(
+                f"""
+                SELECT directories.id, directories.path, directories.scan_id,
+                       directories.parent_id, scans.scan_path
+                FROM directories
+                JOIN scans ON directories.scan_id = scans.id
+                WHERE directories.id = {dir_id}
+                """
+            )
+            row = cursor.fetchone()
+
+            if not row:
+                flash(f"Directory #{dir_id} not found", "error")
+                return redirect(url_for("index"))
+
+            if isinstance(row, tuple):
+                dir_id, dir_path, scan_id, parent_id, scan_path = row
+            else:
+                dir_id = row["id"]
+                dir_path = row["path"]
+                scan_id = row["scan_id"]
+                parent_id = row["parent_id"]
+                scan_path = row["scan_path"]
+
+            # Get subdirectories
+            cursor.execute(
+                f"""
+                SELECT id, path
+                FROM directories
+                WHERE parent_id = {dir_id}
+                ORDER BY path
+                """
+            )
+            subdirs = []
+            for subdir_row in cursor.fetchall():
+                if isinstance(subdir_row, tuple):
+                    sub_id, sub_path = subdir_row
+                else:
+                    sub_id = subdir_row["id"]
+                    sub_path = subdir_row["path"]
+                subdirs.append({"id": sub_id, "path": sub_path})
+
+            # Get files in this directory
+            cursor.execute(
+                f"""
+                SELECT id, filename, extension, size, mtime, md5_hash, deleted_at
+                FROM files
+                WHERE directory_id = {dir_id} AND deleted_at IS NULL
+                ORDER BY filename
+                """
+            )
+            files = []
+            for file_row in cursor.fetchall():
+                if isinstance(file_row, tuple):
+                    fid, fname, ext, size, mtime, md5, deleted = file_row
+                else:
+                    fid = file_row["id"]
+                    fname = file_row["filename"]
+                    ext = file_row["extension"]
+                    size = file_row["size"]
+                    mtime = file_row["mtime"]
+                    md5 = file_row["md5_hash"]
+                    deleted = file_row["deleted_at"]
+
+                files.append(
+                    {
+                        "id": fid,
+                        "filename": fname,
+                        "extension": ext,
+                        "size": size,
+                        "mtime": mtime,
+                        "md5": md5,
+                    }
+                )
+
+            # Count total files and size
+            total_files = len(files)
+            total_size = sum(f["size"] for f in files)
+
+            return render_template(
+                "directory.html",
+                directory={
+                    "id": dir_id,
+                    "path": dir_path,
+                    "scan_id": scan_id,
+                    "parent_id": parent_id,
+                    "scan_path": scan_path,
+                },
+                subdirs=subdirs,
+                files=files,
+                total_files=total_files,
+                total_size=total_size,
+            )
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/directory/<int:dir_id>/check_duplicates", methods=["POST"])
+    def directory_check_duplicates(dir_id):
+        """Check for duplicates within a directory tree."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Get directory path for display
+            cursor.execute(f"SELECT path FROM directories WHERE id = {dir_id}")
+            dir_row = cursor.fetchone()
+            if not dir_row:
+                flash("Directory not found", "error")
+                return redirect(url_for("index"))
+
+            dir_path = dir_row[0] if isinstance(dir_row, tuple) else dir_row["path"]
+
+            # Get all subdirectories recursively using a recursive query approach
+            # First, collect all descendant directory IDs
+            all_dir_ids = [dir_id]
+            cursor.execute(f"SELECT id FROM directories WHERE parent_id = {dir_id}")
+            child_dirs = [
+                r[0] if isinstance(r, tuple) else r["id"] for r in cursor.fetchall()
+            ]
+
+            while child_dirs:
+                all_dir_ids.extend(child_dirs)
+                placeholders = ",".join(str(d) for d in child_dirs)
+                cursor.execute(
+                    f"SELECT id FROM directories WHERE parent_id IN ({placeholders})"
+                )
+                child_dirs = [
+                    r[0] if isinstance(r, tuple) else r["id"] for r in cursor.fetchall()
+                ]
+
+            # Get all files in this directory tree
+            dir_ids_str = ",".join(str(d) for d in all_dir_ids)
+            cursor.execute(
+                f"""
+                SELECT id, filename, size, md5_hash, directory_id
+                FROM files
+                WHERE directory_id IN ({dir_ids_str})
+                  AND deleted_at IS NULL
+                  AND NOT COALESCE(ignored, false)
+                  AND md5_hash IS NOT NULL
+                  AND md5_hash != ''
+                """
+            )
+
+            files_by_hash = {}
+            all_files = []
+            for row in cursor.fetchall():
+                if isinstance(row, tuple):
+                    fid, fname, size, md5, did = row
+                else:
+                    fid = row["id"]
+                    fname = row["filename"]
+                    size = row["size"]
+                    md5 = row["md5_hash"]
+                    did = row["directory_id"]
+
+                file_info = {
+                    "id": fid,
+                    "filename": fname,
+                    "size": size,
+                    "md5": md5,
+                    "directory_id": did,
+                }
+                all_files.append(file_info)
+
+                if md5 not in files_by_hash:
+                    files_by_hash[md5] = []
+                files_by_hash[md5].append(file_info)
+
+            # Find duplicates (files with same hash appearing multiple times)
+            duplicate_hashes = {
+                h: files for h, files in files_by_hash.items() if len(files) > 1
+            }
+
+            # Calculate statistics
+            total_files = len(all_files)
+            total_size = sum(f["size"] for f in all_files)
+
+            duplicate_files = []
+            duplicate_size = 0
+            for hash_val, files_list in duplicate_hashes.items():
+                duplicate_files.extend(files_list)
+                # Wasted space is (count - 1) * size
+                duplicate_size += files_list[0]["size"] * (len(files_list) - 1)
+
+            unique_files = [f for f in all_files if f["md5"] not in duplicate_hashes]
+
+            # Get up to 10 examples of duplicates
+            duplicate_examples = []
+            for hash_val, files_list in list(duplicate_hashes.items())[:10]:
+                # Get directory paths for each file
+                file_paths = []
+                for f in files_list:
+                    cursor.execute(
+                        f"SELECT path FROM directories WHERE id = {f['directory_id']}"
+                    )
+                    path_row = cursor.fetchone()
+                    path = (
+                        path_row[0] if isinstance(path_row, tuple) else path_row["path"]
+                    )
+                    file_paths.append(
+                        {
+                            "id": f["id"],
+                            "filename": f["filename"],
+                            "path": os.path.join(path, f["filename"]),
+                            "size": f["size"],
+                        }
+                    )
+
+                duplicate_examples.append(
+                    {
+                        "md5": hash_val,
+                        "count": len(files_list),
+                        "size": files_list[0]["size"],
+                        "files": file_paths,
+                    }
+                )
+
+            # Get up to 10 examples of unique files
+            unique_examples = []
+            for f in unique_files[:10]:
+                cursor.execute(
+                    f"SELECT path FROM directories WHERE id = {f['directory_id']}"
+                )
+                path_row = cursor.fetchone()
+                path = path_row[0] if isinstance(path_row, tuple) else path_row["path"]
+                unique_examples.append(
+                    {
+                        "id": f["id"],
+                        "filename": f["filename"],
+                        "path": os.path.join(path, f["filename"]),
+                        "size": f["size"],
+                    }
+                )
+
+            return render_template(
+                "directory_duplicates.html",
+                directory_id=dir_id,
+                directory_path=dir_path,
+                total_files=total_files,
+                total_size=total_size,
+                duplicate_count=len(duplicate_files),
+                duplicate_size=duplicate_size,
+                duplicate_examples=duplicate_examples,
+                unique_count=len(unique_files),
+                unique_examples=unique_examples,
+            )
+
         finally:
             cursor.close()
             conn.close()

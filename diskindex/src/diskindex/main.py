@@ -480,7 +480,10 @@ def cmd_export(args):
 
     # Check if output file exists
     if os.path.exists(output_path) and not args.force:
-        print(f"Error: Output file '{output_path}' already exists. Use --force to overwrite.", file=sys.stderr)
+        print(
+            f"Error: Output file '{output_path}' already exists. Use --force to overwrite.",
+            file=sys.stderr,
+        )
         return 1
 
     try:
@@ -499,11 +502,14 @@ def cmd_export(args):
 
         # For export, create tables based on source schema structure
         # Export scans
-        source_cursor.execute("SELECT id, guid, scan_date, scan_path, notes FROM scans ORDER BY id")
+        source_cursor.execute(
+            "SELECT id, guid, scan_date, scan_path, notes FROM scans ORDER BY id"
+        )
         scans = source_cursor.fetchall()
 
         # Create scans table
-        export_cursor.execute("""
+        export_cursor.execute(
+            """
             CREATE TABLE scans (
                 id INTEGER PRIMARY KEY,
                 guid TEXT UNIQUE,
@@ -511,10 +517,11 @@ def cmd_export(args):
                 scan_path TEXT,
                 notes TEXT
             )
-        """)
+        """
+        )
         export_cursor.executemany(
             "INSERT INTO scans (id, guid, scan_date, scan_path, notes) VALUES (?, ?, ?, ?, ?)",
-            scans
+            scans,
         )
         print(f"  Exported {len(scans)} scans")
 
@@ -534,42 +541,48 @@ def cmd_export(args):
             volume_cols = [name for name, _ in volume_schema]
             col_defs = []
             for col_name, col_type in volume_schema:
-                if col_name == 'id':
+                if col_name == "id":
                     col_defs.append(f"{col_name} INTEGER PRIMARY KEY")
                 else:
                     # Simplify type mapping for SQLite
-                    sqlite_type = 'INTEGER' if 'INT' in col_type.upper() else 'TEXT'
+                    sqlite_type = "INTEGER" if "INT" in col_type.upper() else "TEXT"
                     col_defs.append(f"{col_name} {sqlite_type}")
 
             export_cursor.execute(f"CREATE TABLE volumes ({', '.join(col_defs)})")
 
-            source_cursor.execute(f"SELECT {', '.join(volume_cols)} FROM volumes ORDER BY id")
+            source_cursor.execute(
+                f"SELECT {', '.join(volume_cols)} FROM volumes ORDER BY id"
+            )
             volumes = source_cursor.fetchall()
             if volumes:
-                placeholders = ', '.join(['?'] * len(volume_cols))
+                placeholders = ", ".join(["?"] * len(volume_cols))
                 export_cursor.executemany(
                     f"INSERT INTO volumes ({', '.join(volume_cols)}) VALUES ({placeholders})",
-                    volumes
+                    volumes,
                 )
             print(f"  Exported {len(volumes)} volumes")
         else:
             print(f"  Exported 0 volumes")
 
         # Export directories
-        export_cursor.execute("""
+        export_cursor.execute(
+            """
             CREATE TABLE directories (
                 id INTEGER PRIMARY KEY,
                 scan_id INTEGER,
                 parent_id INTEGER,
                 path TEXT
             )
-        """)
-        source_cursor.execute("SELECT id, scan_id, parent_id, path FROM directories ORDER BY id")
+        """
+        )
+        source_cursor.execute(
+            "SELECT id, scan_id, parent_id, path FROM directories ORDER BY id"
+        )
         directories = source_cursor.fetchall()
         if directories:
             export_cursor.executemany(
                 "INSERT INTO directories (id, scan_id, parent_id, path) VALUES (?, ?, ?, ?)",
-                directories
+                directories,
             )
         print(f"  Exported {len(directories)} directories")
 
@@ -586,10 +599,11 @@ def cmd_export(args):
             file_cols = [row[0] for row in source_cursor.fetchall()]
 
         # Map old/new column names
-        hash_col = 'md5' if 'md5' in file_cols else 'md5_hash'
+        hash_col = "md5" if "md5" in file_cols else "md5_hash"
 
         # Create files table
-        export_cursor.execute("""
+        export_cursor.execute(
+            """
             CREATE TABLE files (
                 id INTEGER PRIMARY KEY,
                 scan_id INTEGER,
@@ -600,11 +614,14 @@ def cmd_export(args):
                 md5 TEXT,
                 ignored INTEGER DEFAULT 0
             )
-        """)
+        """
+        )
 
         # Build SELECT with available columns
-        file_select = f"SELECT id, scan_id, directory_id, filename, size, mtime, {hash_col}"
-        if 'ignored' in file_cols:
+        file_select = (
+            f"SELECT id, scan_id, directory_id, filename, size, mtime, {hash_col}"
+        )
+        if "ignored" in file_cols:
             file_select += ", ignored"
         else:
             file_select += ", 0"  # Default value
@@ -616,25 +633,30 @@ def cmd_export(args):
             export_cursor.executemany(
                 "INSERT INTO files (id, scan_id, directory_id, filename, size, mtime, md5, ignored) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                files
+                files,
             )
         print(f"  Exported {len(files)} files")
 
         # Export patterns - check table name
-        pattern_table = 'patterns' if config.backend == "sqlite" else 'patterns'
+        pattern_table = "patterns" if config.backend == "sqlite" else "patterns"
         try:
-            source_cursor.execute(f"SELECT id, pattern, is_exception, applies_to, notes, created FROM {pattern_table} ORDER BY id")
+            source_cursor.execute(
+                f"SELECT id, pattern, is_exception, applies_to, notes, created FROM {pattern_table} ORDER BY id"
+            )
             patterns = source_cursor.fetchall()
         except:
             # Try alternate table name
             try:
-                source_cursor.execute(f"SELECT id, pattern, is_exception, applies_to, notes, created FROM ignore_patterns ORDER BY id")
+                source_cursor.execute(
+                    f"SELECT id, pattern, is_exception, applies_to, notes, created FROM ignore_patterns ORDER BY id"
+                )
                 patterns = source_cursor.fetchall()
             except:
                 patterns = []
 
         if patterns:
-            export_cursor.execute("""
+            export_cursor.execute(
+                """
                 CREATE TABLE patterns (
                     id INTEGER PRIMARY KEY,
                     pattern TEXT,
@@ -643,27 +665,30 @@ def cmd_export(args):
                     notes TEXT,
                     created DATETIME
                 )
-            """)
+            """
+            )
             export_cursor.executemany(
                 "INSERT INTO patterns (id, pattern, is_exception, applies_to, notes, created) "
                 "VALUES (?, ?, ?, ?, ?, ?)",
-                patterns
+                patterns,
             )
         print(f"  Exported {len(patterns)} patterns")
 
         # Export schema_version
-        export_cursor.execute("""
+        export_cursor.execute(
+            """
             CREATE TABLE schema_version (
                 version INTEGER PRIMARY KEY,
                 updated DATETIME
             )
-        """)
+        """
+        )
         source_cursor.execute("SELECT version, updated FROM schema_version")
         schema_versions = source_cursor.fetchall()
         if schema_versions:
             export_cursor.executemany(
                 "INSERT INTO schema_version (version, updated) VALUES (?, ?)",
-                schema_versions
+                schema_versions,
             )
 
         export_conn.commit()
@@ -685,6 +710,7 @@ def cmd_export(args):
     except Exception as e:
         print(f"Error during export: {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc()
         return 1
 
@@ -713,15 +739,16 @@ def cmd_import(args):
         dest_cursor = dest_conn.cursor()
 
         # Check for duplicate scans by GUID
-        import_cursor.execute("SELECT guid FROM scans WHERE guid IS NOT NULL AND guid != ''")
+        import_cursor.execute(
+            "SELECT guid FROM scans WHERE guid IS NOT NULL AND guid != ''"
+        )
         import_guids = [row[0] for row in import_cursor.fetchall()]
 
         if import_guids:
             placeholder = "?" if config.backend == "sqlite" else "%s"
             placeholders = ",".join([placeholder] * len(import_guids))
             dest_cursor.execute(
-                f"SELECT guid FROM scans WHERE guid IN ({placeholders})",
-                import_guids
+                f"SELECT guid FROM scans WHERE guid IN ({placeholders})", import_guids
             )
             existing_guids = {row[0] for row in dest_cursor.fetchall()}
 
@@ -729,13 +756,15 @@ def cmd_import(args):
                 print(f"\n⚠️  Found {len(existing_guids)} scans already imported:")
                 import_cursor.execute(
                     f"SELECT id, guid, scan_date, scan_path FROM scans WHERE guid IN ({','.join(['?'] * len(existing_guids))})",
-                    list(existing_guids)
+                    list(existing_guids),
                 )
                 for scan_id, guid, scan_date, scan_path in import_cursor.fetchall():
                     print(f"  - Scan #{scan_id}: {scan_path} ({scan_date})")
 
                 if not args.skip_duplicates:
-                    print("\nThese scans will be skipped. Use --skip-duplicates to suppress this check.")
+                    print(
+                        "\nThese scans will be skipped. Use --skip-duplicates to suppress this check."
+                    )
                     if not args.yes:
                         response = input("\nContinue with import? [y/N]: ")
                         if response.lower() not in ("y", "yes"):
@@ -745,7 +774,9 @@ def cmd_import(args):
             existing_guids = set()
 
         # Import scans (excluding duplicates)
-        import_cursor.execute("SELECT id, guid, scan_date, scan_path, notes FROM scans ORDER BY id")
+        import_cursor.execute(
+            "SELECT id, guid, scan_date, scan_path, notes FROM scans ORDER BY id"
+        )
         scans = import_cursor.fetchall()
 
         scan_id_map = {}  # old_id -> new_id
@@ -760,7 +791,7 @@ def cmd_import(args):
             placeholder = "?" if config.backend == "sqlite" else "%s"
             dest_cursor.execute(
                 f"INSERT INTO scans (guid, scan_date, scan_path, notes) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
-                (guid, scan_date, scan_path, notes)
+                (guid, scan_date, scan_path, notes),
             )
 
             if config.backend == "sqlite":
@@ -796,15 +827,15 @@ def cmd_import(args):
 
         # Map columns from import to destination
         col_map = {
-            'total_space': 'total_size',  # Map if dest has total_size
-            'total_size': 'total_space',  # Map if dest has total_space
+            "total_space": "total_size",  # Map if dest has total_size
+            "total_size": "total_space",  # Map if dest has total_space
         }
 
         # Build column list for SELECT and INSERT
         select_cols = []
         insert_cols = []
         for col in import_volume_cols:
-            if col == 'id':
+            if col == "id":
                 continue  # Skip id, will be auto-generated
 
             # Try direct match first
@@ -817,12 +848,14 @@ def cmd_import(args):
                 insert_cols.append(col_map[col])
 
         if select_cols:
-            import_cursor.execute(f"SELECT scan_id, {', '.join(select_cols[1:])} FROM volumes ORDER BY id")
+            import_cursor.execute(
+                f"SELECT scan_id, {', '.join(select_cols[1:])} FROM volumes ORDER BY id"
+            )
             volumes = import_cursor.fetchall()
 
             imported_volumes = 0
             placeholder = "?" if config.backend == "sqlite" else "%s"
-            placeholders = ', '.join([placeholder] * len(insert_cols))
+            placeholders = ", ".join([placeholder] * len(insert_cols))
 
             for row in volumes:
                 scan_id = row[0]
@@ -834,7 +867,7 @@ def cmd_import(args):
 
                 dest_cursor.execute(
                     f"INSERT INTO volumes ({', '.join(insert_cols)}) VALUES ({placeholders})",
-                    values
+                    values,
                 )
                 imported_volumes += 1
         else:
@@ -856,14 +889,18 @@ def cmd_import(args):
             )
             dest_dir_cols = {row[0] for row in dest_cursor.fetchall()}
 
-        dest_needs_name = 'name' in dest_dir_cols
-        import_has_name = 'name' in import_dir_cols
+        dest_needs_name = "name" in dest_dir_cols
+        import_has_name = "name" in import_dir_cols
 
         # Build SELECT query
         if import_has_name:
-            import_cursor.execute("SELECT id, scan_id, parent_id, path, name FROM directories ORDER BY id")
+            import_cursor.execute(
+                "SELECT id, scan_id, parent_id, path, name FROM directories ORDER BY id"
+            )
         else:
-            import_cursor.execute("SELECT id, scan_id, parent_id, path FROM directories ORDER BY id")
+            import_cursor.execute(
+                "SELECT id, scan_id, parent_id, path FROM directories ORDER BY id"
+            )
 
         directories = import_cursor.fetchall()
 
@@ -878,7 +915,7 @@ def cmd_import(args):
             else:
                 old_id, scan_id, parent_id, path = row
                 # Extract name from path
-                name = path.rstrip('/').split('/')[-1] if path else ''
+                name = path.rstrip("/").split("/")[-1] if path else ""
 
             if scan_id not in scan_id_map:
                 continue  # Skip directories for duplicate scans
@@ -889,12 +926,12 @@ def cmd_import(args):
             if dest_needs_name:
                 dest_cursor.execute(
                     f"INSERT INTO directories (scan_id, parent_id, path, name) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
-                    (new_scan_id, new_parent_id, path, name)
+                    (new_scan_id, new_parent_id, path, name),
                 )
             else:
                 dest_cursor.execute(
                     f"INSERT INTO directories (scan_id, parent_id, path) VALUES ({placeholder}, {placeholder}, {placeholder})",
-                    (new_scan_id, new_parent_id, path)
+                    (new_scan_id, new_parent_id, path),
                 )
 
             if config.backend == "sqlite":
@@ -924,20 +961,24 @@ def cmd_import(args):
             dest_file_cols = {row[0] for row in dest_cursor.fetchall()}
 
         # Determine hash column names
-        import_hash_col = 'md5' if 'md5' in import_file_cols else 'md5_hash'
-        dest_hash_col = 'md5' if 'md5' in dest_file_cols else 'md5_hash'
+        import_hash_col = "md5" if "md5" in import_file_cols else "md5_hash"
+        dest_hash_col = "md5" if "md5" in dest_file_cols else "md5_hash"
 
         # Check for scan_id vs directory_id
-        import_has_scan_id = 'scan_id' in import_file_cols
-        dest_has_scan_id = 'scan_id' in dest_file_cols
+        import_has_scan_id = "scan_id" in import_file_cols
+        dest_has_scan_id = "scan_id" in dest_file_cols
 
         # Build SELECT query
         if import_has_scan_id:
-            import_cursor.execute(f"SELECT scan_id, directory_id, filename, size, mtime, {import_hash_col}, ignored FROM files ORDER BY id")
+            import_cursor.execute(
+                f"SELECT scan_id, directory_id, filename, size, mtime, {import_hash_col}, ignored FROM files ORDER BY id"
+            )
         else:
-            import_cursor.execute(f"SELECT directory_id, filename, size, mtime, {import_hash_col}, ignored FROM files ORDER BY id")
+            import_cursor.execute(
+                f"SELECT directory_id, filename, size, mtime, {import_hash_col}, ignored FROM files ORDER BY id"
+            )
 
-        batch_size = args.batch_size if hasattr(args, 'batch_size') else 1000
+        batch_size = args.batch_size if hasattr(args, "batch_size") else 1000
         files_batch = []
         imported_files = 0
         placeholder = "?" if config.backend == "sqlite" else "%s"
@@ -959,34 +1000,49 @@ def cmd_import(args):
                 file_scan_id = dir_to_scan_map.get(new_directory_id)
                 if not file_scan_id:
                     # Fallback: query the directory
-                    dest_cursor.execute(f"SELECT scan_id FROM directories WHERE id = {placeholder}", (new_directory_id,))
+                    dest_cursor.execute(
+                        f"SELECT scan_id FROM directories WHERE id = {placeholder}",
+                        (new_directory_id,),
+                    )
                     result = dest_cursor.fetchone()
                     file_scan_id = result[0] if result else None
 
                 if file_scan_id:
-                    files_batch.append((file_scan_id, new_directory_id, filename, size, mtime, hash_val, ignored))
+                    files_batch.append(
+                        (
+                            file_scan_id,
+                            new_directory_id,
+                            filename,
+                            size,
+                            mtime,
+                            hash_val,
+                            ignored,
+                        )
+                    )
                 else:
                     continue  # Skip if we can't determine scan_id
             else:
-                files_batch.append((new_directory_id, filename, size, mtime, hash_val, ignored))
+                files_batch.append(
+                    (new_directory_id, filename, size, mtime, hash_val, ignored)
+                )
 
             if len(files_batch) >= batch_size:
                 if dest_has_scan_id:
                     dest_cursor.executemany(
                         f"INSERT INTO files (scan_id, directory_id, filename, size, mtime, {dest_hash_col}, ignored) "
                         f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
-                        files_batch
+                        files_batch,
                     )
                 else:
                     dest_cursor.executemany(
                         f"INSERT INTO files (directory_id, filename, size, mtime, {dest_hash_col}, ignored) "
                         f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
-                        files_batch
+                        files_batch,
                     )
                 imported_files += len(files_batch)
                 files_batch = []
                 dest_conn.commit()
-                print(f"  Imported {imported_files} files...", end='\r')
+                print(f"  Imported {imported_files} files...", end="\r")
 
         # Insert remaining files
         if files_batch:
@@ -994,13 +1050,13 @@ def cmd_import(args):
                 dest_cursor.executemany(
                     f"INSERT INTO files (scan_id, directory_id, filename, size, mtime, {dest_hash_col}, ignored) "
                     f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
-                    files_batch
+                    files_batch,
                 )
             else:
                 dest_cursor.executemany(
                     f"INSERT INTO files (directory_id, filename, size, mtime, {dest_hash_col}, ignored) "
                     f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
-                    files_batch
+                    files_batch,
                 )
             imported_files += len(files_batch)
 
@@ -1024,11 +1080,15 @@ def cmd_import(args):
 
         # Determine destination table name
         if config.backend == "sqlite":
-            dest_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('patterns', 'ignore_patterns')")
+            dest_cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('patterns', 'ignore_patterns')"
+            )
             dest_pattern_table = dest_cursor.fetchone()
-            dest_pattern_table = dest_pattern_table[0] if dest_pattern_table else 'patterns'
+            dest_pattern_table = (
+                dest_pattern_table[0] if dest_pattern_table else "patterns"
+            )
         else:
-            dest_pattern_table = 'patterns'
+            dest_pattern_table = "patterns"
 
         # Get existing patterns
         dest_cursor.execute(f"SELECT pattern FROM {dest_pattern_table}")
@@ -1044,13 +1104,13 @@ def cmd_import(args):
                 dest_cursor.execute(
                     f"INSERT INTO {dest_pattern_table} (pattern, is_exception, applies_to, notes, created) "
                     f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, datetime('now'))",
-                    (pattern, is_exception, applies_to, notes)
+                    (pattern, is_exception, applies_to, notes),
                 )
             else:
                 dest_cursor.execute(
                     f"INSERT INTO {dest_pattern_table} (pattern, is_exception, applies_to, notes, created) "
                     f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, NOW())",
-                    (pattern, is_exception, applies_to, notes)
+                    (pattern, is_exception, applies_to, notes),
                 )
             imported_patterns += 1
 
@@ -1064,10 +1124,11 @@ def cmd_import(args):
         return 0
 
     except Exception as e:
-        if 'dest_conn' in locals():
+        if "dest_conn" in locals():
             dest_conn.rollback()
         print(f"Error during import: {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc()
         return 1
 
@@ -1276,26 +1337,21 @@ def main():
     export_parser = subparsers.add_parser(
         "export", help="Export database to SQLite file"
     )
-    export_parser.add_argument(
-        "output", help="Output SQLite file path"
-    )
+    export_parser.add_argument("output", help="Output SQLite file path")
     export_parser.add_argument(
         "--force", "-f", action="store_true", help="Overwrite existing output file"
     )
 
     # Import command
-    import_parser = subparsers.add_parser(
-        "import", help="Import data from SQLite file"
-    )
-    import_parser.add_argument(
-        "input", help="Input SQLite file path"
-    )
+    import_parser = subparsers.add_parser("import", help="Import data from SQLite file")
+    import_parser.add_argument("input", help="Input SQLite file path")
     import_parser.add_argument(
         "--batch-size", type=int, default=1000, help="Batch size for file imports"
     )
     import_parser.add_argument(
-        "--skip-duplicates", action="store_true",
-        help="Skip duplicate scans without prompting"
+        "--skip-duplicates",
+        action="store_true",
+        help="Skip duplicate scans without prompting",
     )
     import_parser.add_argument(
         "--yes", "-y", action="store_true", help="Skip all confirmation prompts"

@@ -86,6 +86,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
                     <div style="flex: 1; min-width: 0;">
                         📄 {{ file.path }}
+                        <a href="/directory/{{ file.directory_id }}" title="Browse directory" style="margin-left: 0.5rem;">📁</a>
                         <span class="scan-info">
                             <span class="badge" style="background: #{% if file.is_selected_scan %}4CAF50{% else %}2196F3{% endif %}; font-size: 0.75em;">
                                 Scan #{{ file.scan_id }}: {{ file.scan_path }}
