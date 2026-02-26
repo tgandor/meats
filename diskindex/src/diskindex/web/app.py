@@ -459,7 +459,8 @@ def create_app(config: DatabaseConfig | None = None):
             # Get paginated results
             sql = f"""
                 SELECT files.id, files.filename, files.extension, files.size,
-                       files.mtime, files.md5_hash, directories.path, scans.scan_path
+                       files.mtime, files.md5_hash, files.directory_id,
+                       directories.path, scans.scan_path
                 FROM files
                 JOIN directories ON files.directory_id = directories.id
                 JOIN scans ON files.scan_id = scans.id
@@ -473,7 +474,7 @@ def create_app(config: DatabaseConfig | None = None):
             results = []
             for row in cursor.fetchall():
                 if isinstance(row, tuple):
-                    file_id, filename, ext, size, mtime, md5, dir_path, scan_path = row
+                    file_id, filename, ext, size, mtime, md5, dir_id, dir_path, scan_path = row
                 else:
                     file_id = row["id"]
                     filename = row["filename"]
@@ -481,6 +482,7 @@ def create_app(config: DatabaseConfig | None = None):
                     size = row["size"]
                     mtime = row["mtime"]
                     md5 = row["md5_hash"]
+                    dir_id = row["directory_id"]
                     dir_path = row["path"]
                     scan_path = row["scan_path"]
 
@@ -489,6 +491,7 @@ def create_app(config: DatabaseConfig | None = None):
                 results.append(
                     {
                         "id": file_id,
+                        "directory_id": dir_id,
                         "filename": filename,
                         "extension": ext,
                         "size": size,
@@ -931,6 +934,302 @@ def create_app(config: DatabaseConfig | None = None):
 
         # Note: Flask flash requires session support which is already configured
         return redirect(url_for("patterns"))
+
+    @app.route("/file/<int:file_id>/delete/soft", methods=["POST"])
+    def delete_file_soft(file_id):
+        """Soft delete a file (mark deleted_at timestamp)."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Check if file exists and get info
+            cursor.execute(
+                f"SELECT filename, deleted_at FROM files WHERE id = {file_id}"
+            )
+            row = cursor.fetchone()
+
+            if not row:
+                flash(f"File #{file_id} not found", "error")
+                return redirect(request.referrer or url_for("index"))
+
+            filename = row[0] if isinstance(row, tuple) else row["filename"]
+            deleted_at = row[1] if isinstance(row, tuple) else row["deleted_at"]
+
+            if deleted_at:
+                flash(f"File {filename} is already marked as deleted", "warning")
+            else:
+                # Mark as deleted
+                placeholder = "?" if config.backend == "sqlite" else "%s"
+                cursor.execute(
+                    f"UPDATE files SET deleted_at = {placeholder} WHERE id = {placeholder}",
+                    (datetime.now(), file_id),
+                )
+                conn.commit()
+                flash(f"File {filename} marked as deleted", "success")
+
+                # Clear cached counts
+                session.pop("counts", None)
+
+            return redirect(request.referrer or url_for("index"))
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error deleting file: {e}", "error")
+            return redirect(request.referrer or url_for("index"))
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/file/<int:file_id>/delete/hard", methods=["POST"])
+    def delete_file_hard(file_id):
+        """Hard delete a file (remove from filesystem and mark deleted_at)."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Get file info including full path
+            cursor.execute(
+                f"""
+                SELECT files.filename, files.deleted_at, directories.path, scans.scan_path
+                FROM files
+                JOIN directories ON files.directory_id = directories.id
+                JOIN scans ON files.scan_id = scans.id
+                WHERE files.id = {file_id}
+                """
+            )
+            row = cursor.fetchone()
+
+            if not row:
+                flash(f"File #{file_id} not found", "error")
+                return redirect(request.referrer or url_for("index"))
+
+            if isinstance(row, tuple):
+                filename, deleted_at, dir_path, scan_path = row
+            else:
+                filename = row["filename"]
+                deleted_at = row["deleted_at"]
+                dir_path = row["path"]
+                scan_path = row["scan_path"]
+
+            full_path = os.path.join(dir_path, filename)
+
+            # Check if file exists on disk
+            if not os.path.exists(full_path):
+                flash(
+                    f"File {filename} not found on disk at {full_path}. "
+                    f"Use soft delete if this is from removable/unmounted media.",
+                    "error",
+                )
+                return redirect(request.referrer or url_for("index"))
+
+            # Delete file from disk
+            try:
+                os.remove(full_path)
+
+                # Mark as deleted in database
+                placeholder = "?" if config.backend == "sqlite" else "%s"
+                cursor.execute(
+                    f"UPDATE files SET deleted_at = {placeholder} WHERE id = {placeholder}",
+                    (datetime.now(), file_id),
+                )
+                conn.commit()
+
+                flash(f"File {filename} deleted from disk and marked as deleted", "success")
+
+                # Clear cached counts
+                session.pop("counts", None)
+
+            except OSError as e:
+                flash(f"Error deleting file from disk: {e}", "error")
+                return redirect(request.referrer or url_for("index"))
+
+            return redirect(request.referrer or url_for("index"))
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error: {e}", "error")
+            return redirect(request.referrer or url_for("index"))
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/directory/<int:dir_id>/delete/soft", methods=["POST"])
+    def delete_directory_soft(dir_id):
+        """Soft delete a directory and all its files."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Get directory info
+            cursor.execute(f"SELECT path FROM directories WHERE id = {dir_id}")
+            row = cursor.fetchone()
+
+            if not row:
+                flash(f"Directory #{dir_id} not found", "error")
+                return redirect(request.referrer or url_for("index"))
+
+            dir_path = row[0] if isinstance(row, tuple) else row["path"]
+
+            # Count files to be marked
+            cursor.execute(
+                f"SELECT COUNT(*) FROM files WHERE directory_id = {dir_id} AND deleted_at IS NULL"
+            )
+            count = cursor.fetchone()[0]
+
+            if count == 0:
+                flash(f"No active files in directory {dir_path}", "warning")
+            else:
+                # Mark all files in directory as deleted
+                placeholder = "?" if config.backend == "sqlite" else "%s"
+                cursor.execute(
+                    f"UPDATE files SET deleted_at = {placeholder} "
+                    f"WHERE directory_id = {placeholder} AND deleted_at IS NULL",
+                    (datetime.now(), dir_id),
+                )
+                conn.commit()
+                flash(
+                    f"Marked {count} file(s) in directory {dir_path} as deleted",
+                    "success",
+                )
+
+                # Clear cached counts
+                session.pop("counts", None)
+
+            return redirect(request.referrer or url_for("index"))
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error deleting directory: {e}", "error")
+            return redirect(request.referrer or url_for("index"))
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/directory/<int:dir_id>/delete/hard", methods=["POST"])
+    def delete_directory_hard(dir_id):
+        """Hard delete a directory and all its files from filesystem."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Get directory info and files
+            cursor.execute(f"SELECT path FROM directories WHERE id = {dir_id}")
+            row = cursor.fetchone()
+
+            if not row:
+                flash(f"Directory #{dir_id} not found", "error")
+                return redirect(request.referrer or url_for("index"))
+
+            dir_path = row[0] if isinstance(row, tuple) else row["path"]
+
+            # Get all files in directory
+            cursor.execute(
+                f"SELECT id, filename FROM files WHERE directory_id = {dir_id} AND deleted_at IS NULL"
+            )
+            files = cursor.fetchall()
+
+            if not files:
+                flash(f"No active files in directory {dir_path}", "warning")
+                return redirect(request.referrer or url_for("index"))
+
+            # Check if directory exists
+            if not os.path.exists(dir_path):
+                flash(
+                    f"Directory {dir_path} not found on disk. "
+                    f"Use soft delete if this is from removable/unmounted media.",
+                    "error",
+                )
+                return redirect(request.referrer or url_for("index"))
+
+            # Delete each file
+            deleted_count = 0
+            error_count = 0
+            for file_row in files:
+                file_id = file_row[0] if isinstance(file_row, tuple) else file_row["id"]
+                filename = (
+                    file_row[1] if isinstance(file_row, tuple) else file_row["filename"]
+                )
+                full_path = os.path.join(dir_path, filename)
+
+                try:
+                    if os.path.exists(full_path):
+                        os.remove(full_path)
+                        deleted_count += 1
+                except OSError:
+                    # Could not delete this file - increment error count
+                    error_count += 1
+
+            # Mark all files as deleted in database
+            placeholder = "?" if config.backend == "sqlite" else "%s"
+            cursor.execute(
+                f"UPDATE files SET deleted_at = {placeholder} "
+                f"WHERE directory_id = {placeholder}",
+                (datetime.now(), dir_id),
+            )
+            conn.commit()
+
+            # Try to remove directory if empty
+            try:
+                if os.path.exists(dir_path) and not os.listdir(dir_path):
+                    os.rmdir(dir_path)
+                    flash(
+                        f"Deleted {deleted_count} file(s) and removed empty directory {dir_path}",
+                        "success",
+                    )
+                else:
+                    flash(
+                        f"Deleted {deleted_count} file(s) from {dir_path}"
+                        + (f" ({error_count} errors)" if error_count else ""),
+                        "success" if error_count == 0 else "warning",
+                    )
+            except OSError:
+                flash(
+                    f"Deleted {deleted_count} file(s) from {dir_path} (directory not empty)",
+                    "success",
+                )
+
+            # Clear cached counts
+            session.pop("counts", None)
+
+            return redirect(request.referrer or url_for("index"))
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error: {e}", "error")
+            return redirect(request.referrer or url_for("index"))
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/file/<int:file_id>/check_exists", methods=["GET"])
+    def check_file_exists(file_id):
+        """Check if a file exists on disk (for AJAX)."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                f"""
+                SELECT files.filename, directories.path
+                FROM files
+                JOIN directories ON files.directory_id = directories.id
+                WHERE files.id = {file_id}
+                """
+            )
+            row = cursor.fetchone()
+
+            if not row:
+                return {"exists": False, "error": "File not found in database"}
+
+            if isinstance(row, tuple):
+                filename, dir_path = row
+            else:
+                filename = row["filename"]
+                dir_path = row["path"]
+
+            full_path = os.path.join(dir_path, filename)
+            exists = os.path.exists(full_path)
+
+            return {"exists": exists, "path": full_path}
+        finally:
+            cursor.close()
+            conn.close()
 
     return app
 
