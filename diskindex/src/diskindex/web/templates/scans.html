@@ -8,6 +8,7 @@
 
 <div class="card">
     {% if scans %}
+    <div class="table-responsive">
     <table>
         <thead>
             <tr>
@@ -26,7 +27,7 @@
             <tr>
                 <td>#{{ scan.id }}</td>
                 <td>{{ scan.date | datetimeformat }}</td>
-                <td><code>{{ scan.path }}</code></td>
+                <td class="path-cell" title="{{ scan.path }}"><code>{{ scan.path }}</code></td>
                 <td>{{ "{:,}".format(scan.file_count) }}</td>
                 <td>{{ scan.total_size | filesizeformat }}</td>
                 <td>{{ "%.1f" | format(scan.duration or 0) }}s</td>
@@ -39,6 +40,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 
     {{ render_pagination(pagination, 'scans') }}
     {% else %}

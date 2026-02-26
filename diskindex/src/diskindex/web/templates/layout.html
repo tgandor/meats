@@ -19,9 +19,14 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+        }
+
+        .container.wide {
+            max-width: 95%;
+            max-width: min(95%, 1800px);
         }
 
         header {
@@ -117,6 +122,60 @@
 
         table tr:hover {
             background: #f8f9fa;
+        }
+
+        /* Table responsive wrapper */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 1rem 0;
+        }
+
+        /* Column width hints */
+        table th:nth-child(2), /* Extension */
+        table td:nth-child(2) {
+            width: 80px;
+            white-space: nowrap;
+        }
+
+        table th:nth-child(3), /* Size */
+        table td:nth-child(3) {
+            width: 100px;
+            white-space: nowrap;
+        }
+
+        table th:nth-child(4), /* Modified */
+        table td:nth-child(4) {
+            width: 150px;
+            white-space: nowrap;
+        }
+
+        table th:nth-child(5), /* MD5 */
+        table td:nth-child(5) {
+            width: 140px;
+        }
+
+        table th:nth-child(7), /* Actions */
+        table td:nth-child(7) {
+            width: 180px;
+            white-space: nowrap;
+        }
+
+        /* Path column with ellipsis */
+        table td.path-cell {
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        table td.path-cell:hover {
+            overflow: visible;
+            white-space: normal;
+            word-break: break-all;
+            background: #fff9e6;
+            position: relative;
+            z-index: 10;
         }
 
         .flash-messages {
