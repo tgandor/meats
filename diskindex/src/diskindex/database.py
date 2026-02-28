@@ -55,7 +55,7 @@ class DatabaseConfig:
 
 
 # Schema version for migrations
-CURRENT_SCHEMA_VERSION = 4
+CURRENT_SCHEMA_VERSION = 5
 
 
 SQLITE_SCHEMA = """
@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS directories (
     parent_id INTEGER REFERENCES directories(id) ON DELETE CASCADE,
     path TEXT NOT NULL,
     name TEXT NOT NULL,
+    deleted_at DATETIME,
     UNIQUE(scan_id, path)
 );
 
@@ -135,6 +136,7 @@ CREATE INDEX IF NOT EXISTS idx_files_deleted ON files(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_directories_scan ON directories(scan_id);
 CREATE INDEX IF NOT EXISTS idx_directories_parent ON directories(parent_id);
 CREATE INDEX IF NOT EXISTS idx_directories_path ON directories(path);
+CREATE INDEX IF NOT EXISTS idx_directories_deleted ON directories(deleted_at);
 """
 
 
@@ -178,6 +180,7 @@ CREATE TABLE IF NOT EXISTS directories (
     parent_id INTEGER REFERENCES directories(id) ON DELETE CASCADE,
     path TEXT NOT NULL,
     name TEXT NOT NULL,
+    deleted_at TIMESTAMP,
     UNIQUE(scan_id, path)
 );
 
@@ -215,6 +218,7 @@ CREATE INDEX IF NOT EXISTS idx_files_deleted ON files(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_directories_scan ON directories(scan_id);
 CREATE INDEX IF NOT EXISTS idx_directories_parent ON directories(parent_id);
 CREATE INDEX IF NOT EXISTS idx_directories_path ON directories(path);
+CREATE INDEX IF NOT EXISTS idx_directories_deleted ON directories(deleted_at);
 """
 
 
@@ -394,6 +398,65 @@ def run_migrations(config: DatabaseConfig) -> None:
                     "INSERT INTO schema_version (version, updated) VALUES (%s, %s) "
                     "ON CONFLICT (version) DO UPDATE SET updated = EXCLUDED.updated",
                     (4, datetime.now()),
+                )
+
+        # Migration to version 5: Add deleted_at column to directories table
+        if current_version < 5:
+            # Check if column already exists (for new installations)
+            if config.backend == "sqlite":
+                cursor.execute("PRAGMA table_info(directories)")
+                columns = {row[1] for row in cursor.fetchall()}
+            else:  # postgresql
+                cursor.execute(
+                    "SELECT column_name FROM information_schema.columns "
+                    "WHERE table_name = 'directories'"
+                )
+                columns = {row[0] for row in cursor.fetchall()}
+
+            # Add deleted_at column if missing
+            if "deleted_at" not in columns:
+                if config.backend == "sqlite":
+                    cursor.execute(
+                        "ALTER TABLE directories ADD COLUMN deleted_at DATETIME"
+                    )
+                else:  # postgresql
+                    cursor.execute(
+                        "ALTER TABLE directories ADD COLUMN deleted_at TIMESTAMP"
+                    )
+                print("Added deleted_at column to directories table")
+
+            # Check if index exists
+            if config.backend == "sqlite":
+                cursor.execute(
+                    "SELECT name FROM sqlite_master WHERE type='index' "
+                    "AND name='idx_directories_deleted'"
+                )
+                index_exists = cursor.fetchone() is not None
+            else:  # postgresql
+                cursor.execute(
+                    "SELECT indexname FROM pg_indexes "
+                    "WHERE indexname = 'idx_directories_deleted'"
+                )
+                index_exists = cursor.fetchone() is not None
+
+            # Create index if missing
+            if not index_exists:
+                cursor.execute(
+                    "CREATE INDEX idx_directories_deleted ON directories(deleted_at)"
+                )
+                print("Created index idx_directories_deleted")
+
+            # Update schema version
+            if config.backend == "sqlite":
+                cursor.execute(
+                    "INSERT OR REPLACE INTO schema_version (version, updated) VALUES (?, ?)",
+                    (5, datetime.now()),
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO schema_version (version, updated) VALUES (%s, %s) "
+                    "ON CONFLICT (version) DO UPDATE SET updated = EXCLUDED.updated",
+                    (5, datetime.now()),
                 )
 
         conn.commit()

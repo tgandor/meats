@@ -1137,6 +1137,13 @@ def create_app(config: DatabaseConfig | None = None):
                     "success",
                 )
 
+                # Mark directory as deleted
+                cursor.execute(
+                    f"UPDATE directories SET deleted_at = {placeholder} WHERE id = {placeholder}",
+                    (datetime.now(), dir_id),
+                )
+                conn.commit()
+
                 # Clear cached counts
                 session.pop("counts", None)
 
@@ -1232,6 +1239,13 @@ def create_app(config: DatabaseConfig | None = None):
                     "success",
                 )
 
+            # Mark directory as deleted in database
+            cursor.execute(
+                f"UPDATE directories SET deleted_at = {placeholder} WHERE id = {placeholder}",
+                (datetime.now(), dir_id),
+            )
+            conn.commit()
+
             # Clear cached counts
             session.pop("counts", None)
 
@@ -1239,6 +1253,209 @@ def create_app(config: DatabaseConfig | None = None):
         except Exception as e:
             conn.rollback()
             flash(f"Error: {e}", "error")
+            return redirect(request.referrer or url_for("index"))
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/directory/<int:dir_id>/delete/soft/recursive", methods=["POST"])
+    def delete_directory_soft_recursive(dir_id):
+        """Recursively soft delete a directory tree (all subdirs and files)."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Get directory info
+            cursor.execute(f"SELECT path, scan_id FROM directories WHERE id = {dir_id}")
+            row = cursor.fetchone()
+
+            if not row:
+                flash(f"Directory #{dir_id} not found", "error")
+                return redirect(request.referrer or url_for("index"))
+
+            dir_path = row[0] if isinstance(row, tuple) else row["path"]
+            scan_id = row[1] if isinstance(row, tuple) else row["scan_id"]
+
+            # Get all subdirectories recursively using path prefix matching
+            cursor.execute(
+                f"SELECT id FROM directories WHERE scan_id = {scan_id} "
+                f"AND (id = {dir_id} OR path LIKE {dir_path}{'/%' if dir_path else '%'})"
+            )
+            all_dir_ids = [r[0] if isinstance(r, tuple) else r["id"] for r in cursor.fetchall()]
+
+            # Count files to be marked across all subdirectories
+            dir_ids_str = ",".join(str(d) for d in all_dir_ids)
+            cursor.execute(
+                f"SELECT COUNT(*) FROM files "
+                f"WHERE directory_id IN ({dir_ids_str}) AND deleted_at IS NULL"
+            )
+            files_count = cursor.fetchone()[0]
+
+            # Define placeholder for parameterized queries
+            placeholder = "?" if config.backend == "sqlite" else "%s"
+
+            # Mark all files in directory tree as deleted
+            if files_count > 0:
+                cursor.execute(
+                    f"UPDATE files SET deleted_at = {placeholder} "
+                    f"WHERE directory_id IN ({dir_ids_str}) AND deleted_at IS NULL",
+                    (datetime.now(),),
+                )
+
+            # Mark all directories in tree as deleted
+            cursor.execute(
+                f"UPDATE directories SET deleted_at = {placeholder} "
+                f"WHERE id IN ({dir_ids_str}) AND deleted_at IS NULL",
+                (datetime.now(),),
+            )
+
+            dirs_marked = cursor.rowcount
+            conn.commit()
+
+            if files_count == 0 and dirs_marked == 0:
+                flash(f"No active files or directories in {dir_path}", "warning")
+            else:
+                flash(
+                    f"Marked {files_count} file(s) and {dirs_marked} director{'y' if dirs_marked == 1 else 'ies'} "
+                    f"in tree {dir_path} as deleted",
+                    "success",
+                )
+
+            # Clear cached counts
+            session.pop("counts", None)
+
+            return redirect(url_for("directory_view", dir_id=dir_id))
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error deleting directory tree: {e}", "error")
+            return redirect(request.referrer or url_for("index"))
+        finally:
+            cursor.close()
+            conn.close()
+
+    @app.route("/directory/<int:dir_id>/delete/hard/recursive", methods=["POST"])
+    def delete_directory_hard_recursive(dir_id):
+        """Recursively hard delete a directory tree from filesystem with detailed reporting."""
+        conn = config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Get directory info
+            cursor.execute(f"SELECT path, scan_id FROM directories WHERE id = {dir_id}")
+            row = cursor.fetchone()
+
+            if not row:
+                flash(f"Directory #{dir_id} not found", "error")
+                return redirect(request.referrer or url_for("index"))
+
+            dir_path = row[0] if isinstance(row, tuple) else row["path"]
+            scan_id = row[1] if isinstance(row, tuple) else row["scan_id"]
+
+            # Check if directory exists on disk
+            if not os.path.exists(dir_path):
+                flash(
+                    f"Directory {dir_path} not found on disk. "
+                    f"Use soft delete if this is from removable/unmounted media.",
+                    "error",
+                )
+                return redirect(request.referrer or url_for("index"))
+
+            # Get all subdirectories recursively
+            cursor.execute(
+                f"SELECT id, path FROM directories WHERE scan_id = {scan_id} "
+                f"AND (id = {dir_id} OR path LIKE '{dir_path}/%') "
+                f"ORDER BY LENGTH(path) DESC"  # Process deepest first
+            )
+            all_dirs = cursor.fetchall()
+
+            # Initialize tracking
+            stats = {
+                "files_marked": 0,
+                "files_deleted": 0,
+                "files_present": 0,
+                "dirs_marked": 0,
+                "dirs_deleted": 0,
+                "errors": []
+            }
+
+            # Process each directory (deepest first for proper deletion)
+            for dir_row in all_dirs:
+                d_id = dir_row[0] if isinstance(dir_row, tuple) else dir_row["id"]
+                d_path = dir_row[1] if isinstance(dir_row, tuple) else dir_row["path"]
+
+                # Get all files in this directory
+                cursor.execute(
+                    f"SELECT id, filename FROM files WHERE directory_id = {d_id} AND deleted_at IS NULL"
+                )
+                files = cursor.fetchall()
+
+                # Delete each file
+                for file_row in files:
+                    f_id = file_row[0] if isinstance(file_row, tuple) else file_row["id"]
+                    filename = file_row[1] if isinstance(file_row, tuple) else file_row["filename"]
+                    full_path = os.path.join(d_path, filename)
+
+                    # Check if file exists
+                    if os.path.exists(full_path):
+                        stats["files_present"] += 1
+                        try:
+                            os.remove(full_path)
+                            stats["files_deleted"] += 1
+                        except PermissionError:
+                            stats["errors"].append(f"Permission denied: {full_path}")
+                        except OSError as e:
+                            stats["errors"].append(f"Error deleting {full_path}: {e}")
+
+                # Mark all files in this directory as deleted
+                if files:
+                    placeholder = "?" if config.backend == "sqlite" else "%s"
+                    cursor.execute(
+                        f"UPDATE files SET deleted_at = {placeholder} "
+                        f"WHERE directory_id = {placeholder}",
+                        (datetime.now(), d_id),
+                    )
+                    stats["files_marked"] += cursor.rowcount
+
+                # Try to remove directory if it exists and is empty
+                if os.path.exists(d_path):
+                    try:
+                        # Check for unindexed files
+                        dir_contents = os.listdir(d_path)
+                        if dir_contents:
+                            stats["errors"].append(
+                                f"Directory not empty (has {len(dir_contents)} unindexed items): {d_path}"
+                            )
+                        else:
+                            os.rmdir(d_path)
+                            stats["dirs_deleted"] += 1
+                    except PermissionError:
+                        stats["errors"].append(f"Permission denied for directory: {d_path}")
+                    except OSError as e:
+                        stats["errors"].append(f"Error removing directory {d_path}: {e}")
+
+                # Mark directory as deleted
+                placeholder = "?" if config.backend == "sqlite" else "%s"
+                cursor.execute(
+                    f"UPDATE directories SET deleted_at = {placeholder} WHERE id = {placeholder}",
+                    (datetime.now(), d_id),
+                )
+                stats["dirs_marked"] += cursor.rowcount
+
+            conn.commit()
+
+            # Clear cached counts
+            session.pop("counts", None)
+
+            # Render summary page
+            return render_template(
+                "directory_delete_summary.html",
+                directory_path=dir_path,
+                stats=stats,
+            )
+
+        except Exception as e:
+            conn.rollback()
+            flash(f"Critical error: {e}", "error")
             return redirect(request.referrer or url_for("index"))
         finally:
             cursor.close()

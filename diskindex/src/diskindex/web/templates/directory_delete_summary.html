@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+
+{% block title %}Deletion Summary - Diskindex{% endblock %}
+
+{% block content %}
+<h1>🗑️ Recursive Deletion Summary</h1>
+
+<div class="card">
+    <h2>Directory: {{ directory_path }}</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+        <!-- Files Marked -->
+        <div class="stat-card" style="background: #d4edda; border-left: 4px solid #28a745;">
+            <h3>Files Marked Deleted</h3>
+            <div class="value">{{ "{:,}".format(stats.files_marked) }}</div>
+            <small>Marked in database</small>
+        </div>
+
+        <!-- Files Physically Deleted -->
+        <div class="stat-card" style="background: #f8d7da; border-left: 4px solid #dc3545;">
+            <h3>Files Physically Deleted</h3>
+            <div class="value">{{ "{:,}".format(stats.files_deleted) }}</div>
+            <small>Removed from disk</small>
+        </div>
+
+        <!-- Files Present -->
+        <div class="stat-card" style="background: #d1ecf1; border-left: 4px solid #17a2b8;">
+            <h3>Files Found on Disk</h3>
+            <div class="value">{{ "{:,}".format(stats.files_present) }}</div>
+            <small>Existed before deletion</small>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+        <!-- Directories Marked -->
+        <div class="stat-card" style="background: #d4edda; border-left: 4px solid #28a745;">
+            <h3>Directories Marked</h3>
+            <div class="value">{{ "{:,}".format(stats.dirs_marked) }}</div>
+            <small>Marked as deleted</small>
+        </div>
+
+        <!-- Directories Physically Deleted -->
+        <div class="stat-card" style="background: #f8d7da; border-left: 4px solid #dc3545;">
+            <h3>Directories Removed</h3>
+            <div class="value">{{ "{:,}".format(stats.dirs_deleted) }}</div>
+            <small>Removed from disk</small>
+        </div>
+
+        <!-- Errors -->
+        <div class="stat-card" style="background: #fff3cd; border-left: 4px solid #ffc107;">
+            <h3>Errors</h3>
+            <div class="value">{{ "{:,}".format(stats.errors|length) }}</div>
+            <small>Issues encountered</small>
+        </div>
+    </div>
+</div>
+
+{% if stats.errors %}
+<div class="card" style="background: #fff3cd; border-left: 4px solid #ffc107;">
+    <h2>⚠️ Errors ({{ stats.errors|length }})</h2>
+    <div style="max-height: 400px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>Error Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for error in stats.errors %}
+                <tr>
+                    <td><strong>{{ loop.index }}</strong></td>
+                    <td>
+                        <code style="font-size: 0.9em; color: #856404;">{{ error }}</code>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <h3>📊 Summary Analysis</h3>
+
+    {% set files_not_deleted = stats.files_present - stats.files_deleted %}
+    {% set dirs_not_deleted = stats.dirs_marked - stats.dirs_deleted %}
+
+    <ul style="line-height: 1.8;">
+        <li>
+            <strong>{{ stats.files_marked }}</strong> files marked as deleted in database
+        </li>
+        <li>
+            <strong>{{ stats.files_deleted }}</strong> of <strong>{{ stats.files_present }}</strong>
+            files present on disk were successfully deleted
+            {% if files_not_deleted > 0 %}
+            <span style="color: #ffc107;">({{ files_not_deleted }} could not be deleted)</span>
+            {% endif %}
+        </li>
+        <li>
+            <strong>{{ stats.dirs_marked }}</strong> directories marked as deleted
+        </li>
+        <li>
+            <strong>{{ stats.dirs_deleted }}</strong> of <strong>{{ stats.dirs_marked }}</strong>
+            directories were removed from disk
+            {% if dirs_not_deleted > 0 %}
+            <span style="color: #ffc107;">({{ dirs_not_deleted }} could not be removed - likely not empty)</span>
+            {% endif %}
+        </li>
+        {% if stats.files_marked > stats.files_present %}
+        <li>
+            <span style="color: #17a2b8;">
+                <strong>{{ stats.files_marked - stats.files_present }}</strong> files were already missing from disk
+            </span>
+        </li>
+        {% endif %}
+    </ul>
+</div>
+
+{% if stats.errors|length == 0 %}
+<div class="card" style="background: #d4edda; border-left: 4px solid #28a745;">
+    <h3>✅ Success</h3>
+    <p>
+        All operations completed successfully!
+        {% if stats.files_deleted > 0 %}
+        Deleted {{ stats.files_deleted }} file(s)
+        {% endif %}
+        {% if stats.files_deleted > 0 and stats.dirs_deleted > 0 %}
+        and
+        {% endif %}
+        {% if stats.dirs_deleted > 0 %}
+        removed {{ stats.dirs_deleted }} director{{ 'y' if stats.dirs_deleted == 1 else 'ies' }}.
+        {% endif %}
+    </p>
+</div>
+{% else %}
+<div class="card" style="background: #fff3cd; border-left: 4px solid #ffc107;">
+    <h3>⚠️ Partial Success</h3>
+    <p>
+        {{ stats.errors|length }} error(s) occurred during deletion.
+        Some files or directories may require manual intervention due to:
+    </p>
+    <ul>
+        <li>Permission issues (read-only files/directories)</li>
+        <li>Files/directories in use by other programs</li>
+        <li>Unindexed files in directories (not tracked by this application)</li>
+        <li>System-protected files or directories</li>
+    </ul>
+</div>
+{% endif %}
+
+<div style="margin-top: 2rem;">
+    <a href="{{ url_for('index') }}" class="btn">🏠 Home</a>
+    <a href="{{ url_for('scans') }}" class="btn">📋 View All Scans</a>
+</div>
+
+{% endblock %}
