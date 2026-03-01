@@ -1532,7 +1532,7 @@ def create_app(config: DatabaseConfig | None = None):
                 f"""
                 SELECT id, path
                 FROM directories
-                WHERE parent_id = {dir_id}
+                WHERE parent_id = {dir_id} AND deleted_at IS NULL
                 ORDER BY path
                 """
             )
