@@ -580,6 +580,7 @@ def create_app(config: DatabaseConfig | None = None):
             ]
 
             hash_col = "md5_hash" if config.backend == "sqlite" else "md5_hash"
+            placeholder = "?" if config.backend == "sqlite" else "%s"
 
             # Get total count of duplicate groups
             cache_key = f"duplicates_count_{min_size}_{scan_id}_{mode}"
@@ -590,7 +591,7 @@ def create_app(config: DatabaseConfig | None = None):
                     # Count files in selected scan that have duplicates in other scans (different paths)
                     count_sql = f"""
                         SELECT COUNT(DISTINCT f1.{hash_col}) FROM files f1
-                        WHERE f1.scan_id = ? AND f1.size >= ?
+                        WHERE f1.scan_id = {placeholder} AND f1.size >= {placeholder}
                           AND f1.deleted_at IS NULL
                           AND NOT COALESCE(f1.ignored, false)
                           AND f1.{hash_col} IS NOT NULL
@@ -599,7 +600,7 @@ def create_app(config: DatabaseConfig | None = None):
                               SELECT 1 FROM files f2
                               WHERE f2.{hash_col} = f1.{hash_col}
                                 AND f2.size = f1.size
-                                AND f2.scan_id != ?
+                                AND f2.scan_id != {placeholder}
                                 AND f2.deleted_at IS NULL
                                 AND NOT COALESCE(f2.ignored, false)
                           )
@@ -611,7 +612,7 @@ def create_app(config: DatabaseConfig | None = None):
                         SELECT COUNT(*) FROM (
                             SELECT {hash_col}, size
                             FROM files
-                            WHERE scan_id = ? AND size >= ?
+                            WHERE scan_id = {placeholder} AND size >= {placeholder}
                               AND deleted_at IS NULL
                               AND NOT COALESCE(ignored, false)
                               AND {hash_col} IS NOT NULL
@@ -627,7 +628,7 @@ def create_app(config: DatabaseConfig | None = None):
                         SELECT COUNT(*) FROM (
                             SELECT {hash_col}, size
                             FROM files
-                            WHERE size >= ?
+                            WHERE size >= {placeholder}
                               AND deleted_at IS NULL
                               AND NOT COALESCE(ignored, false)
                               AND {hash_col} IS NOT NULL
@@ -651,7 +652,7 @@ def create_app(config: DatabaseConfig | None = None):
                         AND f2.scan_id != f1.scan_id
                         AND f2.deleted_at IS NULL
                         AND NOT COALESCE(f2.ignored, false)
-                    WHERE f1.scan_id = ? AND f1.size >= ?
+                    WHERE f1.scan_id = {placeholder} AND f1.size >= {placeholder}
                       AND f1.deleted_at IS NULL
                       AND NOT COALESCE(f1.ignored, false)
                       AND f1.{hash_col} IS NOT NULL
@@ -666,7 +667,7 @@ def create_app(config: DatabaseConfig | None = None):
                 sql = f"""
                     SELECT {hash_col}, size, COUNT(*) as dup_count
                     FROM files
-                    WHERE scan_id = ? AND size >= ?
+                    WHERE scan_id = {placeholder} AND size >= {placeholder}
                       AND deleted_at IS NULL
                       AND NOT COALESCE(ignored, false)
                       AND {hash_col} IS NOT NULL
@@ -682,7 +683,7 @@ def create_app(config: DatabaseConfig | None = None):
                 sql = f"""
                     SELECT {hash_col}, size, COUNT(*) as dup_count
                     FROM files
-                    WHERE size >= ?
+                    WHERE size >= {placeholder}
                       AND deleted_at IS NULL
                       AND NOT COALESCE(ignored, false)
                       AND {hash_col} IS NOT NULL
@@ -711,7 +712,7 @@ def create_app(config: DatabaseConfig | None = None):
                     FROM files
                     JOIN directories ON files.directory_id = directories.id
                     JOIN scans ON files.scan_id = scans.id
-                    WHERE files.{hash_col} = ?
+                    WHERE files.{hash_col} = {placeholder}
                       AND files.deleted_at IS NULL
                       AND NOT COALESCE(files.ignored, false)
                     ORDER BY scans.scan_date DESC, directories.path, files.filename
@@ -787,7 +788,7 @@ def create_app(config: DatabaseConfig | None = None):
                     cursor.execute(
                         f"""
                         SELECT SUM(f1.size) FROM files f1
-                        WHERE f1.scan_id = ? AND f1.size >= ?
+                        WHERE f1.scan_id = {placeholder} AND f1.size >= {placeholder}
                           AND f1.deleted_at IS NULL
                           AND NOT COALESCE(f1.ignored, false)
                           AND f1.{hash_col} IS NOT NULL
@@ -796,7 +797,7 @@ def create_app(config: DatabaseConfig | None = None):
                               SELECT 1 FROM files f2
                               WHERE f2.{hash_col} = f1.{hash_col}
                                 AND f2.size = f1.size
-                                AND f2.scan_id != ?
+                                AND f2.scan_id != {placeholder}
                                 AND f2.deleted_at IS NULL
                                 AND NOT COALESCE(f2.ignored, false)
                           )
@@ -810,7 +811,7 @@ def create_app(config: DatabaseConfig | None = None):
                         SELECT SUM(size * (path_count - 1)) FROM (
                             SELECT size, COUNT(DISTINCT directory_id || '/' || filename) as path_count
                             FROM files
-                            WHERE size >= ?
+                            WHERE size >= {placeholder}
                               AND deleted_at IS NULL
                               AND NOT COALESCE(ignored, false)
                               AND {hash_col} IS NOT NULL
