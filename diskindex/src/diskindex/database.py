@@ -29,6 +29,11 @@ class DatabaseConfig:
         self.user = user
         self.password = password
 
+    @property
+    def ph(self) -> str:
+        """DB-API parameter placeholder: '?' for SQLite, '%s' for PostgreSQL."""
+        return "?" if self.backend == "sqlite" else "%s"
+
     def get_connection(
         self,
     ) -> Union[sqlite3.Connection, "psycopg2.extensions.connection"]:
@@ -378,11 +383,10 @@ def run_migrations(config: DatabaseConfig) -> None:
             scans_without_guid = cursor.fetchall()
 
             if scans_without_guid:
-                placeholder = "?" if config.backend == "sqlite" else "%s"
                 for (scan_id,) in scans_without_guid:
                     new_guid = uuid.uuid4().hex
                     cursor.execute(
-                        f"UPDATE scans SET guid = {placeholder} WHERE id = {placeholder}",
+                        f"UPDATE scans SET guid = {config.ph} WHERE id = {config.ph}",
                         (new_guid, scan_id),
                     )
                 print(f"Generated GUIDs for {len(scans_without_guid)} existing scans")
@@ -514,12 +518,11 @@ def install_default_ignore_patterns(config: DatabaseConfig) -> None:
         if count == 0:
             # Insert default patterns
             patterns = get_default_ignore_patterns()
-            placeholder = "?" if config.backend == "sqlite" else "%s"
 
             for pattern, is_exception, notes in patterns:
                 cursor.execute(
                     f"INSERT INTO ignore_patterns (pattern, is_exception, applies_to, notes) "
-                    f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                    f"VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph})",
                     (pattern, is_exception, "all", notes),
                 )
 

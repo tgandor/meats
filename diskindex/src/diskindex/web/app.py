@@ -580,7 +580,6 @@ def create_app(config: DatabaseConfig | None = None):
             ]
 
             hash_col = "md5_hash" if config.backend == "sqlite" else "md5_hash"
-            placeholder = "?" if config.backend == "sqlite" else "%s"
 
             # Get total count of duplicate groups
             cache_key = f"duplicates_count_{min_size}_{scan_id}_{mode}"
@@ -591,7 +590,7 @@ def create_app(config: DatabaseConfig | None = None):
                     # Count files in selected scan that have duplicates in other scans (different paths)
                     count_sql = f"""
                         SELECT COUNT(DISTINCT f1.{hash_col}) FROM files f1
-                        WHERE f1.scan_id = {placeholder} AND f1.size >= {placeholder}
+                        WHERE f1.scan_id = {config.ph} AND f1.size >= {config.ph}
                           AND f1.deleted_at IS NULL
                           AND NOT COALESCE(f1.ignored, false)
                           AND f1.{hash_col} IS NOT NULL
@@ -600,7 +599,7 @@ def create_app(config: DatabaseConfig | None = None):
                               SELECT 1 FROM files f2
                               WHERE f2.{hash_col} = f1.{hash_col}
                                 AND f2.size = f1.size
-                                AND f2.scan_id != {placeholder}
+                                AND f2.scan_id != {config.ph}
                                 AND f2.deleted_at IS NULL
                                 AND NOT COALESCE(f2.ignored, false)
                           )
@@ -612,7 +611,7 @@ def create_app(config: DatabaseConfig | None = None):
                         SELECT COUNT(*) FROM (
                             SELECT {hash_col}, size
                             FROM files
-                            WHERE scan_id = {placeholder} AND size >= {placeholder}
+                            WHERE scan_id = {config.ph} AND size >= {config.ph}
                               AND deleted_at IS NULL
                               AND NOT COALESCE(ignored, false)
                               AND {hash_col} IS NOT NULL
@@ -628,7 +627,7 @@ def create_app(config: DatabaseConfig | None = None):
                         SELECT COUNT(*) FROM (
                             SELECT {hash_col}, size
                             FROM files
-                            WHERE size >= {placeholder}
+                            WHERE size >= {config.ph}
                               AND deleted_at IS NULL
                               AND NOT COALESCE(ignored, false)
                               AND {hash_col} IS NOT NULL
@@ -652,7 +651,7 @@ def create_app(config: DatabaseConfig | None = None):
                         AND f2.scan_id != f1.scan_id
                         AND f2.deleted_at IS NULL
                         AND NOT COALESCE(f2.ignored, false)
-                    WHERE f1.scan_id = {placeholder} AND f1.size >= {placeholder}
+                    WHERE f1.scan_id = {config.ph} AND f1.size >= {config.ph}
                       AND f1.deleted_at IS NULL
                       AND NOT COALESCE(f1.ignored, false)
                       AND f1.{hash_col} IS NOT NULL
@@ -667,7 +666,7 @@ def create_app(config: DatabaseConfig | None = None):
                 sql = f"""
                     SELECT {hash_col}, size, COUNT(*) as dup_count
                     FROM files
-                    WHERE scan_id = {placeholder} AND size >= {placeholder}
+                    WHERE scan_id = {config.ph} AND size >= {config.ph}
                       AND deleted_at IS NULL
                       AND NOT COALESCE(ignored, false)
                       AND {hash_col} IS NOT NULL
@@ -683,7 +682,7 @@ def create_app(config: DatabaseConfig | None = None):
                 sql = f"""
                     SELECT {hash_col}, size, COUNT(*) as dup_count
                     FROM files
-                    WHERE size >= {placeholder}
+                    WHERE size >= {config.ph}
                       AND deleted_at IS NULL
                       AND NOT COALESCE(ignored, false)
                       AND {hash_col} IS NOT NULL
@@ -712,7 +711,7 @@ def create_app(config: DatabaseConfig | None = None):
                     FROM files
                     JOIN directories ON files.directory_id = directories.id
                     JOIN scans ON files.scan_id = scans.id
-                    WHERE files.{hash_col} = {placeholder}
+                    WHERE files.{hash_col} = {config.ph}
                       AND files.deleted_at IS NULL
                       AND NOT COALESCE(files.ignored, false)
                     ORDER BY scans.scan_date DESC, directories.path, files.filename
@@ -788,7 +787,7 @@ def create_app(config: DatabaseConfig | None = None):
                     cursor.execute(
                         f"""
                         SELECT SUM(f1.size) FROM files f1
-                        WHERE f1.scan_id = {placeholder} AND f1.size >= {placeholder}
+                        WHERE f1.scan_id = {config.ph} AND f1.size >= {config.ph}
                           AND f1.deleted_at IS NULL
                           AND NOT COALESCE(f1.ignored, false)
                           AND f1.{hash_col} IS NOT NULL
@@ -797,7 +796,7 @@ def create_app(config: DatabaseConfig | None = None):
                               SELECT 1 FROM files f2
                               WHERE f2.{hash_col} = f1.{hash_col}
                                 AND f2.size = f1.size
-                                AND f2.scan_id != {placeholder}
+                                AND f2.scan_id != {config.ph}
                                 AND f2.deleted_at IS NULL
                                 AND NOT COALESCE(f2.ignored, false)
                           )
@@ -811,7 +810,7 @@ def create_app(config: DatabaseConfig | None = None):
                         SELECT SUM(size * (path_count - 1)) FROM (
                             SELECT size, COUNT(DISTINCT directory_id || '/' || filename) as path_count
                             FROM files
-                            WHERE size >= {placeholder}
+                            WHERE size >= {config.ph}
                               AND deleted_at IS NULL
                               AND NOT COALESCE(ignored, false)
                               AND {hash_col} IS NOT NULL
@@ -922,10 +921,9 @@ def create_app(config: DatabaseConfig | None = None):
         cursor = conn.cursor()
 
         try:
-            placeholder = "?" if config.backend == "sqlite" else "%s"
             cursor.execute(
                 f"INSERT INTO ignore_patterns (pattern, is_exception, applies_to, notes) "
-                f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                f"VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph})",
                 (pattern, is_exception, applies_to, notes),
             )
             conn.commit()
@@ -947,9 +945,8 @@ def create_app(config: DatabaseConfig | None = None):
         cursor = conn.cursor()
 
         try:
-            placeholder = "?" if config.backend == "sqlite" else "%s"
             cursor.execute(
-                f"DELETE FROM ignore_patterns WHERE id = {placeholder}",
+                f"DELETE FROM ignore_patterns WHERE id = {config.ph}",
                 (pattern_id,),
             )
             conn.commit()
@@ -1004,9 +1001,8 @@ def create_app(config: DatabaseConfig | None = None):
                 flash(f"File {filename} is already marked as deleted", "warning")
             else:
                 # Mark as deleted
-                placeholder = "?" if config.backend == "sqlite" else "%s"
                 cursor.execute(
-                    f"UPDATE files SET deleted_at = {placeholder} WHERE id = {placeholder}",
+                    f"UPDATE files SET deleted_at = {config.ph} WHERE id = {config.ph}",
                     (datetime.now(), file_id),
                 )
                 conn.commit()
@@ -1071,9 +1067,8 @@ def create_app(config: DatabaseConfig | None = None):
                 os.remove(full_path)
 
                 # Mark as deleted in database
-                placeholder = "?" if config.backend == "sqlite" else "%s"
                 cursor.execute(
-                    f"UPDATE files SET deleted_at = {placeholder} WHERE id = {placeholder}",
+                    f"UPDATE files SET deleted_at = {config.ph} WHERE id = {config.ph}",
                     (datetime.now(), file_id),
                 )
                 conn.commit()
@@ -1126,10 +1121,9 @@ def create_app(config: DatabaseConfig | None = None):
                 flash(f"No active files in directory {dir_path}", "warning")
             else:
                 # Mark all files in directory as deleted
-                placeholder = "?" if config.backend == "sqlite" else "%s"
                 cursor.execute(
-                    f"UPDATE files SET deleted_at = {placeholder} "
-                    f"WHERE directory_id = {placeholder} AND deleted_at IS NULL",
+                    f"UPDATE files SET deleted_at = {config.ph} "
+                    f"WHERE directory_id = {config.ph} AND deleted_at IS NULL",
                     (datetime.now(), dir_id),
                 )
                 conn.commit()
@@ -1140,7 +1134,7 @@ def create_app(config: DatabaseConfig | None = None):
 
                 # Mark directory as deleted
                 cursor.execute(
-                    f"UPDATE directories SET deleted_at = {placeholder} WHERE id = {placeholder}",
+                    f"UPDATE directories SET deleted_at = {config.ph} WHERE id = {config.ph}",
                     (datetime.now(), dir_id),
                 )
                 conn.commit()
@@ -1212,10 +1206,9 @@ def create_app(config: DatabaseConfig | None = None):
                     error_count += 1
 
             # Mark all files as deleted in database
-            placeholder = "?" if config.backend == "sqlite" else "%s"
             cursor.execute(
-                f"UPDATE files SET deleted_at = {placeholder} "
-                f"WHERE directory_id = {placeholder}",
+                f"UPDATE files SET deleted_at = {config.ph} "
+                f"WHERE directory_id = {config.ph}",
                 (datetime.now(), dir_id),
             )
             conn.commit()
@@ -1242,7 +1235,7 @@ def create_app(config: DatabaseConfig | None = None):
 
             # Mark directory as deleted in database
             cursor.execute(
-                f"UPDATE directories SET deleted_at = {placeholder} WHERE id = {placeholder}",
+                f"UPDATE directories SET deleted_at = {config.ph} WHERE id = {config.ph}",
                 (datetime.now(), dir_id),
             )
             conn.commit()
@@ -1280,9 +1273,12 @@ def create_app(config: DatabaseConfig | None = None):
             # Get all subdirectories recursively using path prefix matching
             cursor.execute(
                 f"SELECT id FROM directories WHERE scan_id = {scan_id} "
-                f"AND (id = {dir_id} OR path LIKE {dir_path}{'/%' if dir_path else '%'})"
+                f"AND (id = {dir_id} OR path LIKE {config.ph})",
+                (dir_path + "/%",),
             )
-            all_dir_ids = [r[0] if isinstance(r, tuple) else r["id"] for r in cursor.fetchall()]
+            all_dir_ids = [
+                r[0] if isinstance(r, tuple) else r["id"] for r in cursor.fetchall()
+            ]
 
             # Count files to be marked across all subdirectories
             dir_ids_str = ",".join(str(d) for d in all_dir_ids)
@@ -1292,20 +1288,17 @@ def create_app(config: DatabaseConfig | None = None):
             )
             files_count = cursor.fetchone()[0]
 
-            # Define placeholder for parameterized queries
-            placeholder = "?" if config.backend == "sqlite" else "%s"
-
             # Mark all files in directory tree as deleted
             if files_count > 0:
                 cursor.execute(
-                    f"UPDATE files SET deleted_at = {placeholder} "
+                    f"UPDATE files SET deleted_at = {config.ph} "
                     f"WHERE directory_id IN ({dir_ids_str}) AND deleted_at IS NULL",
                     (datetime.now(),),
                 )
 
             # Mark all directories in tree as deleted
             cursor.execute(
-                f"UPDATE directories SET deleted_at = {placeholder} "
+                f"UPDATE directories SET deleted_at = {config.ph} "
                 f"WHERE id IN ({dir_ids_str}) AND deleted_at IS NULL",
                 (datetime.now(),),
             )
@@ -1364,8 +1357,9 @@ def create_app(config: DatabaseConfig | None = None):
             # Get all subdirectories recursively
             cursor.execute(
                 f"SELECT id, path FROM directories WHERE scan_id = {scan_id} "
-                f"AND (id = {dir_id} OR path LIKE '{dir_path}/%') "
-                f"ORDER BY LENGTH(path) DESC"  # Process deepest first
+                f"AND (id = {dir_id} OR path LIKE {config.ph}) "
+                f"ORDER BY LENGTH(path) DESC",  # Process deepest first
+                (dir_path + "/%",),
             )
             all_dirs = cursor.fetchall()
 
@@ -1376,7 +1370,7 @@ def create_app(config: DatabaseConfig | None = None):
                 "files_present": 0,
                 "dirs_marked": 0,
                 "dirs_deleted": 0,
-                "errors": []
+                "errors": [],
             }
 
             # Process each directory (deepest first for proper deletion)
@@ -1392,8 +1386,14 @@ def create_app(config: DatabaseConfig | None = None):
 
                 # Delete each file
                 for file_row in files:
-                    f_id = file_row[0] if isinstance(file_row, tuple) else file_row["id"]
-                    filename = file_row[1] if isinstance(file_row, tuple) else file_row["filename"]
+                    f_id = (
+                        file_row[0] if isinstance(file_row, tuple) else file_row["id"]
+                    )
+                    filename = (
+                        file_row[1]
+                        if isinstance(file_row, tuple)
+                        else file_row["filename"]
+                    )
                     full_path = os.path.join(d_path, filename)
 
                     # Check if file exists
@@ -1409,10 +1409,9 @@ def create_app(config: DatabaseConfig | None = None):
 
                 # Mark all files in this directory as deleted
                 if files:
-                    placeholder = "?" if config.backend == "sqlite" else "%s"
                     cursor.execute(
-                        f"UPDATE files SET deleted_at = {placeholder} "
-                        f"WHERE directory_id = {placeholder}",
+                        f"UPDATE files SET deleted_at = {config.ph} "
+                        f"WHERE directory_id = {config.ph}",
                         (datetime.now(), d_id),
                     )
                     stats["files_marked"] += cursor.rowcount
@@ -1430,14 +1429,17 @@ def create_app(config: DatabaseConfig | None = None):
                             os.rmdir(d_path)
                             stats["dirs_deleted"] += 1
                     except PermissionError:
-                        stats["errors"].append(f"Permission denied for directory: {d_path}")
+                        stats["errors"].append(
+                            f"Permission denied for directory: {d_path}"
+                        )
                     except OSError as e:
-                        stats["errors"].append(f"Error removing directory {d_path}: {e}")
+                        stats["errors"].append(
+                            f"Error removing directory {d_path}: {e}"
+                        )
 
                 # Mark directory as deleted
-                placeholder = "?" if config.backend == "sqlite" else "%s"
                 cursor.execute(
-                    f"UPDATE directories SET deleted_at = {placeholder} WHERE id = {placeholder}",
+                    f"UPDATE directories SET deleted_at = {config.ph} WHERE id = {config.ph}",
                     (datetime.now(), d_id),
                 )
                 stats["dirs_marked"] += cursor.rowcount

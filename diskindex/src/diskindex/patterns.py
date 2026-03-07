@@ -60,8 +60,7 @@ def reapply_patterns(
         where_clause = ""
         params = []
         if scan_id is not None:
-            placeholder = "?" if config.backend == "sqlite" else "%s"
-            where_clause = f"WHERE files.scan_id = {placeholder}"
+            where_clause = f"WHERE files.scan_id = {config.ph}"
             params = [scan_id]
 
         # Get files with their directory paths
@@ -82,7 +81,6 @@ def reapply_patterns(
         # Check each file against patterns
         updates_ignored = []
         updates_visible = []
-        placeholder = "?" if config.backend == "sqlite" else "%s"
 
         for row in files:
             if isinstance(row, tuple):
@@ -119,13 +117,13 @@ def reapply_patterns(
         # Batch update files
         if updates_ignored:
             cursor.executemany(
-                f"UPDATE files SET ignored = 1 WHERE id = {placeholder}",
+                f"UPDATE files SET ignored = 1 WHERE id = {config.ph}",
                 updates_ignored,
             )
 
         if updates_visible:
             cursor.executemany(
-                f"UPDATE files SET ignored = 0 WHERE id = {placeholder}",
+                f"UPDATE files SET ignored = 0 WHERE id = {config.ph}",
                 updates_visible,
             )
 

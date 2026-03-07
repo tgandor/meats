@@ -394,10 +394,9 @@ def cmd_patterns_add(args):
     cursor = conn.cursor()
 
     try:
-        placeholder = "?" if config.backend == "sqlite" else "%s"
         cursor.execute(
             f"INSERT INTO ignore_patterns (pattern, is_exception, applies_to, notes) "
-            f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
+            f"VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph})",
             (args.pattern, args.exception, args.applies_to, args.notes),
         )
         conn.commit()
@@ -427,9 +426,8 @@ def cmd_patterns_remove(args):
 
     try:
         # Check if pattern exists
-        placeholder = "?" if config.backend == "sqlite" else "%s"
         cursor.execute(
-            f"SELECT pattern FROM ignore_patterns WHERE id = {placeholder}", (args.id,)
+            f"SELECT pattern FROM ignore_patterns WHERE id = {config.ph}", (args.id,)
         )
         row = cursor.fetchone()
 
@@ -441,7 +439,7 @@ def cmd_patterns_remove(args):
 
         # Delete pattern
         cursor.execute(
-            f"DELETE FROM ignore_patterns WHERE id = {placeholder}", (args.id,)
+            f"DELETE FROM ignore_patterns WHERE id = {config.ph}", (args.id,)
         )
         conn.commit()
 
@@ -745,8 +743,7 @@ def cmd_import(args):
         import_guids = [row[0] for row in import_cursor.fetchall()]
 
         if import_guids:
-            placeholder = "?" if config.backend == "sqlite" else "%s"
-            placeholders = ",".join([placeholder] * len(import_guids))
+            placeholders = ",".join([config.ph] * len(import_guids))
             dest_cursor.execute(
                 f"SELECT guid FROM scans WHERE guid IN ({placeholders})", import_guids
             )
@@ -788,9 +785,8 @@ def cmd_import(args):
                 skipped_scans += 1
                 continue
 
-            placeholder = "?" if config.backend == "sqlite" else "%s"
             dest_cursor.execute(
-                f"INSERT INTO scans (guid, scan_date, scan_path, notes) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                f"INSERT INTO scans (guid, scan_date, scan_path, notes) VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph})",
                 (guid, scan_date, scan_path, notes),
             )
 
@@ -854,8 +850,7 @@ def cmd_import(args):
             volumes = import_cursor.fetchall()
 
             imported_volumes = 0
-            placeholder = "?" if config.backend == "sqlite" else "%s"
-            placeholders = ", ".join([placeholder] * len(insert_cols))
+            placeholders = ", ".join([config.ph] * len(insert_cols))
 
             for row in volumes:
                 scan_id = row[0]
@@ -907,7 +902,6 @@ def cmd_import(args):
         dir_id_map = {}  # old_id -> new_id
         dir_to_scan_map = {}  # new_directory_id -> scan_id
         imported_dirs = 0
-        placeholder = "?" if config.backend == "sqlite" else "%s"
 
         for row in directories:
             if import_has_name:
@@ -925,12 +919,12 @@ def cmd_import(args):
 
             if dest_needs_name:
                 dest_cursor.execute(
-                    f"INSERT INTO directories (scan_id, parent_id, path, name) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                    f"INSERT INTO directories (scan_id, parent_id, path, name) VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph})",
                     (new_scan_id, new_parent_id, path, name),
                 )
             else:
                 dest_cursor.execute(
-                    f"INSERT INTO directories (scan_id, parent_id, path) VALUES ({placeholder}, {placeholder}, {placeholder})",
+                    f"INSERT INTO directories (scan_id, parent_id, path) VALUES ({config.ph}, {config.ph}, {config.ph})",
                     (new_scan_id, new_parent_id, path),
                 )
 
@@ -981,7 +975,6 @@ def cmd_import(args):
         batch_size = args.batch_size if hasattr(args, "batch_size") else 1000
         files_batch = []
         imported_files = 0
-        placeholder = "?" if config.backend == "sqlite" else "%s"
 
         for row in import_cursor:
             if import_has_scan_id:
@@ -1001,7 +994,7 @@ def cmd_import(args):
                 if not file_scan_id:
                     # Fallback: query the directory
                     dest_cursor.execute(
-                        f"SELECT scan_id FROM directories WHERE id = {placeholder}",
+                        f"SELECT scan_id FROM directories WHERE id = {config.ph}",
                         (new_directory_id,),
                     )
                     result = dest_cursor.fetchone()
@@ -1030,13 +1023,13 @@ def cmd_import(args):
                 if dest_has_scan_id:
                     dest_cursor.executemany(
                         f"INSERT INTO files (scan_id, directory_id, filename, size, mtime, {dest_hash_col}, ignored) "
-                        f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                        f"VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph}, {config.ph}, {config.ph}, {config.ph})",
                         files_batch,
                     )
                 else:
                     dest_cursor.executemany(
                         f"INSERT INTO files (directory_id, filename, size, mtime, {dest_hash_col}, ignored) "
-                        f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                        f"VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph}, {config.ph}, {config.ph})",
                         files_batch,
                     )
                 imported_files += len(files_batch)
@@ -1049,13 +1042,13 @@ def cmd_import(args):
             if dest_has_scan_id:
                 dest_cursor.executemany(
                     f"INSERT INTO files (scan_id, directory_id, filename, size, mtime, {dest_hash_col}, ignored) "
-                    f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                    f"VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph}, {config.ph}, {config.ph}, {config.ph})",
                     files_batch,
                 )
             else:
                 dest_cursor.executemany(
                     f"INSERT INTO files (directory_id, filename, size, mtime, {dest_hash_col}, ignored) "
-                    f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                    f"VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph}, {config.ph}, {config.ph})",
                     files_batch,
                 )
             imported_files += len(files_batch)
@@ -1099,17 +1092,16 @@ def cmd_import(args):
             if pattern in existing_patterns:
                 continue  # Skip duplicate patterns
 
-            placeholder = "?" if config.backend == "sqlite" else "%s"
             if config.backend == "sqlite":
                 dest_cursor.execute(
                     f"INSERT INTO {dest_pattern_table} (pattern, is_exception, applies_to, notes, created) "
-                    f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, datetime('now'))",
+                    f"VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph}, datetime('now'))",
                     (pattern, is_exception, applies_to, notes),
                 )
             else:
                 dest_cursor.execute(
                     f"INSERT INTO {dest_pattern_table} (pattern, is_exception, applies_to, notes, created) "
-                    f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, NOW())",
+                    f"VALUES ({config.ph}, {config.ph}, {config.ph}, {config.ph}, NOW())",
                     (pattern, is_exception, applies_to, notes),
                 )
             imported_patterns += 1

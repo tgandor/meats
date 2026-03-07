@@ -269,6 +269,11 @@ class Scanner:
         }
         self.directory_cache = {}  # path -> directory_id
 
+    @property
+    def ph(self) -> str:
+        """DB-API parameter placeholder."""
+        return self.config.ph
+
     def scan(
         self, scan_path: Union[str, pathlib.Path], notes: Optional[str] = None
     ) -> int:
@@ -305,10 +310,9 @@ class Scanner:
             scan_guid = uuid.uuid4().hex
             scan = Scan(scan_date=datetime.now(), scan_path=str(scan_path), notes=notes)
 
-            placeholder = "?" if self.config.backend == "sqlite" else "%s"
             cursor.execute(
                 f"INSERT INTO scans (guid, scan_date, scan_path, notes) "
-                f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                f"VALUES ({self.ph}, {self.ph}, {self.ph}, {self.ph})",
                 (scan_guid, scan.scan_date, scan.scan_path, scan.notes),
             )
 
@@ -332,8 +336,8 @@ class Scanner:
                 cursor.execute(
                     f"INSERT INTO volumes (scan_id, label, filesystem_type, mount_point, "
                     f"device_path, total_size, free_space, mount_options, uuid, drive_type) "
-                    f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, "
-                    f"{placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                    f"VALUES ({self.ph}, {self.ph}, {self.ph}, {self.ph}, "
+                    f"{self.ph}, {self.ph}, {self.ph}, {self.ph}, {self.ph}, {self.ph})",
                     (
                         volume.scan_id,
                         volume.label,
@@ -373,7 +377,7 @@ class Scanner:
             # Update scan duration
             duration = time.time() - start_time
             cursor.execute(
-                f"UPDATE scans SET duration_seconds = {placeholder} WHERE id = {placeholder}",
+                f"UPDATE scans SET duration_seconds = {self.ph} WHERE id = {self.ph}",
                 (duration, scan_id),
             )
             conn.commit()
@@ -419,11 +423,9 @@ class Scanner:
         if path_str in self.directory_cache:
             return self.directory_cache[path_str]
 
-        placeholder = "?" if self.config.backend == "sqlite" else "%s"
-
         # Try to find existing directory
         cursor.execute(
-            f"SELECT id FROM directories WHERE scan_id = {placeholder} AND path = {placeholder}",
+            f"SELECT id FROM directories WHERE scan_id = {self.ph} AND path = {self.ph}",
             (scan_id, path_str),
         )
         result = cursor.fetchone()
@@ -434,7 +436,7 @@ class Scanner:
             # Create new directory record
             cursor.execute(
                 f"INSERT INTO directories (scan_id, parent_id, path, name) "
-                f"VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})",
+                f"VALUES ({self.ph}, {self.ph}, {self.ph}, {self.ph})",
                 (scan_id, parent_id, path_str, dir_path.name or str(dir_path)),
             )
 
@@ -586,12 +588,10 @@ class Scanner:
 
     def _commit_file_batch(self, cursor, conn, file_batch: list) -> None:
         """Commit a batch of files to database."""
-        placeholder = "?" if self.config.backend == "sqlite" else "%s"
-
         cursor.executemany(
             f"INSERT INTO files (scan_id, directory_id, filename, extension, "
-            f"size, mtime, md5_hash) VALUES ({placeholder}, {placeholder}, "
-            f"{placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})",
+            f"size, mtime, md5_hash) VALUES ({self.ph}, {self.ph}, "
+            f"{self.ph}, {self.ph}, {self.ph}, {self.ph}, {self.ph})",
             file_batch,
         )
         conn.commit()
