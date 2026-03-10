@@ -8,6 +8,7 @@ fi
 
 if [ "$MP3" == "" ] ; then
     EXT=mp3
+	CODEC="-acodec libmp3lame -qscale:a 2"
 else
     EXT=$MP3
 fi
@@ -21,6 +22,6 @@ for f in "$@"; do
 		echo "$f - target same as source"
 	else
 		echo "$f -> $new_name"
-		$conv -hide_banner -i "$f" -vn -y "`basename "$new_name"`" 2>&1
+		$conv -hide_banner -i "$f" -vn $CODEC -y "`basename "$new_name"`" 2>&1
 	fi
 done
