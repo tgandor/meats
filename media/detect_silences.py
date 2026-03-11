@@ -63,8 +63,17 @@ for k, vals in it.groupby(low):
         f"{num_sil:4d} {fmt_pos(pos, rate)} - {fmt_pos(pos + L, rate)}: {L/rate:.3f} s ([{k}] * {L})"
     )
 
+# if no silence at the beginning, first sound will be missed, so add a silence at the beginning
+if silences and silences[0][0] > 0:
+    print("Adding silence at the beginning")
+    silences.insert(0, (0, 0))
+# if no silence at the end, last sound will be missed, so add a silence at the end
+if silences and silences[-1][1] < len(data):
+    print("Adding silence at the end")
+    silences.append((len(data), len(data)))
 
 sounds = [(b, c) for (_, b), (c, _) in zip(silences, silences[1:])]
+
 if args.split:
     for i, (a, b) in enumerate(sounds):
         if b - a < limit:
