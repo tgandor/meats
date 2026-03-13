@@ -23,7 +23,7 @@ pywin32 = {markers = "platform_system == \"Windows\"", version = "^311"}
 mutagen = "^1.47.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.10.0"
+black = "^26.3.1"
 isort = "^5.13.2"
 
 [build-system]
