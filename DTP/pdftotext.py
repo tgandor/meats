@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """pdftotext replacement using pypdf.
 
 Mimics a subset of poppler's pdftotext options:
