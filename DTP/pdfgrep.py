@@ -26,7 +26,7 @@ def extract_lines(pdf_path: str) -> list[str]:
     for page in reader.pages:
         text = page.extract_text(extraction_mode="layout") or ""
         parts.append(text)
-    return "\f".join(parts).splitlines()
+    return "\f".join(parts).splitlines()  # type: ignore[union-attr] - splitlines() is on str
 
 
 def normalize(line: str) -> str:
