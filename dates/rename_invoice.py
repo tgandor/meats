@@ -22,27 +22,27 @@ from pathlib import Path
 
 from pypdf import PdfReader
 
-
 # ── regex patterns ────────────────────────────────────────────────────────────
 # Payment deadline — various spellings/layouts
 _DATE_RE = re.compile(
-    r'Termin\s+p[łl]atno[śs]ci\s*:?\s*'
-    r'(\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{4}'   # dd/mm/yyyy
-    r'|\d{4}[/\-\.]\d{1,2}[/\-\.]\d{1,2})',  # yyyy-mm-dd
+    r"Termin\s+p[łlø]atno[śs]ci\s*:?\s*"
+    r"(\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{4}"  # dd/mm/yyyy
+    r"|\d{4}[/\-\.]\d{1,2}[/\-\.]\d{1,2})",  # yyyy-mm-dd
     re.IGNORECASE,
 )
 
 # Amount to pay — "Do zapłaty: 4 825,14 zł" (thousands may be separated by space)
 _AMOUNT_RE = re.compile(
-    r'Do\s+zap[łl]aty\s*:?\s*([\d][\d\s]*[,\.]\d{2})\s*z[łl]',
+    r"Do\s+zap[łlø]aty\s*:?\s*([\d][\d\s]*[,\.]\d{2})\s*z?[łl]?",
     re.IGNORECASE,
 )
 
 # Guard against re-renaming — already renamed files start with YYYY-MM-DD-
-_ALREADY_RE = re.compile(r'^\d{4}-\d{2}-\d{2}-')
+_ALREADY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}-")
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
+
 
 def extract_text(pdf_path: str) -> str:
     """Return full text of PDF extracted in layout mode."""
@@ -61,11 +61,11 @@ def extract_text(pdf_path: str) -> str:
 def parse_date(raw: str) -> str | None:
     """Convert dd/mm/yyyy (or yyyy-mm-dd variants) to YYYY-MM-DD."""
     raw = raw.strip()
-    m = re.match(r'^(\d{1,2})[/\-\.](\d{1,2})[/\-\.](\d{4})$', raw)
+    m = re.match(r"^(\d{1,2})[/\-\.](\d{1,2})[/\-\.](\d{4})$", raw)
     if m:
         d, mo, y = m.groups()
         return f"{y}-{mo.zfill(2)}-{d.zfill(2)}"
-    m = re.match(r'^(\d{4})[/\-\.](\d{1,2})[/\-\.](\d{1,2})$', raw)
+    m = re.match(r"^(\d{4})[/\-\.](\d{1,2})[/\-\.](\d{1,2})$", raw)
     if m:
         y, mo, d = m.groups()
         return f"{y}-{mo.zfill(2)}-{d.zfill(2)}"
@@ -75,15 +75,16 @@ def parse_date(raw: str) -> str | None:
 def parse_amount(raw: str) -> str | None:
     """Normalise an extracted amount string to Polish 'NNN,GG' notation."""
     # Remove whitespace used as thousands separator
-    normalised = re.sub(r'\s+', '', raw.strip())
+    normalised = re.sub(r"\s+", "", raw.strip())
     # Normalise decimal separator to comma
-    normalised = normalised.replace('.', ',')
-    if re.match(r'^\d+,\d{2}$', normalised):
+    normalised = normalised.replace(".", ",")
+    if re.match(r"^\d+,\d{2}$", normalised):
         return normalised
     return None
 
 
 # ── core logic ────────────────────────────────────────────────────────────────
+
 
 def process_pdf(pdf_path: Path, dry_run: bool = False, keep: bool = False) -> bool:
     name = pdf_path.name
@@ -99,13 +100,18 @@ def process_pdf(pdf_path: Path, dry_run: bool = False, keep: bool = False) -> bo
     # Payment date
     m = _DATE_RE.search(text)
     if not m:
-        print(f"rename_invoice: {name}: payment date (Termin płatności) not found",
-              file=sys.stderr)
+        print(
+            f"rename_invoice: {name}: payment date (Termin płatności) not found",
+            file=sys.stderr,
+        )
+        if dry_run:
+            pdf_path.with_suffix(".txt").write_text(text)
         return False
     date_iso = parse_date(m.group(1))
     if not date_iso:
-        print(f"rename_invoice: {name}: cannot parse date {m.group(1)!r}",
-              file=sys.stderr)
+        print(
+            f"rename_invoice: {name}: cannot parse date {m.group(1)!r}", file=sys.stderr
+        )
         return False
 
     # Amount to pay — take first match (covers single- and multi-invoice PDFs)
@@ -115,16 +121,20 @@ def process_pdf(pdf_path: Path, dry_run: bool = False, keep: bool = False) -> bo
         return False
     amount = parse_amount(m.group(1))
     if not amount:
-        print(f"rename_invoice: {name}: cannot parse amount {m.group(1)!r}",
-              file=sys.stderr)
+        print(
+            f"rename_invoice: {name}: cannot parse amount {m.group(1)!r}",
+            file=sys.stderr,
+        )
         return False
 
     new_name = f"{date_iso}-{amount}-{name}"
     new_path = pdf_path.parent / new_name
 
     if new_path.exists():
-        print(f"rename_invoice: {name}: target already exists: {new_name}",
-              file=sys.stderr)
+        print(
+            f"rename_invoice: {name}: target already exists: {new_name}",
+            file=sys.stderr,
+        )
         return False
 
     if dry_run:
@@ -146,17 +156,24 @@ def process_pdf(pdf_path: Path, dry_run: bool = False, keep: bool = False) -> bo
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Rename Polish invoice PDFs with payment-date and amount prefix",
     )
-    parser.add_argument("files", nargs="+", metavar="file", help="PDF file(s) to rename")
     parser.add_argument(
-        "-n", "--dry-run", action="store_true",
+        "files", nargs="+", metavar="file", help="PDF file(s) to rename"
+    )
+    parser.add_argument(
+        "-n",
+        "--dry-run",
+        action="store_true",
         help="Show what would be renamed without touching the files",
     )
     parser.add_argument(
-        "-k", "--keep", action="store_true",
+        "-k",
+        "--keep",
+        action="store_true",
         help="Copy the file instead of renaming it (original is preserved)",
     )
     args = parser.parse_args()
