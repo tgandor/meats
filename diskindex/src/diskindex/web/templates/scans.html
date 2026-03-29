@@ -39,6 +39,7 @@
                 <td>{{ scan.notes or '-' }}</td>
                 <td>
                     <a href="/scan/{{ scan.id }}" class="btn">View</a>
+                    <button class="btn btn-secondary" onclick="confirmRescan({{ scan.id }}, '{{ scan.path }}')">Re-scan</button>
                     <button class="btn btn-danger" onclick="confirmDelete({{ scan.id }}, '{{ scan.path }}')">Delete</button>
                 </td>
             </tr>
@@ -51,6 +52,21 @@
     {% else %}
     <p>No scans found. Run <code>diskindex scan /path/to/directory</code> to create one.</p>
     {% endif %}
+</div>
+
+<!-- Rescan confirmation modal -->
+<div id="rescanModal" class="modal">
+    <div class="modal-content">
+        <h2>Re-scan</h2>
+        <p>Re-scan the directory, updating changed/deleted/new files in the existing scan record.</p>
+        <p><strong>Path:</strong> <code id="rescanScanPath"></code></p>
+        <form id="rescanForm" method="POST">
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeRescanModal()">Cancel</button>
+                <button type="submit" class="btn">Start Re-scan</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Delete confirmation modal -->
@@ -70,6 +86,16 @@
 </div>
 
 <script>
+function confirmRescan(scanId, scanPath) {
+    document.getElementById('rescanScanPath').textContent = scanPath;
+    document.getElementById('rescanForm').action = '/scan/' + scanId + '/rescan';
+    document.getElementById('rescanModal').classList.add('active');
+}
+
+function closeRescanModal() {
+    document.getElementById('rescanModal').classList.remove('active');
+}
+
 function confirmDelete(scanId, scanPath) {
     document.getElementById('deleteScanPath').textContent = scanPath;
     document.getElementById('deleteForm').action = '/scan/' + scanId + '/delete';
@@ -81,6 +107,9 @@ function closeDeleteModal() {
 }
 
 // Close modal on background click
+document.getElementById('rescanModal').addEventListener('click', function(e) {
+    if (e.target === this) { closeRescanModal(); }
+});
 document.getElementById('deleteModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeDeleteModal();

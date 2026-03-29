@@ -502,6 +502,18 @@ def get_default_ignore_patterns() -> list[tuple[str, bool, str]]:
         (".cache/", False, "General cache directory"),
         ("tmp/", False, "Temporary files"),
         ("temp/", False, "Temporary files"),
+        # Windows system paths (not interesting, slow to scan)
+        ("Windows/", False, "Windows OS directory"),
+        ("Program Files/", False, "Windows 64-bit programs"),
+        ("Program Files (x86)/", False, "Windows 32-bit programs"),
+        ("ProgramData/", False, "Windows program data"),
+        ("$Recycle.Bin/", False, "Windows recycle bin"),
+        ("System Volume Information/", False, "Windows system volume info"),
+        ("Recovery/", False, "Windows recovery partition"),
+        ("pagefile.sys", False, "Windows page file"),
+        ("swapfile.sys", False, "Windows swap file"),
+        ("hiberfil.sys", False, "Windows hibernation file"),
+        ("DumpStack.log.tmp", False, "Windows crash dump temp log"),
     ]
 
 

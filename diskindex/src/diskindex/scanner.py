@@ -595,3 +595,399 @@ class Scanner:
             file_batch,
         )
         conn.commit()
+
+    @staticmethod
+    def _parse_mtime(mtime_val) -> Optional[datetime]:
+        """Parse mtime from DB value (may be str or datetime)."""
+        if mtime_val is None:
+            return None
+        if isinstance(mtime_val, datetime):
+            return mtime_val
+        if isinstance(mtime_val, str):
+            try:
+                return datetime.fromisoformat(mtime_val)
+            except ValueError:
+                return None
+        return None
+
+    def rescan(self, scan_id: int) -> dict:
+        """Re-scan a previously scanned directory, updating changed files.
+
+        - Fails immediately if the scan path does not exist (e.g. disconnected device).
+        - Marks deleted files/directories with deleted_at timestamp.
+        - Updates hash and mtime for changed files.
+        - Inserts newly appeared files.
+        - Restores files/dirs that had deleted_at set but reappeared.
+
+        Args:
+            scan_id: ID of an existing scan to re-scan.
+
+        Returns:
+            Statistics dictionary.
+        """
+        conn = self.config.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Fetch scan info
+            cursor.execute(
+                f"SELECT scan_path FROM scans WHERE id = {self.ph}",
+                (scan_id,),
+            )
+            row = cursor.fetchone()
+            if not row:
+                raise ValueError(f"Scan #{scan_id} not found")
+
+            scan_path_str = row[0] if isinstance(row, tuple) else row["scan_path"]
+            scan_path = pathlib.Path(scan_path_str)
+
+            # Fail fast – don't mark everything deleted if device is just disconnected
+            if not scan_path.exists():
+                raise FileNotFoundError(
+                    f"Scan path does not exist: {scan_path}\n"
+                    "If this is an external device, please connect it first."
+                )
+            if not scan_path.is_dir():
+                raise ValueError(f"Scan path is not a directory: {scan_path}")
+
+            show(f"Re-scanning: {scan_path}")
+            start_time = time.time()
+
+            if self.one_filesystem:
+                self.root_device = scan_path.stat().st_dev
+                show("One-filesystem mode: will not cross filesystem boundaries")
+
+            # Load ignore patterns
+            regular_patterns, exception_patterns = load_ignore_patterns(conn)
+            show(
+                f"Loaded {len(regular_patterns)} ignore patterns "
+                f"({len(exception_patterns)} exceptions)"
+            )
+
+            # Load existing files: (dir_path, filename) -> info dict
+            cursor.execute(
+                f"""
+                SELECT files.id, directories.path, files.filename,
+                       files.size, files.mtime, files.md5_hash,
+                       files.deleted_at, COALESCE(files.ignored, 0) AS ignored
+                FROM files
+                JOIN directories ON files.directory_id = directories.id
+                WHERE files.scan_id = {self.ph}
+                """,
+                (scan_id,),
+            )
+            existing_files: dict = {}
+            for row in cursor.fetchall():
+                if isinstance(row, tuple):
+                    fid, dir_path, filename, size, mtime, md5, deleted_at, ignored = row
+                else:
+                    fid = row["id"]
+                    dir_path = row["path"]
+                    filename = row["filename"]
+                    size = row["size"]
+                    mtime = row["mtime"]
+                    md5 = row["md5_hash"]
+                    deleted_at = row["deleted_at"]
+                    ignored = row["ignored"]
+                existing_files[(dir_path, filename)] = {
+                    "id": fid,
+                    "size": size,
+                    "mtime": mtime,
+                    "md5": md5,
+                    "deleted_at": deleted_at,
+                    "ignored": bool(ignored),
+                }
+
+            # Load existing directories: path -> info dict
+            cursor.execute(
+                f"SELECT id, path, parent_id, deleted_at FROM directories WHERE scan_id = {self.ph}",
+                (scan_id,),
+            )
+            existing_dirs: dict = {}
+            for row in cursor.fetchall():
+                if isinstance(row, tuple):
+                    did, dpath, parent_id, deleted_at = row
+                else:
+                    did = row["id"]
+                    dpath = row["path"]
+                    parent_id = row["parent_id"]
+                    deleted_at = row["deleted_at"]
+                existing_dirs[dpath] = {
+                    "id": did,
+                    "parent_id": parent_id,
+                    "deleted_at": deleted_at,
+                }
+                # Pre-populate directory cache so _get_or_create_directory works
+                self.directory_cache[dpath] = did
+
+            show(
+                f"Loaded {len(existing_files)} existing files, "
+                f"{len(existing_dirs)} directories"
+            )
+
+            # Reset stats
+            self.stats = {
+                "files": 0,
+                "dirs": 0,
+                "bytes": 0,
+                "ignored": 0,
+                "errors": 0,
+                "new": 0,
+                "updated": 0,
+                "undeleted": 0,
+            }
+
+            # Walk directory tree
+            seen_files: set = set()
+            seen_dirs: set = set()
+
+            self._rescan_directory(
+                conn,
+                scan_id,
+                scan_path,
+                scan_path,
+                None,
+                regular_patterns,
+                exception_patterns,
+                existing_files,
+                existing_dirs,
+                seen_files,
+                seen_dirs,
+            )
+
+            # Mark files not seen as deleted
+            now = datetime.now()
+            deleted_files = 0
+            for key, info in existing_files.items():
+                if (
+                    key not in seen_files
+                    and info["deleted_at"] is None
+                    and not info["ignored"]
+                ):
+                    cursor.execute(
+                        f"UPDATE files SET deleted_at = {self.ph} WHERE id = {self.ph}",
+                        (now, info["id"]),
+                    )
+                    deleted_files += 1
+
+            # Mark directories not seen as deleted
+            deleted_dirs = 0
+            for dpath, info in existing_dirs.items():
+                if dpath not in seen_dirs and info["deleted_at"] is None:
+                    cursor.execute(
+                        f"UPDATE directories SET deleted_at = {self.ph} WHERE id = {self.ph}",
+                        (now, info["id"]),
+                    )
+                    deleted_dirs += 1
+
+            conn.commit()
+
+            # Update scan duration
+            duration = time.time() - start_time
+            cursor.execute(
+                f"UPDATE scans SET duration_seconds = {self.ph} WHERE id = {self.ph}",
+                (duration, scan_id),
+            )
+            conn.commit()
+
+            self.stats["deleted_files"] = deleted_files
+            self.stats["deleted_dirs"] = deleted_dirs
+            self.stats["duration"] = duration
+
+            show("\nRe-scan complete!")
+            show(
+                f"  Files: {self.stats['files']:,} seen "
+                f"({self.stats['new']} new, {self.stats['updated']} updated, "
+                f"{self.stats['undeleted']} restored)"
+            )
+            show(f"  Deleted: {deleted_files} files, {deleted_dirs} dirs")
+            show(f"  Ignored: {self.stats['ignored']:,}")
+            show(f"  Errors: {self.stats['errors']:,}")
+            show(f"  Duration: {duration:.1f} seconds")
+
+            return self.stats
+
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            cursor.close()
+            conn.close()
+
+    def _rescan_directory(
+        self,
+        conn,
+        scan_id: int,
+        dir_path: pathlib.Path,
+        root_path: pathlib.Path,
+        parent_id: Optional[int],
+        regular_patterns: list[str],
+        exception_patterns: list[str],
+        existing_files: dict,
+        existing_dirs: dict,
+        seen_files: set,
+        seen_dirs: set,
+    ) -> None:
+        """Recursively re-scan a directory, updating the database in place."""
+        cursor = conn.cursor()
+
+        try:
+            dir_path_str = str(dir_path)
+            seen_dirs.add(dir_path_str)
+
+            # Get or create directory record
+            if dir_path_str in existing_dirs:
+                dir_id = existing_dirs[dir_path_str]["id"]
+                # Restore directory if it was previously marked deleted
+                if existing_dirs[dir_path_str]["deleted_at"] is not None:
+                    cursor.execute(
+                        f"UPDATE directories SET deleted_at = NULL WHERE id = {self.ph}",
+                        (dir_id,),
+                    )
+                    conn.commit()
+            else:
+                dir_id = self._get_or_create_directory(
+                    cursor, conn, scan_id, dir_path, root_path, parent_id
+                )
+                existing_dirs[dir_path_str] = {
+                    "id": dir_id,
+                    "parent_id": parent_id,
+                    "deleted_at": None,
+                }
+
+            # List directory contents
+            try:
+                entries = list(dir_path.iterdir())
+            except (OSError, PermissionError) as e:
+                show(f"Warning: Cannot read directory {dir_path}: {e}")
+                self.stats["errors"] += 1
+                return
+
+            file_batch_insert = []
+
+            for entry in tqdm(entries, desc=str(dir_path.name), leave=False):
+                try:
+                    rel_path = entry.relative_to(root_path)
+                except ValueError:
+                    rel_path = entry
+
+                if should_ignore(str(rel_path), regular_patterns, exception_patterns):
+                    self.stats["ignored"] += 1
+                    continue
+
+                try:
+                    is_symlink = entry.is_symlink()
+                    is_dir = entry.is_dir()
+                    is_file = entry.is_file()
+                except OSError as e:
+                    show(f"Warning: Cannot access {entry}: {e}")
+                    self.stats["errors"] += 1
+                    continue
+
+                if is_symlink:
+                    continue
+
+                if is_dir:
+                    if self.one_filesystem and self.root_device is not None:
+                        try:
+                            if entry.stat().st_dev != self.root_device:
+                                show(f"Skipping {entry}: different filesystem")
+                                self.stats["ignored"] += 1
+                                continue
+                        except (OSError, PermissionError):
+                            pass
+
+                    self._rescan_directory(
+                        conn,
+                        scan_id,
+                        entry,
+                        root_path,
+                        dir_id,
+                        regular_patterns,
+                        exception_patterns,
+                        existing_files,
+                        existing_dirs,
+                        seen_files,
+                        seen_dirs,
+                    )
+
+                elif is_file:
+                    try:
+                        stat = entry.stat()
+                        key = (dir_path_str, entry.name)
+                        seen_files.add(key)
+
+                        if key in existing_files:
+                            info = existing_files[key]
+                            new_mtime = datetime.fromtimestamp(stat.st_mtime)
+                            existing_mtime_dt = self._parse_mtime(info["mtime"])
+
+                            size_changed = stat.st_size != info["size"]
+                            if existing_mtime_dt is None:
+                                mtime_changed = True
+                            else:
+                                mtime_changed = (
+                                    abs(
+                                        (new_mtime - existing_mtime_dt).total_seconds()
+                                    )
+                                    > 1
+                                )
+
+                            was_deleted = info["deleted_at"] is not None
+                            content_changed = size_changed or mtime_changed
+
+                            if was_deleted or content_changed:
+                                new_md5 = info["md5"]
+                                if content_changed and self.compute_hash:
+                                    new_md5 = compute_md5(entry)
+
+                                cursor.execute(
+                                    f"UPDATE files SET size = {self.ph}, mtime = {self.ph}, "
+                                    f"md5_hash = {self.ph}, deleted_at = NULL "
+                                    f"WHERE id = {self.ph}",
+                                    (stat.st_size, new_mtime, new_md5, info["id"]),
+                                )
+
+                                if was_deleted:
+                                    self.stats["undeleted"] += 1
+                                if content_changed:
+                                    self.stats["updated"] += 1
+
+                            self.stats["files"] += 1
+                            self.stats["bytes"] += stat.st_size
+
+                        else:
+                            # New file not in DB
+                            md5_hash = compute_md5(entry) if self.compute_hash else None
+                            extension = entry.suffix.lower() if entry.suffix else None
+                            new_mtime = datetime.fromtimestamp(stat.st_mtime)
+
+                            file_batch_insert.append(
+                                (
+                                    scan_id,
+                                    dir_id,
+                                    entry.name,
+                                    extension,
+                                    stat.st_size,
+                                    new_mtime,
+                                    md5_hash,
+                                )
+                            )
+                            self.stats["files"] += 1
+                            self.stats["bytes"] += stat.st_size
+                            self.stats["new"] += 1
+
+                            if len(file_batch_insert) >= self.batch_size:
+                                self._commit_file_batch(cursor, conn, file_batch_insert)
+                                file_batch_insert = []
+
+                    except (OSError, PermissionError) as e:
+                        show(f"Warning: Cannot process {entry}: {e}")
+                        self.stats["errors"] += 1
+
+            if file_batch_insert:
+                self._commit_file_batch(cursor, conn, file_batch_insert)
+            conn.commit()
+
+        finally:
+            cursor.close()

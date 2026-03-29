@@ -7,6 +7,7 @@
 
 <div style="margin-bottom: 1rem;">
     <a href="/scans" class="btn">← Back to Scans</a>
+    <button class="btn btn-secondary" onclick="confirmRescan({{ scan.id }}, '{{ scan.path }}')">Re-scan</button>
     <button class="btn btn-danger" onclick="confirmDelete({{ scan.id }}, '{{ scan.path }}')">Delete Scan</button>
 </div>
 
@@ -123,6 +124,28 @@
 
 <a href="/scans" class="btn btn-secondary">← Back to Scans</a>
 
+<!-- Rescan confirmation modal -->
+<div id="rescanModal" class="modal">
+    <div class="modal-content">
+        <h2>Re-scan</h2>
+        <p>Re-scan this directory, updating changed/deleted/new files in the existing scan record.</p>
+        <p><strong>Path:</strong> <code id="rescanScanPath"></code></p>
+        <p>If the path is not accessible (e.g. external drive disconnected) the operation will abort immediately without marking anything as deleted.</p>
+        <form id="rescanForm" method="POST">
+            <div style="margin-bottom: 1rem;">
+                <label><input type="checkbox" name="no_hash" value="1"> Skip MD5 recomputation</label>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label><input type="checkbox" name="one_filesystem" value="1"> Stay on one filesystem (don't cross mount points)</label>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeRescanModal()">Cancel</button>
+                <button type="submit" class="btn">Start Re-scan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Delete confirmation modal -->
 <div id="deleteModal" class="modal">
     <div class="modal-content">
@@ -140,6 +163,16 @@
 </div>
 
 <script>
+function confirmRescan(scanId, scanPath) {
+    document.getElementById('rescanScanPath').textContent = scanPath;
+    document.getElementById('rescanForm').action = '/scan/' + scanId + '/rescan';
+    document.getElementById('rescanModal').classList.add('active');
+}
+
+function closeRescanModal() {
+    document.getElementById('rescanModal').classList.remove('active');
+}
+
 function confirmDelete(scanId, scanPath) {
     document.getElementById('deleteScanPath').textContent = scanPath;
     document.getElementById('deleteForm').action = '/scan/' + scanId + '/delete';
@@ -150,11 +183,12 @@ function closeDeleteModal() {
     document.getElementById('deleteModal').classList.remove('active');
 }
 
-// Close modal on background click
+// Close modals on background click
+document.getElementById('rescanModal').addEventListener('click', function(e) {
+    if (e.target === this) { closeRescanModal(); }
+});
 document.getElementById('deleteModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeDeleteModal();
-    }
+    if (e.target === this) { closeDeleteModal(); }
 });
 </script>
 {% endblock %}

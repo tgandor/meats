@@ -353,6 +353,44 @@ def create_app(config: DatabaseConfig | None = None):
             cursor.close()
             conn.close()
 
+    @app.route("/scan/<int:scan_id>/rescan", methods=["POST"])
+    def rescan(scan_id):
+        """Re-scan an existing scan: update changed/deleted/new files."""
+        from diskindex.scanner import Scanner
+
+        compute_hash = request.form.get("no_hash") != "1"
+        one_filesystem = request.form.get("one_filesystem") == "1"
+
+        scanner = Scanner(
+            config,
+            compute_hash=compute_hash,
+            one_filesystem=one_filesystem,
+        )
+
+        try:
+            stats = scanner.rescan(scan_id)
+        except FileNotFoundError as e:
+            flash(str(e), "error")
+            return redirect(url_for("scan_detail", scan_id=scan_id))
+        except ValueError as e:
+            flash(str(e), "error")
+            return redirect(url_for("scan_detail", scan_id=scan_id))
+        except Exception as e:
+            flash(f"Re-scan failed: {e}", "error")
+            return redirect(url_for("scan_detail", scan_id=scan_id))
+
+        # Clear cached counts since data changed
+        session.pop("counts", None)
+
+        flash(
+            f"Re-scan complete: {stats.get('new', 0)} new, "
+            f"{stats.get('updated', 0)} updated, "
+            f"{stats.get('deleted_files', 0)} deleted, "
+            f"{stats.get('undeleted', 0)} restored.",
+            "success",
+        )
+        return redirect(url_for("scan_detail", scan_id=scan_id))
+
     @app.route("/search")
     def search():
         """Search for files."""

@@ -218,6 +218,37 @@ def cmd_scan(args):
     print(f"\nScan #{scan_id} completed successfully!")
 
 
+def cmd_rescan(args):
+    """Re-scan an existing scan, updating changed/deleted/new files."""
+    config = load_config()
+    run_migrations(config)
+
+    scanner = Scanner(
+        config,
+        compute_hash=not args.no_hash,
+        batch_size=args.batch_size,
+        one_filesystem=args.one_filesystem,
+    )
+
+    try:
+        stats = scanner.rescan(args.scan_id)
+    except FileNotFoundError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+
+    print(f"\nRe-scan #{args.scan_id} completed successfully!")
+    print(
+        f"  Files: {stats.get('files', 0):,} seen "
+        f"({stats.get('new', 0)} new, {stats.get('updated', 0)} updated, "
+        f"{stats.get('undeleted', 0)} restored)"
+    )
+    print(
+        f"  Deleted: {stats.get('deleted_files', 0)} files, "
+        f"{stats.get('deleted_dirs', 0)} dirs"
+    )
+    return 0
+
+
 def cmd_list_scans(args):
     """List all scans."""
     config = load_config()
@@ -1255,6 +1286,25 @@ def main():
         help="Do not cross filesystem boundaries during scan",
     )
 
+    # Rescan command
+    rescan_parser = subparsers.add_parser(
+        "rescan",
+        help="Re-scan an existing scan: mark deleted files, update changed files",
+    )
+    rescan_parser.add_argument("scan_id", type=int, help="ID of the scan to re-scan")
+    rescan_parser.add_argument(
+        "--no-hash", action="store_true", help="Skip MD5 hash recomputation"
+    )
+    rescan_parser.add_argument(
+        "--batch-size", type=int, default=1000, help="Batch size for database commits"
+    )
+    rescan_parser.add_argument(
+        "--one-filesystem",
+        "-x",
+        action="store_true",
+        help="Do not cross filesystem boundaries",
+    )
+
     # List scans command
     list_parser = subparsers.add_parser("list-scans", help="List all scans")
 
@@ -1390,6 +1440,8 @@ def main():
         elif args.command == "scan":
             cmd_scan(args)
             return 0
+        elif args.command == "rescan":
+            return cmd_rescan(args)
         elif args.command == "list-scans":
             cmd_list_scans(args)
             return 0
