@@ -10,8 +10,9 @@
     $zipAvailable = class_exists('ZipArchive');
 
     if ($zipAvailable && isset($_GET['action']) && $_GET['action'] === 'download') {
+        set_time_limit(0);
         $zip = new ZipArchive();
-        $zipFileName = "$title.zip";
+        $zipFileName = tempnam(sys_get_temp_dir(), 'music_') . '.zip';
 
         if ($zip->open($zipFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             foreach ($files as $file) {
@@ -20,7 +21,7 @@
             $zip->close();
 
             header('Content-Type: application/zip');
-            header('Content-Disposition: attachment; filename="' . $zipFileName . '"');
+            header('Content-Disposition: attachment; filename="' . $title . '.zip"');
             header('Content-Length: ' . filesize($zipFileName));
             readfile($zipFileName);
 
