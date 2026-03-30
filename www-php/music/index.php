@@ -1,5 +1,5 @@
 <?php
-    $version = "v3.6-mi-2026.03.30";
+    $version = "v3.7-mi-2026.03.30";
     $title = basename(dirname($_SERVER['PHP_SELF']));
     if (empty($title)) {
         $title = 'Music Index';
@@ -137,14 +137,15 @@
 <?php foreach($crumbs as $path => $dir): ?>
                     / <a href="<?php echo $path ?>"><?php echo $dir ?: '&#8962;'  ?></a>
 <?php endforeach ?>
-<br>
-<?php if ($zipAvailable): ?>
-                    <a href="?action=download" class="btn btn-primary">Download as ZIP (<?php echo $totalMB ?> MB)</a>
-<?php else: ?>
-                    <span class="text-muted">(<?php echo $totalMB ?> MB total, ZIP download not available)</span>
-<?php endif ?>
                 </p>
             </div>
+<?php endif ?>
+
+            <br>
+<?php if ($zipAvailable): ?>
+            <a href="?action=download" class="btn btn-primary">Download as ZIP (<?php echo $totalMB ?> MB)</a>
+<?php else: ?>
+            <span class="text-muted">(<?php echo $totalMB ?> MB total, ZIP download not available)</span>
 <?php endif ?>
         </div>
     </div>
