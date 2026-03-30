@@ -140,14 +140,12 @@
                 </p>
             </div>
 <?php endif ?>
-
-            <br>
+        </div>
 <?php if ($zipAvailable): ?>
             <a href="?action=download" class="btn btn-primary">Download as ZIP (<?php echo $totalMB ?> MB)</a>
 <?php else: ?>
             <span class="text-muted">(<?php echo $totalMB ?> MB total, ZIP download not available)</span>
 <?php endif ?>
-        </div>
     </div>
 
     <script>
