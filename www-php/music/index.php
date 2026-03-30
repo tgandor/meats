@@ -1,5 +1,5 @@
 <?php
-    $version = "v3.5-mi-2025.07.09";
+    $version = "v3.6-mi-2026.03.30";
     $title = basename(dirname($_SERVER['PHP_SELF']));
     if (empty($title)) {
         $title = 'Music Index';
@@ -8,6 +8,8 @@
     natsort($files);
     $files = array_values($files);
     $zipAvailable = class_exists('ZipArchive');
+    $totalBytes = array_sum(array_map('filesize', $files));
+    $totalMB = round($totalBytes / 1048576, 1);
 
     if ($zipAvailable && isset($_GET['action']) && $_GET['action'] === 'download') {
         set_time_limit(0);
@@ -135,10 +137,11 @@
 <?php foreach($crumbs as $path => $dir): ?>
                     / <a href="<?php echo $path ?>"><?php echo $dir ?: '&#8962;'  ?></a>
 <?php endforeach ?>
+<br>
 <?php if ($zipAvailable): ?>
-                    <a href="?action=download" class="btn btn-primary">Download as ZIP</a>
+                    <a href="?action=download" class="btn btn-primary">Download as ZIP (<?php echo $totalMB ?> MB)</a>
 <?php else: ?>
-                    <span class="text-muted">(ZIP download not available)</span>
+                    <span class="text-muted">(<?php echo $totalMB ?> MB total, ZIP download not available)</span>
 <?php endif ?>
                 </p>
             </div>
