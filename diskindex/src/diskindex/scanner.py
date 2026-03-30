@@ -48,6 +48,8 @@ def get_volume_info(path: pathlib.Path) -> Optional[Volume]:
         if platform.system() == "Windows":
             # Get drive letter
             drive_letter = os.path.splitdrive(str(path))[0]
+            letter = None if not drive_letter else drive_letter.rstrip(":")
+
             if drive_letter:
                 volume.mount_point = drive_letter + "\\"
                 volume.device_path = drive_letter
@@ -56,7 +58,6 @@ def get_volume_info(path: pathlib.Path) -> Optional[Volume]:
                 try:
                     import subprocess
 
-                    letter = drive_letter.rstrip(":")
                     ps_command = f"""
                     $vol = Get-Volume -DriveLetter '{letter}'
                     $vol.FileSystemLabel
@@ -260,7 +261,7 @@ class Scanner:
         self.batch_size = batch_size
         self.one_filesystem = one_filesystem
         self.root_device = None  # Will be set during scan
-        self.stats = {
+        self.stats : dict[str, int | float] = {
             "files": 0,
             "dirs": 0,
             "bytes": 0,

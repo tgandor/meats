@@ -3,6 +3,7 @@
 import argparse
 import json
 import sys
+from typing import cast
 
 from diskindex.config import (
     load_config,
@@ -284,9 +285,9 @@ def cmd_list_scans(args):
             cursor.execute(
                 f"SELECT COUNT(*), SUM(size) FROM files WHERE scan_id = {scan_id}"
             )
-            count_row = cursor.fetchone()
-            file_count = count_row[0] if isinstance(count_row, tuple) else count_row[0]
-            total_size = count_row[1] if isinstance(count_row, tuple) else count_row[1]
+            count_row = cast(tuple[int, int | None], cursor.fetchone())
+            file_count = count_row[0]
+            total_size = count_row[1]
 
             if file_count:
                 size_gb = (total_size or 0) / (1024**3)
@@ -328,9 +329,9 @@ def cmd_delete_scan(args):
         cursor.execute(
             f"SELECT COUNT(*), SUM(size) FROM files WHERE scan_id = {args.scan_id}"
         )
-        count_row = cursor.fetchone()
-        file_count = count_row[0] if isinstance(count_row, tuple) else count_row[0]
-        total_size = count_row[1] if isinstance(count_row, tuple) else count_row[1]
+        count_row = cast(tuple[int, int | None], cursor.fetchone())
+        file_count = count_row[0]
+        total_size = count_row[1]
 
         # Show what will be deleted
         print(f"\nScan #{args.scan_id}:")
@@ -432,7 +433,7 @@ def cmd_patterns_add(args):
         )
         conn.commit()
         pattern_id = (
-            cursor.lastrowid if config.backend == "sqlite" else cursor.fetchone()[0]
+            cursor.lastrowid if config.backend == "sqlite" else cast(tuple[int], cursor.fetchone())[0]
         )
 
         exception_flag = " (exception)" if args.exception else ""
@@ -756,6 +757,7 @@ def cmd_import(args):
         print(f"Error: Input file '{input_path}' not found.", file=sys.stderr)
         return 1
 
+    dest_conn = None
     try:
         print(f"Importing from {input_path}...")
 
@@ -825,7 +827,7 @@ def cmd_import(args):
                 new_id = dest_cursor.lastrowid
             else:
                 dest_cursor.execute("SELECT lastval()")
-                new_id = dest_cursor.fetchone()[0]
+                new_id = cast(tuple[int], dest_cursor.fetchone())[0]
 
             scan_id_map[old_id] = new_id
             imported_scans += 1
@@ -963,7 +965,7 @@ def cmd_import(args):
                 new_id = dest_cursor.lastrowid
             else:
                 dest_cursor.execute("SELECT lastval()")
-                new_id = dest_cursor.fetchone()[0]
+                new_id = cast(tuple[int], dest_cursor.fetchone())[0]
 
             dir_id_map[old_id] = new_id
             dir_to_scan_map[new_id] = new_scan_id  # Track scan_id for files
@@ -1147,7 +1149,7 @@ def cmd_import(args):
         return 0
 
     except Exception as e:
-        if "dest_conn" in locals():
+        if dest_conn is not None:
             dest_conn.rollback()
         print(f"Error during import: {e}", file=sys.stderr)
         import traceback
@@ -1165,7 +1167,7 @@ def cmd_migrate(args):
     try:
         # Get current schema version
         cursor.execute("SELECT MAX(version) FROM schema_version")
-        result = cursor.fetchone()
+        result = cast(tuple[int | None], cursor.fetchone())
         current_version = result[0] if result and result[0] else 0
 
         print(f"Current schema version: {current_version}")
@@ -1212,7 +1214,7 @@ def cmd_migrate(args):
         conn = config.get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT MAX(version) FROM schema_version")
-        result = cursor.fetchone()
+        result = cast(tuple[int | None], cursor.fetchone())
         final_version = result[0] if result and result[0] else 0
         print(f"\nFinal schema version: {final_version}")
 

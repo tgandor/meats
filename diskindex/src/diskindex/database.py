@@ -4,10 +4,15 @@ Supports PostgreSQL (primary) and SQLite (fallback) backends.
 Auto-initializes schema on first run and handles migrations.
 """
 
+from __future__ import annotations
+
 import sqlite3
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union, cast
 from datetime import datetime
 import os
+
+if TYPE_CHECKING:
+    import psycopg2.extensions
 
 
 class DatabaseConfig:
@@ -36,7 +41,7 @@ class DatabaseConfig:
 
     def get_connection(
         self,
-    ) -> Union[sqlite3.Connection, "psycopg2.extensions.connection"]:
+    ) -> Union[sqlite3.Connection, psycopg2.extensions.connection]:
         """Get database connection based on backend type."""
         if self.backend == "sqlite":
             db_path = os.path.expanduser(self.database)
@@ -45,7 +50,6 @@ class DatabaseConfig:
             return conn
         elif self.backend == "postgresql":
             import psycopg2
-            import psycopg2.extras
 
             conn = psycopg2.connect(
                 database=self.database,
@@ -234,7 +238,7 @@ def initialize_database(config: DatabaseConfig) -> None:
 
     try:
         if config.backend == "sqlite":
-            cursor.executescript(SQLITE_SCHEMA)
+            cursor.executescript(SQLITE_SCHEMA)  # type: ignore[union-attr]
         else:  # postgresql
             # PostgreSQL doesn't support executescript, execute one by one
             for statement in POSTGRESQL_SCHEMA.split(";"):
@@ -243,17 +247,11 @@ def initialize_database(config: DatabaseConfig) -> None:
                     cursor.execute(statement)
 
         # Insert initial schema version if not exists
-        if config.backend == "sqlite":
-            cursor.execute(
-                "INSERT OR IGNORE INTO schema_version (version, updated) VALUES (?, ?)",
-                (CURRENT_SCHEMA_VERSION, datetime.now()),
-            )
-        else:
-            cursor.execute(
-                "INSERT INTO schema_version (version, updated) VALUES (%s, %s) "
-                "ON CONFLICT (version) DO NOTHING",
-                (CURRENT_SCHEMA_VERSION, datetime.now()),
-            )
+        cursor.execute(
+            f"INSERT INTO schema_version (version, updated) VALUES ({config.ph}, {config.ph}) "
+            "ON CONFLICT (version) DO NOTHING",
+            (CURRENT_SCHEMA_VERSION, datetime.now()),
+        )
 
         conn.commit()
     finally:
@@ -269,7 +267,7 @@ def run_migrations(config: DatabaseConfig) -> None:
     try:
         # Get current schema version
         cursor.execute("SELECT MAX(version) FROM schema_version")
-        result = cursor.fetchone()
+        result = cast(tuple[int | None], cursor.fetchone())
         current_version = result[0] if result and result[0] else 0
 
         # Migration to version 2: Add extended volume metadata
@@ -525,7 +523,7 @@ def install_default_ignore_patterns(config: DatabaseConfig) -> None:
     try:
         # Check if patterns already exist
         cursor.execute("SELECT COUNT(*) FROM ignore_patterns")
-        count = cursor.fetchone()[0]
+        count = cast(tuple[int], cursor.fetchone())[0]
 
         if count == 0:
             # Insert default patterns
