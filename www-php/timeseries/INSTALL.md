@@ -19,15 +19,15 @@ Aplikacja Laravel 11 do śledzenia serii czasowych. Domyślna baza: SQLite. Dzia
 
 ```bash
 sudo apt update
-sudo apt install php8.3-fpm php8.3-sqlite3 php8.3-mbstring \
-     php8.3-xml php8.3-curl php8.3-zip php8.3-intl \
+sudo apt install php-fpm php-sqlite3 php-mbstring \
+     php-xml php-curl php-zip php-intl \
      composer nginx sqlite3
 
 # Opcjonalnie dla MySQL/MariaDB:
-sudo apt install php8.3-mysql
+sudo apt install php-mysql
 
 # Opcjonalnie dla PostgreSQL:
-sudo apt install php8.3-pgsql
+sudo apt install php-pgsql
 ```
 
 Sprawdzenie zależności:
@@ -140,30 +140,25 @@ server {
 
     # ... inne lokalizacje serwera ...
 
-    location ^~ /ts {
-        alias /var/www/timeseries/public;
-        index index.php;
-        try_files $uri $uri/ @ts_fallback;
-
-        # Statyczne pliki buildu Vite
-        location ~* \.(css|js|png|jpg|gif|ico|woff2?)$ {
-            alias /var/www/timeseries/public;
-            try_files $uri =404;
-            expires 1y;
-            add_header Cache-Control "public, immutable";
-        }
-
-        location ~ \.php$ {
-            fastcgi_pass unix:/run/php/php8.3-fpm.sock;
-            fastcgi_param SCRIPT_FILENAME /var/www/timeseries/public$fastcgi_script_name;
-            fastcgi_param SCRIPT_NAME     $fastcgi_script_name;
-            fastcgi_param PATH_INFO       $fastcgi_path_info;
-            include fastcgi_params;
-        }
+    # Vite build assets — ^~ blokuje regex poniżej, serwowane statycznie
+    location ^~ /ts/build/ {
+        alias /var/www/timeseries/public/build/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
     }
 
-    location @ts_fallback {
-        rewrite ^/ts(/.*)?$ /ts/index.php?$1 last;
+    # Pliki statyczne z public/ (push_sw.js, favicon.ico, robots.txt)
+    location ~* ^/ts/([^/]+\.(ico|txt|js|webmanifest|png|svg))$ {
+        alias /var/www/timeseries/public/$1;
+        expires 7d;
+    }
+
+    # Wszystkie trasy Laravel → jeden entry point (brak alias, brak try_files)
+    location ~ ^/ts {
+        include       fastcgi_params;          # najpierw — nasze jawne params nadpiszą
+        fastcgi_pass  unix:/run/php/php-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME /var/www/timeseries/public/index.php;
+        fastcgi_param SCRIPT_NAME     /ts/index.php;
     }
 }
 ```
