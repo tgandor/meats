@@ -140,6 +140,11 @@ server {
 
     # ... inne lokalizacje serwera ...
 
+    # /ts bez trailing slash → redirect 301
+    location = /ts {
+        return 301 /ts/;
+    }
+
     # Vite build assets — ^~ blokuje regex poniżej, serwowane statycznie
     location ^~ /ts/build/ {
         alias /var/www/timeseries/public/build/;
