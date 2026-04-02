@@ -68,7 +68,7 @@
                     </label>
                     <input type="number" id="sampling_interval_hours" name="sampling_interval_hours"
                            value="{{ old('sampling_interval_hours', $series->sampling_interval_hours ?? '') }}"
-                           step="0.5" min="0.1" placeholder="np. 24"
+                           step="0.5" min="1" placeholder="np. 24"
                            class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm">
                 </div>
 
