@@ -113,8 +113,10 @@ for data in chunks(map(str.strip, open(args.unsolved)), 9):
         for var in marked:
             row, col, value = var_to_val(var)
             data[row][col] = str(value + 1)
-        for line in data:
-            print(" ".join(line))
+        for i, line in enumerate(data):
+            print(" ".join("".join(line[i:i+3]) for i in range(0, 9, 3)))
+            if i % 3 == 2 and i < 6:
+                print()
 
     if found > 1:
         print(f"Bad sudoku, {found} solutions found.")
