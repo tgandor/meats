@@ -152,8 +152,8 @@ class ModernSudokuApp:
         for r in range(9):
             for c in range(9):
                 # Obliczanie odstępów dla bloków 3x3
-                pad_top = 1 if r % 3 == 0 and r != 0 else 0
-                pad_left = 1 if c % 3 == 0 and c != 0 else 0
+                pad_top = 3 if r % 3 == 0 and r != 0 else 0
+                pad_left = 3 if c % 3 == 0 and c != 0 else 0
 
                 # Kontener dla komórki (dla efektu obramowania)
                 cell_frame = tk.Frame(board_frame, bg=self.COLORS["grid_line"], bd=0)
