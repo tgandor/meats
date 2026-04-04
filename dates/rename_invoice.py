@@ -1,16 +1,19 @@
 #!/usr/bin/env python
-"""rename_invoice.py — rename Polish invoice PDFs with payment date and amount prefix.
+"""rename_invoice.py — rename Polish invoice PDFs/images with payment date and amount prefix.
 
-Usage: rename_invoice.py [-n] file [file ...]
+Usage: rename_invoice.py [-n] [-k] file [file ...]
 
-Renames each PDF file to:
-    YYYY-MM-DD-NNN,GG-<original_name>.pdf
+Renames each file to:
+    YYYY-MM-DD-NNN,GG-<original_name>.ext
 
 where YYYY-MM-DD is the payment deadline (Termin płatności) and NNN,GG is the
 amount to pay (Do zapłaty) in Polish złote/grosze notation.
 
+Supported input formats:
+  PDF  — text extracted via pypdf layout mode
+  JPEG/PNG/TIFF/BMP — OCR via pytesseract (requires Tesseract + Polish pack)
+
 Already-renamed files (name already starts with YYYY-MM-DD-) are skipped.
-Text extraction uses pypdf layout mode, same as pdfgrep.py.
 """
 
 import argparse
@@ -20,7 +23,13 @@ import shutil
 import sys
 from pathlib import Path
 
+import cv2
+import numpy as np
+import pytesseract
 from pypdf import PdfReader
+
+_IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp"}
+_PDF_SUFFIX = ".pdf"
 
 # ── regex patterns ────────────────────────────────────────────────────────────
 # Payment deadline — various spellings/layouts
@@ -44,7 +53,7 @@ _ALREADY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}-")
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 
-def extract_text(pdf_path: str) -> str:
+def extract_text_pdf(pdf_path: str) -> str:
     """Return full text of PDF extracted in layout mode."""
     try:
         reader = PdfReader(pdf_path)
@@ -56,6 +65,50 @@ def extract_text(pdf_path: str) -> str:
         text = page.extract_text(extraction_mode="layout") or ""
         parts.append(text)
     return "\n".join(parts)
+
+
+def _preprocess_for_ocr(img: np.ndarray) -> np.ndarray:
+    """Convert image to a clean binary image suitable for Tesseract."""
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
+    # Adaptive threshold handles uneven lighting (e.g. phone photos)
+    binary = cv2.adaptiveThreshold(
+        gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 10
+    )
+    return binary
+
+
+def extract_text_image(image_path: str) -> str:
+    """Return OCR text from an image using Tesseract (Polish language)."""
+    try:
+        img = cv2.imread(image_path)
+        if img is None:
+            raise OSError("cv2.imread returned None")
+    except Exception as e:
+        print(f"rename_invoice: {image_path}: {e}", file=sys.stderr)
+        return ""
+    processed = _preprocess_for_ocr(img)
+    try:
+        text = pytesseract.image_to_string(processed, lang="pol+eng")
+    except pytesseract.TesseractNotFoundError:
+        print(
+            "rename_invoice: Tesseract not found. Install it and add to PATH.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    except Exception as e:
+        print(f"rename_invoice: {image_path}: OCR error: {e}", file=sys.stderr)
+        return ""
+    return text
+
+
+def extract_text(file_path: str) -> str:
+    """Dispatch to PDF or image extractor based on file extension."""
+    suffix = Path(file_path).suffix.lower()
+    if suffix == _PDF_SUFFIX:
+        return extract_text_pdf(file_path)
+    if suffix in _IMAGE_SUFFIXES:
+        return extract_text_image(file_path)
+    return ""
 
 
 def parse_date(raw: str) -> str | None:
@@ -195,8 +248,12 @@ def main() -> None:
             print(f"rename_invoice: {path}: not found", file=sys.stderr)
             errors += 1
             continue
-        if path.suffix.lower() != ".pdf":
-            print(f"rename_invoice: {path}: not a PDF file", file=sys.stderr)
+        if path.suffix.lower() not in {_PDF_SUFFIX} | _IMAGE_SUFFIXES:
+            print(
+                f"rename_invoice: {path}: unsupported file type "
+                f"(supported: pdf, jpg, png, tiff, bmp)",
+                file=sys.stderr,
+            )
             errors += 1
             continue
         if not process_pdf(path, dry_run=args.dry_run, keep=args.keep):
