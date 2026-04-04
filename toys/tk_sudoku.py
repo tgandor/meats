@@ -1,3 +1,4 @@
+import sys
 import tkinter as tk
 from tkinter import messagebox
 import pycosat
@@ -118,16 +119,25 @@ class ModernSudokuApp:
             "accent": "#007acc",  # Niebieski akcent
             "solve_btn": "#4caf50",  # Zielony
             "clear_btn": "#f44336",  # Czerwony
+            "check_btn": "#ff9800",  # Pomarańczowy
             "solved_fg": "#4caf50",  # Kolor cyfr rozwiązania
             "user_fg": "#ffffff",  # Kolor cyfr wpisanych przez użytkownika
+            "preset_fg": "#87ceeb",  # Jasnoniebieski dla cyfr załadowanych z pliku
+            "violation_fg": "#ff4444",  # Czerwony dla naruszeń reguł
+            "wrong_fg": "#ff8800",  # Pomarańczowy dla błędnych cyfr (Sprawdź)
             "grid_line": "#555555",
         }
 
         self.cells = {}  # Słownik przechowujący widgety komórek: (row, col) -> Label
         self.grid_data = [[0 for _ in range(9)] for _ in range(9)]  # Dane logiczne
         self.selected_cell = None  # Aktualnie wybrana komórka (row, col)
+        self.preset_cells = set()  # Komórki załadowane z pliku (niemodyfikowalne)
+        self.check_rules_var = tk.BooleanVar(value=False)
 
         self._setup_ui()
+
+        if len(sys.argv) > 1:
+            self.load_puzzle_from_file(sys.argv[1])
 
     def _setup_ui(self):
         # Główny kontener
@@ -243,6 +253,32 @@ class ModernSudokuApp:
         )
         reset_btn.pack(fill="x", pady=5)
 
+        check_btn = tk.Button(
+            action_frame,
+            text="SPRAWDŹ",
+            font=("Helvetica", 12),
+            bg=self.COLORS["check_btn"],
+            fg="white",
+            relief="flat",
+            command=self.check_action,
+        )
+        check_btn.pack(fill="x", pady=5)
+
+        # Checkbox: Sprawdzaj reguły
+        rules_cb = tk.Checkbutton(
+            control_frame,
+            text="Sprawdzaj reguły",
+            variable=self.check_rules_var,
+            command=self._on_check_rules_toggle,
+            bg=self.COLORS["bg"],
+            fg="white",
+            selectcolor=self.COLORS["highlight"],
+            activebackground=self.COLORS["bg"],
+            activeforeground="white",
+            font=("Helvetica", 11),
+        )
+        rules_cb.pack(anchor="w", pady=(10, 0))
+
         # Obsługa klawiatury fizycznej
         self.root.bind("<Key>", self.handle_keypress)
 
@@ -261,12 +297,18 @@ class ModernSudokuApp:
             return
 
         r, c = self.selected_cell
+        if (r, c) in self.preset_cells:
+            return  # Nie pozwól modyfikować komórek załadowanych z pliku
+
         val = int(num)
         self.grid_data[r][c] = val
 
         text = str(val) if val > 0 else ""
-        # Ustawiamy kolor: Biały dla wprowadzonych przez użytkownika
-        self.cells[(r, c)].config(text=text, fg=self.COLORS["user_fg"])
+        self.cells[(r, c)].config(text=text)
+        if self.check_rules_var.get():
+            self._update_rule_colors()
+        else:
+            self.cells[(r, c)].config(fg=self.COLORS["user_fg"])
 
     def handle_keypress(self, event):
         if not self.selected_cell:
@@ -292,6 +334,7 @@ class ModernSudokuApp:
 
     def reset_board(self):
         self.grid_data = [[0] * 9 for _ in range(9)]
+        self.preset_cells.clear()
         for r in range(9):
             for c in range(9):
                 self.cells[(r, c)].config(
@@ -331,6 +374,129 @@ class ModernSudokuApp:
 
         # Wywołaj dla następnej komórki
         self.root.after(1, lambda: self.animate_solution(original, solved, idx + 1))
+
+    def _find_violations(self):
+        violations = set()
+        for r in range(9):
+            seen = {}
+            for c in range(9):
+                val = self.grid_data[r][c]
+                if val != 0:
+                    if val in seen:
+                        violations.add((r, c))
+                        violations.add((r, seen[val]))
+                    else:
+                        seen[val] = c
+        for c in range(9):
+            seen = {}
+            for r in range(9):
+                val = self.grid_data[r][c]
+                if val != 0:
+                    if val in seen:
+                        violations.add((r, c))
+                        violations.add((seen[val], c))
+                    else:
+                        seen[val] = r
+        for sx in range(3):
+            for sy in range(3):
+                seen = {}
+                for r in range(3 * sx, 3 * sx + 3):
+                    for c in range(3 * sy, 3 * sy + 3):
+                        val = self.grid_data[r][c]
+                        if val != 0:
+                            if val in seen:
+                                violations.add((r, c))
+                                violations.add(seen[val])
+                            else:
+                                seen[val] = (r, c)
+        return violations
+
+    def _update_rule_colors(self):
+        violations = self._find_violations()
+        for r in range(9):
+            for c in range(9):
+                if (r, c) in self.preset_cells:
+                    continue
+                val = self.grid_data[r][c]
+                if val == 0:
+                    continue
+                if (r, c) in violations:
+                    self.cells[(r, c)].config(fg=self.COLORS["violation_fg"])
+                else:
+                    self.cells[(r, c)].config(fg=self.COLORS["user_fg"])
+
+    def _on_check_rules_toggle(self):
+        if self.check_rules_var.get():
+            self._update_rule_colors()
+        else:
+            for r in range(9):
+                for c in range(9):
+                    if (r, c) not in self.preset_cells and self.grid_data[r][c] != 0:
+                        self.cells[(r, c)].config(fg=self.COLORS["user_fg"])
+
+    def check_action(self):
+        puzzle_grid = [[0] * 9 for _ in range(9)]
+        if self.preset_cells:
+            for (r, c) in self.preset_cells:
+                puzzle_grid[r][c] = self.grid_data[r][c]
+        else:
+            puzzle_grid = [row[:] for row in self.grid_data]
+
+        solution = solve_sudoku_logic(puzzle_grid)
+        if solution is None:
+            messagebox.showerror("Błąd", "Brak rozwiązania dla podanej łamigłówki!")
+            return
+
+        wrong_count = 0
+        correct_count = 0
+        for r in range(9):
+            for c in range(9):
+                if (r, c) not in self.preset_cells and self.grid_data[r][c] != 0:
+                    if self.grid_data[r][c] != solution[r][c]:
+                        self.cells[(r, c)].config(fg=self.COLORS["wrong_fg"])
+                        wrong_count += 1
+                    else:
+                        correct_count += 1
+
+        if wrong_count == 0 and correct_count == 0:
+            messagebox.showinfo("Sprawdź", "Nie wprowadzono żadnych cyfr do sprawdzenia.")
+        elif wrong_count == 0:
+            messagebox.showinfo("Sprawdź", f"Wszystkie {correct_count} wprowadzonych cyfr są poprawne!")
+        else:
+            messagebox.showwarning(
+                "Sprawdź",
+                f"Znaleziono {wrong_count} błędnych cyfr (zaznaczone na pomarańczowo).",
+            )
+
+    def load_puzzle_from_file(self, filename):
+        try:
+            with open(filename) as f:
+                content = f.read()
+        except OSError as e:
+            messagebox.showerror("Błąd", f"Nie można otworzyć pliku: {e}")
+            return
+
+        digits = []
+        for ch in content:
+            if ch.isdigit():
+                digits.append(int(ch))
+            elif ch == '.':
+                digits.append(0)
+
+        if len(digits) != 81:
+            messagebox.showerror(
+                "Błąd",
+                f"Plik musi zawierać dokładnie 81 cyfr/kropek (znaleziono {len(digits)}).",
+            )
+            return
+
+        self.reset_board()
+        for i, digit in enumerate(digits):
+            r, c = i // 9, i % 9
+            self.grid_data[r][c] = digit
+            if digit != 0:
+                self.preset_cells.add((r, c))
+                self.cells[(r, c)].config(text=str(digit), fg=self.COLORS["preset_fg"])
 
 
 if __name__ == "__main__":
