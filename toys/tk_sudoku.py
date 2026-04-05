@@ -139,6 +139,7 @@ class ModernSudokuApp:
         self.grid_data = [[0 for _ in range(9)] for _ in range(9)]  # Dane logiczne
         self.selected_cell = None  # Aktualnie wybrana komórka (row, col)
         self.preset_cells = set()  # Komórki załadowane z pliku (niemodyfikowalne)
+        self.solved_cells = set()  # Komórki wypełnione przez algorytm
         self.check_rules_var = tk.BooleanVar(value=False)
 
         self._setup_ui()
@@ -340,13 +341,33 @@ class ModernSudokuApp:
         self.select_cell(r, c)
 
     def reset_board(self):
-        self.grid_data = [[0] * 9 for _ in range(9)]
-        self.preset_cells.clear()
-        for r in range(9):
-            for c in range(9):
-                self.cells[(r, c)].config(
-                    text="", fg=self.COLORS["user_fg"], bg=self.COLORS["cell_bg"]
-                )
+        if self.solved_cells:
+            # Poziom 1: usuń tylko cyfry algorytmu
+            for (r, c) in self.solved_cells:
+                self.grid_data[r][c] = 0
+                self.cells[(r, c)].config(text="", fg=self.COLORS["user_fg"])
+            self.solved_cells.clear()
+        elif any(
+            self.grid_data[r][c] != 0
+            for r in range(9)
+            for c in range(9)
+            if (r, c) not in self.preset_cells
+        ):
+            # Poziom 2: usuń tylko cyfry wpisane ręcznie
+            for r in range(9):
+                for c in range(9):
+                    if (r, c) not in self.preset_cells and self.grid_data[r][c] != 0:
+                        self.grid_data[r][c] = 0
+                        self.cells[(r, c)].config(text="", fg=self.COLORS["user_fg"])
+        else:
+            # Poziom 3: wyczyść całkowicie
+            self.grid_data = [[0] * 9 for _ in range(9)]
+            self.preset_cells.clear()
+            for r in range(9):
+                for c in range(9):
+                    self.cells[(r, c)].config(
+                        text="", fg=self.COLORS["user_fg"], bg=self.COLORS["cell_bg"]
+                    )
         self.selected_cell = None
 
     def solve_action(self):
@@ -368,6 +389,7 @@ class ModernSudokuApp:
                 "To Sudoku jest niedookreślone — istnieje wiele rozwiązań.\n"
                 "Poniżej pokazano jedno z możliwych.",
             )
+        self.solved_cells.clear()
         self.animate_solution(input_grid, solution)
 
     def animate_solution(self, original, solved, idx=0):
@@ -380,6 +402,8 @@ class ModernSudokuApp:
         # Jeśli w oryginale było 0 (puste), to wstawiamy cyfrę z rozwiązania
         if original[r][c] == 0:
             val = solved[r][c]
+            self.grid_data[r][c] = val
+            self.solved_cells.add((r, c))
             self.cells[(r, c)].config(text=str(val), fg=self.COLORS["solved_fg"])
             # Odśwież GUI i czekaj chwilę dla efektu "fali"
             self.root.update()
