@@ -73,7 +73,8 @@ BASE_CLAUSES = build_sudoku_clauses()
 def solve_sudoku_logic(grid_matrix):
     """
     Przyjmuje listę list 9x9 (int), gdzie 0 to puste pole.
-    Zwraca rozwiązaną macierz lub None.
+    Zwraca (rozwiązana_macierz_lub_None, is_unique).
+    is_unique=True oznacza dokładnie jedno rozwiązanie.
     """
     clauses = BASE_CLAUSES[:]
 
@@ -88,7 +89,7 @@ def solve_sudoku_logic(grid_matrix):
     solution = pycosat.solve(clauses)
 
     if solution == "UNSAT":
-        return None
+        return None, True
 
     # Odtwórz wynik
     result_grid = [[0] * 9 for _ in range(9)]
@@ -97,7 +98,13 @@ def solve_sudoku_logic(grid_matrix):
             r, c, v = var_to_val(var)
             result_grid[r][c] = v + 1
 
-    return result_grid
+    # Sprawdź unikalność: dodaj klauzulę blokującą bieżące rozwiązanie
+    blocking_clause = [-v for v in solution]
+    clauses.append(blocking_clause)
+    second = pycosat.solve(clauses)
+    is_unique = (second == "UNSAT")
+
+    return result_grid, is_unique
 
 
 # --- INTERFEJS GRAFICZNY (GUI) ---
@@ -347,14 +354,21 @@ class ModernSudokuApp:
         input_grid = [row[:] for row in self.grid_data]
 
         # Rozwiązywanie
-        solution = solve_sudoku_logic(input_grid)
+        solution, is_unique = solve_sudoku_logic(input_grid)
 
-        if solution:
-            self.animate_solution(input_grid, solution)
-        else:
+        if solution is None:
             messagebox.showerror(
                 "Błąd", "To Sudoku nie ma rozwiązania lub jest sprzeczne!"
             )
+            return
+
+        if not is_unique:
+            messagebox.showwarning(
+                "Wiele rozwiązań",
+                "To Sudoku jest niedookreślone — istnieje wiele rozwiązań.\n"
+                "Poniżej pokazano jedno z możliwych.",
+            )
+        self.animate_solution(input_grid, solution)
 
     def animate_solution(self, original, solved, idx=0):
         """Rekurencyjna funkcja do animowania wypełniania"""
@@ -442,9 +456,17 @@ class ModernSudokuApp:
         else:
             puzzle_grid = [row[:] for row in self.grid_data]
 
-        solution = solve_sudoku_logic(puzzle_grid)
+        solution, is_unique = solve_sudoku_logic(puzzle_grid)
         if solution is None:
             messagebox.showerror("Błąd", "Brak rozwiązania dla podanej łamigłówki!")
+            return
+
+        if not is_unique:
+            messagebox.showinfo(
+                "Wiele rozwiązań",
+                "To Sudoku jest niedookreślone — istnieje wiele rozwiązań.\n"
+                "Żadna wprowadzona cyfra nie może być uznana za błędną.",
+            )
             return
 
         wrong_count = 0
