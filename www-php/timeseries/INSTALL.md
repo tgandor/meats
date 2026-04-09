@@ -257,11 +257,27 @@ cp /var/www/timeseries/database/database.sqlite /backup/timeseries_$(date +%Y%m%
 ### Aktualizacja aplikacji
 
 ```bash
-cd /var/www/timeseries
-git pull  # lub kopiuj pliki
-composer install --no-dev --optimize-autoloader
-php artisan migrate --force
-php artisan config:cache && php artisan route:cache && php artisan view:cache
+cd ~/meats/www-php/timeseries   # katalog repo (nie /var/www/timeseries!)
+git pull
+composer deploy
+```
+
+Skrypt `deploy` wykonuje kolejno: `composer install --no-dev`, `npm ci`, `npm run build`, `rsync` do `DEPLOY_PATH`, `migrate --force`, `config:cache`, `route:cache`, `view:cache`.
+
+Ścieżka docelowa pochodzi ze zmiennej `DEPLOY_PATH` w `.env` repo (domyślnie `/var/www/timeseries`).
+
+**Pierwsze uruchomienie** (nowa instalacja po skonfigurowaniu `.env` w `DEPLOY_PATH`):
+
+```bash
+composer deploy:first
+```
+
+Dodaje do powyższego: `db:seed` (konto admina z `ADMIN_*` w `.env`) oraz `vapid:generate`.
+
+**Uprawnienia** (po pierwszym deploy lub po zmianie właściciela plików):
+
+```bash
+sudo bash scripts/fix-permissions.sh
 ```
 
 ---
@@ -277,8 +293,7 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 
 ## RPi 2B — uwagi praktyczne
 
-- **Build frontendu rób na laptopie**, nie na RPi — npm install na armv6 jest bardzo wolny
-- Skopiuj gotowy katalog `public/build/` na RPi
+- `composer deploy` uruchamia `npm ci && npm run build` na samym serwerze — na RPi 2B (armv6) może to potrwać kilka minut; można przyspieszyć kopiując `public/build/` z maszyny dev przez rsync i pomijając npm
 - Ustaw `PHP_CLI_SERVER_WORKERS=1` jeśli używasz wbudowanego serwera PHP do testów
 - SQLite jest optymalny — nie wymaga daemon MySQL
 - Recommend: `memory_limit = 64M` w `php.ini`
