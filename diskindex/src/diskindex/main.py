@@ -433,7 +433,9 @@ def cmd_patterns_add(args):
         )
         conn.commit()
         pattern_id = (
-            cursor.lastrowid if config.backend == "sqlite" else cast(tuple[int], cursor.fetchone())[0]
+            cursor.lastrowid
+            if config.backend == "sqlite"
+            else cast(tuple[int], cursor.fetchone())[0]
         )
 
         exception_flag = " (exception)" if args.exception else ""

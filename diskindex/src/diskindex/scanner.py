@@ -261,7 +261,7 @@ class Scanner:
         self.batch_size = batch_size
         self.one_filesystem = one_filesystem
         self.root_device = None  # Will be set during scan
-        self.stats : dict[str, int | float] = {
+        self.stats: dict[str, int | float] = {
             "files": 0,
             "dirs": 0,
             "bytes": 0,
@@ -928,9 +928,7 @@ class Scanner:
                                 mtime_changed = True
                             else:
                                 mtime_changed = (
-                                    abs(
-                                        (new_mtime - existing_mtime_dt).total_seconds()
-                                    )
+                                    abs((new_mtime - existing_mtime_dt).total_seconds())
                                     > 1
                                 )
 

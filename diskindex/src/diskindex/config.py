@@ -86,7 +86,7 @@ def save_config(
     config_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Prepare config data (exclude password for security)
-    config_data : dict[str, str | int] = {
+    config_data: dict[str, str | int] = {
         "backend": config.backend,
         "database": config.database,
     }
