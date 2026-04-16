@@ -2,7 +2,9 @@
 
 sudo apt install -y "$@" \
     chromium-browser \
-    exfat-fuse \
     exfatprogs \
+    kdf \
     keepass2 \
+    libreoffice \
+    vlc \
 # end.
