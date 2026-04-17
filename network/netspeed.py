@@ -119,7 +119,7 @@ def main(args):
             next_report = interval
         blinker.on()
         duration = datetime.datetime.now() - started
-        print("{} Recv {}, Send {}. Session ({}): Rx {}, Tx {}, avg: {}/s, {}/s.".format(
+        print("{} {} Recv, {} Send. Session ({}): {} Rx, {} Tx, {}/s avgR, {}/s avgS.".format(
             time.strftime('%H:%M:%S'),
             human_format(rxb - prev_rxb, False),
             human_format(txb - prev_txb, False),
