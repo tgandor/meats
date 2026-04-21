@@ -2,6 +2,7 @@
 
 if ! which pipx > /dev/null ; then
     echo "pipx is not installed, starting setup"
+    cd
     python3 -m venv poet
     source poet/bin/activate
     pip install pipx
