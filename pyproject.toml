@@ -23,6 +23,7 @@ pywin32 = {markers = "platform_system == \"Windows\"", version = "^311"}
 mutagen = "^1.47.0"
 pytesseract = "^0.3.13"
 gitpython = "^3.1.46"
+rich = "^15.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^26.3.1"
