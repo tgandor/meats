@@ -53,6 +53,12 @@ def pick_version(vA, vB, strategy):
         return vB
     if strategy == "none":
         return None
+    # Protect against invalid versions by treating them as non-version (i.e. ignore them)
+    # e.g. for @ file://path/to/local/package or git+https://repo.git
+    if vA is None:
+        return vB
+    if vB is None:
+        return vA
     if strategy == "older":
         try:
             return min(Version(vA), Version(vB)).public
