@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import glob
 import datetime
 
@@ -96,10 +97,84 @@ def format_fields_of_interest(data):
     )
 
 
+def format_json(data):
+    import json
+
+    return json.dumps({field: data[field] for field in fields_of_interest})
+
+
+def friendly_report(data):
+    if data.get("POWER_SUPPLY_STATUS", "N/A") == "Charging":
+        eta = (
+            data["POWER_SUPPLY_ENERGY_FULL"] - data["POWER_SUPPLY_ENERGY_NOW"]
+        ) / data["POWER_SUPPLY_POWER_NOW"] * 3600
+        arrival = (datetime.datetime.now() + datetime.timedelta(seconds=eta)).strftime(
+            "%H:%M:%S"
+        )
+        eta_str = str(datetime.timedelta(seconds=eta))[:-7]
+        eta_percent = 100 * (
+            1 - data["POWER_SUPPLY_ENERGY_NOW"] / data["POWER_SUPPLY_ENERGY_FULL"]
+        )
+        eta_percent_str = "{:.1f}%".format(eta_percent)
+        eta_report = f"{arrival} ({eta_str}, {eta_percent_str} to go)"
+    elif data.get("POWER_SUPPLY_STATUS", "N/A") == "Discharging":
+        critical = 0.05
+        if (
+            data["POWER_SUPPLY_ENERGY_NOW"] / data["POWER_SUPPLY_ENERGY_FULL"]
+            < critical
+        ):
+            eta_report = "CRITICAL: {:.1f}% remaining".format(
+                100 * data["POWER_SUPPLY_ENERGY_NOW"] / data["POWER_SUPPLY_ENERGY_FULL"]
+            )
+        else:
+            eta = (
+                data["POWER_SUPPLY_ENERGY_NOW"]
+                - critical * data["POWER_SUPPLY_ENERGY_FULL"]
+            ) / data["POWER_SUPPLY_POWER_NOW"] * 3600
+            arrival = (datetime.datetime.now() + datetime.timedelta(seconds=eta)).strftime(
+                "%H:%M:%S"
+            )
+            eta_str = str(datetime.timedelta(seconds=eta))[:-7]
+            eta_percent = (
+                100 * data["POWER_SUPPLY_ENERGY_NOW"] / data["POWER_SUPPLY_ENERGY_FULL"]
+            )
+            eta_percent_str = "{:.1f}%".format(eta_percent)
+            eta_report = f"{arrival} ({eta_str}, {eta_percent_str} to go)"
+    else:
+        eta_report = "N/A"
+    return (
+        "Battery: {}% ({} at {:<.3f} W), energy: {:<.3f} Wh (of {:<.3f} Wh)\n"
+        "ETA: {}\n"
+        "lost: {:<.3f}% capacity\n"
+    ).format(
+        data.get("POWER_SUPPLY_CAPACITY", "N/A"),
+        data.get("POWER_SUPPLY_STATUS", "N/A"),
+        data["POWER_SUPPLY_POWER_NOW"],
+        data["POWER_SUPPLY_ENERGY_NOW"],
+        data["POWER_SUPPLY_ENERGY_FULL"],
+        eta_report,
+        data["POWER_SUPPLY_LOST_CAPACITY"],
+    )
+
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--json", action="store_true", help="Output in JSON format")
+    parser.add_argument(
+        "--short", action="store_true", help="Output in legacy short format"
+    )
+    args = parser.parse_args()
+
     data = power_supply_data()
-    # print(data)
-    print(datetime.datetime.now(), format_fields_of_interest(data))
+    if args.json:
+        print(format_json(data))
+    elif args.short:
+        print(
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            format_fields_of_interest(data),
+        )
+    else:
+        print(friendly_report(data))
 
 
 if __name__ == "__main__":

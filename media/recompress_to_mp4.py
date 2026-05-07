@@ -86,6 +86,14 @@ def _parse_cli():
     )
     parser.add_argument("--nvdec", "-nvd", action="store_true")
     parser.add_argument("--nvenc", "-nve", action="store_true")
+    parser.add_argument(
+        "--predefined",
+        "-p",
+        help="predefined set of options, eg. 'slow' or 'fast'",
+        choices=[
+            "nv265hq",
+        ],
+    )
     parser.add_argument("--quality", "-q", type=int, default=23)
     parser.add_argument(
         "--quick",
@@ -236,6 +244,11 @@ def _get_encoder_options(args):
     if args.copy or args.fix_avidemux or args.copy_video:
         return "copy" + common_options
 
+    if args.predefined == "nv265hq":
+        return (
+            common_options + " -c:v hevc_nvenc -preset p6 -tune hq -rc vbr -cq 19 "
+            "-spatial-aq 1 -temporal-aq 1 -rc-lookahead 32 -b_ref_mode each"
+        )
     if args.nv or args.nvenc:
         codec = "hevc_nvenc" if args.hevc else "h264_nvenc"
         encoder_options = "{} -cq {} -preset slow {}".format(
