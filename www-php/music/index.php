@@ -1,5 +1,5 @@
 <?php
-    $version = "v3.7-mi-2026.03.30";
+    $version = "v3.8-mi-2026.05.14";
     $title = basename(dirname($_SERVER['PHP_SELF']));
     if (empty($title)) {
         $title = 'Music Index';
@@ -14,16 +14,18 @@
     if ($zipAvailable && isset($_GET['action']) && $_GET['action'] === 'download') {
         set_time_limit(0);
         $zip = new ZipArchive();
-        $zipFileName = tempnam(sys_get_temp_dir(), 'music_') . '.zip';
+        $zipFileName = "$title.zip";
 
         if ($zip->open($zipFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             foreach ($files as $file) {
-                $zip->addFile($file, basename($file));
+                $entry = basename($file);
+                $zip->addFile($file, $entry);
+                $zip->setCompressionName($entry, ZipArchive::CM_STORE);
             }
             $zip->close();
 
             header('Content-Type: application/zip');
-            header('Content-Disposition: attachment; filename="' . $title . '.zip"');
+            header('Content-Disposition: attachment; filename="' . $zipFileName . '"');
             header('Content-Length: ' . filesize($zipFileName));
             readfile($zipFileName);
 
