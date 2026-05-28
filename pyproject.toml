@@ -7,9 +7,8 @@ license = "MIT"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4"
+python = ">=3.11,<4"
 opencv-python = "^4.11.0"
-scikit-image = "^0.25.0"
 pypdf = "^6.10.0"
 reportlab = "^4.3.1"
 matplotlib = "^3.10.3"
@@ -28,6 +27,10 @@ rich = "^15.0.0"
 [tool.poetry.group.dev.dependencies]
 black = "^26.3.1"
 isort = "^5.13.2"
+
+
+[tool.poetry.group.heavy.dependencies]
+scikit-image = "^0.26.0"
 
 [build-system]
 requires = ["poetry>=1.8.0"]
