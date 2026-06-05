@@ -19,9 +19,7 @@ Aplikacja Laravel 11 do śledzenia serii czasowych. Domyślna baza: SQLite. Dzia
 
 ```bash
 sudo apt update
-sudo apt install php-fpm php-sqlite3 php-mbstring \
-     php-xml php-curl php-zip php-intl \
-     composer nginx sqlite3
+sudo apt install php-fpm php-sqlite3 php-mbstring php-xml php-curl php-zip php-intl composer nginx sqlite3
 
 # Opcjonalnie dla MySQL/MariaDB:
 sudo apt install php-mysql
