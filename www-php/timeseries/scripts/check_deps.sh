@@ -114,6 +114,6 @@ else
 fi
 
 echo ""
-echo "=== Podsumowanie: ${GREEN}${PASS} OK${NC}  ${RED}${FAIL} FAIL${NC}  ${YELLOW}${WARN} WARN${NC} ==="
+echo -e "=== Podsumowanie: ${GREEN}${PASS} OK${NC}  ${RED}${FAIL} FAIL${NC}  ${YELLOW}${WARN} WARN${NC} ==="
 
 [ $FAIL -gt 0 ] && exit 1 || exit 0
