@@ -1,3 +1,36 @@
+# Time Series
+
+A laravel CRUD to track time series (like commodity meter readings).
+
+## Quick start
+
+(dependencies and deployment to nginx: see [](INSTALL.md))
+
+OK, if you don't have node v20+, run this first:
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh | bash
+# or whatever it says there: https://github.com/nvm-sh/nvm#installing-and-updating
+source ~/.bashrc
+nvm install 22
+nvm use 22
+```
+
+Run local development version:
+
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+npm install
+npm run build
+php artisan serve
+```
+
+# Generic Readme by the Framework
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

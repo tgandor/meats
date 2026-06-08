@@ -13,7 +13,7 @@ Aplikacja Laravel 11 do śledzenia serii czasowych. Domyślna baza: SQLite. Dzia
 | Composer | 2.x |
 | Nginx / Apache | dowolna aktualna |
 | SQLite | dowolna (PHP ext wystarczy) |
-| Node/npm | tylko do buildu frontendu (nie potrzebny na serwerze) |
+| Node/npm | tylko do buildu frontendu (niepotrzebny na serwerze) |
 
 ### Ubuntu / Debian / Raspberry Pi OS
 
