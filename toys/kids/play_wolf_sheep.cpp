@@ -69,6 +69,7 @@ struct Pos
 {
 	int r, c;
 	Pos shift(Move d) { return {r + d.dr, c + d.dc}; }
+	Pos unshift(Move d) { return {r - d.dr, c - d.dc}; }
 };
 std::ostream& operator<< (std::ostream& os, const Pos& p)
 {
@@ -355,7 +356,22 @@ int main()
 		
 		int res = wolf();
 		if (res == WOLF_WINS)
-			cout << "Wolf wins!" << endl;
+		{
+			cout << "Wolf wins! Undo?" << endl;
+			char undo;
+			cin >> undo;
+			if (undo == 'y' || undo == 'Y')
+			{
+				board_set(pWolf, EMPTY);
+				pWolf = pWolf.unshift(wolf_moves[wolf_move-1]);
+				board_set(pWolf, WOLF);
+				board_set(newPosSheep, EMPTY);
+				Pos oldPosSheep = newPosSheep.unshift(sm.move);
+				board_set(oldPosSheep, SHEEP);
+				pSheep[sm.sheepIdx] = oldPosSheep;
+				cout << "Undone full turn" << endl;
+			}
+		}
 		else
 			cout << "Sheep win!" << endl;
 	}
