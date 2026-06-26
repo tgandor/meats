@@ -6,6 +6,7 @@ df_log.csv
 .ipynb_checkpoints
 *~
 *.egg-info
+a.out
 
 # configs
 *.conf
