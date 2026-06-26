@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wolf and Sheep Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        
+        .container {
+            display: flex;
+            gap: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        #gameBoard {
+            display: inline-grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            gap: 0;
+            border: 2px solid #333;
+            background-color: #333;
+            cursor: crosshair;
+        }
+        
+        .square {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            user-select: none;
+        }
+        
+        .square.valid {
+            background-color: #7CB342;
+        }
+        
+        .square.invalid {
+            background-color: #A0A0A0;
+        }
+        
+        .square.highlight {
+            background-color: #FFD54F !important;
+        }
+        
+        .piece {
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+        }
+        
+        .wolf {
+            width: 35px;
+            height: 35px;
+            background-color: #000;
+            z-index: 10;
+        }
+        
+        .sheep {
+            width: 28px;
+            height: 28px;
+            background-color: #FFF;
+            border: 2px solid #333;
+            z-index: 5;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 250px;
+        }
+        
+        button {
+            padding: 10px 15px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .button-group button {
+            flex: 1;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status.wolf-wins {
+            background-color: #FFEBEE;
+            border-left-color: #F44336;
+        }
+        
+        .status.sheep-win {
+            background-color: #E8F5E9;
+            border-left-color: #4CAF50;
+        }
+        
+        .info-panel {
+            background-color: #F5F5F5;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .info-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        
+        .toggle-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background-color: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background-color: #4CAF50;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: left 0.3s;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            left: 28px;
+        }
+        
+        .hint-box {
+            background-color: #FFF9C4;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #FBC02D;
+            margin-top: 10px;
+            min-height: 40px;
+        }
+        
+        .move-indicator {
+            font-weight: bold;
+            color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-area">
+            <div id="gameBoard"></div>
+            <div class="status" id="status">
+                Click to select a piece, then click a valid destination to move.
+            </div>
+        </div>
+        
+        <div class="controls">
+            <h2 style="margin: 0 0 20px 0;">Controls</h2>
+            
+            <div class="toggle-group">
+                <label for="evaluationToggle">Enable Evaluation:</label>
+                <div class="toggle-switch" id="evaluationToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            
+            <div class="hint-box" id="hintBox">
+                Evaluation disabled. Toggle above to enable.
+            </div>
+            
+            <div class="button-group">
+                <button id="undoBtn" onclick="undo()">↶ Undo</button>
+                <button id="newGameBtn" onclick="newGame()">New Game</button>
+            </div>
+            
+            <div class="info-panel">
+                <h3>Game Rules</h3>
+                <p><strong>Wolf:</strong> Moves diagonally any distance</p>
+                <p><strong>Sheep:</strong> Move diagonally up-left or up-right one square</p>
+                <p><strong>Wolf wins:</strong> Reaches bottom row</p>
+                <p><strong>Sheep win:</strong> Wolf cannot move</p>
+                <p style="margin: 0; color: #666; font-size: 12px;">Only valid moves on green squares</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOARD_SIZE = 8;
+        const PSHIFT = 5;
+        
+        let gameState = {
+            wolfPos: { r: 0, c: 1 },
+            sheepPos: [
+                { r: 7, c: 0 },
+                { r: 7, c: 2 },
+                { r: 7, c: 4 },
+                { r: 7, c: 6 }
+            ],
+            isWolfTurn: true,
+            history: [],
+            gameOver: false,
+            winner: null,
+            selectedPiece: null
+        };
+        
+        let evaluationEnabled = false;
+        let evaluationCache = {
+            wolf: {},
+            sheep: {}
+        };
+        
+        const WOLF_MOVES = [
+            { dr: -1, dc: -1 },
+            { dr: -1, dc: 1 },
+            { dr: 1, dc: -1 },
+            { dr: 1, dc: 1 }
+        ];
+        
+        const SHEEP_MOVES = [
+            { dr: -1, dc: -1 },
+            { dr: -1, dc: 1 }
+        ];
+        
+        // Initialize game
+        function initBoard() {
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    const square = document.createElement('div');
+                    square.className = 'square';
+                    square.id = `square-${r}-${c}`;
+                    
+                    // Valid squares have (r+c) odd
+                    if ((r + c) % 2 === 1) {
+                        square.classList.add('valid');
+                    } else {
+                        square.classList.add('invalid');
+                    }
+                    
+                    square.onclick = (e) => handleSquareClick(r, c, e);
+                    board.appendChild(square);
+                }
+            }
+            
+            renderPieces();
+        }
+        
+        function renderPieces() {
+            // Clear existing pieces
+            document.querySelectorAll('.piece').forEach(p => p.remove());
+            
+            // Render wolf
+            const wolfSquare = document.getElementById(`square-${gameState.wolfPos.r}-${gameState.wolfPos.c}`);
+            const wolf = document.createElement('div');
+            wolf.className = 'piece wolf';
+            wolf.id = 'wolf-piece';
+            wolfSquare.appendChild(wolf);
+            
+            // Render sheep
+            gameState.sheepPos.forEach((sheep, idx) => {
+                const sheepSquare = document.getElementById(`square-${sheep.r}-${sheep.c}`);
+                const sheepEl = document.createElement('div');
+                sheepEl.className = 'piece sheep';
+                sheepEl.id = `sheep-piece-${idx}`;
+                sheepEl.textContent = idx;
+                sheepEl.style.fontSize = '12px';
+                sheepEl.style.fontWeight = 'bold';
+                sheepEl.style.color = '#333';
+                sheepEl.style.display = 'flex';
+                sheepEl.style.justifyContent = 'center';
+                sheepEl.style.alignItems = 'center';
+                sheepSquare.appendChild(sheepEl);
+            });
+        }
+        
+        function isValidSquare(r, c) {
+            return r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && (r + c) % 2 === 1;
+        }
+        
+        function getWolfMoves() {
+            const moves = [];
+            for (const move of WOLF_MOVES) {
+                const nr = gameState.wolfPos.r + move.dr;
+                const nc = gameState.wolfPos.c + move.dc;
+                
+                if (isValidSquare(nr, nc)) {
+                    // Check if square is empty
+                    let occupied = false;
+                    if (gameState.wolfPos.r === nr && gameState.wolfPos.c === nc) {
+                        occupied = true;
+                    }
+                    for (const sheep of gameState.sheepPos) {
+                        if (sheep.r === nr && sheep.c === nc) {
+                            occupied = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!occupied) {
+                        moves.push({ r: nr, c: nc, move });
+                    }
+                }
+            }
+            return moves;
+        }
+        
+        function getSheepMoves() {
+            const moves = [];
+            for (let i = 0; i < gameState.sheepPos.length; i++) {
+                const sheep = gameState.sheepPos[i];
+                for (const move of SHEEP_MOVES) {
+                    const nr = sheep.r + move.dr;
+                    const nc = sheep.c + move.dc;
+                    
+                    if (isValidSquare(nr, nc)) {
+                        // Check if square is empty
+                        let occupied = false;
+                        if (gameState.wolfPos.r === nr && gameState.wolfPos.c === nc) {
+                            occupied = true;
+                        }
+                        for (let j = 0; j < gameState.sheepPos.length; j++) {
+                            if (i !== j && gameState.sheepPos[j].r === nr && gameState.sheepPos[j].c === nc) {
+                                occupied = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!occupied) {
+                            moves.push({ sheepIdx: i, r: nr, c: nc, move });
+                        }
+                    }
+                }
+            }
+            return moves;
+        }
+        
+        function hashPosition() {
+            let hash = gameState.wolfPos.r * 4 + gameState.wolfPos.c / 2;
+            const sheepHashes = gameState.sheepPos
+                .map(s => s.r * 4 + s.c / 2)
+                .sort((a, b) => a - b);
+            
+            for (const h of sheepHashes) {
+                hash = hash * 256 + h;
+            }
+            return hash.toString();
+        }
+        
+        function evaluateWolf() {
+            const hash = hashPosition();
+            if (evaluationCache.wolf[hash] !== undefined) {
+                return evaluationCache.wolf[hash];
+            }
+            
+            const wolfMoves = getWolfMoves();
+            
+            // If wolf has no moves, sheep win
+            if (wolfMoves.length === 0) {
+                return evaluationCache.wolf[hash] = false; // Wolf loses
+            }
+            
+            // If wolf reached bottom, wolf wins
+            if (gameState.wolfPos.r === BOARD_SIZE - 1) {
+                return evaluationCache.wolf[hash] = true;
+            }
+            
+            // Try each wolf move
+            for (const move of wolfMoves) {
+                const oldPos = gameState.wolfPos;
+                gameState.wolfPos = { r: move.r, c: move.c };
+                
+                const sheepEval = evaluateSheep();
+                
+                gameState.wolfPos = oldPos;
+                
+                if (sheepEval === false) {
+                    return evaluationCache.wolf[hash] = true;
+                }
+            }
+            
+            return evaluationCache.wolf[hash] = false;
+        }
+        
+        function evaluateSheep() {
+            const hash = hashPosition();
+            if (evaluationCache.sheep[hash] !== undefined) {
+                return evaluationCache.sheep[hash];
+            }
+            
+            // If wolf reached bottom or all sheep are below wolf, wolf wins
+            if (gameState.wolfPos.r === BOARD_SIZE - 1) {
+                return evaluationCache.sheep[hash] = true;
+            }
+            
+            const maxSheepRow = Math.max(...gameState.sheepPos.map(s => s.r));
+            if (maxSheepRow <= gameState.wolfPos.r) {
+                return evaluationCache.sheep[hash] = true;
+            }
+            
+            const sheepMoves = getSheepMoves();
+            
+            // Try each sheep move
+            for (const move of sheepMoves) {
+                const oldPos = gameState.sheepPos[move.sheepIdx];
+                gameState.sheepPos[move.sheepIdx] = { r: move.r, c: move.c };
+                
+                const wolfEval = evaluateWolf();
+                
+                gameState.sheepPos[move.sheepIdx] = oldPos;
+                
+                if (wolfEval === false) {
+                    return evaluationCache.sheep[hash] = false;
+                }
+            }
+            
+            return evaluationCache.sheep[hash] = true;
+        }
+        
+        function getOptimalMove() {
+            if (gameState.isWolfTurn) {
+                const wolfMoves = getWolfMoves();
+                
+                for (const move of wolfMoves) {
+                    const oldPos = gameState.wolfPos;
+                    gameState.wolfPos = { r: move.r, c: move.c };
+                    
+                    const sheepEval = evaluateSheep();
+                    
+                    gameState.wolfPos = oldPos;
+                    
+                    if (sheepEval === false) {
+                        return { type: 'wolf', r: move.r, c: move.c };
+                    }
+                }
+                
+                return wolfMoves.length > 0 ? { type: 'wolf', r: wolfMoves[0].r, c: wolfMoves[0].c } : null;
+            } else {
+                const sheepMoves = getSheepMoves();
+                
+                for (const move of sheepMoves) {
+                    const oldPos = gameState.sheepPos[move.sheepIdx];
+                    gameState.sheepPos[move.sheepIdx] = { r: move.r, c: move.c };
+                    
+                    const wolfEval = evaluateWolf();
+                    
+                    gameState.sheepPos[move.sheepIdx] = oldPos;
+                    
+                    if (wolfEval === false) {
+                        return { type: 'sheep', sheepIdx: move.sheepIdx, r: move.r, c: move.c };
+                    }
+                }
+                
+                return sheepMoves.length > 0 ? { type: 'sheep', sheepIdx: sheepMoves[0].sheepIdx, r: sheepMoves[0].r, c: sheepMoves[0].c } : null;
+            }
+        }
+        
+        function updateHintBox() {
+            const hintBox = document.getElementById('hintBox');
+            
+            if (!evaluationEnabled) {
+                hintBox.innerHTML = 'Evaluation disabled. Toggle above to enable.';
+                return;
+            }
+            
+            try {
+                const optimalMove = getOptimalMove();
+                
+                if (gameState.isWolfTurn) {
+                    const wolfEval = evaluateWolf();
+                    const status = wolfEval ? '✓ Wolf can win' : '✗ Sheep will win';
+                    
+                    if (optimalMove) {
+                        hintBox.innerHTML = `
+                            <div>${status}</div>
+                            <div class="move-indicator">Optimal: Wolf to (${optimalMove.r}, ${optimalMove.c})</div>
+                        `;
+                    } else {
+                        hintBox.innerHTML = `<div>${status}</div><div class="move-indicator">No moves available - Sheep win!</div>`;
+                    }
+                } else {
+                    const sheepEval = evaluateSheep();
+                    const status = sheepEval ? '✓ Wolf wins' : '✗ Sheep can win';
+                    
+                    if (optimalMove) {
+                        hintBox.innerHTML = `
+                            <div>${status}</div>
+                            <div class="move-indicator">Optimal: Sheep ${optimalMove.sheepIdx} to (${optimalMove.r}, ${optimalMove.c})</div>
+                        `;
+                    } else {
+                        hintBox.innerHTML = `<div>${status}</div>`;
+                    }
+                }
+            } catch (e) {
+                hintBox.innerHTML = 'Evaluation in progress...';
+            }
+        }
+        
+        function handleSquareClick(r, c, e) {
+            if (gameState.gameOver) return;
+            
+            // Check if clicking on a piece
+            const isWolf = gameState.wolfPos.r === r && gameState.wolfPos.c === c;
+            const sheepIdx = gameState.sheepPos.findIndex(s => s.r === r && s.c === c);
+            
+            if (gameState.isWolfTurn && isWolf) {
+                gameState.selectedPiece = { type: 'wolf' };
+                updateHighlights();
+                return;
+            }
+            
+            if (!gameState.isWolfTurn && sheepIdx >= 0) {
+                gameState.selectedPiece = { type: 'sheep', idx: sheepIdx };
+                updateHighlights();
+                return;
+            }
+            
+            // Try to move selected piece
+            if (gameState.selectedPiece) {
+                if (gameState.selectedPiece.type === 'wolf' && gameState.isWolfTurn) {
+                    const moves = getWolfMoves();
+                    const move = moves.find(m => m.r === r && m.c === c);
+                    if (move) {
+                        gameState.history.push(JSON.parse(JSON.stringify(gameState)));
+                        gameState.wolfPos = { r, c };
+                        gameState.selectedPiece = null;
+                        
+                        checkGameOver();
+                        if (!gameState.gameOver) {
+                            gameState.isWolfTurn = false;
+                            updateHintBox();
+                        }
+                        renderPieces();
+                        updateHighlights();
+                        updateStatus();
+                        return;
+                    }
+                }
+                
+                if (gameState.selectedPiece.type === 'sheep' && !gameState.isWolfTurn) {
+                    const moves = getSheepMoves();
+                    const move = moves.find(m => m.sheepIdx === gameState.selectedPiece.idx && m.r === r && m.c === c);
+                    if (move) {
+                        gameState.history.push(JSON.parse(JSON.stringify(gameState)));
+                        gameState.sheepPos[gameState.selectedPiece.idx] = { r, c };
+                        gameState.selectedPiece = null;
+                        
+                        checkGameOver();
+                        if (!gameState.gameOver) {
+                            gameState.isWolfTurn = true;
+                            updateHintBox();
+                        }
+                        renderPieces();
+                        updateHighlights();
+                        updateStatus();
+                        return;
+                    }
+                }
+            }
+            
+            gameState.selectedPiece = null;
+            updateHighlights();
+        }
+        
+        function updateHighlights() {
+            // Clear all highlights
+            document.querySelectorAll('.square').forEach(sq => sq.classList.remove('highlight'));
+            
+            if (!gameState.selectedPiece) return;
+            
+            let moves = [];
+            if (gameState.selectedPiece.type === 'wolf') {
+                moves = getWolfMoves();
+            } else {
+                moves = getSheepMoves().filter(m => m.sheepIdx === gameState.selectedPiece.idx);
+            }
+            
+            moves.forEach(move => {
+                const square = document.getElementById(`square-${move.r}-${move.c}`);
+                if (square) square.classList.add('highlight');
+            });
+        }
+        
+        function checkGameOver() {
+            if (gameState.wolfPos.r === BOARD_SIZE - 1) {
+                gameState.gameOver = true;
+                gameState.winner = 'wolf';
+                return;
+            }
+            
+            const maxSheepRow = Math.max(...gameState.sheepPos.map(s => s.r));
+            if (maxSheepRow <= gameState.wolfPos.r) {
+                gameState.gameOver = true;
+                gameState.winner = 'wolf';
+                return;
+            }
+            
+            if (gameState.isWolfTurn) {
+                const wolfMoves = getWolfMoves();
+                if (wolfMoves.length === 0) {
+                    gameState.gameOver = true;
+                    gameState.winner = 'sheep';
+                }
+            }
+        }
+        
+        function updateStatus() {
+            const status = document.getElementById('status');
+            
+            if (gameState.gameOver) {
+                if (gameState.winner === 'wolf') {
+                    status.className = 'status wolf-wins';
+                    status.textContent = '🐺 Wolf wins! Reached the bottom row.';
+                } else {
+                    status.className = 'status sheep-win';
+                    status.textContent = '🐑 Sheep win! Wolf cannot move.';
+                }
+                document.getElementById('undoBtn').disabled = true;
+            } else {
+                status.className = 'status';
+                status.textContent = gameState.isWolfTurn ? '🐺 Wolf\'s turn' : '🐑 Sheep\'s turn';
+                document.getElementById('undoBtn').disabled = gameState.history.length === 0;
+            }
+        }
+        
+        function undo() {
+            if (gameState.history.length > 0) {
+                gameState = JSON.parse(JSON.stringify(gameState.history.pop()));
+                gameState.history = gameState.history || [];
+                gameState.selectedPiece = null;
+                renderPieces();
+                updateHighlights();
+                updateStatus();
+                updateHintBox();
+            }
+        }
+        
+        function newGame() {
+            gameState = {
+                wolfPos: { r: 0, c: 1 },
+                sheepPos: [
+                    { r: 7, c: 0 },
+                    { r: 7, c: 2 },
+                    { r: 7, c: 4 },
+                    { r: 7, c: 6 }
+                ],
+                isWolfTurn: true,
+                history: [],
+                gameOver: false,
+                winner: null,
+                selectedPiece: null
+            };
+            evaluationCache = { wolf: {}, sheep: {} };
+            renderPieces();
+            updateHighlights();
+            updateStatus();
+            updateHintBox();
+        }
+        
+        // Toggle evaluation
+        document.getElementById('evaluationToggle').addEventListener('click', function() {
+            evaluationEnabled = !evaluationEnabled;
+            this.classList.toggle('active');
+            updateHintBox();
+        });
+        
+        // Initialize
+        initBoard();
+        updateStatus();
+        updateHintBox();
+    </script>
+</body>
+</html>
