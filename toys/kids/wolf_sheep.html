@@ -458,12 +458,12 @@
 
             // If wolf reached bottom or all sheep are below wolf, wolf wins
             if (gameState.wolfPos.r === BOARD_SIZE - 1) {
-                return evaluationCache.sheep[hash] = true;
+                return evaluationCache.sheep[hash] = false;
             }
 
             const maxSheepRow = Math.max(...gameState.sheepPos.map(s => s.r));
             if (maxSheepRow <= gameState.wolfPos.r) {
-                return evaluationCache.sheep[hash] = true;
+                return evaluationCache.sheep[hash] = false;
             }
 
             const sheepMoves = getSheepMoves();
@@ -478,11 +478,11 @@
                 gameState.sheepPos[move.sheepIdx] = oldPos;
 
                 if (wolfEval === false) {
-                    return evaluationCache.sheep[hash] = false;
+                    return evaluationCache.sheep[hash] = true;
                 }
             }
 
-            return evaluationCache.sheep[hash] = true;
+            return evaluationCache.sheep[hash] = false;
         }
 
         function getOptimalMove() {
@@ -536,7 +536,7 @@
 
                 if (gameState.isWolfTurn) {
                     const wolfEval = evaluateWolf();
-                    const status = wolfEval ? '✓ Wolf can win' : '✗ Sheep will win';
+                    const status = wolfEval ? '✓ Wolf can win' : '✗ Sheep can win';
 
                     if (optimalMove) {
                         hintBox.innerHTML = `
@@ -548,7 +548,7 @@
                     }
                 } else {
                     const sheepEval = evaluateSheep();
-                    const status = sheepEval ? '✓ Wolf wins' : '✗ Sheep can win';
+                    const status = sheepEval ? '✓ Sheep can win' : '✗ Wolf can win';
 
                     if (optimalMove) {
                         hintBox.innerHTML = `
