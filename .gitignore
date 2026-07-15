@@ -8,9 +8,6 @@ df_log.csv
 *.egg-info
 a.out
 
-# configs
-*.conf
-
 # project artifacts etc.
 .idea
 .vscode

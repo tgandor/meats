@@ -673,12 +673,10 @@
                 return;
             }
 
-            if (gameState.isWolfTurn) {
-                const wolfMoves = getWolfMoves();
-                if (wolfMoves.length === 0) {
-                    gameState.gameOver = true;
-                    gameState.winner = 'sheep';
-                }
+            const wolfMoves = getWolfMoves();
+            if (wolfMoves.length === 0) {
+                gameState.gameOver = true;
+                gameState.winner = 'sheep';
             }
         }
 
