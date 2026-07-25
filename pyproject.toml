@@ -31,6 +31,7 @@ isort = "^5.13.2"
 scikit-image = "^0.26.0"
 opencv-python = "^4.11.0"
 matplotlib = "^3.10.3"
+pydicom = "^3.0.2"
 
 [build-system]
 requires = ["poetry>=1.8.0"]
