@@ -218,6 +218,10 @@ def view_file(filename: str, args: argparse.Namespace) -> bool:
     if args.mouse:
         cv2.setMouseCallback(window, mouse_info)
 
+    if args.bgr2rgb:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        cv2.imshow(window, image)
+
     while True:
         res = cv2.waitKey(args.delay or 0)
         print(
@@ -238,8 +242,7 @@ def view_file(filename: str, args: argparse.Namespace) -> bool:
             args.fit = not args.fit
             break
         elif res % 256 == ord("h"):
-            print(
-                """
+            print("""
                 Key bindings:
                     space/enter - next image;
                     q - quit;
@@ -248,8 +251,7 @@ def view_file(filename: str, args: argparse.Namespace) -> bool:
                     f - toggle size fitting;
                     d - switch to 'dumb' windows (no cv2.WINDOW_NORMAL);
                     h - print this help.
-            """
-            )
+            """)
         elif res % 256 in {ord("k"), ord("w")}:
             cv2.destroyWindow(window)
             break
@@ -298,9 +300,7 @@ def _parse_cli() -> argparse.Namespace:
         action="store_true",
         help="when using --mse, delete images under threshold",
     )
-    parser.add_argument(
-        "--rot90", type=int, help="rotate image 90 degrees (k times)"
-    )
+    parser.add_argument("--rot90", type=int, help="rotate image 90 degrees (k times)")
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="increase verbosity"
     )
@@ -323,6 +323,9 @@ def _parse_cli() -> argparse.Namespace:
     )
     parser.add_argument(
         "--shuffle", "-R", action="store_true", help="show arguments in random order"
+    )
+    parser.add_argument(
+        "--bgr2rgb", action="store_true", help="convert BGR to RGB before showing"
     )
     parser.add_argument("--mouse", action="store_true", help="print mouse events")
     parser.add_argument("files", nargs="+")
