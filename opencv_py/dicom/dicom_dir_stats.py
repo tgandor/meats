@@ -145,7 +145,9 @@ def print_report(series_data, skipped_files):
 
         # Wydruk sekcji dla serii
         print(f"\n[SERIA {idx}/{len(series_data)}] UID: {series_uid}")
-        print(f"  ├── Modality / Opis Serii  : {modality} | Seria #{series_number}: {series_description}")
+        print(f"  ├── Liczba plików w serii : {len(datasets)}")
+        print(f"  ├── Pierwszy plik w serii : {datasets[0].filename}")
+        print(f"  ├── Modality / Opis Serii : {modality} | Seria #{series_number}: {series_description}")
         print(f"  ├── Tagi Badania (Study)  : ID Pacjenta: {patient_id} | Data: {study_date} | Opis: {study_description}")
         print(f"  ├── Transfer Syntax       : {ts_info}")
         print(f"  ├── Pixel Spacing         : {spacing_str}")
