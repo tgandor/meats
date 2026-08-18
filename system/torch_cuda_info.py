@@ -4,6 +4,13 @@
 
 import torch
 
+# Info for checkng capabilities:
+print("torch:", torch.__version__)
+print("torch CUDA:", torch.version.cuda)
+print("GPU:", torch.cuda.get_device_name(0))
+print("capability:", torch.cuda.get_device_capability(0))
+print("arch list:", torch.cuda.get_arch_list())
+
 print("Device count:", torch.cuda.device_count())
 
 # setting device on GPU if available, else CPU
