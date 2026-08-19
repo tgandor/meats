@@ -38,10 +38,10 @@ def get_transfer_syntax_info(ds):
     ts_uid = getattr(ds.file_meta, 'TransferSyntaxUID', None)
     if not ts_uid:
         return "Brak danych o Transfer Syntax"
-    
+
     name = ts_uid.name
     is_compressed = ts_uid.is_compressed
-    
+
     if is_compressed:
         return f"Kompresja: {name} (UID: {ts_uid})"
     else:
@@ -51,16 +51,24 @@ def get_transfer_syntax_info(ds):
 def analyze_dicoms(file_paths):
     """Wczytuje pliki DICOM i grupuje je według SeriesInstanceUID."""
     series_data = defaultdict(list)
+    first_seen_sop_paths = {}
+    repeated_sop_paths = []
     skipped_files = 0
 
     for file_path in file_paths:
         try:
             # Wczytujemy nagłówek i tagi (stop_before_pixels=True przyspiesza działanie)
             ds = pydicom.dcmread(file_path, stop_before_pixels=True, force=False)
-            
+
             # Weryfikacja czy plik ma SeriesInstanceUID
             series_uid = getattr(ds, 'SeriesInstanceUID', 'Brak_SeriesInstanceUID')
             series_data[series_uid].append(ds)
+
+            sop_instance_uid = getattr(ds, 'SOPInstanceUID', None)
+            if sop_instance_uid:
+                first_seen_path = first_seen_sop_paths.setdefault(sop_instance_uid, file_path)
+                if first_seen_path != file_path:
+                    repeated_sop_paths.append((sop_instance_uid, file_path, first_seen_path))
 
         except (InvalidDicomError, IsADirectoryError, PermissionError):
             skipped_files += 1
@@ -69,14 +77,14 @@ def analyze_dicoms(file_paths):
             skipped_files += 1
             continue
 
-    return series_data, skipped_files
+    return series_data, skipped_files, repeated_sop_paths
 
 
 def calculate_bbox(ipp_list):
     """Oblicza Bounding Box (min/max X, Y, Z) z listy pozycji IPP."""
     if not ipp_list:
         return None
-    
+
     xs = [ipp[0] for ipp in ipp_list]
     ys = [ipp[1] for ipp in ipp_list]
     zs = [ipp[2] for ipp in ipp_list]
@@ -88,12 +96,13 @@ def calculate_bbox(ipp_list):
     }
 
 
-def print_report(series_data, skipped_files):
+def print_report(series_data, skipped_files, repeated_sop_paths):
     """Wyświetla sformatowane podsumowanie w konsoli."""
     print("=" * 80)
     print(f" PODSUMOWANIE ANALIZY DICOM")
     print(f" Znaleziono unikalnych serii: {len(series_data)}")
     print(f" Pominięto plików (nie-DICOM lub błędy): {skipped_files}")
+    print(f" Powtórzone SOPInstanceUID: {len(repeated_sop_paths)}")
     print("=" * 80)
 
     for idx, (series_uid, datasets) in enumerate(series_data.items(), 1):
@@ -162,25 +171,30 @@ def print_report(series_data, skipped_files):
         else:
             print(f"  └── Bounding Box (IPP)    : Brak tagów ImagePositionPatient w serii")
 
+    if repeated_sop_paths:
+        print("\nPOWTÓRZONE SOPInstanceUID (bieżąca ścieżka -> pierwsza ścieżka):")
+        for sop_instance_uid, current_path, first_seen_path in repeated_sop_paths:
+            print(f"  {sop_instance_uid}:\n    {current_path} -> {first_seen_path}")
+
     print("\n" + "=" * 80)
 
 
 def main():
     args = parse_args()
     files = collect_dicom_files(args.paths)
-    
+
     if not files:
         print("Nie znaleziono żadnych plików do przetworzenia.")
         sys.exit(1)
 
     print(f"Skanowanie {len(files)} plików...")
-    series_data, skipped_files = analyze_dicoms(files)
-    
+    series_data, skipped_files, repeated_sop_paths = analyze_dicoms(files)
+
     if not series_data:
         print("Nie udało się odczytać prawidłowych plików DICOM.")
         sys.exit(1)
 
-    print_report(series_data, skipped_files)
+    print_report(series_data, skipped_files, repeated_sop_paths)
 
 
 if __name__ == "__main__":
