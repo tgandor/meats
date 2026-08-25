@@ -11,9 +11,13 @@ def parse_args():
         description="Skrypt do analizy i grupowania plików DICOM według serii."
     )
     parser.add_argument(
-        "paths",
-        nargs="+",
-        help="Ścieżki do katalogów lub pojedynczych plików .dcm"
+        "paths", nargs="+", help="Ścieżki do katalogów lub pojedynczych plików .dcm"
+    )
+    parser.add_argument(
+        "--unique",
+        "-u",
+        action="store_true",
+        help="Wyświetla SOPInstanceUID i ścieżki dla unikalnych plików",
     )
     return parser.parse_args()
 
@@ -35,7 +39,7 @@ def collect_dicom_files(paths):
 
 def get_transfer_syntax_info(ds):
     """Rozpoznaje Transfer Syntax UID i sprawdza, czy występuje kompresja."""
-    ts_uid = getattr(ds.file_meta, 'TransferSyntaxUID', None)
+    ts_uid = getattr(ds.file_meta, "TransferSyntaxUID", None)
     if not ts_uid:
         return "Brak danych o Transfer Syntax"
 
@@ -61,14 +65,18 @@ def analyze_dicoms(file_paths):
             ds = pydicom.dcmread(file_path, stop_before_pixels=True, force=False)
 
             # Weryfikacja czy plik ma SeriesInstanceUID
-            series_uid = getattr(ds, 'SeriesInstanceUID', 'Brak_SeriesInstanceUID')
+            series_uid = getattr(ds, "SeriesInstanceUID", "Brak_SeriesInstanceUID")
             series_data[series_uid].append(ds)
 
-            sop_instance_uid = getattr(ds, 'SOPInstanceUID', None)
+            sop_instance_uid = getattr(ds, "SOPInstanceUID", None)
             if sop_instance_uid:
-                first_seen_path = first_seen_sop_paths.setdefault(sop_instance_uid, file_path)
+                first_seen_path = first_seen_sop_paths.setdefault(
+                    sop_instance_uid, file_path
+                )
                 if first_seen_path != file_path:
-                    repeated_sop_paths.append((sop_instance_uid, file_path, first_seen_path))
+                    repeated_sop_paths.append(
+                        (sop_instance_uid, file_path, first_seen_path)
+                    )
 
         except (InvalidDicomError, IsADirectoryError, PermissionError):
             skipped_files += 1
@@ -77,7 +85,7 @@ def analyze_dicoms(file_paths):
             skipped_files += 1
             continue
 
-    return series_data, skipped_files, repeated_sop_paths
+    return series_data, skipped_files, repeated_sop_paths, first_seen_sop_paths
 
 
 def calculate_bbox(ipp_list):
@@ -90,9 +98,9 @@ def calculate_bbox(ipp_list):
     zs = [ipp[2] for ipp in ipp_list]
 
     return {
-        'min': (min(xs), min(ys), min(zs)),
-        'max': (max(xs), max(ys), max(zs)),
-        'extent': (max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs))
+        "min": (min(xs), min(ys), min(zs)),
+        "max": (max(xs), max(ys), max(zs)),
+        "extent": (max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs)),
     }
 
 
@@ -109,19 +117,19 @@ def print_report(series_data, skipped_files, repeated_sop_paths):
         sample = datasets[0]  # Metadane reprezentatywne dla serii
 
         # --- Tagi Badania (Study) ---
-        patient_id = getattr(sample, 'PatientID', 'N/A')
-        study_date = getattr(sample, 'StudyDate', 'N/A')
-        study_description = getattr(sample, 'StudyDescription', 'N/A')
-        modality = getattr(sample, 'Modality', 'N/A')
-        series_description = getattr(sample, 'SeriesDescription', 'N/A')
-        series_number = getattr(sample, 'SeriesNumber', 'N/A')
+        patient_id = getattr(sample, "PatientID", "N/A")
+        study_date = getattr(sample, "StudyDate", "N/A")
+        study_description = getattr(sample, "StudyDescription", "N/A")
+        modality = getattr(sample, "Modality", "N/A")
+        series_description = getattr(sample, "SeriesDescription", "N/A")
+        series_number = getattr(sample, "SeriesNumber", "N/A")
 
         # --- Transfer Syntax ---
         ts_info = get_transfer_syntax_info(sample)
 
         # --- Pixel Spacing ---
-        pixel_spacing = getattr(sample, 'PixelSpacing', None)
-        slice_thickness = getattr(sample, 'SliceThickness', None)
+        pixel_spacing = getattr(sample, "PixelSpacing", None)
+        slice_thickness = getattr(sample, "SliceThickness", None)
         if pixel_spacing:
             spacing_str = f"Row: {pixel_spacing[0]} mm, Col: {pixel_spacing[1]} mm"
             if slice_thickness:
@@ -130,28 +138,30 @@ def print_report(series_data, skipped_files, repeated_sop_paths):
             spacing_str = "Brak (PixelSpacing nieobecne)"
 
         # --- Rozmiar Rastrowy (Rozdzielczość) ---
-        rows = getattr(sample, 'Rows', 'N/A')
-        cols = getattr(sample, 'Columns', 'N/A')
+        rows = getattr(sample, "Rows", "N/A")
+        cols = getattr(sample, "Columns", "N/A")
         num_frames = len(datasets)
         raster_size_str = f"{cols} x {rows} px (Liczba plików/plastrów: {num_frames})"
 
         # --- Rozmiar Fizyczny & Bounding Box Image Position Patient (IPP) ---
         ipp_list = []
         for ds in datasets:
-            ipp = getattr(ds, 'ImagePositionPatient', None)
+            ipp = getattr(ds, "ImagePositionPatient", None)
             if ipp is not None and len(ipp) == 3:
                 ipp_list.append([float(x) for x in ipp])
 
         bbox = calculate_bbox(ipp_list)
 
         # Obliczanie fizycznych wymiarów pojedynczej macierzy (2D)
-        if pixel_spacing and rows != 'N/A' and cols != 'N/A':
+        if pixel_spacing and rows != "N/A" and cols != "N/A":
             phys_width = float(cols) * float(pixel_spacing[1])
             phys_height = float(rows) * float(pixel_spacing[0])
-            phys_size_2d_str = f"{phys_width:.2f} mm x {phys_height:.2f} mm (pojedynczy plaster)"
+            phys_size_2d_str = (
+                f"{phys_width:.2f} mm x {phys_height:.2f} mm (pojedynczy plaster)"
+            )
         else:
             phys_size_2d_str = "Nie można obliczyć"
-
+        # fmt: off
         # Wydruk sekcji dla serii
         print(f"\n[SERIA {idx}/{len(series_data)}] UID: {series_uid}")
         print(f"  ├── Liczba plików w serii : {len(datasets)}")
@@ -170,6 +180,7 @@ def print_report(series_data, skipped_files, repeated_sop_paths):
             print(f"      └── Zakres (dx,dy,dz) : ({bbox['extent'][0]:.2f}, {bbox['extent'][1]:.2f}, {bbox['extent'][2]:.2f}) mm")
         else:
             print(f"  └── Bounding Box (IPP)    : Brak tagów ImagePositionPatient w serii")
+        # fmt: on
 
     if repeated_sop_paths:
         print("\nPOWTÓRZONE SOPInstanceUID (bieżąca ścieżka -> pierwsza ścieżka):")
@@ -188,13 +199,26 @@ def main():
         sys.exit(1)
 
     print(f"Skanowanie {len(files)} plików...")
-    series_data, skipped_files, repeated_sop_paths = analyze_dicoms(files)
+    series_data, skipped_files, repeated_sop_paths, first_seen_sop_paths = (
+        analyze_dicoms(files)
+    )
 
     if not series_data:
         print("Nie udało się odczytać prawidłowych plików DICOM.")
         sys.exit(1)
 
     print_report(series_data, skipped_files, repeated_sop_paths)
+
+    if args.unique:
+        repeated_sop_uids = {x[0] for x in repeated_sop_paths}
+        unique_sop_uids = set(first_seen_sop_paths) - repeated_sop_uids
+        if not unique_sop_uids:
+            print("Brak unikalnych SOPInstanceUID.")
+            return
+        print(f"\nUNIKALNE SOPInstanceUID i ich ścieżki ({len(unique_sop_uids)}):")
+        for i, sop_instance_uid in enumerate(unique_sop_uids, 1):
+            path = first_seen_sop_paths[sop_instance_uid]
+            print(f"{i}  {sop_instance_uid} -> {path}")
 
 
 if __name__ == "__main__":
