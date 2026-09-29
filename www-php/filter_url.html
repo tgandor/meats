@@ -5,7 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Copy and Go</title>
     <script>
+        function decodeTrackingUrl(url) {
+            const destinationMatch = url.match(/\/L0\/([^/]+)/);
+            if (!destinationMatch) {
+                return url;
+            }
+            try {
+                const destination = new URL(decodeURIComponent(destinationMatch[1]));
+                return destination.href;
+            } catch (error) {
+                return url;
+            }
+        }
+
         function cleanURL(url, keepParam) {
+            url = decodeTrackingUrl(url);
             var parsedURL = new URL(url);
             if (!parsedURL.searchParams.has(keepParam)) {
                 return `${parsedURL.origin}${parsedURL.pathname}`
