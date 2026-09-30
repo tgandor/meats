@@ -30,10 +30,47 @@
             gap: 15px;
         }
 
+        .board-frame {
+            display: grid;
+            grid-template-columns: 20px auto 20px;
+            grid-template-rows: auto 20px;
+            align-items: center;
+        }
+
+        .rank-labels,
+        .file-labels {
+            display: grid;
+            color: #555;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            user-select: none;
+        }
+
+        .rank-labels {
+            grid-template-rows: repeat(8, 50px);
+            margin-top: 2px;
+        }
+
+        .file-labels {
+            grid-template-columns: repeat(8, 50px);
+            grid-column: 2;
+            margin-inline: 2px;
+        }
+
+        .rank-labels span,
+        .file-labels span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         #gameBoard {
             display: inline-grid;
             grid-template-columns: repeat(8, 50px);
             grid-template-rows: repeat(8, 50px);
+            grid-column: 2;
+            grid-row: 1;
             gap: 0;
             border: 2px solid #333;
             background-color: #333;
@@ -205,7 +242,12 @@
 <body>
     <div class="container">
         <div class="game-area">
-            <div id="gameBoard"></div>
+            <div class="board-frame">
+                <div class="rank-labels" id="leftRanks" aria-hidden="true"></div>
+                <div id="gameBoard" role="grid" aria-label="Wolf and sheep game board"></div>
+                <div class="rank-labels" id="rightRanks" aria-hidden="true"></div>
+                <div class="file-labels" id="fileLabels" aria-hidden="true"></div>
+            </div>
             <div class="status" id="status">
                 Click to select a piece, then click a valid destination to move.
             </div>
@@ -251,6 +293,7 @@
 
     <script>
         const BOARD_SIZE = 8;
+        const FILE_NAMES = 'abcdefgh';
         const PSHIFT = 5;
 
         let gameState = {
@@ -288,10 +331,32 @@
             { dr: -1, dc: 1 }
         ];
 
+        function squareName(r, c) {
+            return `${FILE_NAMES[c]}${BOARD_SIZE - r}`;
+        }
+
         // Initialize game
         function initBoard() {
             const board = document.getElementById('gameBoard');
             board.innerHTML = '';
+
+            for (const id of ['leftRanks', 'rightRanks']) {
+                const labels = document.getElementById(id);
+                labels.innerHTML = '';
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    const label = document.createElement('span');
+                    label.textContent = BOARD_SIZE - r;
+                    labels.appendChild(label);
+                }
+            }
+
+            const fileLabels = document.getElementById('fileLabels');
+            fileLabels.innerHTML = '';
+            for (const file of FILE_NAMES) {
+                const label = document.createElement('span');
+                label.textContent = file;
+                fileLabels.appendChild(label);
+            }
 
             for (let r = 0; r < BOARD_SIZE; r++) {
                 for (let c = 0; c < BOARD_SIZE; c++) {
@@ -541,7 +606,7 @@
                     if (optimalMove) {
                         hintBox.innerHTML = `
                             <div>${status}</div>
-                            <div class="move-indicator">Optimal: Wolf to (${optimalMove.r}, ${optimalMove.c})</div>
+                            <div class="move-indicator">Optimal: Wolf to ${squareName(optimalMove.r, optimalMove.c)}</div>
                         `;
                     } else {
                         hintBox.innerHTML = `<div>${status}</div><div class="move-indicator">No moves available - Sheep win!</div>`;
@@ -553,7 +618,7 @@
                     if (optimalMove) {
                         hintBox.innerHTML = `
                             <div>${status}</div>
-                            <div class="move-indicator">Optimal: Sheep ${optimalMove.sheepIdx} to (${optimalMove.r}, ${optimalMove.c})</div>
+                            <div class="move-indicator">Optimal: Sheep ${optimalMove.sheepIdx} to ${squareName(optimalMove.r, optimalMove.c)}</div>
                         `;
                     } else {
                         hintBox.innerHTML = `<div>${status}</div>`;
