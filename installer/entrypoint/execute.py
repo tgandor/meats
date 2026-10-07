@@ -51,8 +51,10 @@ def _open(file_path):
             if exists(pythonw_path):
                 subprocess.Popen([pythonw_path, entry] + sys.argv[2:])
                 return
-
-        subprocess.call([sys.executable, entry] + sys.argv[2:])
+        try:
+            subprocess.call([sys.executable, entry] + sys.argv[2:])
+        except KeyboardInterrupt:
+            pass
         return
 
     if platform.system() == "Darwin":

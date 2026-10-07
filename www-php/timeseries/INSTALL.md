@@ -7,7 +7,7 @@ Aplikacja Laravel 11 do śledzenia serii czasowych. Domyślna baza: SQLite. Dzia
 ## Wymagania systemowe
 
 | Składnik | Minimalna wersja |
-|---|---|
+| --- | --- |
 | PHP | 8.2+ |
 | Rozszerzenia PHP | pdo, pdo_sqlite, mbstring, openssl, curl, json, fileinfo, xml, zip, tokenizer |
 | Composer | 2.x |
