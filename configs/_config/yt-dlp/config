@@ -1,0 +1,6 @@
+--mtime
+-f "bv*[height<=720]+ba/b[height<=720]"
+--prefer-free-formats
+# --restrict-filenames
+--replace-in-metadata title '[^\w\s.,()\-ąćęłńóśżźĄĆĘŁŃÓŚŻŹäöüÄÖÜßàèéìòùÀÈÉÌÒÙçÇñÑ]' '_' 
+-o '%(title)s[%(id)s].%(ext)s'
