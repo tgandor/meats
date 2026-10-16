@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import absolute_import
-
 import argparse
 import codecs
 import datetime
@@ -13,12 +11,8 @@ import time
 from io import BytesIO
 from operator import itemgetter
 
-from six.moves import range
-from six.moves import zip
-from six.moves import input
 import six.moves.urllib.request
 import six.moves.urllib.parse
-import six.moves.urllib.error
 
 try:
     from natsort import natsorted
@@ -332,20 +326,6 @@ def command_rls(the_url, level=2, verbose=False):
         command_rls(the_url + subf.replace(base_dir, ""), level + 2, verbose)
 
 
-def command_play(the_url):
-    hostname = re.match("http://([^/]+)/", the_url).group(1)
-    contents = _gather_contents(the_url)
-    msg = "Playing: %s" % the_url
-    print(msg, "\n" + "-" * len(msg))
-    handler = MusicHandler(hostname)
-    for track, file_id in _extract_tasks(handler, contents):
-        url = handler.get_url(file_id)
-        print(track, url)
-        if os.system("mplayer '%s'" % url) != 0:
-            print("Unclean exit. quitting.")
-            break
-
-
 def command_rdl(the_url):
     command_rls(the_url)
     for url in interesting:
@@ -384,65 +364,6 @@ def command_find(the_url, query):
     for i in interesting:
         if i.lower().find(query.lower()) != -1:
             print(i)
-
-
-def main():
-    """Old CLI."""
-    if len(sys.argv) < 2:
-        # maybe phone clipboard
-        try:
-            import androidhelper
-
-            print("trying to retrieve from clipboard")
-        except ImportError:
-            return usage()
-
-        # go to the right location
-        try:
-            os.chdir("/mnt/sdcard/Download")
-        except OSError:
-            pass
-        the_url = androidhelper.Android().getClipboard().result
-        command = "dl"
-    elif len(sys.argv) == 4:
-        command = sys.argv[1]
-        the_url = sys.argv[2]
-        query = sys.argv[3]
-    elif len(sys.argv) == 3:
-        command = sys.argv[1]
-        the_url = sys.argv[2]
-    else:
-        command = "dl"
-        the_url = sys.argv[1]
-
-    if command == "dl":
-        command_dl(the_url)
-    elif command == "ls":
-        command_ls(the_url)
-    elif command == "find":
-        command_find(the_url, query)
-    elif command == "play":
-        command_play(the_url)
-    elif command == "shell":
-        command_shell(the_url)
-    elif command == "rdl":
-        command_rdl(the_url)
-    elif command == "rls":
-        try:
-            command_rls(the_url)
-        except KeyboardInterrupt:
-            pass
-        if len(interesting):
-            print("%d Interesting folders:" % len(interesting))
-        for ifolder in interesting:
-            print(ifolder)
-    else:
-        print("Error: unknown command %s." % command)
-        return usage()
-
-
-def usage():
-    print("Usage: %s [dl|ls|rls|rdl|play] URL" % sys.argv[0])
 
 
 def _main():
