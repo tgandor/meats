@@ -1,0 +1,7 @@
+
+# Load bash completion scripts from the local share directory
+# like from /share/bash-completion/completions/
+
+for i in ~/.local/share/bash-completion/completions/*; do
+    [[ -f "$i" ]] && source "$i"
+done
