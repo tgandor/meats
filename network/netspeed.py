@@ -1,25 +1,26 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-from __future__ import division
-
 import argparse
 import datetime
-import os
+import re
+import subprocess
 import sys
 import time
-import re
+
 
 max_idle = 600
 
 parser = argparse.ArgumentParser()
 parser.add_argument('interface', nargs='?')
 parser.add_argument('-t', '--interval', type=int, default=1)
+parser.add_argument('--max-idle', type=int, default=max_idle)
+parser.add_argument('--no-blink', action='store_true')
+parser.add_argument('--mobile', '-m', action='store_true', help='Mobile mode: print session sum. (report format)')
 args = parser.parse_args()
 
 
 def get_bytes(interface):
-    data = os.popen('ifconfig ' + interface).read()
+    data = subprocess.check_output(['ifconfig', interface], universal_newlines=True)
     m = re.search(r"RX (?:packets \d+\s*)bytes(?::? *)(\d+)", data)
     rxb = int(m.group(1))
     m = re.search(r"TX (?:packets \d+\s*)bytes(?::? *)(\d+)", data)
@@ -41,16 +42,60 @@ class Blinker:
 
     def on(self):
         if self.last_status == 0:
-            self.last_status = os.system('xset led 3')
+            self.last_status = subprocess.call(['xset', 'led', '3'])
 
     def off(self):
         if self.last_status == 0:
-            self.last_status = os.system('xset -led 3')
+            self.last_status = subprocess.call(['xset', '-led', '3'])
+
+
+class Session:
+    def __init__(self, rxb0, txb0, mobile=False):
+        self.start = datetime.datetime.now()
+        self.rxb0, self.txb0 = rxb0, txb0
+        self.rxb, self.txb = rxb0, txb0
+        self.prev_rxb, self.prev_txb = 0, 0  # dummy values
+        self.mobile = mobile
+
+    def update(self, rxb, txb):
+        self.prev_rxb, self.prev_txb = self.rxb, self.txb
+        self.rxb, self.txb = rxb, txb
+
+    def _mobile_report(self):
+        duration = datetime.datetime.now() - self.start
+        return "{} {} Recv, {} Send. Session ({}): {} Rx, {} Tx, {} Total.".format(
+            time.strftime('%H:%M:%S'),
+            human_format(self.rxb - self.prev_rxb),
+            human_format(self.txb - self.prev_txb),
+            '{}'.format(duration).split('.')[0],
+            human_format(self.rxb - self.rxb0),
+            human_format(self.txb - self.txb0),
+            human_format((self.rxb - self.rxb0) + (self.txb - self.txb0))
+        )
+
+    def _normal_report(self):
+        duration = datetime.datetime.now() - self.start
+        return "{} {} Recv, {} Send. Session ({}): {} Rx, {} Tx, {}/s avgR, {}/s avgS.".format(
+            time.strftime('%H:%M:%S'),
+            human_format(self.rxb - self.rxb0, False),
+            human_format(self.txb - self.txb0, False),
+            '{}'.format(duration).split('.')[0],
+            human_format(self.rxb - self.rxb0),
+            human_format(self.txb - self.txb0),
+            human_format((self.rxb - self.rxb0) // duration.seconds),
+            human_format((self.txb - self.txb0) // duration.seconds),
+        )
+
+    def report(self):
+        if self.mobile:
+            return self._mobile_report()
+        else:
+            return self._normal_report()
 
 
 def guess_interface():
     print('Warning: no interface specified, guessing:', end=' ')
-    for line in os.popen('ifconfig'):
+    for line in subprocess.check_output(['ifconfig'], universal_newlines=True).split('\n'):
         if not line.strip() or line.startswith(' '):
             continue
         if 'LOOPBACK' in line:
@@ -84,14 +129,15 @@ def main(args):
     blinker = Blinker()
     idle_secs = 0
     maxtx, maxrx = 0, 0
+    session = Session(rxb0=rxb0, txb0=txb0, mobile=args.mobile)
     prev_rxb, prev_txb = rxb0, txb0
     next_report = interval
-    started = datetime.datetime.now()
 
     while True:
         try:
             time.sleep(interval)
-            blinker.off()
+            if not args.no_blink:
+                blinker.off()
         except:
             print()
             break
@@ -106,30 +152,21 @@ def main(args):
             idle_secs += interval
             if idle_secs == next_report:
                 print(time.strftime('%H:%M:%S') + " %d seconds idle" % idle_secs)
-                sys.stdout.flush()
-                if next_report < max_idle:
+                if next_report < args.max_idle:
                     next_report *= 2
                 else:
-                    next_report += max_idle
+                    next_report += args.max_idle
             continue
         else:
             if idle_secs > 0:
                 print(time.strftime('%H:%M:%S') + " resume after %d seconds" % idle_secs)
             idle_secs = 0
             next_report = interval
-        blinker.on()
-        duration = datetime.datetime.now() - started
-        print("{} {} Recv, {} Send. Session ({}): {} Rx, {} Tx, {}/s avgR, {}/s avgS.".format(
-            time.strftime('%H:%M:%S'),
-            human_format(rxb - prev_rxb, False),
-            human_format(txb - prev_txb, False),
-            '{}'.format(duration).split('.')[0],
-            human_format(rxb - rxb0),
-            human_format(txb - txb0),
-            human_format((rxb - rxb0) // duration.seconds),
-            human_format((txb - txb0) // duration.seconds),
-        ))
-        sys.stdout.flush()
+        if not args.no_blink:
+            blinker.on()
+
+        session.update(rxb, txb)
+        print(session.report(), flush=True)
         maxtx = max(maxtx, txb - prev_txb)
         maxrx = max(maxrx, rxb - prev_rxb)
         prev_rxb, prev_txb = rxb, txb
