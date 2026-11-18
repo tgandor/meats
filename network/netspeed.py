@@ -9,6 +9,7 @@ import time
 
 
 max_idle = 600
+width = 8
 
 parser = argparse.ArgumentParser()
 parser.add_argument('interface', nargs='?')
@@ -29,11 +30,11 @@ def get_bytes(interface):
 
 
 def human_format(n, mb=True):
-    if n > 2**20 and mb:
-        return "{:8,.1f} MB".format(n/2**20)
-    if n > 2**10:
-        return "{:8,.1f} KB".format(n/2**10)
-    return "%8d B " % n
+    if n > 10**6 and mb:
+        return "{:>{width},.1f} MB".format(n/2**20, width=width)
+    if n > 1000:
+        return "{:>{width},.1f} KB".format(n/2**10, width=width)
+    return "{:>{width}d} B ".format(n, width=width)
 
 
 class Blinker:
@@ -51,11 +52,14 @@ class Blinker:
 
 class Session:
     def __init__(self, rxb0, txb0, mobile=False):
+        global width
         self.start = datetime.datetime.now()
         self.rxb0, self.txb0 = rxb0, txb0
         self.rxb, self.txb = rxb0, txb0
         self.prev_rxb, self.prev_txb = 0, 0  # dummy values
         self.mobile = mobile
+        if mobile:
+            width = 6
 
     def update(self, rxb, txb):
         self.prev_rxb, self.prev_txb = self.rxb, self.txb
@@ -63,7 +67,7 @@ class Session:
 
     def _mobile_report(self):
         duration = datetime.datetime.now() - self.start
-        return "{} {} Recv, {} Send. Session ({}): {} Rx, {} Tx, {} Total.".format(
+        return "{} ðRx{}, ðTx{}. Sess({}): {} Rx, {} Tx, ± {}.".format(
             time.strftime('%H:%M:%S'),
             human_format(self.rxb - self.prev_rxb),
             human_format(self.txb - self.prev_txb),
