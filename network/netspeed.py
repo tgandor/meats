@@ -175,6 +175,9 @@ def main(args):
         maxrx = max(maxrx, rxb - prev_rxb)
         prev_rxb, prev_txb = rxb, txb
 
+    if not args.no_blink:
+        blinker.off()
+
     print('{} Final interface stats: Rx {} Tx {}'.format(
             time.strftime('%H:%M:%S'),
             human_format(rxb),
